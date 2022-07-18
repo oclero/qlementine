@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="10px" height="10px" viewBox="0 0 10 10" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <rect width="10" height="10" id="artboard_1" />
+    <clipPath id="clip_1">
+      <use xlink:href="#artboard_1" clip-rule="evenodd" />
+    </clipPath>
+  </defs>
+  <g id="maximize-alternative" clip-path="url(#clip_1)">
+    <g id="iconmaximize-alternative">
+      <path d="M2 0L2 2L0 2L0 10L8 10L8 8L10 8L10 0L2 0L2 0ZM8 2L8 7L9 7L9 1L3 1L3 2L8 2L8 2ZM1 3L7 3L7 9L1 9L1 3L1 3Z" id="Vector" fill="#FFFFFF" fill-rule="evenodd" stroke="none" />
+    </g>
+  </g>
+</svg>

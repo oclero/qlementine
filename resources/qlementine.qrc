@@ -1,0 +1,22 @@
+<RCC>
+	<qresource prefix="/qlementine/resources">
+		<file>icons/messagebox_critical_bg.svg</file>
+		<file>icons/messagebox_critical_fg.svg</file>
+		<file>icons/messagebox_information_bg.svg</file>
+		<file>icons/messagebox_information_fg.svg</file>
+		<file>icons/messagebox_question_bg.svg</file>
+		<file>icons/messagebox_question_fg.svg</file>
+		<file>icons/messagebox_warning_bg.svg</file>
+		<file>icons/messagebox_warning_fg.svg</file>
+		<file>csd/windows/dark/close-hover.svg</file>
+		<file>csd/windows/dark/close.svg</file>
+		<file>csd/windows/dark/maximize-alternative.svg</file>
+		<file>csd/windows/dark/maximize.svg</file>
+		<file>csd/windows/dark/minimize.svg</file>
+		<file>csd/windows/light/close-hover.svg</file>
+		<file>csd/windows/light/close.svg</file>
+		<file>csd/windows/light/maximize-alternative.svg</file>
+		<file>csd/windows/light/maximize.svg</file>
+		<file>csd/windows/light/minimize.svg</file>
+	</qresource>
+</RCC>

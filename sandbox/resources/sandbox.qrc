@@ -1,0 +1,14 @@
+<RCC>
+	<qresource>
+		<file>dark.json</file>
+		<file>light.json</file>
+		<file>qlementine_icon.ico</file>
+		<file>qlementine_icon.icns</file>
+		<file>refresh.svg</file>
+		<file>plus_24.svg</file>
+		<file>test_image_16x16.png</file>
+		<file>scene_light.svg</file>
+		<file>scene_material.svg</file>
+		<file>scene_object.svg</file>
+	</qresource>
+</RCC>

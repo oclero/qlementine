@@ -1,0 +1,37 @@
+<RCC>
+	<qresource prefix="/qlementine/resources">
+		<file>fonts/inter/Inter-Black.otf</file>
+		<file>fonts/inter/Inter-BlackItalic.otf</file>
+		<file>fonts/inter/Inter-Bold.otf</file>
+		<file>fonts/inter/Inter-BoldItalic.otf</file>
+		<file>fonts/inter/Inter-ExtraBold.otf</file>
+		<file>fonts/inter/Inter-ExtraBoldItalic.otf</file>
+		<file>fonts/inter/Inter-ExtraLight.otf</file>
+		<file>fonts/inter/Inter-ExtraLightItalic.otf</file>
+		<file>fonts/inter/Inter-Italic.otf</file>
+		<file>fonts/inter/Inter-Light.otf</file>
+		<file>fonts/inter/Inter-LightItalic.otf</file>
+		<file>fonts/inter/Inter-Medium.otf</file>
+		<file>fonts/inter/Inter-MediumItalic.otf</file>
+		<file>fonts/inter/Inter-Regular.otf</file>
+		<file>fonts/inter/Inter-SemiBold.otf</file>
+		<file>fonts/inter/Inter-SemiBoldItalic.otf</file>
+		<file>fonts/inter/Inter-Thin.otf</file>
+		<file>fonts/inter/Inter-ThinItalic.otf</file>
+
+		<file>fonts/roboto-mono/RobotoMono-Bold.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-BoldItalic.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-ExtraLight.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-ExtraLightItalic.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-Italic.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-Light.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-LightItalic.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-Medium.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-MediumItalic.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-Regular.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-SemiBold.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-SemiBoldItalic.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-Thin.ttf</file>
+		<file>fonts/roboto-mono/RobotoMono-ThinItalic.ttf</file>
+	</qresource>
+</RCC>
