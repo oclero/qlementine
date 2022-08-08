@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QBoxLayout>
 #include <QMessageBox>
+#include <QCheckBox>
 
 CsdWindow::CsdWindow(QWidget* parent)
 	: oclero::qlementine::FramelessWindow(parent) {

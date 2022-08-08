@@ -93,6 +93,11 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Switch.hpp
 )
 
+set(RESOURCES
+  resources/qlementine.qrc
+  $<$<PLATFORM_ID:Darwin>:resources/qlementine_fonts.qrc>
+  $<$<PLATFORM_ID:Windows>:resources/qlementine_fonts_windows.qrc>
+)
 
 # Configure target.
 add_library(${LIB_TARGET_NAME} STATIC)
@@ -102,6 +107,7 @@ target_sources(${LIB_TARGET_NAME}
   PRIVATE
     ${HEADERS}
     ${SOURCES}
+    ${RESOURCES}
 )
 
 target_include_directories(${LIB_TARGET_NAME}

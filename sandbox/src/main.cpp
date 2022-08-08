@@ -1,6 +1,5 @@
-#include <Version.hpp>
-
 #include <QApplication>
+#include <QWidget>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 
@@ -11,12 +10,12 @@
 #define CSD_WINDOW 1
 
 int main(int argc, char* argv[]) {
-	QGuiApplication::setApplicationDisplayName(APPLICATION_DISPLAY_NAME);
-	QCoreApplication::setApplicationName(APPLICATION_NAME);
-	QGuiApplication::setDesktopFileName(APPLICATION_NAME);
-	QCoreApplication::setOrganizationName(COMPANY_NAME);
-	QCoreApplication::setOrganizationDomain(COMPANY_DOMAIN);
-	QCoreApplication::setApplicationVersion(APPLICATION_VERSION);
+	QGuiApplication::setApplicationDisplayName("sandbox");
+	QCoreApplication::setApplicationName("sandbox");
+	QGuiApplication::setDesktopFileName("sandbox");
+	QCoreApplication::setOrganizationName("oclero");
+	QCoreApplication::setOrganizationDomain("olivierclero.com");
+	QCoreApplication::setApplicationVersion("1.0.0");
 
 	QApplication qApplication(argc, argv);
 

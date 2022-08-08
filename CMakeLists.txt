@@ -21,5 +21,5 @@ add_subdirectory(lib)
 
 if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   # Sandbox.
-  #add_subdirectory(sandbox)
+  add_subdirectory(sandbox)
 endif()

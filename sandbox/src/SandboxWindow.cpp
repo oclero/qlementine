@@ -16,6 +16,26 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 
 #include <QFileSystemWatcher>
+#include <QContextMenuEvent>
+#include <QShortcut>
+#include <QSpinBox>
+#include <QComboBox>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QToolBar>
+#include <QTreeWidget>
+#include <QMenuBar>
+#include <QToolButton>
+#include <QListWidget>
+#include <QTableWidget>
+#include <QGroupBox>
+#include <QScrollArea>
+#include <QCheckBox>
+#include <QButtonGroup>
+#include <QStandardItemModel>
+#include <QProgressBar>
+#include <QHeaderView>
+#include <QApplication>
 
 namespace oclero::qlementine::sandbox {
 class ContextMenuEventFilter : public QObject {
@@ -1367,7 +1387,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 		owner.setCentralWidget(windowContent);
 	}
 
-	qlementineSandboxWindow& owner;
+	SandboxWindow& owner;
 	QString lastJsonThemePath;
 	QPointer<QlementineStyle> qlementineStyle;
 
@@ -1379,7 +1399,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 	QFileSystemWatcher fileWatcher;
 };
 
-qlementineSandboxWindow::qlementineSandboxWindow(QWidget* parent)
+SandboxWindow::SandboxWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, _impl(new Impl(*this)) {
 	//_impl->setupMenuBar();
@@ -1395,9 +1415,9 @@ qlementineSandboxWindow::qlementineSandboxWindow(QWidget* parent)
 	_impl->setup_lineEdit();
 }
 
-qlementineSandboxWindow::~qlementineSandboxWindow() = default;
+SandboxWindow::~SandboxWindow() = default;
 
-void qlementineSandboxWindow::setCustomStyle(QlementineStyle* style) {
+void SandboxWindow::setCustomStyle(QlementineStyle* style) {
 	_impl->qlementineStyle = style;
 	_impl->lastJsonThemePath = QStringLiteral(":/light.json");
 }

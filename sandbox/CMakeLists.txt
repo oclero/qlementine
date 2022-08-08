@@ -1,26 +1,32 @@
-declare_executable(sandbox EXCLUDE_FROM_ALL ADD_METADATA
-	FOLDER sandbox
-	APP_NAME "Sandbox"
-	EXE_NAME "sandbox"
-	COMPANY_NAME "oclero"
-	COMPANY_DOMAIN "olivierclero.com"
-	APP_ICON "resources/qlementine_icon.ico"
-	FILE_ICON "resources/qlementine_icon.ico"
-	VERSION ${PROJECT_VERSION}
-	SOURCES
-		resources/sandbox.qrc
-		src/main.cpp
-		src/SandboxWindow.cpp
-		src/SandboxWindow.hpp
-		src/CsdWindow.cpp
-		src/CsdWindow.hpp
-	LINK_LIBRARIES
-		oclero::qlementine
+find_package(Qt5
+  REQUIRED
+    Core
+    Widgets
+)
+
+add_executable(sandbox WIN32 MACOSX_BUNDLE)
+target_sources(sandbox PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/resources/sandbox.qrc
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.hpp
+)
+target_link_libraries(sandbox
+  PRIVATE
+    oclero::qlementine
+    Qt5::Core
+    Qt5::Widgets
 )
 
 set_target_properties(sandbox PROPERTIES
-	AUTOMOC ON
+  INTERNAL_CONSOLE OFF
+  EXCLUDE_FROM_ALL ON
+  FOLDER sandbox
+  AUTOMOC ON
 	AUTORCC ON
 )
 
-configure_executable_postbuild(sandbox)
+############# Minimal example ends here #############
+target_deploy_qt(sandbox)

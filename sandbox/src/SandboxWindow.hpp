@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QMainWindow>
+
 namespace oclero::qlementine {
 class QlementineStyle;
 }
