@@ -1,0 +1,55 @@
+# OS Generated files
+.DS_Store
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+*~
+*.swp
+~`~*
+
+# Build files.
+*.d
+*.slo
+*.lo
+*.o
+*.obj
+*.gch
+*.pch
+*.so
+*.dylib
+*.dll
+*.lai
+*.la
+*.a
+*.lib
+*.exe
+*.out
+*.app
+build/
+_build/
+Testing/
+
+# VS Code files.
+.cproject
+.project
+.settings
+.csettings
+.vscode/
+.qt_for_python/
+
+# Qt Creator files.
+CMakeLists.txt.user
+*creator.user*
+*.qml.autosave
+debug.log
+
+# Temporary files.
+tmp/
+temp/
+
+# Python files.
+__pycache__/
+*.py[cod]
+*$py.class
