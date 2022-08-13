@@ -6,6 +6,9 @@
 #include <QJsonObject>
 #include <QFile>
 #include <QScreen>
+#include <QColor>
+
+#include <optional>
 
 namespace oclero::qlementine {
 namespace {

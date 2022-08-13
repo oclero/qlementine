@@ -7,6 +7,10 @@ find_package(Qt5
     Svg
 )
 
+if(WIN32)
+  find_package(Qt5 REQUIRED WinExtras)
+endif()
+
 # Declare files.
 set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimator.cpp

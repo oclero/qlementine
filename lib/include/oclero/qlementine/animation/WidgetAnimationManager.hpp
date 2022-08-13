@@ -3,6 +3,7 @@
 #include <oclero/qlementine/animation/WidgetAnimator.hpp>
 
 #include <unordered_map>
+#include <optional>
 
 namespace oclero::qlementine {
 #define DECLARE_ANIMATE(NAME, TYPE, easing) \

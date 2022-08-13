@@ -8,6 +8,9 @@
 #include <QBoxLayout>
 #include <QMenuBar>
 #include <QPainter>
+#include <QPointer>
+#include <QAbstractButton>
+#include <QWindowStateChangeEvent>
 
 namespace oclero::qlementine {
 struct FramelessWindow::Impl {

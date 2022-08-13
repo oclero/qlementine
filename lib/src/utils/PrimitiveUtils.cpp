@@ -2,8 +2,6 @@
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
 
-#include <cmath>
-
 #include <QTextLayout>
 #include <QTextLine>
 #include <QPaintDevice>
@@ -11,6 +9,10 @@
 #include <QPainterPath>
 #include <QWindow>
 #include <QApplication>
+
+static constexpr auto M_PI = 3.14159265358979323846;
+static constexpr auto M_PI_2 = 3.14159265358979323846 / 2.;
+static constexpr auto M_PI_4 = 3.14159265358979323846 / 4.;
 
 namespace oclero::qlementine {
 namespace {
@@ -25,13 +27,13 @@ QPointF getColinearVector(const QPointF& point, double partLength, double vector
 }
 
 struct AngleRadius {
-	double radius{ 0 }; // px
-	double startAngle{ 0 }; // Radians
-	double sweepAngle{ 0 }; // Radians
-	QPointF centerPoint{ 0, 0 };
-	QPointF startPoint{ 0, 0 };
-	QPointF endPoint{ 0, 0 };
-	QPointF translation{ 0, 0 };
+	double radius{ 0. }; // px
+	double startAngle{ 0. }; // Radians
+	double sweepAngle{ 0. }; // Radians
+	QPointF centerPoint{ 0., 0. };
+	QPointF startPoint{ 0., 0. };
+	QPointF endPoint{ 0., 0. };
+	QPointF translation{ 0., 0. };
 };
 
 AngleRadius getAngleRadius(const QPointF& p1, const QPointF& angularPoint, const QPointF& p2, double radius) {

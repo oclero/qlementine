@@ -40,6 +40,10 @@
 #include <QMessageBox>
 #include <QTextEdit>
 
+#include <mutex>
+
+static constexpr auto M_PI = 3.14159265358979323846;
+
 namespace oclero::qlementine {
 /// Used to initializeResources from .qrc only once.
 std::once_flag qlementineOnceFlag;
