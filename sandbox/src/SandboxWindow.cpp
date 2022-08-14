@@ -1402,6 +1402,8 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 SandboxWindow::SandboxWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, _impl(new Impl(*this)) {
+  setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
+
 	//_impl->setupMenuBar();
 	_impl->setupShortcuts();
 	//_impl->setupUi_basicWidgets();
