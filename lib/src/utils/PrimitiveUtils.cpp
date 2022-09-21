@@ -1,4 +1,4 @@
-#include <oclero/qlementine/utils/PrimitiveUtils.hpp>
+﻿#include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
 
