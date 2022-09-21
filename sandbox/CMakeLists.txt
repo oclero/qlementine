@@ -25,7 +25,7 @@ set_target_properties(sandbox PROPERTIES
   EXCLUDE_FROM_ALL ON
   FOLDER sandbox
   AUTOMOC ON
-	AUTORCC ON
+  AUTORCC ON
 )
 
 ############# Minimal example ends here #############
