@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QWidget>
+#include <QMessageBox>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 
@@ -29,16 +30,21 @@ int main(int argc, char* argv[]) {
 	qApplication.setStyle(style);
 #endif
 
-#if 0
-	auto window = std::make_unique<CsdWindow>();
-#else
-	// Show window.
-	auto window = std::make_unique<oclero::qlementine::sandbox::SandboxWindow>();
-#	if USE_CUSTOM_STYLE
-	window->setCustomStyle(style);
-#	endif
-#endif
-	window->show();
+    auto button = QMessageBox::question(nullptr, "Sandbox", "Choose one of the demo window", "CSDWindow", "SandboxWindow");
+
+    std::unique_ptr<QWidget> window = nullptr;
+    if (button == 0) {
+      window = std::move(std::make_unique<CsdWindow>());
+    } else if (button == 1){
+	  // Show window.
+	  auto _window = std::make_unique<oclero::qlementine::sandbox::SandboxWindow>();
+#	  if USE_CUSTOM_STYLE
+	  _window->setCustomStyle(style);
+#	  endif
+      window = std::move(_window);
+    }
+
+    window->show();
 
 	return qApplication.exec();
 }
