@@ -196,6 +196,9 @@ public: // Values.
 
   QPalette palette;
 
+public:
+  QJsonDocument toJson() const;
+
 private:
   virtual void initializePalette();
   void initializeFromJson(QJsonDocument const& jsonDoc);

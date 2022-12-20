@@ -19,38 +19,35 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 #pragma once
 
 #include <QWidget>
-#include <QScreen>
-#include <QGuiApplication>
+#include <QColor>
 
 namespace oclero::qlementine {
-QWidget* makeVerticalLine(QWidget* parentWidget, int maxHeight = -1);
-QWidget* makeHorizontalLine(QWidget* parentWidget, int maxWidth = -1);
+class ColorButton;
+class LineEdit;
 
-void centerWidget(QWidget* widget, QWidget* host = nullptr);
+class ColorEditor : public QWidget {
+  Q_OBJECT
 
-QMargins getDefaultMargins(const QStyle* style);
+  Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 
-qreal getDpi(const QWidget* widget);
+public:
+  ColorEditor(QWidget* parent = nullptr);
+  ColorEditor(const QColor& color, QWidget* parent = nullptr);
 
-QWindow* getWindow(const QWidget* widget);
+  const QColor& color() const;
+  void setColor(const QColor& color);
 
-void clearLayout(QLayout* layout);
+signals:
+  void colorChanged();
 
-template<class T>
-T* findFirstParentOfType(QWidget* child) {
-  auto* parent = child;
+private:
+  void setup(const QColor& initialColor);
+  void syncLineEditFromButton();
 
-  while (parent != nullptr) {
-    parent = parent->parentWidget();
-    if (auto* typedPArent = qobject_cast<T*>(parent)) {
-      return typedPArent;
-    }
-  }
-
-  return nullptr;
-}
+  ColorButton* _colorButton;
+  LineEdit* _lineEdit;
+};
 } // namespace oclero::qlementine

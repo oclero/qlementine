@@ -26,6 +26,7 @@
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/FontUtils.hpp>
+#include <oclero/qlementine/utils/ColorUtils.hpp>
 
 #include <QPainter>
 

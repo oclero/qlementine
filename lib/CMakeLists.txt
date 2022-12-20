@@ -26,7 +26,9 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/QlementineStyle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/Theme.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/ThemeManager.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/tools/ThemeEditor.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/BadgeUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ColorUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FontUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ImageUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/PrimitiveUtils.cpp
@@ -37,6 +39,8 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/AbstractItemListWidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Action.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ActionButton.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ColorButton.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ColorEditor.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/CommandLinkButton.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Expander.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/FramelessWindow.cpp
@@ -69,8 +73,10 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/style/QlementineStyleOption.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/style/Theme.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/style/ThemeManager.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/tools/ThemeEditor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/BlurUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/BadgeUtils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ColorUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/FontUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ImageUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/PrimitiveUtils.hpp
@@ -81,6 +87,8 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/AbstractItemListWidget.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Action.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/ActionButton.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/ColorButton.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/ColorEditor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/CommandLinkButton.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Expander.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/FramelessWindow.hpp

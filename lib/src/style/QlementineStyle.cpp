@@ -19,7 +19,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 
 #include <oclero/qlementine/resources/ResourceInitialization.hpp>
@@ -32,15 +31,18 @@
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/StyleUtils.hpp>
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
+#include <oclero/qlementine/utils/ColorUtils.hpp>
 #include <oclero/qlementine/style/Delegates.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 #include <oclero/qlementine/widgets/RoundedFocusFrame.hpp>
 #include <oclero/qlementine/widgets/AbstractItemListWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
+#include <oclero/qlementine/widgets/ColorButton.hpp>
 
 #include "EventFilters.hpp"
 
+#include <QResizeEvent>
 #include <QFontDatabase>
 #include <QToolTip>
 #include <QPixmapCache>
@@ -1785,6 +1787,24 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // Checkbox: placed around the check button.
           optFocus.rect = subElementRect(SE_CheckBoxFocusRect, &optRadioButton, radioButton);
           optFocus.radiuses = std::min(optFocus.rect.width(), optFocus.rect.height()) / 2.;
+        } else if (const auto* colorButton = qobject_cast<const ColorButton*>(monitoredWidget)) {
+          // Prepare monitored widget QStyleOption.
+          QStyleOptionButton optColorButton;
+          optColorButton.QStyleOption::operator=(*opt);
+          optColorButton.initFrom(colorButton);
+
+          // ColorButton: circle around the button.
+          optFocus.rect = subElementRect(SE_PushButtonFocusRect, &optColorButton, colorButton);
+          optFocus.radiuses = optFocus.rect.height() / 2;
+        } else if (const auto* abstractButton = qobject_cast<const QAbstractButton*>(monitoredWidget)) {
+          // Prepare monitored widget QStyleOption.
+          QStyleOptionButton optAbstractButton;
+          optAbstractButton.QStyleOption::operator=(*opt);
+          optAbstractButton.initFrom(abstractButton);
+
+          // AbstractButton (fallback): placed around the button.
+          optFocus.rect = subElementRect(SE_PushButtonFocusRect, &optAbstractButton, abstractButton);
+          optFocus.radiuses = _impl->theme.borderRadius;
         } else if (const auto* slider = qobject_cast<const QSlider*>(monitoredWidget)) {
           // Prepare monitored widget QStyleOption.
           const auto currentPos = _impl->animations.getAnimatedProgress(slider);
@@ -1876,15 +1896,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Draw the focus border.
         drawPrimitive(PE_FrameFocusRect, &optFocus, p, w);
-
-        // There seems to be a bug with QFocusFrame and its parent.
-        auto* parentWidget = focusFrame->parentWidget();
-        if (parentWidget) {
-          auto focusRect = focusFrame->rect();
-          auto translation = focusFrame->mapToParent(QPoint(0, 0));
-          focusRect.translate(translation);
-          //parentWidget->update(); // Consumes too much CPU because draw every frame...
-        }
       }
       return;
     case CE_ComboBoxLabel:
@@ -4197,7 +4208,10 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_FocusFrame_Mask:
       if (w) {
         if (auto* mask = qstyleoption_cast<QStyleHintReturnMask*>(shret)) {
-          mask->region = w->rect();
+          const auto focusBorderW = _impl->theme.focusBorderWidth;
+          const auto widgetRect = w->rect();
+          const auto extendedRect = widgetRect.marginsAdded(QMargins(focusBorderW, focusBorderW, focusBorderW, focusBorderW));
+          mask->region = extendedRect;
           return 1;
         }
       }
@@ -4268,7 +4282,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
 
     // FormLayout
     case SH_FormLayoutFieldGrowthPolicy:
-      return QFormLayout::ExpandingFieldsGrow;
+      return QFormLayout::AllNonFixedFieldsGrow;
     case SH_FormLayoutFormAlignment:
       return Qt::AlignLeft;
     case SH_FormLayoutLabelAlignment:
@@ -4535,8 +4549,20 @@ void QlementineStyle::polish(QWidget* w) {
 
   // QFocusFrame is used to draw focus outside of the widget's bound.
   if (shouldHaveExternalFocusFrame(w)) {
-    auto* focusframe = new QFocusFrame(w);
-    focusframe->setWidget(w);
+    auto* focusFrame = new QFocusFrame(w);
+    // If the widget is inside a scrollArea, we need to force the update of the QFocusFrame position.
+//    if (auto* parentScrollArea = findFirstParentOfType<QScrollArea>(w)) {
+//      if (auto* vScrollBar = parentScrollArea->verticalScrollBar()) {
+//        QObject::connect(vScrollBar, &QScrollBar::valueChanged, focusFrame, [w](int){
+//          QTimer::singleShot(1000, w, [w](){
+//            auto* resizeEvent = new QResizeEvent(QSize(), w->size());
+//            QApplication::postEvent(w, resizeEvent);
+//          });
+//        });
+//      }
+//    }
+
+    focusFrame->setWidget(w);
   }
 
   // Hijack the default focus policy for buttons.
@@ -4572,7 +4598,6 @@ void QlementineStyle::polish(QWidget* w) {
       parent->setAttribute(Qt::WA_OpaquePaintEvent, false);
       parent->setAttribute(Qt::WA_NoSystemBackground, true);
       itemView->installEventFilter(new ComboboxItemViewFilter(itemView));
-
       if (auto* scrollArea = parent->findChild<QAbstractScrollArea*>()) {
         scrollArea->setBackgroundRole(QPalette::NoRole);
         scrollArea->setAutoFillBackground(false);

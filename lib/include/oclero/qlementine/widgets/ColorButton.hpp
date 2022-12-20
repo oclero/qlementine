@@ -22,35 +22,33 @@
 
 #pragma once
 
-#include <QWidget>
-#include <QScreen>
-#include <QGuiApplication>
+#include <QAbstractButton>
+#include <QColor>
 
 namespace oclero::qlementine {
-QWidget* makeVerticalLine(QWidget* parentWidget, int maxHeight = -1);
-QWidget* makeHorizontalLine(QWidget* parentWidget, int maxWidth = -1);
+class ColorButton : public QAbstractButton {
+    Q_OBJECT
 
-void centerWidget(QWidget* widget, QWidget* host = nullptr);
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 
-QMargins getDefaultMargins(const QStyle* style);
+public:
+    ColorButton(QWidget* parent = nullptr);
+    ColorButton(const QColor& color, QWidget* parent = nullptr);
 
-qreal getDpi(const QWidget* widget);
+    const QColor& color() const;
+    void setColor(const QColor& color);
 
-QWindow* getWindow(const QWidget* widget);
+    QSize sizeHint() const override;
 
-void clearLayout(QLayout* layout);
+signals:
+    void colorChanged();
 
-template<class T>
-T* findFirstParentOfType(QWidget* child) {
-  auto* parent = child;
+protected:
+    void paintEvent(QPaintEvent*) override;
 
-  while (parent != nullptr) {
-    parent = parent->parentWidget();
-    if (auto* typedPArent = qobject_cast<T*>(parent)) {
-      return typedPArent;
-    }
-  }
+private:
+    void setup();
 
-  return nullptr;
-}
+    QColor _color;
+};
 } // namespace oclero::qlementine

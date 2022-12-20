@@ -14,6 +14,8 @@ public:
 
   void setCustomStyle(QlementineStyle* style);
 
+  bool eventFilter(QObject *watched, QEvent *event) override;
+
 private:
   struct Impl;
   std::unique_ptr<Impl> _impl{};

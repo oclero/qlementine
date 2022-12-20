@@ -24,6 +24,7 @@
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/FontUtils.hpp>
+#include <oclero/qlementine/utils/ColorUtils.hpp>
 
 #include <QTextLayout>
 #include <QTextLine>
@@ -346,42 +347,28 @@ void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& colo
   p->restore();
 }
 
-QColor colorWithAlphaF(QColor const& color, qreal alpha) {
-  alpha = std::min(1., std::max(0., alpha));
-  auto result = QColor{ color };
-  result.setAlphaF(alpha);
-  return result;
+void drawColorMark(QPainter* p, QRect const& rect, const QColor& color,
+                   const QColor& borderColor, int borderWidth) {
+  // Draw background.
+  const auto circleDiameter = rect.height();
+  const auto markRect = QRect((rect.width() - circleDiameter) / 2, 0, circleDiameter, circleDiameter);
+
+  p->setRenderHint(QPainter::Antialiasing, true);
+  p->setPen(Qt::NoPen);
+  p->setBrush(color);
+  p->drawEllipse(markRect);
+
+  // Draw border for when contrast is not high enough.
+  borderWidth = std::max(1, borderWidth);
+  drawEllipseBorder(p, markRect, borderColor, borderWidth * 1.5); // get better readability.
 }
 
-QColor colorWithAlpha(QColor const& color, int alpha) {
-  alpha = std::min(255, std::max(0, alpha));
-  auto result = QColor{ color };
-  result.setAlpha(alpha);
-  return result;
-}
-
-QColor getColorSourceOver(const QColor& bg, const QColor& fg) {
-  // Premultiply.
-  const auto bgAlpha = bg.alphaF();
-  const auto bgRed = bg.redF() * bgAlpha;
-  const auto bgGreen = bg.greenF() * bgAlpha;
-  const auto bgBlue = bg.blueF() * bgAlpha;
-
-  const auto fgAlpha = fg.alphaF();
-  const auto fgRed = fg.redF() * fgAlpha;
-  const auto fgGreen = fg.greenF() * fgAlpha;
-  const auto fgBlue = fg.blueF() * fgAlpha;
-  const auto fgAlphaInv = 1. - fg.alphaF();
-
-  const auto finalAlpha = bgAlpha + fgAlpha - bgAlpha * fgAlpha;
-  const auto finalRed = fgRed + bgRed * fgAlphaInv;
-  const auto finalGreen = fgGreen + bgGreen * fgAlphaInv;
-  const auto finalBlue = fgBlue + bgBlue * fgAlphaInv;
-
-  const auto finalRGBA = qRgba(finalRed * 255, finalGreen * 255, finalBlue * 255, finalAlpha * 255);
-  const auto finalColor = QColor::fromRgba(finalRGBA);
-
-  return finalColor;
+void drawColorMarkBorder(QPainter* p,
+                         QRect const& rect, const QColor& borderColor,
+                         int borderWidth) {
+  const auto circleDiameter = rect.height();
+  const auto markRect = QRect((rect.width() - circleDiameter) * 0.5, 0, circleDiameter, circleDiameter);
+  drawEllipseBorder(p, markRect, borderColor, borderWidth * 1.5); // get better readability.
 }
 
 void drawDebugRect(const QRect& rect, QPainter* p) {

@@ -23,6 +23,7 @@
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/FontUtils.hpp>
+#include <oclero/qlementine/utils/ColorUtils.hpp>
 
 #include <QGuiApplication>
 #include <QJsonObject>
@@ -37,127 +38,6 @@ namespace {
 #define TRY_SET_COLOR_ATTRIBUTE(JSON_OBJ, NAME) trySetColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define TRY_SET_INT_ATTRIBUTE(JSON_OBJ, NAME) trySetInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define TRY_SET_DOUBLE_ATTRIBUTE(JSON_OBJ, NAME) trySetDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
-
-// Retrieve red, green, blue and alpha channels from JSON array elements.
-std::optional<QColor> tryGetColorFromVariantList(QVariantList const& variantList) {
-  const auto variantListSize = variantList.size();
-  if (variantListSize == 3 || variantListSize == 4) {
-    int r{ 0 }, g{ 0 }, b{ 0 }, a{ 255 };
-
-    const auto& variant_r = variantList.at(0);
-    if (variant_r.isValid() && variant_r.canConvert<int>()) {
-      r = variant_r.toInt();
-    }
-    const auto& variant_g = variantList.at(1);
-    if (variant_g.isValid() && variant_g.canConvert<int>()) {
-      g = variant_g.toInt();
-    }
-    const auto& variant_b = variantList.at(2);
-    if (variant_b.isValid() && variant_b.canConvert<int>()) {
-      b = variant_b.toInt();
-    }
-    if (variantListSize == 4) {
-      const auto& variant_a = variantList.at(3);
-      if (variant_a.isValid() && variant_a.canConvert<int>()) {
-        a = variant_a.toInt();
-      }
-    }
-    return QColor{ r, g, b, a };
-  }
-
-  return {};
-}
-
-std::optional<QColor> tryGetColorFromRGBAString(QString const& str) {
-  // Try parse RGB ("rgb(RRR,GGG,BBB)").
-  static const auto rgbRegExp = QRegularExpression(QStringLiteral("^ *rgb *\\( *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3}) *\\) *$"), QRegularExpression::CaseInsensitiveOption);
-  const auto rgbMatch = rgbRegExp.match(str);
-  if (rgbMatch.hasMatch()) {
-    const auto r = rgbMatch.captured(1).toInt();
-    const auto g = rgbMatch.captured(2).toInt();
-    const auto b = rgbMatch.captured(3).toInt();
-    return QColor{ r, g, b };
-  }
-
-  // Try parse RGBA ("rgba(RRR,GGG,BBB,AAA)").
-  static const auto rgbaRegExp = QRegularExpression(QStringLiteral("^ *rgba *\\( *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3})*\\) *$"), QRegularExpression::CaseInsensitiveOption);
-  const auto rgbaMatch = rgbaRegExp.match(str);
-  if (rgbaMatch.hasMatch()) {
-    const auto r = rgbaMatch.captured(1).toInt();
-    const auto g = rgbaMatch.captured(2).toInt();
-    const auto b = rgbaMatch.captured(3).toInt();
-    const auto a = rgbaMatch.captured(4).toInt();
-    return QColor{ r, g, b, a };
-  }
-
-  return {};
-}
-
-std::optional<QColor> tryGetColorFromHexaString(QString const& str) {
-  constexpr auto HEX_BASE = 16;
-  constexpr auto RGB_LENGTH = 3 * 2 + 1;
-  constexpr auto RGBA_LENGTH = 4 * 2 + 1;
-
-  const auto length = str.length();
-  if (str.startsWith('#') && (length == RGB_LENGTH || length == RGBA_LENGTH)) {
-    auto success{ false };
-
-    const auto r_str = str.midRef(1, 2);
-    const auto r = r_str.toInt(&success, HEX_BASE);
-    if (success) {
-      const auto g_str = str.midRef(3, 2);
-      const auto g = g_str.toInt(&success, HEX_BASE);
-      if (success) {
-        const auto b_str = str.midRef(5, 2);
-        const auto b = b_str.toInt(&success, HEX_BASE);
-        if (success) {
-          QColor result{ r, g, b };
-
-          const auto a_str = str.midRef(7, 2);
-          const auto a = a_str.toInt(&success, HEX_BASE);
-          if (success) {
-            result.setAlpha(a);
-          }
-
-          return result;
-        }
-      }
-    }
-  }
-
-  return {};
-}
-
-std::optional<QColor> tryGetColorFromVariant(QVariant const& variant) {
-  if (variant.isValid()) {
-    // Channel list ([RRR, GGG, BBB, AAA]).
-    if (variant.type() == QVariant::Type::List) {
-      const auto color = tryGetColorFromVariantList(variant.toList());
-      if (color.has_value()) {
-        return color.value();
-      }
-    }
-
-    // Various ways to write color as a string.
-    else if (variant.type() == QVariant::Type::String) {
-      const auto variantString = variant.toString();
-
-      // Check if color is written as hexadecimal.
-      const auto hexaColor = tryGetColorFromHexaString(variantString);
-      if (hexaColor.has_value()) {
-        return hexaColor.value();
-      }
-
-      // Check if color is written as RGB(A).
-      const auto rgbaColor = tryGetColorFromRGBAString(variantString);
-      if (rgbaColor.has_value()) {
-        return rgbaColor.value();
-      }
-    }
-  }
-
-  return {};
-}
 
 std::optional<QColor> tryGetColor(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
   if (jsonObj.contains(key)) {
@@ -507,6 +387,28 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     }
   }
 }
+
+QJsonDocument Theme::toJson() const {
+  QJsonObject jsonObj;
+
+  jsonObj.insert("adaptativeColor1", toHexRGBA(adaptativeColor1));
+  jsonObj.insert("adaptativeColor2", toHexRGBA(adaptativeColor2));
+
+  // Metadata.
+  QJsonObject metadataObj;
+  metadataObj.insert("name", meta.name);
+  metadataObj.insert("version", meta.version);
+  metadataObj.insert("author", meta.author);
+  jsonObj.insert("meta", metadataObj);
+
+  QJsonDocument jsonDoc;
+  jsonDoc.setObject(jsonObj);
+  return jsonDoc;
+}
+
+#pragma endregion
+
+#pragma region Operators
 
 bool Theme::operator==(const Theme& other) const {
   // All generated values are not used in this equality test, on purpose.

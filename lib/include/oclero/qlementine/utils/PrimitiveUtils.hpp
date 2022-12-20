@@ -77,14 +77,14 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius = 0
 /// even for values close to min or max.
 void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value, qreal const radius = 0., bool inverted = false);
 
-/// Gets the color with the new alpha channel (from 0.0 to 1.0).
-QColor colorWithAlphaF(QColor const& color, qreal alpha);
+/// Draws a color mark. Will draw a border if the contrast between color and background is not high enough.
+void drawColorMark(QPainter* p, QRect const& rect,
+                   const QColor& color, const QColor& borderColor, int borderWidth = 1);
 
-/// Gets the color the new alpha chanel (from 0 to 255).
-QColor colorWithAlpha(QColor const& color, int alpha);
-
-/// Gets the resulting color by applying the foreground color over the background color with 'SourceOver' composition mode.
-QColor getColorSourceOver(const QColor& bg, const QColor& fg);
+/// Draws the border of a color mark.
+void drawColorMarkBorder(QPainter* p,
+                         QRect const& rect, const QColor& borderColor,
+                         int borderWidth);
 
 /// Draws a semi-transparent red rectangle.
 void drawDebugRect(const QRect& rect, QPainter* p);
