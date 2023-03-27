@@ -42,7 +42,7 @@
 
 #include <mutex>
 
-static constexpr auto M_PI = 3.14159265358979323846;
+static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
 
 namespace oclero::qlementine {
 /// Used to initializeResources from .qrc only once.
@@ -75,7 +75,7 @@ struct QlementineStyle::Impl {
 		const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.otf");
 #endif
 
-		const auto regularFamilyId = QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Regular")));
+		QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Regular")));
 		QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Italic")));
 		QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Bold")));
 		QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-BoldItalic")));
@@ -86,7 +86,7 @@ struct QlementineStyle::Impl {
 
 		const auto fixedFontPath = QString(":/qlementine/resources/fonts/roboto-mono/%1.ttf");
 
-		const auto fixedFamilyId = QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Regular")));
+		QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Regular")));
 		QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Italic")));
 		QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Bold")));
 		QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-BoldItalic")));
@@ -1234,7 +1234,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 					// Goes from 0 to 1.
 					const auto currentProgress = _impl->animations.animateProgress3(w, 1., _impl->theme.animationDuration * 8, true);
 					// Bell that goes from 0 to 1 then 1 to 0, centered on 0.5.
-					const auto currentRatio = std::pow(std::sin(M_PI * currentProgress), 2);
+					const auto currentRatio = std::pow(std::sin(QLEMENTINE_PI * currentProgress), 2);
 
 					const auto valueRectW = static_cast<int>(optProgressBar->rect.width() * 0.25);
 					const auto valueRectX = optProgressBar->rect.x() + (optProgressBar->rect.width() - valueRectW) * currentRatio;
@@ -1692,7 +1692,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 				QStyleOptionFocusRoundedRect optFocus;
 				optFocus.QStyleOption::operator=(*opt);
 				optFocus.state.setFlag(State_HasFocus, hasFocus);
-				auto shouldForceParentUpdate = false;
 
 				// The focus frame is placed differently according to the widget.
 				if (const auto* button = qobject_cast<const QPushButton*>(monitoredWidget)) {
@@ -1746,7 +1745,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 					// Slider: placed around the handle.
 					optFocus.rect = subElementRect(SE_SliderFocusRect, &optSlider, slider);
 					optFocus.radiuses = optFocus.rect.height() / 2.;
-					shouldForceParentUpdate = true;
 				} else if (const auto* dial = qobject_cast<const QDial*>(monitoredWidget)) {
 					// Prepare monitored widget QStyleOption.
 					const auto currentPos = _impl->animations.getAnimatedProgress(dial);
@@ -3007,15 +3005,6 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
 			if (const auto* scrollBarOpt = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
 				const auto horizontal = scrollBarOpt->orientation == Qt::Horizontal;
 				const auto& rect = scrollBarOpt->rect;
-				auto position = static_cast<qreal>(scrollBarOpt->sliderPosition);
-
-				if (const auto* scrollBarOptF = qstyleoption_cast<const QStyleOptionSliderF*>(scrollBarOpt)) {
-					// Since the cast may succeed even if it is not the correct type, we have to check that
-					// the value is correctly initialized, which means it comes from us and is not the default value.
-					if (scrollBarOptF->status == QStyleOptionSliderF::INITIALIZED) {
-						position = scrollBarOptF->sliderPositionF;
-					}
-				}
 
 				switch (sc) {
 					case SC_ScrollBarAddPage: {

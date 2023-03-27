@@ -10,9 +10,8 @@
 #include <QWindow>
 #include <QApplication>
 
-static constexpr auto M_PI = 3.14159265358979323846;
-static constexpr auto M_PI_2 = 3.14159265358979323846 / 2.;
-static constexpr auto M_PI_4 = 3.14159265358979323846 / 4.;
+static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
+static constexpr auto QLEMENTINE_PI_4 = 3.14159265358979323846 / 4.;
 
 namespace oclero::qlementine {
 namespace {
@@ -77,7 +76,7 @@ AngleRadius getAngleRadius(const QPointF& p1, const QPointF& angularPoint, const
 	// Sweep angle.
 	auto sweepAngle = endAngle - startAngle;
 	if (sweepAngle > 0.) {
-		startAngle = 2 * M_PI + startAngle;
+		startAngle = 2 * QLEMENTINE_PI + startAngle;
 		sweepAngle = endAngle - startAngle;
 	}
 
@@ -85,7 +84,7 @@ AngleRadius getAngleRadius(const QPointF& p1, const QPointF& angularPoint, const
 	const auto pointOnCircle = getColinearVector(circleCenter, radius, circleCenter.x() - angularPoint.x(), circleCenter.y() - angularPoint.y());
 	const auto translation = 2 * QPoint(angularPoint.x() - pointOnCircle.x(), angularPoint.y() - pointOnCircle.y());
 
-	constexpr auto radiansToDegrees = 180. / M_PI;
+	constexpr auto radiansToDegrees = 180. / QLEMENTINE_PI;
 
 	return AngleRadius{
 		radius,
@@ -275,9 +274,9 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius) {
 	const auto p3 = QPointF(x, y + h);
 
 	/* The angles correspond to the following points:
-	     P1
-	    /  \
-	   /    \
+		 P1
+		/  \
+	   /	\
 	  P3----P2
 	*/
 	const auto angle1 = getAngleRadius(p3, p1, p2, radius);
@@ -1189,14 +1188,14 @@ void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& ti
 	const auto r1 = tickmarksRect.width() / 2;
 	const auto r2 = r1 - tickLength;
 
-	const auto anglePerStep = max != min ? 6. * M_PI_4 / (max - min) : 0.;
+	const auto anglePerStep = max != min ? 6. * QLEMENTINE_PI_4 / (max - min) : 0.;
 	const auto arcPerSteep = anglePerStep * r1;
 	const auto tickInterval = arcPerSteep > minArcLength ? singleStep : pageStep;
 
 	auto v = static_cast<qreal>(min);
 	while (v <= max) {
 		const auto ratio = max != min ? (v - min) / (max - min) : 0;
-		const auto angle = (ratio - 1.) * 6. * M_PI_4 + M_PI_4;
+		const auto angle = (ratio - 1.) * 6. * QLEMENTINE_PI_4 + QLEMENTINE_PI_4;
 		const auto cosinus = std::cos(angle);
 		const auto sinus = std::sin(angle);
 
@@ -1218,8 +1217,8 @@ void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value
 	constexpr auto angleSpreadDegrees = totalAngleDegrees - deadAngleDegrees;
 	constexpr auto startAngleDegrees = angleSpreadDegrees - 45;
 	constexpr auto qtAnglePrecision = 16; // Do not change (cf Qt documentation).
-	constexpr auto angleSpreadRadians = 6. * M_PI_4;
-	constexpr auto startAngleRadians = M_PI_4;
+	constexpr auto angleSpreadRadians = 6. * QLEMENTINE_PI_4;
+	constexpr auto startAngleRadians = QLEMENTINE_PI_4;
 
 	// Background.
 	p->setRenderHint(QPainter::Antialiasing, true);
@@ -1242,7 +1241,7 @@ void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value
 	if (value > min) {
 		p->setPen(Qt::NoPen);
 		p->setBrush(valueColor);
-		const auto circlePerimeter = M_PI * dialRect.width();
+		const auto circlePerimeter = QLEMENTINE_PI * dialRect.width();
 		const auto cropLength = (halfGrooveThickness / circlePerimeter) * deadAngleDegrees;
 		const auto shiftAngle = cropLength * qtAnglePrecision;
 		p->drawPie(dialRect, startAngle, angleLength + shiftAngle);
