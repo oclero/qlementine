@@ -7,13 +7,13 @@
 namespace oclero::qlementine {
 class ComboBoxDelegate : public QItemDelegate {
 public:
-	ComboBoxDelegate(QWidget* widget);
+  ComboBoxDelegate(QWidget* widget);
 
 protected:
-	void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
-	QSize sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
+  void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
+  QSize sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
 
 private:
-	const QWidget* _widget{ nullptr };
+  const QWidget* _widget{ nullptr };
 };
 } // namespace oclero::qlementine

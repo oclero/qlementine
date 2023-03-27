@@ -2,165 +2,165 @@
 
 namespace oclero::qlementine {
 Action::Action(QObject* parent)
-	: QAction(parent) {}
+  : QAction(parent) {}
 
 Action::Action(const QString& text, QObject* parent)
-	: QAction(text, parent) {}
+  : QAction(text, parent) {}
 
 Action::Action(const QIcon& icon, const QString& text, QObject* parent)
-	: QAction(icon, text, parent) {}
+  : QAction(icon, text, parent) {}
 
 Action::Action(const QKeySequence& shortcut, QObject* parent)
-	: QAction(parent) {
-	setShortcut(shortcut);
-	setShortcutContext(Qt::ApplicationShortcut);
+  : QAction(parent) {
+  setShortcut(shortcut);
+  setShortcutContext(Qt::ApplicationShortcut);
 }
 
 Action::Action(const QKeySequence& shortcut, Qt::ShortcutContext shortcutContext, QObject* parent)
-	: QAction(parent) {
-	setShortcut(shortcut);
-	setShortcutContext(shortcutContext);
+  : QAction(parent) {
+  setShortcut(shortcut);
+  setShortcutContext(shortcutContext);
 }
 
 Action::Action(const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext, QObject* parent)
-	: QAction(text, parent) {
-	setShortcut(shortcut);
-	setShortcutContext(shortcutContext);
+  : QAction(text, parent) {
+  setShortcut(shortcut);
+  setShortcutContext(shortcutContext);
 }
 
 Action::Action(const QString& text, const QKeySequence& shortcut, QObject* parent)
-	: QAction(text, parent) {
-	setShortcut(shortcut);
-	setShortcutContext(Qt::ApplicationShortcut);
+  : QAction(text, parent) {
+  setShortcut(shortcut);
+  setShortcutContext(Qt::ApplicationShortcut);
 }
 
 Action::Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut, QObject* parent)
-	: QAction(icon, text, parent) {
-	setShortcut(shortcut);
-	setShortcutContext(Qt::ApplicationShortcut);
+  : QAction(icon, text, parent) {
+  setShortcut(shortcut);
+  setShortcutContext(Qt::ApplicationShortcut);
 }
 
 Action::Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext, QObject* parent)
-	: QAction(icon, text, parent) {
-	setShortcut(shortcut);
-	setShortcutContext(shortcutContext);
+  : QAction(icon, text, parent) {
+  setShortcut(shortcut);
+  setShortcutContext(shortcutContext);
 }
 
 void Action::setCallback(const std::function<void()>& cb) {
-	_triggeredCb = cb;
-	QObject::disconnect(_triggerdConnection);
-	_triggerdConnection = QObject::connect(this, &QAction::triggered, this, _triggeredCb);
+  _triggeredCb = cb;
+  QObject::disconnect(_triggerdConnection);
+  _triggerdConnection = QObject::connect(this, &QAction::triggered, this, _triggeredCb);
 }
 
 void Action::setEnabledPredicate(const std::function<bool()>& cb) {
-	_updateEnabledCb = cb;
-	updateEnabled();
+  _updateEnabledCb = cb;
+  updateEnabled();
 }
 
 void Action::setCheckedPredicate(const std::function<bool()>& cb) {
-	_updateCheckedCb = cb;
-	updateChecked();
+  _updateCheckedCb = cb;
+  updateChecked();
 }
 
 void Action::setCheckablePredicate(const std::function<bool()>& cb) {
-	_updateCheckableCb = cb;
-	updateCheckable();
+  _updateCheckableCb = cb;
+  updateCheckable();
 }
 
 void Action::setVisiblePredicate(const std::function<bool()>& cb) {
-	_updateVisibleCb = cb;
-	updateVisible();
+  _updateVisibleCb = cb;
+  updateVisible();
 }
 
 void Action::updateEnabled() {
-	if (_updateEnabledCb) {
-		setEnabled(_updateEnabledCb());
-	}
+  if (_updateEnabledCb) {
+    setEnabled(_updateEnabledCb());
+  }
 }
 
 void Action::updateChecked() {
-	if (_updateCheckedCb) {
-		setChecked(_updateCheckedCb());
-	}
+  if (_updateCheckedCb) {
+    setChecked(_updateCheckedCb());
+  }
 }
 
 void Action::updateCheckable() {
-	if (_updateCheckableCb) {
-		setCheckable(_updateCheckableCb());
-	}
+  if (_updateCheckableCb) {
+    setCheckable(_updateCheckableCb());
+  }
 }
 
 void Action::updateVisible() {
-	if (_updateVisibleCb) {
-		setVisible(_updateVisibleCb());
-	}
+  if (_updateVisibleCb) {
+    setVisible(_updateVisibleCb());
+  }
 }
 
 void Action::update() {
-	updateEnabled();
-	updateCheckable();
-	updateChecked();
-	updateVisible();
+  updateEnabled();
+  updateCheckable();
+  updateChecked();
+  updateVisible();
 }
 
 bool Action::shortcutEditable() const {
-	return _shortcutEditable;
+  return _shortcutEditable;
 }
 
 void Action::setShortcutEditable(bool editable) {
-	if (editable != _shortcutEditable) {
-		_shortcutEditable = editable;
-		emit shortcutEditableChanged();
-		emit changed();
-	}
+  if (editable != _shortcutEditable) {
+    _shortcutEditable = editable;
+    emit shortcutEditableChanged();
+    emit changed();
+  }
 }
 
 const QKeySequence& Action::userShortcut() const {
-	return _userShortcut;
+  return _userShortcut;
 }
 
 void Action::setUserShortcut(const QKeySequence& shortcut) {
-	if (_shortcutEditable && shortcut != _userShortcut) {
-		if (!_shortcutEditedByUser) {
-			//  Save the default shortcut.
-			_defaultShortcut = this->shortcut();
-			_shortcutEditedByUser = true;
-			emit shortcutEditedByUserChanged();
-		}
+  if (_shortcutEditable && shortcut != _userShortcut) {
+    if (!_shortcutEditedByUser) {
+      //  Save the default shortcut.
+      _defaultShortcut = this->shortcut();
+      _shortcutEditedByUser = true;
+      emit shortcutEditedByUserChanged();
+    }
 
-		_userShortcut = shortcut;
+    _userShortcut = shortcut;
 
-		// Set the new shortcut on the action.
-		setShortcut(_userShortcut);
+    // Set the new shortcut on the action.
+    setShortcut(_userShortcut);
 
-		emit userShortcutChanged();
-	}
+    emit userShortcutChanged();
+  }
 }
 
 void Action::resetShortcut() {
-	if (_shortcutEditedByUser) {
-		_userShortcut = {};
-		_shortcutEditedByUser = false;
+  if (_shortcutEditedByUser) {
+    _userShortcut = {};
+    _shortcutEditedByUser = false;
 
-		emit userShortcutChanged();
-		emit shortcutEditedByUserChanged();
-		setShortcut(_defaultShortcut);
-	}
+    emit userShortcutChanged();
+    emit shortcutEditedByUserChanged();
+    setShortcut(_defaultShortcut);
+  }
 }
 
 bool Action::shortcutEditedByUser() const {
-	return _shortcutEditedByUser;
+  return _shortcutEditedByUser;
 }
 
 const QString& Action::description() const {
-	return _description;
+  return _description;
 }
 
 void Action::setDescription(const QString& description) {
-	if (description != _description) {
-		_description = description;
-		emit descriptionChanged();
-		emit changed();
-	}
+  if (description != _description) {
+    _description = description;
+    emit descriptionChanged();
+    emit changed();
+  }
 }
 } // namespace oclero::qlementine

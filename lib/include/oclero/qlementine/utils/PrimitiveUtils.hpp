@@ -192,15 +192,15 @@ int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int
 
 /// Draws the Slider tick marks.
 void drawSliderTickMarks(
-	QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max, const int interval, const int tickThickness, const int singleStep, const int pageStep);
+  QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max, const int interval, const int tickThickness, const int singleStep, const int pageStep);
 
 /// Draws the Dial tick marks.
 void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max, const int tickThickness, const int tickLength, const int singleStep,
-	const int pageStep, const int minArcLength);
+  const int pageStep, const int minArcLength);
 
 /// Draws a Dial.
 void drawDial(QPainter* p, QRect const& rect, int min, int max, double value, QColor const& bgColor, QColor const& handleColor, QColor const& grooveColor, QColor const& valueColor,
-	QColor const& markColor, const int grooveThickness, const int markLength, const int markThickness);
+  QColor const& markColor, const int grooveThickness, const int markLength, const int markThickness);
 
 /// Gets the path for a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
 QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses);

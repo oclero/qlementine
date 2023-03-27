@@ -9,13 +9,13 @@ class QlementineStyle;
 namespace oclero::qlementine::sandbox {
 class SandboxWindow : public QMainWindow {
 public:
-	SandboxWindow(QWidget* parent = nullptr);
-	~SandboxWindow();
+  SandboxWindow(QWidget* parent = nullptr);
+  ~SandboxWindow();
 
-	void setCustomStyle(QlementineStyle* style);
+  void setCustomStyle(QlementineStyle* style);
 
 private:
-	struct Impl;
-	std::unique_ptr<Impl> _impl{};
+  struct Impl;
+  std::unique_ptr<Impl> _impl{};
 };
 } // namespace oclero::qlementine::sandbox
