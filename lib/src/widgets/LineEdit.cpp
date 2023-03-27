@@ -11,105 +11,105 @@
 
 namespace oclero::qlementine {
 LineEdit::LineEdit(QWidget* parent)
-	: QLineEdit(parent) {}
+  : QLineEdit(parent) {}
 
 const QIcon& LineEdit::icon() const {
-	return _icon;
+  return _icon;
 }
 
 void LineEdit::setIcon(const QIcon& icon) {
-	_icon = icon;
-	update();
-	if (_icon.isNull()) {
-		setTextMargins(0, 0, 0, 0);
-	} else {
-		const auto spacing = style()->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
-		const auto iconExtent = style()->pixelMetric(QStyle::PM_SmallIconSize);
-		setTextMargins(spacing + iconExtent, 0, 0, 0);
-	}
+  _icon = icon;
+  update();
+  if (_icon.isNull()) {
+    setTextMargins(0, 0, 0, 0);
+  } else {
+    const auto spacing = style()->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+    const auto iconExtent = style()->pixelMetric(QStyle::PM_SmallIconSize);
+    setTextMargins(spacing + iconExtent, 0, 0, 0);
+  }
 }
 
 void LineEdit::setUseMonoSpaceFont(bool useMonoSpaceFont) {
-	_useMonospaceFont = useMonoSpaceFont;
-	ensurePolished();
-	updateFont();
+  _useMonospaceFont = useMonoSpaceFont;
+  ensurePolished();
+  updateFont();
 }
 
 bool LineEdit::useMonoSpaceFont() const {
-	return _useMonospaceFont;
+  return _useMonospaceFont;
 }
 
 void LineEdit::paintEvent(QPaintEvent* evt) {
-	QLineEdit::paintEvent(evt);
+  QLineEdit::paintEvent(evt);
 
-	// Draw icon.
-	const auto iconExtent = style()->pixelMetric(QStyle::PM_SmallIconSize);
-	const auto spacing = style()->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
-	const auto iconSize = QSize{ iconExtent, iconExtent };
-	const auto pixmap = this->getPixmap();
-	const auto pixmapX = spacing;
-	const auto pixmapY = (height() - iconSize.height()) / 2;
-	const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };
+  // Draw icon.
+  const auto iconExtent = style()->pixelMetric(QStyle::PM_SmallIconSize);
+  const auto spacing = style()->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+  const auto iconSize = QSize{ iconExtent, iconExtent };
+  const auto pixmap = this->getPixmap();
+  const auto pixmapX = spacing;
+  const auto pixmapY = (height() - iconSize.height()) / 2;
+  const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };
 
-	QPainter p(this);
-	p.drawPixmap(pixmapRect, pixmap);
+  QPainter p(this);
+  p.drawPixmap(pixmapRect, pixmap);
 }
 
 bool LineEdit::event(QEvent* e) {
-	if (e->type() == QEvent::Type::PaletteChange) {
-		update();
-	}
-	return QLineEdit::event(e);
+  if (e->type() == QEvent::Type::PaletteChange) {
+    update();
+  }
+  return QLineEdit::event(e);
 }
 
 QPixmap LineEdit::getPixmap() const {
-	const auto iconExtent = style()->pixelMetric(QStyle::PM_SmallIconSize);
-	const auto iconSize = QSize{ iconExtent, iconExtent };
-	const auto pxRatio = getPixelRatio(this);
+  const auto iconExtent = style()->pixelMetric(QStyle::PM_SmallIconSize);
+  const auto iconSize = QSize{ iconExtent, iconExtent };
+  const auto pxRatio = getPixelRatio(this);
 
-	if (QlementineStyle::isAutoIconColorEnabled(this)) {
-		const auto pixmap = qlementine::getPixmap(_icon, iconSize, pxRatio, MouseState::Normal, CheckState::NotChecked);
-		const auto colorGroup = isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled;
-		const auto& color = palette().color(colorGroup, QPalette::ColorRole::Text);
-		const auto colorizedPixmap = qlementine::colorizePixmap(pixmap, color);
-		return colorizedPixmap;
-	} else {
-		const auto mouse = isEnabled() ? MouseState::Normal : MouseState::Disabled;
-		const auto pixmap = qlementine::getPixmap(_icon, iconSize, pxRatio, mouse, CheckState::NotChecked);
-		return pixmap;
-	}
+  if (QlementineStyle::isAutoIconColorEnabled(this)) {
+    const auto pixmap = qlementine::getPixmap(_icon, iconSize, pxRatio, MouseState::Normal, CheckState::NotChecked);
+    const auto colorGroup = isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled;
+    const auto& color = palette().color(colorGroup, QPalette::ColorRole::Text);
+    const auto colorizedPixmap = qlementine::colorizePixmap(pixmap, color);
+    return colorizedPixmap;
+  } else {
+    const auto mouse = isEnabled() ? MouseState::Normal : MouseState::Disabled;
+    const auto pixmap = qlementine::getPixmap(_icon, iconSize, pxRatio, mouse, CheckState::NotChecked);
+    return pixmap;
+  }
 }
 
 void LineEdit::updateFont() {
-	const auto* style = this->style();
-	const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
+  const auto* style = this->style();
+  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
 
-	if (_useMonospaceFont) {
-		if (qlementineStyle) {
-			setFont(qlementineStyle->theme().fontMonospace);
-		} else {
-			const auto systemFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-			setFont(systemFont);
-		}		
-	} else {
-		if (qlementineStyle) {
-			setFont(qlementineStyle->theme().fontRegular);
-		} else {
-			const auto systemFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
-			setFont(systemFont);
-		}		
-	}
+  if (_useMonospaceFont) {
+    if (qlementineStyle) {
+      setFont(qlementineStyle->theme().fontMonospace);
+    } else {
+      const auto systemFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+      setFont(systemFont);
+    }    
+  } else {
+    if (qlementineStyle) {
+      setFont(qlementineStyle->theme().fontRegular);
+    } else {
+      const auto systemFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+      setFont(systemFont);
+    }    
+  }
 }
 
 Status LineEdit::status() const {
-	return _status;
+  return _status;
 }
 
 void LineEdit::setStatus(Status status) {
-	if (status != _status) {
-		_status = status;
-		update();
-		emit statusChanged();
-	}
+  if (status != _status) {
+    _status = status;
+    update();
+    emit statusChanged();
+  }
 }
 } // namespace oclero::qlementine

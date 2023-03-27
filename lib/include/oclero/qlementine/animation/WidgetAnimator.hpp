@@ -15,57 +15,57 @@ namespace oclero::qlementine {
 // The animations themselves will be ceated lazily, on demand, when needed to paint.
 #define DECLARE_ANIMATION(NAME, TYPE) \
 private: \
-	mutable std::unique_ptr<WidgetAnimation<TYPE>> _##NAME; \
-	WidgetAnimation<TYPE>& get##NAME##Animation() const { \
-		if (!_##NAME) { \
-			_##NAME = std::make_unique<WidgetAnimation<TYPE>>(_parentWidget); \
-		} \
-		return *_##NAME; \
-	} \
+  mutable std::unique_ptr<WidgetAnimation<TYPE>> _##NAME; \
+  WidgetAnimation<TYPE>& get##NAME##Animation() const { \
+    if (!_##NAME) { \
+      _##NAME = std::make_unique<WidgetAnimation<TYPE>>(_parentWidget); \
+    } \
+    return *_##NAME; \
+  } \
 \
 public: \
-	TYPE get##NAME() const { \
-		return get##NAME##Animation().value(); \
-	} \
-	void set##NAME(const TYPE& value) { \
-		get##NAME##Animation().restartIfNeeded(value); \
-	} \
-	void set##NAME##Duration(const int duration) { \
-		get##NAME##Animation().setDuration(duration); \
-	} \
-	void set##NAME##Easing(const QEasingCurve& easing) { \
-		get##NAME##Animation().setEasing(easing); \
-	} \
-	void stop##NAME() { \
-		get##NAME##Animation().stop(); \
-	} \
-	void set##NAME##LoopEnabled(const bool loop) { \
-		get##NAME##Animation().setLoopEnabled(loop); \
-	}
+  TYPE get##NAME() const { \
+    return get##NAME##Animation().value(); \
+  } \
+  void set##NAME(const TYPE& value) { \
+    get##NAME##Animation().restartIfNeeded(value); \
+  } \
+  void set##NAME##Duration(const int duration) { \
+    get##NAME##Animation().setDuration(duration); \
+  } \
+  void set##NAME##Easing(const QEasingCurve& easing) { \
+    get##NAME##Animation().setEasing(easing); \
+  } \
+  void stop##NAME() { \
+    get##NAME##Animation().stop(); \
+  } \
+  void set##NAME##LoopEnabled(const bool loop) { \
+    get##NAME##Animation().setLoopEnabled(loop); \
+  }
 
 class WidgetAnimator : public QObject {
 public:
-	explicit WidgetAnimator(QWidget* parent)
-		: QObject(parent)
-		, _parentWidget(parent) {}
+  explicit WidgetAnimator(QWidget* parent)
+    : QObject(parent)
+    , _parentWidget(parent) {}
 
-	virtual ~WidgetAnimator() = default;
+  virtual ~WidgetAnimator() = default;
 
-	// All the animatable properties should be here.
-	DECLARE_ANIMATION(BackgroundColor, QColor)
-	DECLARE_ANIMATION(ForegroundColor, QColor)
+  // All the animatable properties should be here.
+  DECLARE_ANIMATION(BackgroundColor, QColor)
+  DECLARE_ANIMATION(ForegroundColor, QColor)
 
-	DECLARE_ANIMATION(BackgroundColor2, QColor)
-	DECLARE_ANIMATION(ForegroundColor2, QColor)
+  DECLARE_ANIMATION(BackgroundColor2, QColor)
+  DECLARE_ANIMATION(ForegroundColor2, QColor)
 
-	DECLARE_ANIMATION(BorderColor, QColor)
-	DECLARE_ANIMATION(BorderWidth, qreal)
-	DECLARE_ANIMATION(FocusBorderProgress, qreal)
-	DECLARE_ANIMATION(Progress, qreal)
-	DECLARE_ANIMATION(Progress2, qreal)
-	DECLARE_ANIMATION(Progress3, qreal)
+  DECLARE_ANIMATION(BorderColor, QColor)
+  DECLARE_ANIMATION(BorderWidth, qreal)
+  DECLARE_ANIMATION(FocusBorderProgress, qreal)
+  DECLARE_ANIMATION(Progress, qreal)
+  DECLARE_ANIMATION(Progress2, qreal)
+  DECLARE_ANIMATION(Progress3, qreal)
 
 private:
-	QWidget* _parentWidget;
+  QWidget* _parentWidget;
 };
 } // namespace oclero::qlementine

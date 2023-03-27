@@ -14,18 +14,18 @@ namespace oclero::qlementine {
 /// Converts an integer to its std::string hex form.
 template<typename T, typename std::enable_if<std::is_integral<T>::value, T>::type* = nullptr>
 std::string to_hex(T const i, bool const prefix = false) {
-	std::stringstream stream;
-	if (prefix) {
-		stream << "0x";
-	}
-	stream << std::setfill('0') << std::setw(sizeof(T) * 2) << std::hex << i;
-	return stream.str();
+  std::stringstream stream;
+  if (prefix) {
+    stream << "0x";
+  }
+  stream << std::setfill('0') << std::setw(sizeof(T) * 2) << std::hex << i;
+  return stream.str();
 }
 
 /// Convets an integer to its QString hex form.
 template<typename T, typename std::enable_if<std::is_integral<T>::value, T>::type* = nullptr>
 QString toHex(T const i, bool const prefix = false) {
-	return QString::fromStdString(to_hex(i, prefix));
+  return QString::fromStdString(to_hex(i, prefix));
 }
 
 /// Basically colorize the QPixmap and returns a QImage.
@@ -57,12 +57,12 @@ QString getTintedPixmapKey(QPixmap const& pixmap, QColor const& color);
 
 /// Type of effect applied to colorize the image.
 enum class ColorMode {
-	// Replaces all {R,G,B} values with another, thus loosing luminance, but preserve alpha.
-	// Useful for flat symbolic icons.
-	Colorize,
-	// Applies an {R,G,B} tint, but keeps luminance and alpha.
-	// Useful for complex icons with multiple colors and shades.
-	Tint,
+  // Replaces all {R,G,B} values with another, thus loosing luminance, but preserve alpha.
+  // Useful for flat symbolic icons.
+  Colorize,
+  // Applies an {R,G,B} tint, but keeps luminance and alpha.
+  // Useful for complex icons with multiple colors and shades.
+  Tint,
 };
 
 /// Gets the pixmap in the cache, or creates it if not yet there.
@@ -98,7 +98,7 @@ QImage getExtendedImage(QPixmap const& input, int padding);
 /// Gets a version of the image with padding around.
 QImage getExtendedImage(QImage const& input, int padding);
 
-	/// Gets a blurred version of the input pixmap
+  /// Gets a blurred version of the input pixmap
 QPixmap getBlurredPixmap(QPixmap const& input, double blurRadius, bool const extend);
 
 /// Gets a drop shadow for the input pixmap (i.e. a blurred colorized version).

@@ -2,11 +2,11 @@
 
 namespace oclero::qlementine {
 enum class SystemTheme {
-	Light,
-	Dark,
+  Light,
+  Dark,
 };
 enum class SystemWindowType {
-	Default,
-	Dialog,
+  Default,
+  Dialog,
 };
 } // namespace oclero::qlementine

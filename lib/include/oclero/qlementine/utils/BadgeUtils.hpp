@@ -7,15 +7,15 @@
 
 namespace oclero::qlementine {
 enum class StatusBadge {
-	Success,
-	Info,
-	Warning,
-	Error,
+  Success,
+  Info,
+  Warning,
+  Error,
 };
 
 enum class StatusBadgeSize {
-	Small,
-	Medium,
+  Small,
+  Medium,
 };
 
 /// Gets the bounding box and icon size.

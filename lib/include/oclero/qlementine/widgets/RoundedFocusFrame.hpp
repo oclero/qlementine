@@ -7,18 +7,18 @@
 namespace oclero::qlementine {
 /// A rounded QFocusFrame.
 class RoundedFocusFrame : public QFocusFrame {
-	Q_OBJECT
+  Q_OBJECT
 
-	Q_PROPERTY(RadiusesF radiuses READ radiuses WRITE setRadiuses NOTIFY radiusesChanged)
+  Q_PROPERTY(RadiusesF radiuses READ radiuses WRITE setRadiuses NOTIFY radiusesChanged)
 
 public:
-	using QFocusFrame::QFocusFrame;
+  using QFocusFrame::QFocusFrame;
 
-	const RadiusesF& radiuses() const;
-	Q_SLOT void setRadiuses(const RadiusesF&);
-	Q_SIGNAL void radiusesChanged();
+  const RadiusesF& radiuses() const;
+  Q_SLOT void setRadiuses(const RadiusesF&);
+  Q_SIGNAL void radiusesChanged();
 
 private:
-	RadiusesF _radiuses;
+  RadiusesF _radiuses;
 };
 } // namespace oclero::qlementine

@@ -7,20 +7,20 @@
 
 namespace oclero::qlementine {
 class Menu : public QMenu {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	using QMenu::QMenu;
+  using QMenu::QMenu;
 
-	void setEnabledPredicate(const std::function<bool()>& cb);
-	void setVisiblePredicate(const std::function<bool()>& cb);
+  void setEnabledPredicate(const std::function<bool()>& cb);
+  void setVisiblePredicate(const std::function<bool()>& cb);
 
-	void updateEnabled();
-	void updateVisible();
-	void update();
+  void updateEnabled();
+  void updateVisible();
+  void update();
 
 private:
-	std::function<bool()> _updateEnabledCb;
-	std::function<bool()> _updateVisibleCb;
+  std::function<bool()> _updateEnabledCb;
+  std::function<bool()> _updateVisibleCb;
 };
 } // namespace oclero::qlementine
