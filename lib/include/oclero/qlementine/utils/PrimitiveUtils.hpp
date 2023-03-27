@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/utils/RadiusesF.hpp>

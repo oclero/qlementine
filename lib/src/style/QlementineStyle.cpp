@@ -1,4 +1,4 @@
-#include <oclero/qlementine/style/QlementineStyle.hpp>
+﻿#include <oclero/qlementine/style/QlementineStyle.hpp>
 
 #include <oclero/qlementine/resources/ResourceInitialization.hpp>
 #include <oclero/qlementine/animation/WidgetAnimator.hpp>
