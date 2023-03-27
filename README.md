@@ -72,7 +72,7 @@ This library contains:
 
    auto* style = new oclero::qlementine::QlementineStyle(&app);
    style->setThemeJsonPath(":/light.json");
-   app.setStyle(style);
+   QApplication::setStyle(style);
    ```
 
 ## Author
