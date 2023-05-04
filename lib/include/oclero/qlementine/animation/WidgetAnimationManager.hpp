@@ -30,7 +30,7 @@
 namespace oclero::qlementine {
 #define DECLARE_ANIMATE(NAME, TYPE, easing) \
   TYPE animate##NAME(const QWidget* w, const TYPE& target, int duration, bool loop = false) { \
-    if (_animationsEnabled) { \
+    if (_animationsEnabled && w != nullptr) { \
       auto* animator = getOrCreateAnimator(w); \
       animator->set##NAME##Duration(w->isEnabled() ? duration : 0); \
       animator->set##NAME##Easing(easing); \
