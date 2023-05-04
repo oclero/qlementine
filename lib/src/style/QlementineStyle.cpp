@@ -2035,13 +2035,15 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             }
           } break;
           default: {
-            const auto bgRole = w->backgroundRole();
-            if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
-              const auto& palette = _impl->theme.palette;
-              const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, bgRole);
-              p->setPen(Qt::NoPen);
-              p->setBrush(bgColor);
-              p->drawRect(frameOpt->rect);
+            if (w != nullptr) {
+                const auto bgRole = w->backgroundRole();
+                if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
+                  const auto& palette = _impl->theme.palette;
+                  const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, bgRole);
+                  p->setPen(Qt::NoPen);
+                  p->setBrush(bgColor);
+                  p->drawRect(frameOpt->rect);
+                }
             }
           } break;
         }
