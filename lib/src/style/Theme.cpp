@@ -406,8 +406,8 @@ QColor const& Theme::commandButtonIconColor(MouseState const mouse, ColorRole co
 QColor const& Theme::checkButtonBackgroundColor(MouseState const mouse, CheckState const checked) const {
   switch (checked) {
     case CheckState::Checked:
-      return buttonBackgroundColor(mouse, ColorRole::Primary);
     case CheckState::Indeterminate:
+      return buttonBackgroundColor(mouse, ColorRole::Primary);
     case CheckState::NotChecked:
     default:
       return buttonBackgroundColor(mouse, ColorRole::Neutral);

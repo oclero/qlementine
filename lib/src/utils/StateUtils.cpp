@@ -124,7 +124,13 @@ FocusState getFocusState(QStyle::State const& state) {
 }
 
 CheckState getCheckState(QStyle::State const& state) {
-  return state.testFlag(QStyle::State_On) ? CheckState::Checked : CheckState::NotChecked;
+  if (state.testFlag(QStyle::State_On)) {
+    return CheckState::Checked;
+  } else if (state.testFlag(QStyle::State_NoChange)){
+    return CheckState::Indeterminate;
+  } else {
+    return CheckState::NotChecked;
+  }
 }
 
 CheckState getCheckState(bool checked) {

@@ -462,6 +462,32 @@ void drawCheckBoxIndicator(const QRect& rect, QPainter* p, qreal progress) {
   p->drawPath(indicatorPath);
 }
 
+void drawPartiallyCheckedCheckBoxIndicator(const QRect& rect, QPainter* p, qreal progress) {
+  const auto w = rect.width();
+  const auto h = rect.width();
+  const auto x = rect.x();
+  const auto y = rect.y();
+  constexpr auto intendedSize = 16.;
+
+  const auto p1 = QPointF{ (4. / intendedSize) * w + x, (8. / intendedSize) * h + y };
+  const auto p2 = QPointF{ (12. / intendedSize) * w + x, (8. / intendedSize) * h + y };
+
+  QPainterPath indicatorPath;
+  indicatorPath.moveTo(p1);
+  indicatorPath.lineTo(p2);
+
+  // Draw only a certain percentage of the path.
+  if (1. - progress > 0.01) {
+    const auto lastPoint = indicatorPath.pointAtPercent(progress);
+    QPainterPath trimmedPath;
+    trimmedPath.moveTo(p1);
+    trimmedPath.lineTo(lastPoint);
+    indicatorPath = trimmedPath;
+  }
+
+  p->drawPath(indicatorPath);
+}
+
 void drawRadioButtonIndicator(const QRect& rect, QPainter* p, qreal progress) {
   constexpr auto intendedRatio = 8. / 16.;
 
@@ -742,7 +768,7 @@ void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, cons
   }
 }
 
-void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor, QColor const& fgColor, const qreal borderWidth, qreal progress) {
+void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor, QColor const& fgColor, const qreal borderWidth, qreal progress, CheckState checkState) {
   // Background.
   p->setRenderHint(QPainter::RenderHint::Antialiasing);
   if (radius < 1) {
@@ -764,7 +790,11 @@ void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor&
     p->setBrush(Qt::NoBrush);
     constexpr auto checkThickness = 2.;
     p->setPen(QPen{ fgColor, checkThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-    drawCheckBoxIndicator(rect, p, progress);
+    if (checkState == CheckState::Checked) {
+      drawCheckBoxIndicator(rect, p, progress);
+    } else if (checkState == CheckState::Indeterminate) {
+      drawPartiallyCheckedCheckBoxIndicator(rect, p, progress);
+    }
   }
 }
 
