@@ -509,36 +509,36 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_IndicatorItemViewItemCheck:
       if (const auto* optItem = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
         const auto isChecked = optItem->checkState == Qt::Checked;
-        const auto checked = isChecked ? CheckState::Checked : CheckState::NotChecked;
+        const auto checkState = isChecked ? CheckState::Checked : CheckState::NotChecked;
         const auto checkBoxProgress = isChecked ? 1. : 0.;
         const auto mouse = getMouseState(optItem->state);
         const auto selected = getSelectionState(optItem->state);
         const auto active = getActiveState(optItem->state);
-        const auto& checkBoxFgColor = _impl->theme.listItemCheckButtonForegroundColor(mouse, checked, selected, active);
-        const auto& checkBoxBgColor = _impl->theme.listItemCheckButtonBackgroundColor(mouse, checked, selected, active);
+        const auto& checkBoxFgColor = _impl->theme.listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
+        const auto& checkBoxBgColor = _impl->theme.listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
         const auto radius = _impl->theme.checkBoxBorderRadius;
         // Ensure the rect is a perfect square, centered in optButton->rect;.
         const auto indicatorSize = std::max(optItem->rect.width(), optItem->rect.height());
         const auto indicatorX = optItem->rect.x() + (optItem->rect.width() - indicatorSize);
         const auto indicatorY = optItem->rect.y() + (optItem->rect.height() - indicatorSize);
         const auto indicatorRect = QRect{ indicatorX, indicatorY, indicatorSize, indicatorSize };
-        drawCheckButton(p, indicatorRect, radius, checkBoxBgColor, {}, checkBoxFgColor, 0, checkBoxProgress);
+        drawCheckButton(p, indicatorRect, radius, checkBoxBgColor, {}, checkBoxFgColor, 0, checkBoxProgress, checkState);
       }
       return;
     case PE_IndicatorCheckBox:
     case PE_IndicatorRadioButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
-        const auto checked = getCheckState(optButton->state);
+        const auto checkState = getCheckState(optButton->state);
         const auto mouse = getMouseState(optButton->state);
-        const auto& bgColor = _impl->theme.checkButtonBackgroundColor(mouse, checked);
-        const auto& fgColor = _impl->theme.checkButtonForegroundColor(mouse, checked);
-        // Ensure the rect is a perfect square, centered in optButton->rect;.
+        const auto& bgColor = _impl->theme.checkButtonBackgroundColor(mouse, checkState);
+        const auto& fgColor = _impl->theme.checkButtonForegroundColor(mouse, checkState);
+        // Ensure the rect is a perfect square, centered in optButton->rect.
         const auto indicatorSize = std::max(optButton->rect.width(), optButton->rect.height());
         const auto indicatorX = optButton->rect.x() + (optButton->rect.width() - indicatorSize);
         const auto indicatorY = optButton->rect.y() + (optButton->rect.height() - indicatorSize);
         const auto indicatorRect = QRect{ indicatorX, indicatorY, indicatorSize, indicatorSize };
         const auto isRadio = pe == PE_IndicatorRadioButton;
-        const auto progress = checked == CheckState::Checked ? 1. : 0.;
+        const auto progress = checkState == CheckState::NotChecked ? 0. : 1.;
         constexpr auto borderW = 0.;
         const auto& currentBgColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         const auto currentProgress = _impl->animations.animateProgress(w, progress, _impl->theme.animationDuration);
@@ -547,7 +547,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           drawRadioButton(p, indicatorRect, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress);
         } else {
           const auto radius = _impl->theme.checkBoxBorderRadius;
-          drawCheckButton(p, indicatorRect, radius, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress);
+          drawCheckButton(p, indicatorRect, radius, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress, checkState);
         }
       }
       return;
@@ -1310,7 +1310,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto pxRatio = getPixelRatio(w);
           const auto menuHasCheckable = optMenuItem->menuHasCheckableItems;
           const auto checkable = optMenuItem->checkType != QStyleOptionMenuItem::NotCheckable;
-          const auto checked = optMenuItem->checked ? CheckState::Checked : CheckState::NotChecked;
+          const auto checkState = optMenuItem->checked ? CheckState::Checked : CheckState::NotChecked;
           const auto arrowW = _impl->theme.iconSize.width();
           const auto hPadding = _impl->theme.spacing;
           const auto fgRect = bgRect.marginsRemoved(QMargins{ hPadding, 0, hPadding, 0 });
@@ -1332,19 +1332,19 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
               const auto checkBoxY = fgRect.y() + (fgRect.height() - checkBoxSize.height()) / 2;
               const auto checkboxRect = QRect{ QPoint{ checkBoxX, checkBoxY }, checkBoxSize };
               const auto isRadio = optMenuItem->checkType == QStyleOptionMenuItem::Exclusive;
-              const auto progress = checked == CheckState::Checked ? 1. : 0.;
+              const auto progress = checkState == CheckState::Checked ? 1. : 0.;
               constexpr auto borderW = 0.;
               const auto selected = getSelectionState(optMenuItem->state);
               const auto active = getActiveState(optMenuItem->state);
-              const auto& boxFgColor = _impl->theme.listItemCheckButtonForegroundColor(mouse, checked, selected, active);
-              const auto& boxBgColor = _impl->theme.listItemCheckButtonBackgroundColor(mouse, checked, selected, active);
+              const auto& boxFgColor = _impl->theme.listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
+              const auto& boxBgColor = _impl->theme.listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
 
               // TODO draw smaller checks.
               if (isRadio) {
                 drawRadioButton(p, checkboxRect, boxBgColor, Qt::transparent, boxFgColor, borderW, progress);
               } else {
                 const auto radius = _impl->theme.checkBoxBorderRadius;
-                drawCheckButton(p, checkboxRect, radius, boxBgColor, Qt::transparent, boxFgColor, borderW, progress);
+                drawCheckButton(p, checkboxRect, radius, boxBgColor, Qt::transparent, boxFgColor, borderW, progress, checkState);
               }
             }
 
@@ -1354,7 +1354,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           }
 
           // Icon.
-          const auto pixmap = getPixmap(optMenuItem->icon, _impl->theme.iconSize, pxRatio, mouse, checked);
+          const auto pixmap = getPixmap(optMenuItem->icon, _impl->theme.iconSize, pxRatio, mouse, checkState);
           if (!pixmap.isNull()) {
             const auto colorize = QlementineStyle::isAutoIconColorEnabled(w);
             const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, fgColor) : pixmap;

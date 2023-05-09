@@ -114,6 +114,9 @@ void drawComboBoxIndicator(const QRect& rect, QPainter* p);
 /// Draws the checkbox indicator (i.e. a check mark).
 void drawCheckBoxIndicator(const QRect& rect, QPainter* p, qreal progress = 1.);
 
+/// Draws the partially checked checkbox indicator (i.e. a dash).
+void drawPartiallyCheckedCheckBoxIndicator(const QRect& rect, QPainter* p, qreal progress = 1.);
+
 /// Draws the radiobutton indicator (i.e. a circle).
 void drawRadioButtonIndicator(const QRect& rect, QPainter* p, qreal progress = 1.);
 
@@ -204,7 +207,7 @@ void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const
 void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor, QColor const& fgColor, const qreal borderWidth, qreal progress);
 
 /// Draws a CheckButton indicator according to its checked state.
-void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor, const QColor& fgColor, const qreal borderWidth, qreal progress);
+void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor, const QColor& fgColor, const qreal borderWidth, qreal progress, CheckState checkState);
 
 /// Draws a menu separator.
 void drawMenuSeparator(QPainter* p, const QRect& rect, QColor const& color, const int thickness);
