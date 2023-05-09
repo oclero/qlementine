@@ -508,9 +508,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_IndicatorItemViewItemCheck:
       if (const auto* optItem = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
-        const auto isChecked = optItem->checkState == Qt::Checked;
-        const auto checkState = isChecked ? CheckState::Checked : CheckState::NotChecked;
-        const auto checkBoxProgress = isChecked ? 1. : 0.;
+        const auto checkState = getCheckState(optItem->checkState);
+        const auto checkBoxProgress = checkState == CheckState::NotChecked ? 0. : 1.;
         const auto mouse = getMouseState(optItem->state);
         const auto selected = getSelectionState(optItem->state);
         const auto active = getActiveState(optItem->state);

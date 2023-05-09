@@ -40,6 +40,7 @@ MouseState getSliderHandleState(QStyle::State const& state, QStyle::SubControls 
 MouseState getScrollBarHandleState(QStyle::State const& state, QStyle::SubControls const activeSubControls);
 FocusState getFocusState(QStyle::State const& state);
 CheckState getCheckState(QStyle::State const& state);
+CheckState getCheckState(Qt::CheckState const& state);
 CheckState getCheckState(bool checked);
 ActiveState getActiveState(QStyle::State const& state);
 SelectionState getSelectionState(QStyle::State const& state);
