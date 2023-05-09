@@ -3983,7 +3983,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_ProgressDialog_CenterCancelButton:
       return false;
     case SH_ProgressDialog_TextLabelAlignment:
-      return Qt::AlignLeft;
+      return Qt::AlignCenter;
     case SH_PrintDialog_RightAlignButtons:
       return true;
     case SH_FontDialog_SelectAssociatedText:
