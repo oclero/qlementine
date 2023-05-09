@@ -4530,7 +4530,9 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Ensure widgets are not compressed vertically.
   if (shouldNotBeVerticallyCompressed(w)) {
-    w->setMinimumHeight(w->sizeHint().height());
+    if (0 == w->minimumHeight()) {
+      w->setMinimumHeight(w->sizeHint().height());
+    }
   }
 
   if (shouldNotHaveWheelEvents(w)) {
