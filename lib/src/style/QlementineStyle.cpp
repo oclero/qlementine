@@ -91,6 +91,7 @@ struct QlementineStyle::Impl {
 
   /// Registers all the theme fonts to Qt's font database.
   void installFonts() {
+      /*
 #if defined(WIN32)
     const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.ttf");
 #else
@@ -116,6 +117,7 @@ struct QlementineStyle::Impl {
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-MediumItalic")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Light")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-LightItalic")));
+    */
   }
 
   /// Some widgets need to have a QPalette explicitely set.

@@ -30,9 +30,9 @@ void qlementineResourceInitialization() {
   Q_INIT_RESOURCE(qlementine);
 
 #if defined(WIN32)
-  Q_INIT_RESOURCE(qlementine_fonts_windows);
+//  Q_INIT_RESOURCE(qlementine_fonts_windows);
 #else
-  Q_INIT_RESOURCE(qlementine_fonts);
+//  Q_INIT_RESOURCE(qlementine_fonts);
 #endif
 }
 
