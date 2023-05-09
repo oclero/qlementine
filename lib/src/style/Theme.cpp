@@ -553,7 +553,7 @@ QColor const& Theme::listItemCaptionForegroundColor(MouseState const mouse, Sele
 
 QColor const& Theme::listItemCheckButtonBackgroundColor(MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
   Q_UNUSED(active)
-  const auto isChecked = checked == CheckState::Checked;
+  const auto isChecked = checked != CheckState::NotChecked;
   const auto isEnabled = mouse != MouseState::Disabled;
   switch (selected) {
     case SelectionState::Selected:

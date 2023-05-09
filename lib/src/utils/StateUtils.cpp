@@ -133,6 +133,16 @@ CheckState getCheckState(QStyle::State const& state) {
   }
 }
 
+CheckState getCheckState(Qt::CheckState const& state) {
+  if (state == Qt::Checked) {
+    return CheckState::Checked;
+  } else if (state == Qt::PartiallyChecked) {
+    return CheckState::Indeterminate;
+  } else {
+    return CheckState::NotChecked;
+  }
+}
+
 CheckState getCheckState(bool checked) {
   return checked ? CheckState::Checked : CheckState::NotChecked;
 }
