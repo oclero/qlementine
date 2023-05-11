@@ -24,7 +24,7 @@
 
 #include <oclero/qlementine/utils/RadiusesF.hpp>
 
-#include <QStyleoption>
+#include <QStyleOption>
 
 namespace oclero::qlementine {
 /// Allows to customize the radius of the button.
