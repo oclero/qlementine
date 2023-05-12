@@ -62,6 +62,7 @@
 #include <QMessageBox>
 #include <QTextEdit>
 
+#include <cmath>
 #include <mutex>
 
 static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
@@ -81,8 +82,8 @@ constexpr auto iconPenWidth = 1.01;
 // Used to determine if the icon must be colorized according to the Theme's colorsor not.
 constexpr auto Property_DisableAutoIconColor = "disableAutoIconColor";
 
-struct QlementineStyle::Impl {
-  Impl(QlementineStyle& o)
+struct QlementineStyleImpl {
+  QlementineStyleImpl(QlementineStyle& o)
     : owner(o) {
     updatePalette();
     std::call_once(qlementineOnceFlag, qlementine::resources::initializeResources);
@@ -139,32 +140,32 @@ struct QlementineStyle::Impl {
     if (!availableSizes.contains(size)) {
       // TODO Autres icones : utiliser QPainter ou charger fichier SVG.
       switch (standardPixmap) {
-        case SP_Check:
+        case QlementineStyle::SP_Check:
           updateCheckIcon(icon, size, theme);
           break;
-        case SP_LineEditClearButton:
+        case QlementineStyle::SP_LineEditClearButton:
           updateClearButtonIcon(icon, size, theme);
           break;
-        case SP_ToolBarVerticalExtensionButton:
-        case SP_ToolBarHorizontalExtensionButton:
+        case QlementineStyle::SP_ToolBarVerticalExtensionButton:
+        case QlementineStyle::SP_ToolBarHorizontalExtensionButton:
           updateToolBarExtensionIcon(icon, size, theme);
           break;
-        case SP_ArrowLeft:
+        case QlementineStyle::SP_ArrowLeft:
           updateArrowLeftIcon(icon, size, theme);
           break;
-        case SP_ArrowRight:
+        case QlementineStyle::SP_ArrowRight:
           updateArrowRightIcon(icon, size, theme);
           break;
-        case SP_MessageBoxWarning:
+        case QlementineStyle::SP_MessageBoxWarning:
           updateMessageBoxWarningIcon(icon, size, theme);
           break;
-        case SP_MessageBoxCritical:
+        case QlementineStyle::SP_MessageBoxCritical:
           updateMessageBoxCriticalIcon(icon, size, theme);
           break;
-        case SP_MessageBoxInformation:
+        case QlementineStyle::SP_MessageBoxInformation:
           updateMessageBoxInformationIcon(icon, size, theme);
           break;
-        case SP_MessageBoxQuestion:
+        case QlementineStyle::SP_MessageBoxQuestion:
           updateMessageBoxQuestionIcon(icon, size, theme);
           break;
         default:
@@ -182,20 +183,14 @@ struct QlementineStyle::Impl {
   bool useMenuForComboBoxPopup{ false };
 };
 
-#pragma region Ctor / Dtor
-
 QlementineStyle::QlementineStyle(QObject* parent)
   : QCommonStyle()
-  , _impl(new Impl{ *this }) {
+  , _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
 }
 
 QlementineStyle::~QlementineStyle() = default;
-
-#pragma endregion
-
-#pragma region API
 
 Theme const& QlementineStyle::theme() const {
   return _impl->theme;
@@ -288,12 +283,8 @@ QIcon QlementineStyle::makeIcon(const QString& svgPath) {
   return result;
 }
 
-#pragma endregion
-
-#pragma region QStyle overrides
-
 void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
-  switch (pe) {
+  switch (static_cast<quint64>(pe)) {
     case PE_Frame:
       return;
     case PE_FrameDefaultButton:
@@ -846,11 +837,6 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       drawRoundedRectBorder(p, frameRect, borderColor, borderW, radius);
     }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case PE_CommandButtonPanel:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
         const auto radius = _impl->theme.borderRadius;
@@ -941,9 +927,6 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         p->setFont(backupFont);
       }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     default:
       break;
   }
@@ -951,7 +934,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 }
 
 void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
-  switch (ce) {
+  switch (static_cast<quint64>(ce)) {
     case CE_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Button background and border.
@@ -2051,11 +2034,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         }
       }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case CE_CommandButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
         // Button background and border.
@@ -2073,9 +2051,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         drawPrimitive(peLabel, &optLabel, p, w);
       }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     default:
       break;
   }
@@ -2803,7 +2778,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_ComboBox:
-      if (const auto* optComboBox = qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
         const auto popupRect = subControlRect(cc, opt, SC_ComboBoxListBoxPopup, w);
         if (popupRect.isValid() && popupRect.contains(pos)) {
           return SC_ComboBoxListBoxPopup;
@@ -2826,7 +2801,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_ScrollBar:
-      if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
         // Keep the scrollbar handle testing at the top so the handle has priority.
         const auto sliderRect = subControlRect(cc, opt, SC_ScrollBarSlider, w);
         if (sliderRect.isValid() && sliderRect.contains(pos)) {
@@ -2883,7 +2858,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_ToolButton:
-      if (const auto* optToolButton = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
         const auto buttonRect = subControlRect(cc, opt, SC_ToolButton, w);
         if (buttonRect.isValid() && buttonRect.contains(pos)) {
           return SC_ToolButton;
@@ -2896,7 +2871,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_Dial:
-      if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
         const auto handleRect = subControlRect(cc, opt, SC_DialHandle, w);
         if (handleRect.isValid() && handleRect.contains(pos)) {
           return SC_DialHandle;
@@ -2914,7 +2889,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_GroupBox:
-      if (const auto* groupBoxOpt = qstyleoption_cast<const QStyleOptionGroupBox*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionGroupBox*>(opt)) {
         // Here we cheat to avoid having a gap between the CheckBox and the Label where it
         // doesn't hit any SubControl. We want it to always hit the CheckBox.
         const auto checkBoxRect = subControlRect(cc, opt, SC_GroupBoxCheckBox, w);
@@ -3150,7 +3125,7 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
       }
       return {};
     case CC_TitleBar:
-      if (const auto* titleBarOpt = qstyleoption_cast<const QStyleOptionTitleBar*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionTitleBar*>(opt)) {
         switch (sc) {
           case SC_TitleBarSysMenu:
             return {};
@@ -3274,7 +3249,7 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
 }
 
 QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt, const QSize& contentSize, const QWidget* widget) const {
-  switch (ct) {
+  switch (static_cast<quint64>(ct)) {
     case CT_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         const auto hasIcon = !optButton->icon.isNull();
@@ -3473,6 +3448,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         }
         return QSize{};
       }
+      break;
     case CT_MenuBarItem: {
       const auto hPadding = _impl->theme.spacing;
       const auto vPadding = _impl->theme.spacing / 2;
@@ -3632,11 +3608,6 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         return QSize{ w, h };
       }
       break;
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case CT_CommandButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
         const auto iconSize = _impl->theme.iconSizeMedium;
@@ -3655,9 +3626,6 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         return QSize{ w, h };
       }
       break;
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     default:
       break;
   }
@@ -3665,22 +3633,14 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
 }
 
 int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const QWidget* w) const {
-  switch (m) {
+  switch (static_cast<quint64>(m)) {
     // Icons.
     case PM_SmallIconSize:
       return _impl->theme.iconSize.height();
     case PM_LargeIconSize:
       return _impl->theme.iconSizeLarge.height();
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case PM_MediumIconSize:
       return _impl->theme.iconSizeMedium.height();
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     // Button.
     case PM_ButtonMargin:
       return _impl->theme.spacing;
@@ -4586,5 +4546,5 @@ void QlementineStyle::unpolish(QWidget* w) {
     w->setMouseTracking(false);
   }
 }
-#pragma endregion
+
 } // namespace oclero::qlementine

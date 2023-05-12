@@ -33,7 +33,6 @@
 #include <QStyle>
 
 namespace oclero::qlementine {
-#pragma region Shapes
 
 /// Draws an antialiased pixel-perfect border for the ellipsis.
 void drawEllipseBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth);
@@ -101,10 +100,6 @@ using PixmapMakerFunc = std::function<QPixmap(const QSize& s, const QColor& c)>;
 /// Utility to add QPixmaps to all states of the QIcon. The callback in parameter will be called to draw each QPixmap.
 void updateUncheckableButtonIconPixmap(QIcon& icon, const QSize& size, Theme const& theme, const PixmapMakerFunc& func);
 
-#pragma endregion
-
-#pragma region Indicators
-
 /// Draws the menu arrow in a Button.
 QPainterPath getMenuIndicatorPath(const QRect& rect);
 
@@ -149,10 +144,6 @@ void drawCloseIndicator(const QRect& rect, QPainter* p);
 
 /// Draws a treeview indicator.
 void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
-
-#pragma endregion
-
-#pragma region Pixmap / Icons
 
 QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, double const pixelRatio, MouseState const mouse, CheckState const checked);
 
@@ -199,10 +190,6 @@ void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& t
 void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& theme);
 void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const& theme);
 
-#pragma endregion
-
-#pragma region SubControls
-
 /// Draws a RadioButton indicator according to its checked state.
 void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor, QColor const& fgColor, const qreal borderWidth, qreal progress);
 
@@ -232,9 +219,6 @@ QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses);
 
 /// Draws a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
 void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor);
-#pragma endregion
-
-#pragma region Text
 
 /// Draws an elided text (with an ellipsis "…" at the end if necessary) inside a QRect.
 /// The difference with Qt's method is the ellipsis (Qt doesn't draw one and just cuts the text).
@@ -249,5 +233,4 @@ void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, 
 /// Gets the necessary size to display the whole shortcut.
 QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme);
 
-#pragma endregion
 } // namespace oclero::qlementine

@@ -1336,10 +1336,6 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
   }
 }
 
-#pragma endregion
-
-#pragma region Operators
-
 bool Theme::operator==(const Theme& other) const {
   // All generated values are not used in this equality test, on purpose.
   // TODO Remove this and instead use spaceship operator when C++20 is available on macOS/XCode.
@@ -1449,5 +1445,5 @@ bool Theme::operator==(const Theme& other) const {
 bool Theme::operator!=(const Theme& other) const {
   return !(*this == other);
 }
-#pragma endregion
+
 } // namespace oclero::qlementine

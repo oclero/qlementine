@@ -29,6 +29,7 @@
 namespace oclero::qlementine {
 class CommandLinkButtonPaintEventFilter;
 class LineEditButtonEventFilter;
+struct QlementineStyleImpl;
 
 class QlementineStyle : public QCommonStyle {
   Q_OBJECT
@@ -61,7 +62,7 @@ public:
   };
 
 public:
-  QlementineStyle(QObject* parent = nullptr);
+  explicit QlementineStyle(QObject* parent = nullptr);
   ~QlementineStyle();
 
   Theme const& theme() const;
@@ -133,7 +134,6 @@ public:
   friend class LineEditButtonEventFilter;
 
 private:
-  struct Impl;
-  std::unique_ptr<Impl> _impl{};
+  std::unique_ptr<QlementineStyleImpl> _impl;
 };
 } // namespace oclero::qlementine

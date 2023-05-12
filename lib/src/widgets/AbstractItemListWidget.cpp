@@ -30,6 +30,8 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 
+#include <cmath>
+
 namespace oclero::qlementine {
 constexpr auto animationFactor = 1;
 
@@ -325,8 +327,6 @@ bool AbstractItemListWidget::hitTestItemRect(const QPoint& pos, const QRect& ite
          && pos.y() >= 0 && pos.y() <= height(); // Widget full height.
 }
 
-#pragma region Events
-
 void AbstractItemListWidget::keyPressEvent(QKeyEvent* e) {
   QWidget::keyPressEvent(e);
   const auto key = e->key();
@@ -402,8 +402,6 @@ void AbstractItemListWidget::mouseMoveEvent(QMouseEvent* e) {
     setPressedIndex(index);
   }
 }
-
-#pragma endregion
 
 QSize AbstractItemListWidget::sizeHint() const {
   // Make a first pass to ask every item how much space they need if space was unlimited.
