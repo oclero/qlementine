@@ -2214,10 +2214,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       if (const auto* optItem = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
         const auto& rect = optItem->rect;
         const auto iconRect = subElementRect(SE_ItemViewItemDecoration, opt, w);
-        const auto hMargin = _impl->theme.spacing;
-        const auto spacing = _impl->theme.spacing;
-        const auto textX = (iconRect.isValid() ? iconRect.x() + iconRect.width() : hMargin) + spacing;
-        const auto textW = rect.width() - textX - hMargin;
+        const auto textX = iconRect.isValid() ? iconRect.x() + iconRect.width() : rect.x();
+        const auto textW = iconRect.isValid() ? rect.width() - iconRect.width() : rect.width();
         return QRect{ textX, rect.y(), textW, rect.height() };
       }
       return {};
