@@ -4570,7 +4570,7 @@ void QlementineStyle::polish(QWidget* w) {
 }
 
 void QlementineStyle::unpolish(QWidget* w) {
-  QCommonStyle::polish(w);
+  QCommonStyle::unpolish(w);
   w->setFont(_impl->theme.fontMedium);
 
   // TODO revert all hacks made in QlementineStyle::polish(QWidget* w)
