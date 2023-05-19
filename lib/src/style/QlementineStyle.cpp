@@ -1993,7 +1993,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textRect = QRect{ textX, contentRect.y(), availableW, contentRect.height() };
           const auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
-          p->setPen(fgColor);
+          const QBrush &b = optItem->palette.brush(QPalette::Text);
+          p->setPen(b.color());
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
       }
