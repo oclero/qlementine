@@ -435,8 +435,22 @@ QColor const& Theme::comboBoxForegroundColor(MouseState const mouse) const {
   return buttonForegroundColor(mouse, ColorRole::Neutral);
 }
 
+QColor const& Theme::comboBoxTextColor(MouseState const mouse, Status const status) const {
+  switch (status) {
+    case Status::Error:
+      return statusColorError;
+    case Status::Warning:
+      return statusColorWarning;
+    case Status::Success:
+      return statusColorSuccess;
+    case Status::Info:
+    case Status::Default:
+      return comboBoxForegroundColor(mouse);
+  }
+}
+
 QColor const& Theme::spinBoxBackgroundColor(MouseState const mouse) const {
-  return textFieldBackgroundColor(mouse);
+  return textFieldBackgroundColor(mouse, Status::Default);
 }
 
 QColor const& Theme::spinBoxBorderColor(MouseState const mouse, FocusState const focus) const {
@@ -756,11 +770,22 @@ QColor const& Theme::progressBarValueColor(MouseState const mouse) const {
     return primaryColor;
 }
 
-QColor const& Theme::textFieldBackgroundColor(MouseState const mouse) const {
-  if (mouse == MouseState::Disabled)
-    return adaptativeColorTransparent;
-  else
-    return adaptativeColor1;
+QColor const& Theme::textFieldBackgroundColor(MouseState const mouse, Status const status) const {
+
+    switch (status) {
+      case Status::Error:
+        return statusColorError;
+      case Status::Warning:
+        return statusColorWarning;
+      case Status::Success:
+        return statusColorSuccess;
+      case Status::Info:
+      case Status::Default:
+        if (mouse == MouseState::Disabled)
+          return adaptativeColorTransparent;
+        else
+          return adaptativeColor1;
+    }
 }
 
 QColor const& Theme::textFieldBorderColor(MouseState const mouse, FocusState const focus, Status const status) const {

@@ -448,13 +448,13 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         fixedState.setFlag(QStyle::State_Sunken, false);
 
         auto status = Status::Default;
-        if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(w)) {
-          status = qlementineLineEdit->status();
+        if (w->property("status").isValid()) {
+          status = w->property("status").value<Status>();
         }
 
         const auto mouse = getMouseState(fixedState);
         const auto focus = getFocusState(optPanelLineEdit->state);
-        const auto& bgColor = _impl->theme.textFieldBackgroundColor(mouse);
+        const auto& bgColor = _impl->theme.textFieldBackgroundColor(mouse, status);
         const auto& borderColor = _impl->theme.textFieldBorderColor(mouse, focus, status);
         const auto borderW = _impl->theme.borderWidth;
         const auto radiusF = static_cast<double>(_impl->theme.borderRadius);
@@ -1869,7 +1869,13 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textRect = QRect{ availableX, contentRect.y(), availableW, contentRect.height() };
           constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
-          p->setPen(fgColor);
+
+          auto status = Status::Default;
+          if (w->property("status").isValid()) {
+            status = w->property("status").value<Status>();
+          }
+          const auto textColor = _impl->theme.comboBoxTextColor(mouse, status);
+          p->setPen(textColor);
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
 
