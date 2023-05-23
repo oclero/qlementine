@@ -1611,7 +1611,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           iconSpaceW = iconExtent + spacing;
           textAvailableW -= iconSpaceW;
         }
-        const auto textW = std::min(fm.horizontalAdvance(text), textAvailableW);
+        const auto tw = fm.size(Qt::TextSingleLine, text).width();
+        const auto textW = std::min(tw, textAvailableW);
         const auto labelW = textW + iconSpaceW;
         const auto labelAlignment = optHeader->textAlignment; // We don't care about iconAlignment to make things simpler.
         auto labelX = 0;
