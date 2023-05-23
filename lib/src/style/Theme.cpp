@@ -445,6 +445,7 @@ QColor const& Theme::comboBoxTextColor(MouseState const mouse, Status const stat
       return statusColorSuccess;
     case Status::Info:
     case Status::Default:
+    default:
       return comboBoxForegroundColor(mouse);
   }
 }
@@ -781,11 +782,12 @@ QColor const& Theme::textFieldBackgroundColor(MouseState const mouse, Status con
         return statusColorSuccess;
       case Status::Info:
       case Status::Default:
+      default:
         if (mouse == MouseState::Disabled)
           return adaptativeColorTransparent;
         else
           return adaptativeColor1;
-    }
+  }
 }
 
 QColor const& Theme::textFieldBorderColor(MouseState const mouse, FocusState const focus, Status const status) const {
