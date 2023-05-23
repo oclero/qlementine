@@ -2001,13 +2001,16 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ShapedFrame:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
         const auto frameShape = frameOpt->frameShape;
+
+        const auto lineW = _impl->theme.borderWidth;
+        const auto& lineColor = _impl->theme.frameBorderColor();
+        const QPen& pen = QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap);
+
         switch (frameShape) {
           case QFrame::HLine:
           case QFrame::VLine: {
-            const auto lineW = _impl->theme.borderWidth;
-            const auto& lineColor = _impl->theme.frameBorderColor();
             p->setBrush(Qt::NoBrush);
-            p->setPen(QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap));
+            p->setPen(pen);
             if (frameShape == QFrame::HLine) {
               const auto p1 = QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height() / 2);
               const auto p2 = QPoint(opt->rect.x() + opt->rect.width(), p1.y());
@@ -2024,8 +2027,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
                 if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
                   const auto& palette = _impl->theme.palette;
                   const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, bgRole);
-                  p->setPen(Qt::NoPen);
+                  p->setPen(pen);
                   p->setBrush(bgColor);
+                  p->setRenderHint(QPainter::Antialiasing, true);
                   p->drawRect(frameOpt->rect);
                 }
             }
