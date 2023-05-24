@@ -39,6 +39,7 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 
 #include "EventFilters.hpp"
+#include "QtWidgets/qtreeview.h"
 
 #include <QFontDatabase>
 #include <QToolTip>
@@ -3533,7 +3534,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto r = optFrame->rect;
         const auto w = r.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
-        return QSize{ w, h };
+        const auto treeView = qobject_cast<const QTreeView*>(widget->parentWidget()->parentWidget());
+        return treeView? contentSize: QSize{ w, h };
       }
       break;
     case CT_SpinBox:
