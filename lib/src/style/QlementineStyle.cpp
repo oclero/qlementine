@@ -3606,8 +3606,11 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto hasCheck = features.testFlag(QStyleOptionViewItem::HasCheckIndicator);
         const auto& checkSize = hasCheck ? _impl->theme.iconSize : QSize{ 0, 0 };
 
-        // Don't take into account the actual content: let the ListView be resized as needed.
-        const auto w = 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
+        auto font = QFont(widget->font());
+        const auto fm = QFontMetrics(font);
+        const auto textW = fm.horizontalAdvance(optItem->text);
+
+        const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;
         const auto h = std::max({ iconSize.height() + spacing, textH + spacing, defaultH });
         return QSize{ w, h };
