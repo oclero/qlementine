@@ -1770,7 +1770,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
-          optFocus.rect = optFocus.rect.marginsRemoved(QMargins(borderW, borderW, borderW, borderW));
+          const auto treeView = qobject_cast<const QAbstractItemView*>(monitoredWidget->parentWidget()->parentWidget());
+          const auto margin = treeView? borderW * 2: borderW;
+          optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
           // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible.
           if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget->parentWidget())) {
@@ -3534,7 +3536,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto r = optFrame->rect;
         const auto w = r.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
-        const auto treeView = qobject_cast<const QTreeView*>(widget->parentWidget()->parentWidget());
+        const auto treeView = qobject_cast<const QAbstractItemView*>(widget->parentWidget()->parentWidget());
         return treeView? contentSize: QSize{ w, h };
       }
       break;
