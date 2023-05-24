@@ -2221,7 +2221,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto& rect = optItem->rect;
         const auto iconRect = subElementRect(SE_ItemViewItemDecoration, opt, w);
         const auto textX = iconRect.isValid() ? iconRect.x() + iconRect.width() : rect.x();
-        const auto textW = iconRect.isValid() ? rect.width() - iconRect.width() : rect.width();
+        const auto textW = iconRect.isValid() ? rect.width() - iconRect.width() - iconRect.x() : rect.width();
         return QRect{ textX, rect.y(), textW, rect.height() };
       }
       return {};
