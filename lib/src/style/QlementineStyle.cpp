@@ -39,6 +39,7 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 
 #include "EventFilters.hpp"
+#include "QtWidgets/qtreeview.h"
 
 #include <QFontDatabase>
 #include <QToolTip>
@@ -1607,7 +1608,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           iconSpaceW = iconExtent + spacing;
           textAvailableW -= iconSpaceW;
         }
-        const auto textW = std::min(fm.horizontalAdvance(text), textAvailableW);
+        const auto tw = fm.size(Qt::TextSingleLine, text).width();
+        const auto textW = std::min(tw, textAvailableW);
         const auto labelW = textW + iconSpaceW;
         const auto labelAlignment = optHeader->textAlignment; // We don't care about iconAlignment to make things simpler.
         auto labelX = 0;
@@ -1764,7 +1766,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
-          optFocus.rect = optFocus.rect.marginsRemoved(QMargins(borderW, borderW, borderW, borderW));
+          const auto treeView = qobject_cast<const QAbstractItemView*>(monitoredWidget->parentWidget()->parentWidget());
+          const auto margin = treeView? borderW * 2: borderW;
+          optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
           // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible.
           if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget->parentWidget())) {
@@ -1992,7 +1996,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textRect = QRect{ textX, contentRect.y(), availableW, contentRect.height() };
           const auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
-          p->setPen(fgColor);
+          const QBrush &b = optItem->palette.brush(QPalette::Text);
+          p->setPen(b.color());
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
       }
@@ -2000,13 +2005,16 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ShapedFrame:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
         const auto frameShape = frameOpt->frameShape;
+
+        const auto lineW = _impl->theme.borderWidth;
+        const auto& lineColor = frameBorderColor();
+        const QPen& pen = QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap);
+
         switch (frameShape) {
           case QFrame::HLine:
           case QFrame::VLine: {
-            const auto lineW = _impl->theme.borderWidth;
-            const auto& lineColor = frameBorderColor();
             p->setBrush(Qt::NoBrush);
-            p->setPen(QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap));
+            p->setPen(pen);
             if (frameShape == QFrame::HLine) {
               const auto p1 = QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height() / 2);
               const auto p2 = QPoint(opt->rect.x() + opt->rect.width(), p1.y());
@@ -2023,8 +2031,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
                 if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
                   const auto& palette = _impl->theme.palette;
                   const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, bgRole);
-                  p->setPen(Qt::NoPen);
+                  p->setPen(pen);
                   p->setBrush(bgColor);
+                  p->setRenderHint(QPainter::Antialiasing, true);
                   p->drawRect(frameOpt->rect);
                 }
             }
@@ -2214,7 +2223,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto& rect = optItem->rect;
         const auto iconRect = subElementRect(SE_ItemViewItemDecoration, opt, w);
         const auto textX = iconRect.isValid() ? iconRect.x() + iconRect.width() : rect.x();
-        const auto textW = iconRect.isValid() ? rect.width() - iconRect.width() : rect.width();
+        const auto textW = iconRect.isValid() ? rect.width() - iconRect.width() - iconRect.x() : rect.width();
         return QRect{ textX, rect.y(), textW, rect.height() };
       }
       return {};
@@ -3526,7 +3535,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto r = optFrame->rect;
         const auto w = r.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
-        return QSize{ w, h };
+        const auto treeView = qobject_cast<const QAbstractItemView*>(widget->parentWidget()->parentWidget());
+        return treeView? contentSize: QSize{ w, h };
       }
       break;
     case CT_SpinBox:
@@ -3597,8 +3607,11 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto hasCheck = features.testFlag(QStyleOptionViewItem::HasCheckIndicator);
         const auto& checkSize = hasCheck ? _impl->theme.iconSize : QSize{ 0, 0 };
 
-        // Don't take into account the actual content: let the ListView be resized as needed.
-        const auto w = 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
+        auto font = QFont(widget->font());
+        const auto fm = QFontMetrics(font);
+        const auto textW = fm.horizontalAdvance(optItem->text);
+
+        const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;
         const auto h = std::max({ iconSize.height() + spacing, textH + spacing, defaultH });
         return QSize{ w, h };
