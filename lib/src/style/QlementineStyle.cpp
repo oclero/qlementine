@@ -316,15 +316,12 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_FrameGroupBox:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
-        const auto& rect = frameOpt->rect;
-        const auto lineW = 1.;
-        const auto p1 = QPointF{ rect.x() + lineW / 2., static_cast<qreal>(rect.y()) };
-        const auto p2 = QPointF{ rect.x() + lineW / 2., static_cast<qreal>(rect.y() + rect.height()) };
-        const auto mouse = getMouseState(frameOpt->state);
-        const auto& lineColor = _impl->theme.groupBoxBorderColor(mouse);
-        p->setBrush(Qt::NoBrush);
-        p->setPen(QPen(lineColor, lineW, Qt::SolidLine, Qt::FlatCap));
-        p->drawLine(p1, p2);
+        if (!(frameOpt->features & QStyleOptionFrame::Flat)) {
+            const auto& palette = standardPalette();
+            const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Midlight);
+            auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
+            drawRoundedRect(p, frameOpt->rect, bgColor, borderRadius);
+        }
       }
       return;
     case PE_FrameLineEdit:
@@ -2743,6 +2740,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         const auto frameRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, w);
         QStyleOptionFrame frameOpt;
         frameOpt.QStyleOption::operator=(*groupBoxOpt);
+        frameOpt.features = groupBoxOpt->features;
         frameOpt.rect = frameRect;
         drawPrimitive(PE_FrameGroupBox, &frameOpt, p, w);
       }
@@ -3186,11 +3184,11 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
     case CC_GroupBox:
       if (const auto* groupBoxOpt = qstyleoption_cast<const QStyleOptionGroupBox*>(opt)) {
         const auto& rect = groupBoxOpt->rect;
+        const auto titleH = groupBoxOpt->text.isNull() ? 0 : _impl->theme.controlHeightMedium;
         switch (sc) {
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
           case SC_GroupBoxCheckBox:
             if (groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox)) {
-              const auto titleH = _impl->theme.controlHeightLarge;
               const auto& checkBoxSize = _impl->theme.iconSize;
               const auto checkBoxY = rect.y() + (titleH - checkBoxSize.height()) / 2;
               return QRect{ QPoint{ rect.x(), checkBoxY }, checkBoxSize };
@@ -3199,7 +3197,6 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
           case SC_GroupBoxLabel:
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
             if (groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel)) {
-              const auto titleH = _impl->theme.controlHeightLarge;
               const auto& checkBoxSize = _impl->theme.iconSize;
               const auto spacing = _impl->theme.spacing;
               const auto labelX = rect.x() + checkBoxSize.width() + spacing;
@@ -3209,9 +3206,8 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             return {};
           case SC_GroupBoxContents:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxContents))*/ {
-              const auto titleH = _impl->theme.controlHeightLarge;
               const auto& checkBoxSize = _impl->theme.iconSize;
-              const auto leftPadding = _impl->theme.spacing + checkBoxSize.width();
+              const auto leftPadding = checkBoxSize.width();
               const auto x = rect.x() + leftPadding;
               const auto y = rect.y() + titleH;
               const auto w = rect.width() - leftPadding;
@@ -3221,7 +3217,6 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             return {};
           case SC_GroupBoxFrame:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxFrame))*/ {
-              const auto titleH = _impl->theme.controlHeightLarge;
               const auto leftPadding = _impl->theme.spacing;
               const auto x = rect.x() + leftPadding;
               const auto y = rect.y() + titleH;
