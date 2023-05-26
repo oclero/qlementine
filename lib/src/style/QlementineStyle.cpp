@@ -1458,7 +1458,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Little hack to avoid having a checked extension button.
         auto buttonState = optToolButton->state;
-        const auto isExtensionButton = w->objectName() == QStringLiteral("qt_toolbar_ext_button");
+        const auto isExtensionButton = (w && w->objectName() == QStringLiteral("qt_toolbar_ext_button"));
         if (isExtensionButton) {
           buttonState.setFlag(State_On, false);
         }
@@ -1543,7 +1543,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_HeaderSection:
       if (const auto* optHeader = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
-        const auto* tableView = qobject_cast<const QTableView*>(w->parentWidget());
+        const auto* tableView = (w ? qobject_cast<const QTableView*>(w->parentWidget()) : nullptr);
         const auto& rect = opt->rect;
         // Background.
         const auto mouse = getMouseState(opt->state);
@@ -1924,7 +1924,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto active = getActiveState(optItem->state);
 
         // We show the selected color on the whole row, not only the cell.
-        const auto widgetHasFocus = w->hasFocus();
+        const auto widgetHasFocus = (w && w->hasFocus());
         const auto focus = widgetHasFocus && selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
 
         // Checkbox, if any.
