@@ -911,7 +911,7 @@ QPixmap makeClearButtonPixmap(QSize const& size, QColor const& fgColor) {
   return pixmap;
 }
 
-void updateUncheckableButtonIconPixmap(QIcon& icon, const QSize& size, Theme const& theme, const PixmapMakerFunc& func) {
+void updateUncheckableButtonIconPixmap(QIcon& icon, const QSize& size, QlementineStyle const& style, const PixmapMakerFunc& func) {
   if (!func)
     return;
 
@@ -920,22 +920,22 @@ void updateUncheckableButtonIconPixmap(QIcon& icon, const QSize& size, Theme con
   for (auto factor = 1; factor <= 2; ++factor) {
     const auto scaledSize = size * factor;
 
-    const auto pixmapNormal = func(scaledSize, theme.toolButtonForegroundColor(MouseState::Normal, role));
+    const auto pixmapNormal = func(scaledSize, style.toolButtonForegroundColor(MouseState::Normal, role));
     icon.addPixmap(pixmapNormal, QIcon::Mode::Normal);
 
-    const auto pixmapMouseOver = func(scaledSize, theme.toolButtonForegroundColor(MouseState::Hovered, role));
+    const auto pixmapMouseOver = func(scaledSize, style.toolButtonForegroundColor(MouseState::Hovered, role));
     icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected);
 
-    const auto pixmapPressed = func(scaledSize, theme.toolButtonForegroundColor(MouseState::Pressed, role));
+    const auto pixmapPressed = func(scaledSize, style.toolButtonForegroundColor(MouseState::Pressed, role));
     icon.addPixmap(pixmapPressed, QIcon::Mode::Active);
 
-    const auto pixmapDisabled = func(scaledSize, theme.toolButtonForegroundColor(MouseState::Disabled, role));
+    const auto pixmapDisabled = func(scaledSize, style.toolButtonForegroundColor(MouseState::Disabled, role));
     icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled);
   }
 }
 
-void updateClearButtonIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  updateUncheckableButtonIconPixmap(icon, size, theme, makeClearButtonPixmap);
+void updateClearButtonIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
+  updateUncheckableButtonIconPixmap(icon, size, style, makeClearButtonPixmap);
 }
 
 QPixmap makeCheckPixmap(QSize const& size, QColor const& color) {
@@ -958,12 +958,12 @@ QPixmap makeCheckPixmap(QSize const& size, QColor const& color) {
   return pixmap;
 }
 
-void updateCheckIcon(QIcon& icon, QSize const& size, Theme const& theme) {
+void updateCheckIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
   const auto role = ColorRole::Primary;
-  const auto pixmapNormal = makeCheckPixmap(size, theme.buttonForegroundColor(MouseState::Normal, role));
-  const auto pixmapMouseOver = makeCheckPixmap(size, theme.buttonForegroundColor(MouseState::Hovered, role));
-  const auto pixmapPressed = makeCheckPixmap(size, theme.buttonForegroundColor(MouseState::Pressed, role));
-  const auto pixmapDisabled = makeCheckPixmap(size, theme.buttonForegroundColor(MouseState::Disabled, role));
+  const auto pixmapNormal = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Normal, role));
+  const auto pixmapMouseOver = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Hovered, role));
+  const auto pixmapPressed = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Pressed, role));
+  const auto pixmapDisabled = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Disabled, role));
 
   QPixmap uncheckedPixmap{ size };
   uncheckedPixmap.fill(Qt::transparent);
@@ -1019,8 +1019,8 @@ QPixmap makeToolBarExtensionPixmap(QSize const& size, QColor const& color) {
   return pixmap;
 }
 
-void updateToolBarExtensionIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  updateUncheckableButtonIconPixmap(icon, size, theme, makeToolBarExtensionPixmap);
+void updateToolBarExtensionIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
+  updateUncheckableButtonIconPixmap(icon, size, style, makeToolBarExtensionPixmap);
 }
 
 QPixmap makeArrowLeftPixmap(QSize const& size, QColor const& color) {
@@ -1061,12 +1061,12 @@ QPixmap makeArrowRightPixmap(QSize const& size, QColor const& color) {
   return pixmap;
 }
 
-void updateArrowLeftIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  updateUncheckableButtonIconPixmap(icon, size, theme, makeArrowLeftPixmap);
+void updateArrowLeftIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
+  updateUncheckableButtonIconPixmap(icon, size, style, makeArrowLeftPixmap);
 }
 
-void updateArrowRightIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  updateUncheckableButtonIconPixmap(icon, size, theme, makeArrowRightPixmap);
+void updateArrowRightIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
+  updateUncheckableButtonIconPixmap(icon, size, style, makeArrowRightPixmap);
 }
 
 QPixmap makeMessageBoxWarningPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
