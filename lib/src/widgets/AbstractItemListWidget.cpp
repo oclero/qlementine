@@ -49,7 +49,9 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   _currentIndexAnimation.setEndValue(currentItemRect);
   _currentIndexAnimation.setDuration(animDuration);
   _currentIndexAnimation.setEasingCurve(QEasingCurve::Type::InOutCubic);
-  QObject::connect(&_currentIndexAnimation, &QVariantAnimation::valueChanged, this, [this]() { update(); });
+  QObject::connect(&_currentIndexAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+    update();
+  });
 
   // Focus frame.
   _focusFrame = new RoundedFocusFrame(this);
@@ -58,7 +60,8 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   _focusFrame->setWidget(this);
 
   // Badge.
-  _badgeFont = qlementineStyle ? qlementineStyle->theme().fontForTextRole(qlementine::Theme::TextRole::Caption) : this->font();
+  _badgeFont =
+    qlementineStyle ? qlementineStyle->theme().fontForTextRole(qlementine::Theme::TextRole::Caption) : this->font();
   _badgeFont.setBold(true);
 }
 
@@ -101,21 +104,30 @@ void AbstractItemListWidget::setCurrentData(const QVariant& data) {
   }
 }
 
-int AbstractItemListWidget::addItem(const QString& text, const QIcon& icon, const QString& badge, const QVariant& data) {
+int AbstractItemListWidget::addItem(
+  const QString& text, const QIcon& icon, const QString& badge, const QVariant& data) {
   const auto* style = this->style();
   const auto animDuration = style->styleHint(QStyle::SH_Widget_Animation_Duration) * animationFactor;
 
   auto* bgColorAnimation = new QVariantAnimation(this);
-  QObject::connect(bgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() { update(); });
+  QObject::connect(bgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+    update();
+  });
 
   auto* fgColorAnimation = new QVariantAnimation(this);
-  QObject::connect(fgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() { update(); });
+  QObject::connect(fgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+    update();
+  });
 
   auto* badgeBgColorAnimation = new QVariantAnimation(this);
-  QObject::connect(badgeBgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() { update(); });
+  QObject::connect(badgeBgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+    update();
+  });
 
   auto* badgeFgColorAnimation = new QVariantAnimation(this);
-  QObject::connect(badgeFgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() { update(); });
+  QObject::connect(badgeFgColorAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+    update();
+  });
 
   _items.push_back({
     true,
@@ -189,8 +201,9 @@ int AbstractItemListWidget::findItemIndex(const QVariant& data) const {
   if (!data.isValid())
     return -1;
 
-  const auto it = std::find_if(_items.constBegin(), _items.constEnd(), [&data](const auto& item) { return item.data == data; });
-  return it != _items.constEnd() ? std::distance(_items.constBegin(), it) : -1;
+  const auto it = std::find_if(_items.constBegin(), _items.constEnd(), [&data](const auto& item) {
+    return item.data == data;
+  });
 }
 
 void AbstractItemListWidget::setItemData(int index, const QVariant& data) {
@@ -318,7 +331,8 @@ int AbstractItemListWidget::itemAtPos(const QPoint& pos) const {
   return -1;
 }
 
-bool AbstractItemListWidget::hitTestItemRect(const QPoint& pos, const QRect& itemRect, int leftPadding, int rightPadding) const {
+bool AbstractItemListWidget::hitTestItemRect(
+  const QPoint& pos, const QRect& itemRect, int leftPadding, int rightPadding) const {
   // To make it easier for the user to click, we take into account the padding around the item.
   return pos.x() >= itemRect.x() - leftPadding // Padding on the left.
          && pos.x() <= itemRect.x() + itemRect.width() + rightPadding // Padding on the right.
@@ -457,7 +471,8 @@ void AbstractItemListWidget::updateItemsSizeHints() {
     }
 
     if (!item.badge.isEmpty()) {
-      const auto badgeW = std::max(badgeH, badgePadding.left() + badgePadding.right() + badgeFm.horizontalAdvance(item.badge));
+      const auto badgeW =
+        std::max(badgeH, badgePadding.left() + badgePadding.right() + badgeFm.horizontalAdvance(item.badge));
       itemW += badgeW;
       ++elementCount;
     }
@@ -544,19 +559,27 @@ MouseState AbstractItemListWidget::getItemMouseState(int index, const Item& item
     return MouseState::Transparent;
 }
 
-std::tuple<QColor, QColor, QColor, QColor> AbstractItemListWidget::getItemBgAndFgColor(int index, MouseState mouse) const {
+std::tuple<QColor, QColor, QColor, QColor> AbstractItemListWidget::getItemBgAndFgColor(
+  int index, MouseState mouse) const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
   const auto& palette = this->palette();
-  const auto& itemBgColor = qlementineStyle ? getItemBgColor(mouse, qlementineStyle->theme()) : getItemBgColor(mouse, palette);
-  const auto& itemFgColor = qlementineStyle ? getItemFgColor(mouse, index == _currentIndex, qlementineStyle->theme()) : getItemFgColor(mouse, index == _currentIndex, palette);
-  const auto& badgeBgColor = qlementineStyle ? getItemBadgeBgColor(mouse, index == _currentIndex, qlementineStyle->theme()) : getItemBadgeBgColor(mouse, index == _currentIndex, palette);
-  const auto& badgeFgColor = qlementineStyle ? getItemBadgeFgColor(mouse, index == _currentIndex, qlementineStyle->theme()) : getItemBadgeFgColor(mouse, index == _currentIndex, palette);
+  const auto& itemBgColor =
+    qlementineStyle ? getItemBgColor(mouse, qlementineStyle->theme()) : getItemBgColor(mouse, palette);
+  const auto& itemFgColor = qlementineStyle ? getItemFgColor(mouse, index == _currentIndex, qlementineStyle->theme())
+                                            : getItemFgColor(mouse, index == _currentIndex, palette);
+  const auto& badgeBgColor = qlementineStyle
+                               ? getItemBadgeBgColor(mouse, index == _currentIndex, qlementineStyle->theme())
+                               : getItemBadgeBgColor(mouse, index == _currentIndex, palette);
+  const auto& badgeFgColor = qlementineStyle
+                               ? getItemBadgeFgColor(mouse, index == _currentIndex, qlementineStyle->theme())
+                               : getItemBadgeFgColor(mouse, index == _currentIndex, palette);
   return { itemBgColor, itemFgColor, badgeBgColor, badgeFgColor };
 }
 
 const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
-  return qlementineStyle ? getCurrentItemIndicatorColor(qlementineStyle->theme()) : getCurrentItemIndicatorColor(palette());
+  return qlementineStyle ? getCurrentItemIndicatorColor(qlementineStyle->theme())
+                         : getCurrentItemIndicatorColor(palette());
 }
 
 QRect AbstractItemListWidget::getCurrentItemRect() const {
@@ -587,7 +610,8 @@ QRect qlementine::AbstractItemListWidget::getAnimatedCurrentItemRect() const {
 void AbstractItemListWidget::updateCurrentIndexAnimation(bool immediate) {
   const auto currentItemRect = getCurrentItemRect();
   _currentIndexAnimation.stop();
-  if (immediate || !_currentIndexAnimation.currentValue().isValid() || !_currentIndexAnimation.startValue().isValid() || !_firstShow) {
+  if (immediate || !_currentIndexAnimation.currentValue().isValid() || !_currentIndexAnimation.startValue().isValid()
+      || !_firstShow) {
     _currentIndexAnimation.setStartValue(currentItemRect);
   } else {
     _currentIndexAnimation.setStartValue(_currentIndexAnimation.currentValue());
@@ -759,11 +783,13 @@ QMargins AbstractItemListWidget::getBadgePadding() const {
   return QMargins{ left, top, right, bottom };
 }
 
-const QColor& AbstractItemListWidget::getItemBadgeBgColor(MouseState mouse, bool /*selected*/, const QPalette& palette) const {
+const QColor& AbstractItemListWidget::getItemBadgeBgColor(
+  MouseState mouse, bool /*selected*/, const QPalette& palette) const {
   return palette.color(mouse != MouseState::Disabled ? QPalette::Normal : QPalette::Disabled, QPalette::Dark);
 }
 
-const QColor& AbstractItemListWidget::getItemBadgeFgColor(MouseState mouse, bool /*selected*/, const QPalette& palette) const {
+const QColor& AbstractItemListWidget::getItemBadgeFgColor(
+  MouseState mouse, bool /*selected*/, const QPalette& palette) const {
   return palette.color(mouse != MouseState::Disabled ? QPalette::Normal : QPalette::Disabled, QPalette::BrightText);
 }
 
@@ -794,7 +820,8 @@ void AbstractItemListWidget::drawItemForeground(QPainter& p, const Item& item) c
   const auto badgePadding = getBadgePadding();
   const auto badgeH = badgeFm.height() + badgePadding.top() + badgePadding.bottom();
   const auto badgeRadius = badgeH / 2;
-  const auto badgeW = std::max(badgeH, badgePadding.left() + badgePadding.right() + badgeFm.horizontalAdvance(item.badge));
+  const auto badgeW =
+    std::max(badgeH, badgePadding.left() + badgePadding.right() + badgeFm.horizontalAdvance(item.badge));
   const auto& itemRect = item.rect;
   const auto itemContentW = std::min(item.sizeHint.width(), itemRect.width());
   const auto itemContentH = itemRect.height();
@@ -831,7 +858,8 @@ void AbstractItemListWidget::drawItemForeground(QPainter& p, const Item& item) c
   const auto textW = availableW;
   const auto textH = itemContentRect.height();
   auto textRect = QRect{ QPoint{ textX, textY }, QSize{ textW, textH } };
-  const auto showText = ((!hasIcon && !hasBadge) || hasText) && (showIcon ? availableW > itemSpacing * 3 : itemRect.width() > 0);
+  const auto showText =
+    ((!hasIcon && !hasBadge) || hasText) && (showIcon ? availableW > itemSpacing * 3 : itemRect.width() > 0);
 
   if (showIcon && !showText) {
     if (showBadge) {
@@ -896,7 +924,8 @@ void AbstractItemListWidget::drawItemForeground(QPainter& p, const Item& item) c
   // Text.
   if (showText) {
     const auto fm = QFontMetrics(labelFont(), this);
-    const auto elidedText = fm.elidedText(item.text, Qt::TextElideMode::ElideRight, textRect.width(), Qt::TextSingleLine);
+    const auto elidedText =
+      fm.elidedText(item.text, Qt::TextElideMode::ElideRight, textRect.width(), Qt::TextSingleLine);
     const auto textFlags = Qt::AlignVCenter | Qt::AlignHCenter | Qt::TextSingleLine;
 
     // Draw text.
@@ -949,7 +978,8 @@ double AbstractItemListWidget::getItemRadius() const {
   return qlementineStyle ? qlementineStyle->theme().borderRadius : 0;
 }
 
-const QColor& AbstractItemListWidget::getItemFgColor(MouseState mouse, bool /*selected*/, const QPalette& palette) const {
+const QColor& AbstractItemListWidget::getItemFgColor(
+  MouseState mouse, bool /*selected*/, const QPalette& palette) const {
   return palette.color(mouse != MouseState::Disabled ? QPalette::Normal : QPalette::Disabled, QPalette::ButtonText);
 }
 
@@ -961,6 +991,7 @@ const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor(const Theme& 
   return theme.buttonBackgroundColor(isEnabled() ? MouseState::Normal : MouseState::Disabled, ColorRole::Primary);
 }
 const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor(const QPalette& palette) const {
-  return palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Highlight);
+  return palette.color(
+    isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Highlight);
 }
 } // namespace oclero::qlementine
