@@ -204,6 +204,7 @@ int AbstractItemListWidget::findItemIndex(const QVariant& data) const {
   const auto it = std::find_if(_items.constBegin(), _items.constEnd(), [&data](const auto& item) {
     return item.data == data;
   });
+  return it != _items.constEnd() ? static_cast<int>(std::distance(_items.constBegin(), it)) : -1;
 }
 
 void AbstractItemListWidget::setItemData(int index, const QVariant& data) {
