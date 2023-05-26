@@ -5040,22 +5040,11 @@ QColor const& QlementineStyle::progressBarValueColor(MouseState const mouse) con
 }
 
 QColor const& QlementineStyle::textFieldBackgroundColor(MouseState const mouse, Status const status) const {
-
-    switch (status) {
-      case Status::Error:
-        return _impl->theme.statusColorError;
-      case Status::Warning:
-        return _impl->theme.statusColorWarning;
-      case Status::Success:
-        return _impl->theme.statusColorSuccess;
-      case Status::Info:
-      case Status::Default:
-      default:
-        if (mouse == MouseState::Disabled)
-          return _impl->theme.adaptativeColorTransparent;
-        else
-          return _impl->theme.adaptativeColor1;
-  }
+    Q_UNUSED(status);
+    if (mouse == MouseState::Disabled)
+      return _impl->theme.adaptativeColorTransparent;
+    else
+      return _impl->theme.adaptativeColor1;
 }
 
 QColor const& QlementineStyle::textFieldBorderColor(MouseState const mouse, FocusState const focus, Status const status) const {
