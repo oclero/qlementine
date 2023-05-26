@@ -99,7 +99,7 @@ set(HEADERS
 
 set(RESOURCES
   resources/qlementine.qrc
-  $<$<PLATFORM_ID:Darwin>:resources/qlementine_fonts.qrc>
+  $<$<NOT:$<PLATFORM_ID:Windows>>:resources/qlementine_fonts.qrc>
   $<$<PLATFORM_ID:Windows>:resources/qlementine_fonts_windows.qrc>
 )
 

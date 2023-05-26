@@ -32,6 +32,8 @@
 #include <QWindow>
 #include <QApplication>
 
+#include <cmath>
+
 static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
 static constexpr auto QLEMENTINE_PI_4 = 3.14159265358979323846 / 4.;
 

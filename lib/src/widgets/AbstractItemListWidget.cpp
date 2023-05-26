@@ -30,6 +30,8 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 
+#include <cmath>
+
 namespace oclero::qlementine {
 constexpr auto animationFactor = 1;
 
@@ -41,17 +43,6 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   setIconSize({ iconExtent, iconExtent });
   setMouseTracking(true);
   setFocusPolicy(Qt::FocusPolicy::TabFocus);
-
-  // Animation for current item.
-  const auto currentItemRect = getCurrentItemRect();
-  const auto animDuration = style->styleHint(QStyle::SH_Widget_Animation_Duration) * animationFactor;
-  _currentIndexAnimation.setStartValue(currentItemRect);
-  _currentIndexAnimation.setEndValue(currentItemRect);
-  _currentIndexAnimation.setDuration(animDuration);
-  _currentIndexAnimation.setEasingCurve(QEasingCurve::Type::InOutCubic);
-  QObject::connect(&_currentIndexAnimation, &QVariantAnimation::valueChanged, this, [this]() {
-    update();
-  });
 
   // Focus frame.
   _focusFrame = new RoundedFocusFrame(this);
@@ -730,6 +721,20 @@ void AbstractItemListWidget::focusInEvent(QFocusEvent* e) {
 
 void AbstractItemListWidget::showEvent(QShowEvent* e) {
   QWidget::showEvent(e);
+
+  if (!_firstShow) {
+    // Animation for current item.
+    const auto currentItemRect = getCurrentItemRect();
+    const auto animDuration = style()->styleHint(QStyle::SH_Widget_Animation_Duration) * animationFactor;
+    _currentIndexAnimation.setStartValue(currentItemRect);
+    _currentIndexAnimation.setEndValue(currentItemRect);
+    _currentIndexAnimation.setDuration(animDuration);
+    _currentIndexAnimation.setEasingCurve(QEasingCurve::Type::InOutCubic);
+    QObject::connect(&_currentIndexAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+      update();
+    });
+  }
+
   _firstShow = true;
 }
 
@@ -917,9 +922,6 @@ void AbstractItemListWidget::drawItemForeground(QPainter& p, const Item& item) c
     p.setFont(badgeFont());
     p.setPen(badgeFgColor);
     p.drawText(badgeTextRect, textFlags, item.badge);
-
-    const auto elementW = badgeRect.width() + itemSpacing;
-    availableW -= elementW;
   }
 
   // Text.
