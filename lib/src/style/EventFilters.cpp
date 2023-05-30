@@ -80,7 +80,7 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
     const auto mouse = getMouseState(pressed, hovered, enabled);
     const auto& theme = _style.theme();
     const auto rect = _button->rect();
-    const auto& bgColor = theme.toolButtonBackgroundColor(mouse, ColorRole::Neutral);
+    const auto& bgColor = _style.toolButtonBackgroundColor(mouse, ColorRole::Neutral);
     const auto circleH = theme.controlHeightMedium;
     const auto circleW = circleH;
     const auto circleX = rect.x() + (rect.width() - circleW) / 2;
@@ -129,7 +129,7 @@ bool CommandLinkButtonPaintEventFilter::eventFilter(QObject* watchedObject, QEve
     const auto spacing = theme.spacing;
     const auto hPadding = spacing * 2;
     const auto fgRect = rect.marginsRemoved(QMargins(hPadding, 0, hPadding, 0));
-    const auto& bgColor = theme.toolButtonBackgroundColor(mouse, ColorRole::Neutral);
+    const auto& bgColor = _style.toolButtonBackgroundColor(mouse, ColorRole::Neutral);
     const auto& currentBgColor = _animManager.animateBackgroundColor(_button, bgColor, theme.animationDuration);
     const auto radius = theme.borderRadius;
 

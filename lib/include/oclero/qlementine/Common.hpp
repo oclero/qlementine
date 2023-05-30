@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <QMetaType>
+
 namespace oclero::qlementine {
 /// Color family to highlght or not the widget.
 enum class ColorRole {
@@ -83,4 +85,17 @@ enum class Status {
   Warning,
   Error,
 };
+
+enum class TextRole : int {
+  Caption = -1,
+  Default = 0,
+  H1,
+  H2,
+  H3,
+  H4,
+  H5,
+};
+
 } // namespace oclero::qlementine
+
+Q_DECLARE_METATYPE(oclero::qlementine::Status);

@@ -123,9 +123,6 @@ protected: // Available to child classes.
   virtual const QColor& getItemBadgeBgColor(MouseState mouse, bool selected, const QPalette& palette) const;
   virtual const QColor& getItemBadgeFgColor(MouseState mouse, bool selected, const QPalette& palette) const;
 
-  virtual const QColor& getCurrentItemIndicatorColor(const Theme& theme) const;
-  virtual const QColor& getCurrentItemIndicatorColor(const QPalette& palette) const;
-
   virtual void drawBackground(QPainter& p) const;
   virtual void drawItemBackground(QPainter& p, const Item& item) const;
   virtual void drawItemForeground(QPainter& p, const Item& item) const;

@@ -100,7 +100,7 @@ void NavigationBar::drawCurrentItemIndicator(QPainter& p) const {
 }
 QFont NavigationBar::labelFont() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
-  const auto& biggerFont = qlementineStyle ? qlementineStyle->theme().fontForTextRole(qlementine::Theme::TextRole::H5) : this->font();
+  const auto& biggerFont = qlementineStyle ? qlementineStyle->fontForTextRole(qlementine::TextRole::H5) : this->font();
   return biggerFont;
 }
 } // namespace oclero::qlementine

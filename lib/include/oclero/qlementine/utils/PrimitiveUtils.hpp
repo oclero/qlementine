@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <oclero/qlementine/style/Theme.hpp>
+#include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/utils/RadiusesF.hpp>
 
 #include <QPainter>
@@ -151,13 +151,13 @@ QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, double const pixelRa
 QPixmap makeClearButtonPixmap(QSize const& size, QColor const& color);
 
 /// Generates an icon for QLineEdit's clear button.
-void updateClearButtonIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateClearButtonIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
 
 /// Generates a pixmap that contains a check mark.
 QPixmap makeCheckPixmap(QSize const& size, QColor const& color);
 
 /// Generates an icon that contains a check mark.
-void updateCheckIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateCheckIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
 
 /// Generates a pixmap that contains a double right arrow.
 QPixmap makeDoubleArrowRightPixmap(QSize const& size, QColor const& color);
@@ -166,7 +166,7 @@ QPixmap makeDoubleArrowRightPixmap(QSize const& size, QColor const& color);
 QPixmap makeToolBarExtensionPixmap(QSize const& size, QColor const& color);
 
 /// Generates an icon that contains a double right arrow.
-void updateToolBarExtensionIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateToolBarExtensionIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
 
 /// Generates a pixmap that contains a left arrow.
 QPixmap makeArrowLeftPixmap(QSize const& size, QColor const& color);
@@ -175,10 +175,10 @@ QPixmap makeArrowLeftPixmap(QSize const& size, QColor const& color);
 QPixmap makeArrowRightPixmap(QSize const& size, QColor const& color);
 
 /// Generates an icon that contains a left arrow.
-void updateArrowLeftIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateArrowLeftIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
 
 /// Generates an icon that contains a right arrow.
-void updateArrowRightIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateArrowRightIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
 
 QPixmap makeMessageBoxWarningPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
 QPixmap makeMessageBoxCriticalPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
