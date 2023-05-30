@@ -51,12 +51,7 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   _focusFrame->setWidget(this);
 
   // Badge.
-<<<<<<< HEAD
   _badgeFont = qlementineStyle ? qlementineStyle->fontForTextRole(qlementine::TextRole::Caption) : this->font();
-=======
-  _badgeFont =
-    qlementineStyle ? qlementineStyle->theme().fontForTextRole(qlementine::Theme::TextRole::Caption) : this->font();
->>>>>>> origin/master
   _badgeFont.setBold(true);
 }
 
