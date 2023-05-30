@@ -121,7 +121,6 @@ class CustomPaintWidget : public QWidget {
     p.drawText((totalW - availableW4) / 2, y, availableW4, textH4, flags, text4);
     p.setPen(Qt::white);
     p.drawText(0, y, totalW, textH4, 0, QString("horizontalAdvance %1x%2").arg(textW4).arg(textH4));
-    y += textH4;
   }
 };
 
@@ -1371,6 +1370,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     lineEdit->setText("Label of the Switch");
     lineEdit->setIcon(dummyIcon);
     lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    lineEdit->setClearButtonEnabled(true);
     windowContentLayout->addWidget(lineEdit);
 
     auto* comboBoxStatus = new QComboBox(&owner);

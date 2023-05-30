@@ -104,9 +104,11 @@ void ThemeManager::setPreviousTheme() {
 }
 
 int ThemeManager::themeIndex(const QString& key) const {
-  const auto it = std::find_if(_themes.begin(), _themes.end(), [&key](auto& theme) { return theme.meta.name == key; });
+  const auto it = std::find_if(_themes.begin(), _themes.end(), [&key](auto& theme) {
+    return theme.meta.name == key;
+  });
   if (it != _themes.end())
-    return std::distance(_themes.begin(), it);
+    return static_cast<int>(std::distance(_themes.begin(), it));
   return -1;
 }
 

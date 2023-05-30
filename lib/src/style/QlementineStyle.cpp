@@ -65,6 +65,7 @@
 
 #include <cmath>
 #include <mutex>
+#include <cmath>
 
 static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
 
@@ -4544,7 +4545,7 @@ void QlementineStyle::polish(QWidget* w) {
 }
 
 void QlementineStyle::unpolish(QWidget* w) {
-  QCommonStyle::polish(w);
+  QCommonStyle::unpolish(w);
   w->setFont(_impl->theme.fontMedium);
 
   // TODO revert all hacks made in QlementineStyle::polish(QWidget* w)
