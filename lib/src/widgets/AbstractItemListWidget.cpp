@@ -992,14 +992,4 @@ const QColor& AbstractItemListWidget::getItemBgColor(MouseState mouse, const QPa
   return palette.color(mouse != MouseState::Disabled ? QPalette::Normal : QPalette::Disabled, QPalette::Button);
 }
 
-<<<<<<< HEAD
-=======
-const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor(const Theme& theme) const {
-  return theme.buttonBackgroundColor(isEnabled() ? MouseState::Normal : MouseState::Disabled, ColorRole::Primary);
-}
-const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor(const QPalette& palette) const {
-  return palette.color(
-    isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Highlight);
-}
->>>>>>> origin/master
 } // namespace oclero::qlementine
