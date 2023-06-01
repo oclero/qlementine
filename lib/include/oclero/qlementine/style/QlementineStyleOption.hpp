@@ -27,32 +27,6 @@
 #include <QStyleOption>
 
 namespace oclero::qlementine {
-/// Allows to customize the radius of the button.
-class QStyleOptionButttonRoundedRect : public QStyleOptionButton {
-public:
-  static constexpr auto INITIALIZED = 2;
-  RadiusesF radiuses;
-  int status{ 0 }; // Needed to track that it was created by us.
-
-  QStyleOptionButttonRoundedRect() = default;
-
-  static QStyleOptionButttonRoundedRect fromBase(QStyleOption const& opt, QRect const& rect, RadiusesF const& radiuses) {
-    QStyleOptionButttonRoundedRect newOpt;
-    newOpt.QStyleOption::operator=(opt);
-    newOpt.radiuses = radiuses;
-    newOpt.rect = rect;
-    newOpt.status = INITIALIZED;
-    return newOpt;
-  }
-
-  QStyleOptionButttonRoundedRect(const QStyleOptionButttonRoundedRect& other)
-    : QStyleOptionButton(other) {
-    *this = other;
-  }
-
-  QStyleOptionButttonRoundedRect& operator=(const QStyleOptionButttonRoundedRect&) = default;
-};
-
 /// Allows to customize the radius of the focus border.
 class QStyleOptionFocusRoundedRect : public QStyleOptionFocusRect {
 public:

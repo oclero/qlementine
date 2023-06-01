@@ -336,14 +336,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto role = getColorRole(opt->state, isDefault);
         const auto& bgColor = buttonBackgroundColor(mouse, role);
         const auto& currentBgColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
-
-        auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
-        if (const auto* optButtonRoundedRect = qstyleoption_cast<const QStyleOptionButttonRoundedRect*>(opt)) {
-          if (optButtonRoundedRect->status == QStyleOptionButttonRoundedRect::INITIALIZED) {
-            borderRadius = optButtonRoundedRect->radiuses;
-          }
-        }
-
+        const auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
         drawRoundedRect(p, optButton->rect, currentBgColor, borderRadius);
       }
       return;
@@ -427,7 +420,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_PanelLineEdit:
       if (const auto* optPanelLineEdit = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
         auto radiusAllAngles = true;
-        const auto parentSpinBox = qobject_cast<const QAbstractSpinBox*>(w->parentWidget());
+        const auto* parentSpinBox = qobject_cast<const QAbstractSpinBox*>(w->parentWidget());
         if (parentSpinBox && parentSpinBox->buttonSymbols() != QAbstractSpinBox::NoButtons) {
           radiusAllAngles = false;
         }
@@ -2261,6 +2254,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_ToolButtonLayoutItem:
     case SE_FrameLayoutItem:
     case SE_GroupBoxLayoutItem:
+      break;
 
     // TabWidget
     case SE_TabWidgetLayoutItem:
