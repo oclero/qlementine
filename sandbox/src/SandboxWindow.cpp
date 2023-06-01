@@ -324,7 +324,7 @@ struct SandboxWindow::Impl {
     auto* focusShortcut = new QShortcut(Qt::CTRL + Qt::Key_F, &owner);
     focusShortcut->setAutoRepeat(false);
     focusShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
-    QObject::connect(focusShortcut, &QShortcut::activated, focusShortcut, [this]() {
+    QObject::connect(focusShortcut, &QShortcut::activated, focusShortcut, []() {
       if (auto* w = qApp->focusWidget()) {
         w->clearFocus();
       } else {
@@ -1034,7 +1034,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       });
 
       auto* button = new QPushButton("Increase content height", container);
-      QObject::connect(button, &QPushButton::clicked, &owner, [expander, expanderContent]() {
+      QObject::connect(button, &QPushButton::clicked, &owner, [expanderContent]() {
         expanderContent->customSizeHint.rheight() += 20;
         expanderContent->updateGeometry();
       });
