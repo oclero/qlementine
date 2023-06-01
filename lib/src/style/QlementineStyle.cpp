@@ -1,4 +1,4 @@
-// MIT License
+﻿// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -1756,12 +1756,20 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
-          const auto treeView = qobject_cast<const QAbstractItemView*>(monitoredWidget->parentWidget()->parentWidget());
-          const auto margin = treeView? borderW * 2: borderW;
+
+          // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
+          auto isTabCellEditor = false;
+          if (const auto* parent1 = monitoredWidget ? monitoredWidget->parentWidget() : nullptr) {
+            if (const auto* parent2 = qobject_cast<const QAbstractItemView*>(parent1->parentWidget())) {
+              isTabCellEditor = true;
+            }
+          }
+
+          const auto margin = isTabCellEditor ? borderW * 2: borderW;
           optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
           // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible.
-          if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget->parentWidget())) {
+          if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget ? monitoredWidget->parentWidget() : nullptr)) {
             if (spinbox->buttonSymbols() != QAbstractSpinBox::NoButtons) {
               optFocus.radiuses.topRight = 0.;
               optFocus.radiuses.bottomRight = 0.;
@@ -1801,7 +1809,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             customRadius = roundedFocusFrame->radiuses();
           }
 
-          optFocus.rect = monitoredWidget->rect().translated(borderW * 2, borderW * 2).marginsAdded(QMargins(borderW, borderW, borderW, borderW));
+          optFocus.rect = monitoredWidget ? monitoredWidget->rect().translated(borderW * 2, borderW * 2).marginsAdded(QMargins(borderW, borderW, borderW, borderW)) : QRect{};
           optFocus.radiuses = customRadius >= 0 ? customRadius : _impl->theme.borderRadius;
         }
 
