@@ -212,8 +212,6 @@ struct SandboxWindow::Impl {
       }
     }
 #endif
-
-
   }
 
   void beginSetupUi() {
@@ -258,6 +256,8 @@ struct SandboxWindow::Impl {
         reloadJsonAction->setEnabled(!lastJsonThemePath.isEmpty());
         reloadJsonAction->setToolTip(lastJsonThemePath);
       }
+    }
+  }
 #endif
 
   void setupMenuBar() {
@@ -349,22 +349,44 @@ struct SandboxWindow::Impl {
   void setupUI_label() {
     {
       auto* label = new Label(windowContent);
-      label->setWordWrap(true);
-      label->setText("Sandbox Application");
-      label->setRole(Theme::TextRole::H2);
+      label->setText("Sandbox");
+      label->setRole(TextRole::H1);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setWordWrap(true);
+      label->setText("Headline 2");
+      label->setRole(TextRole::H2);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Headline 3");
+      label->setRole(TextRole::H3);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Headline 4");
+      label->setRole(TextRole::H4);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Headline 5");
+      label->setRole(TextRole::H5);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
       label->setText("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme.");
+      label->setRole(TextRole::Default);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setWordWrap(true);
       label->setText("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets.");
-      label->setRole(Theme::TextRole::Caption);
+      label->setRole(TextRole::Caption);
       windowContentLayout->addWidget(label);
     }
   }
@@ -1162,7 +1184,6 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUi_navigationBar() {
-
     const QIcon dummyIcon(":/refresh.svg");
 
     auto* navBar = new NavigationBar(windowContent);
@@ -1324,7 +1345,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     _impl->setupUI_label();
 //  _impl->setupUI_button();
 //  _impl->setupUI_buttonVariants();
-//   _impl->setupUI_checkbox();
+//  _impl->setupUI_checkbox();
 //  _impl->setupUI_radioButton();
 //  _impl->setupUI_commandLinkButton();
 //  _impl->setupUI_sliderAndProgressBar();

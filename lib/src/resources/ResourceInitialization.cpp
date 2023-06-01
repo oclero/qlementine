@@ -28,11 +28,11 @@
 void qlementineResourceInitialization() {
   // Loads the QRC content.
   Q_INIT_RESOURCE(qlementine);
-
+  Q_INIT_RESOURCE(qlementine_font_roboto);
 #if defined(WIN32)
-//  Q_INIT_RESOURCE(qlementine_fonts_windows);
+  Q_INIT_RESOURCE(qlementine_font_inter_windows);
 #else
-//  Q_INIT_RESOURCE(qlementine_fonts);
+  Q_INIT_RESOURCE(qlementine_font_inter);
 #endif
 }
 

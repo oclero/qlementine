@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="/qlementine/resources">
+    <file>fonts/inter/Inter-Bold.otf</file>
+    <file>fonts/inter/Inter-BoldItalic.otf</file>
+    <file>fonts/inter/Inter-Regular.otf</file>
+    <file>fonts/inter/Inter-Italic.otf</file>
+  </qresource>
+</RCC>

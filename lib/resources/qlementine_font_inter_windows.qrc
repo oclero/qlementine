@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="/qlementine/resources">
+    <file alias="fonts/inter/Inter-Bold.ttf">fonts/inter-windows/Inter-Bold.ttf</file>
+    <file alias="fonts/inter/Inter-BoldItalic.ttf">fonts/inter-windows/Inter-BoldItalic.ttf</file>
+    <file alias="fonts/inter/Inter-Regular.ttf">fonts/inter-windows/Inter-Regular.ttf</file>
+    <file alias="fonts/inter/Inter-Italic.ttf">fonts/inter-windows/Inter-Italic.ttf</file>
+  </qresource>
+</RCC>
