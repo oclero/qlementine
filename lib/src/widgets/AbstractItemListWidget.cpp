@@ -51,8 +51,7 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   _focusFrame->setWidget(this);
 
   // Badge.
-  _badgeFont =
-    qlementineStyle ? qlementineStyle->theme().fontForTextRole(qlementine::Theme::TextRole::Caption) : this->font();
+  _badgeFont = qlementineStyle ? qlementineStyle->fontForTextRole(qlementine::TextRole::Caption) : this->font();
   _badgeFont.setBold(true);
 }
 
@@ -331,8 +330,6 @@ bool AbstractItemListWidget::hitTestItemRect(
          && pos.y() >= 0 && pos.y() <= height(); // Widget full height.
 }
 
-#pragma region Events
-
 void AbstractItemListWidget::keyPressEvent(QKeyEvent* e) {
   QWidget::keyPressEvent(e);
   const auto key = e->key();
@@ -408,8 +405,6 @@ void AbstractItemListWidget::mouseMoveEvent(QMouseEvent* e) {
     setPressedIndex(index);
   }
 }
-
-#pragma endregion
 
 QSize AbstractItemListWidget::sizeHint() const {
   // Make a first pass to ask every item how much space they need if space was unlimited.
@@ -570,8 +565,10 @@ std::tuple<QColor, QColor, QColor, QColor> AbstractItemListWidget::getItemBgAndF
 
 const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
-  return qlementineStyle ? getCurrentItemIndicatorColor(qlementineStyle->theme())
-                         : getCurrentItemIndicatorColor(palette());
+  if (qlementineStyle != nullptr) {
+      return qlementineStyle->buttonBackgroundColor(isEnabled() ? MouseState::Normal : MouseState::Disabled, ColorRole::Primary);
+  }
+  return palette().color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Highlight);
 }
 
 QRect AbstractItemListWidget::getCurrentItemRect() const {
@@ -990,11 +987,4 @@ const QColor& AbstractItemListWidget::getItemBgColor(MouseState mouse, const QPa
   return palette.color(mouse != MouseState::Disabled ? QPalette::Normal : QPalette::Disabled, QPalette::Button);
 }
 
-const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor(const Theme& theme) const {
-  return theme.buttonBackgroundColor(isEnabled() ? MouseState::Normal : MouseState::Disabled, ColorRole::Primary);
-}
-const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor(const QPalette& palette) const {
-  return palette.color(
-    isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Highlight);
-}
 } // namespace oclero::qlementine

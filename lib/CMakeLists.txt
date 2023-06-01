@@ -99,8 +99,9 @@ set(HEADERS
 
 set(RESOURCES
   resources/qlementine.qrc
-  $<$<NOT:$<PLATFORM_ID:Windows>>:resources/qlementine_fonts.qrc>
-  $<$<PLATFORM_ID:Windows>:resources/qlementine_fonts_windows.qrc>
+  resources/qlementine_font_roboto.qrc
+  $<$<NOT:$<PLATFORM_ID:Windows>>:resources/qlementine_font_inter.qrc>
+  $<$<PLATFORM_ID:Windows>:resources/qlementine_font_inter_windows.qrc>
 )
 
 # Configure target.

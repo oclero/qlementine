@@ -212,7 +212,7 @@ void Switch::setupAnimation() {
 const QColor& Switch::getBgColor() const {
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  const auto& bgColor = qlementineStyle ? qlementineStyle->theme().switchGrooveColor(getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+  const auto& bgColor = qlementineStyle ? qlementineStyle->switchGrooveColor(getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
                                   : style->standardPalette().color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Button);
   return bgColor;
 }
@@ -220,7 +220,7 @@ const QColor& Switch::getBgColor() const {
 const QColor& Switch::getFgColor() const {
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  const auto& fgColor = qlementineStyle ? qlementineStyle->theme().switchHandleColor(getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+  const auto& fgColor = qlementineStyle ? qlementineStyle->switchHandleColor(getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
                                   : style->standardPalette().color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::ButtonText);
   return fgColor;
 }
@@ -228,7 +228,7 @@ const QColor& Switch::getFgColor() const {
 const QColor& Switch::getTextColor() const {
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  const auto& textColor = qlementineStyle ? qlementineStyle->theme().labelForegroundColor(getMouseState(isDown(), _isMouseOver, isEnabled()))
+  const auto& textColor = qlementineStyle ? qlementineStyle->labelForegroundColor(getMouseState(isDown(), _isMouseOver, isEnabled()))
                                     : style->standardPalette().color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Text);
   return textColor;
 }

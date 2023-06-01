@@ -26,8 +26,6 @@
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 
-#include "EventFilters.hpp"
-
 #include <QPainter>
 
 namespace oclero::qlementine {
@@ -43,7 +41,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
   const auto isSeparator = idx.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
   if (isSeparator) {
     const auto& rect = opt.rect;
-    const auto& color = theme.toolBarSeparatorColor();
+    const auto& color = qlementineStyle ? qlementineStyle->toolBarSeparatorColor() : Theme().neutralAlternativeColorDisabled;
     const auto lineW = theme.borderWidth;
     constexpr auto padding = 0; //_impl->theme.spacing / 2;
     const auto x = rect.x() + (rect.width() - lineW) / 2.;
@@ -58,7 +56,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     // Background.
     const auto hPadding = theme.spacing;
     const auto& bgRect = opt.rect;
-    const auto& bgColor = theme.menuItemBackgroundColor(mouse);
+    const auto& bgColor = qlementineStyle ? qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
     constexpr auto radius = 0;
     p->setRenderHint(QPainter::Antialiasing, true);
     p->setPen(Qt::NoPen);
@@ -76,7 +74,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto focus = selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
     auto availableW = fgRect.width();
     auto availableX = fgRect.x();
-    const auto& fgColor = theme.menuItemForegroundColor(mouse);
+    const auto& fgColor = qlementineStyle ? qlementineStyle->menuItemForegroundColor(mouse) : Theme().neutralColor;
 
     // Icon.
     const auto iconVariant = idx.data(Qt::DecorationRole);
@@ -97,7 +95,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
       availableX += iconSize.width() + spacing;
 
       if (mouse == MouseState::Disabled && !colorize) {
-        const auto& bgColor = theme.listItemBackgroundColor(MouseState::Normal, selected, focus, active);
+        const auto& bgColor = qlementineStyle ? qlementineStyle->listItemBackgroundColor(MouseState::Normal, selected, focus, active) : Theme().adaptativeColorTransparent;
         const auto premultipiedColor = getColorSourceOver(bgColor, fgColor);
         const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
         const auto opacity = selected == SelectionState::Selected ? 1. : 0.25;

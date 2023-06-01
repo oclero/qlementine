@@ -29,7 +29,7 @@
 
 namespace oclero::qlementine {
 QSize CommandLinkButton::sizeHint() const {
-  if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style())) {
+  if (qobject_cast<QlementineStyle*>(style())) {
     ensurePolished();
     QStyleOptionCommandLinkButton opt;
     initStyleOption(&opt);
@@ -50,7 +50,7 @@ bool CommandLinkButton::hasHeightForWidth() const {
 }
 
 void CommandLinkButton::paintEvent(QPaintEvent* e) {
-  if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style())) {
+  if (qobject_cast<QlementineStyle*>(style())) {
     QStylePainter p(this);
     QStyleOptionCommandLinkButton opt;
     initStyleOption(&opt);

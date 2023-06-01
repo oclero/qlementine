@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oclero/qlementine/style/Theme.hpp>
+#include <oclero/qlementine/Common.hpp>
 
 #include <QLabel>
 
@@ -10,15 +10,15 @@ namespace oclero::qlementine {
 class Label : public QLabel {
   Q_OBJECT
 
-  Q_PROPERTY(oclero::qlementine::Theme::TextRole role READ role WRITE setRole NOTIFY roleChanged)
+  Q_PROPERTY(oclero::qlementine::TextRole role READ role WRITE setRole NOTIFY roleChanged)
 
 public:
   explicit Label(QWidget* parent = nullptr);
   explicit Label(const QString& text, QWidget* parent = nullptr);
   ~Label();
 
-  Theme::TextRole role() const;
-  Q_SLOT void setRole(Theme::TextRole role);
+  TextRole role() const;
+  Q_SLOT void setRole(TextRole role);
   Q_SIGNAL void roleChanged();
 
 protected:
@@ -28,7 +28,7 @@ protected:
 private:
   void updatePaletteFromTheme();
 
-  Theme::TextRole _role{ Theme::TextRole::Default };
+  TextRole _role{ TextRole::Default };
   bool _changingPaletteFlag{ false };
 };
 } // namespace oclero::qlementine

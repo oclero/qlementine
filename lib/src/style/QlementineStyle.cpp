@@ -39,6 +39,7 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 
 #include "EventFilters.hpp"
+#include "QtWidgets/qtreeview.h"
 
 #include <QFontDatabase>
 #include <QToolTip>
@@ -62,6 +63,7 @@
 #include <QMessageBox>
 #include <QTextEdit>
 
+#include <cmath>
 #include <mutex>
 #include <cmath>
 
@@ -82,8 +84,8 @@ constexpr auto iconPenWidth = 1.01;
 // Used to determine if the icon must be colorized according to the Theme's colorsor not.
 constexpr auto Property_DisableAutoIconColor = "disableAutoIconColor";
 
-struct QlementineStyle::Impl {
-  Impl(QlementineStyle& o)
+struct QlementineStyleImpl {
+  QlementineStyleImpl(QlementineStyle& o)
     : owner(o) {
     updatePalette();
     std::call_once(qlementineOnceFlag, qlementine::resources::initializeResources);
@@ -97,26 +99,16 @@ struct QlementineStyle::Impl {
 #else
     const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.otf");
 #endif
-
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Regular")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Italic")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Bold")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-BoldItalic")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Medium")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-MediumItalic")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Light")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-LightItalic")));
 
     const auto fixedFontPath = QString(":/qlementine/resources/fonts/roboto-mono/%1.ttf");
-
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Regular")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Italic")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Bold")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-BoldItalic")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Medium")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-MediumItalic")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Light")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-LightItalic")));
   }
 
   /// Some widgets need to have a QPalette explicitely set.
@@ -138,32 +130,32 @@ struct QlementineStyle::Impl {
     if (!availableSizes.contains(size)) {
       // TODO Autres icones : utiliser QPainter ou charger fichier SVG.
       switch (standardPixmap) {
-        case SP_Check:
-          updateCheckIcon(icon, size, theme);
+        case QlementineStyle::SP_Check:
+          updateCheckIcon(icon, size, owner);
           break;
-        case SP_LineEditClearButton:
-          updateClearButtonIcon(icon, size, theme);
+        case QlementineStyle::SP_LineEditClearButton:
+          updateClearButtonIcon(icon, size, owner);
           break;
-        case SP_ToolBarVerticalExtensionButton:
-        case SP_ToolBarHorizontalExtensionButton:
-          updateToolBarExtensionIcon(icon, size, theme);
+        case QlementineStyle::SP_ToolBarVerticalExtensionButton:
+        case QlementineStyle::SP_ToolBarHorizontalExtensionButton:
+          updateToolBarExtensionIcon(icon, size, owner);
           break;
-        case SP_ArrowLeft:
-          updateArrowLeftIcon(icon, size, theme);
+        case QlementineStyle::SP_ArrowLeft:
+          updateArrowLeftIcon(icon, size, owner);
           break;
-        case SP_ArrowRight:
-          updateArrowRightIcon(icon, size, theme);
+        case QlementineStyle::SP_ArrowRight:
+          updateArrowRightIcon(icon, size, owner);
           break;
-        case SP_MessageBoxWarning:
+        case QlementineStyle::SP_MessageBoxWarning:
           updateMessageBoxWarningIcon(icon, size, theme);
           break;
-        case SP_MessageBoxCritical:
+        case QlementineStyle::SP_MessageBoxCritical:
           updateMessageBoxCriticalIcon(icon, size, theme);
           break;
-        case SP_MessageBoxInformation:
+        case QlementineStyle::SP_MessageBoxInformation:
           updateMessageBoxInformationIcon(icon, size, theme);
           break;
-        case SP_MessageBoxQuestion:
+        case QlementineStyle::SP_MessageBoxQuestion:
           updateMessageBoxQuestionIcon(icon, size, theme);
           break;
         default:
@@ -181,20 +173,14 @@ struct QlementineStyle::Impl {
   bool useMenuForComboBoxPopup{ false };
 };
 
-#pragma region Ctor / Dtor
-
 QlementineStyle::QlementineStyle(QObject* parent)
   : QCommonStyle()
-  , _impl(new Impl{ *this }) {
+  , _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
 }
 
 QlementineStyle::~QlementineStyle() = default;
-
-#pragma endregion
-
-#pragma region API
 
 Theme const& QlementineStyle::theme() const {
   return _impl->theme;
@@ -287,12 +273,8 @@ QIcon QlementineStyle::makeIcon(const QString& svgPath) {
   return result;
 }
 
-#pragma endregion
-
-#pragma region QStyle overrides
-
 void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
-  switch (pe) {
+  switch (static_cast<quint64>(pe)) {
     case PE_Frame:
       return;
     case PE_FrameDefaultButton:
@@ -307,7 +289,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           borderRadiuses = optRoundedFocus->radiuses;
         }
 
-        const auto& borderColor = _impl->theme.focusBorderColor();
+        const auto& borderColor = focusBorderColor();
         const auto focused = optFocus->state.testFlag(State_HasFocus);
         const auto progress = focused ? 1. : 0.;
         const auto currentProgress = _impl->animations.animateFocusBorderProgress(w, progress, _impl->theme.focusAnimationDuration);
@@ -328,7 +310,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto p1 = QPointF{ rect.x() + lineW / 2., static_cast<qreal>(rect.y()) };
         const auto p2 = QPointF{ rect.x() + lineW / 2., static_cast<qreal>(rect.y() + rect.height()) };
         const auto mouse = getMouseState(frameOpt->state);
-        const auto& lineColor = _impl->theme.groupBoxBorderColor(mouse);
+        const auto& lineColor = groupBoxBorderColor(mouse);
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(lineColor, lineW, Qt::SolidLine, Qt::FlatCap));
         p->drawLine(p1, p2);
@@ -351,7 +333,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
         const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
         const auto role = getColorRole(opt->state, isDefault);
-        const auto& bgColor = _impl->theme.buttonBackgroundColor(mouse, role);
+        const auto& bgColor = buttonBackgroundColor(mouse, role);
         const auto& currentBgColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
 
         auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
@@ -366,9 +348,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_FrameTabBarBase: {
       const auto& rect = opt->rect;
-      p->fillRect(rect, _impl->theme.tabBarBackgroundColor());
+      p->fillRect(rect, tabBarBackgroundColor());
       const auto borderW = _impl->theme.borderWidth;
-      const auto& borderColor = _impl->theme.tabBarBottomShadowColor();
+      const auto& borderColor = tabBarBottomShadowColor();
       const auto borderRect = QRect(rect.x(), rect.y() + rect.height() - borderW, rect.width(), borderW);
       p->fillRect(borderRect, borderColor);
     }
@@ -402,14 +384,14 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto role = getColorRole(buttonState, false);
 
         // Draw background.
-        const auto& bgColor = _impl->theme.toolButtonBackgroundColor(mouse, role);
+        const auto& bgColor = toolButtonBackgroundColor(mouse, role);
         const auto& currentColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         drawRoundedRect(p, rect, currentColor, buttonRadiuses);
       }
       return;
     case PE_PanelMenuBar: {
-      const auto& bgColor = _impl->theme.menuBarBackgroundColor();
-      const auto& borderColor = _impl->theme.menuBarBorderColor();
+      const auto& bgColor = menuBarBackgroundColor();
+      const auto& borderColor = menuBarBorderColor();
       const auto lineWidth = _impl->theme.borderWidth;
       const auto x1 = static_cast<double>(opt->rect.x());
       const auto x2 = static_cast<double>(x1 + opt->rect.width());
@@ -424,7 +406,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_PanelToolBar:
       if (const auto* optToolBar = qstyleoption_cast<const QStyleOptionToolBar*>(opt)) {
-        const auto& bgColor = _impl->theme.toolBarBackgroundColor();
+        const auto& bgColor = toolBarBackgroundColor();
         const auto& rect = optToolBar->rect;
         p->fillRect(rect, bgColor);
 
@@ -436,7 +418,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto y2 = y1;
         const auto p1 = QPointF(x1, y1);
         const auto p2 = QPointF(x2, y2);
-        const auto& lineColor = _impl->theme.toolBarBorderColor();
+        const auto& lineColor = toolBarBorderColor();
         p->setPen(QPen(lineColor, lineW, Qt::SolidLine, Qt::FlatCap));
         p->drawLine(p1, p2);
       }
@@ -455,15 +437,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         auto fixedState = optPanelLineEdit->state;
         fixedState.setFlag(QStyle::State_Sunken, false);
 
-        auto status = Status::Default;
-        if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(w)) {
-          status = qlementineLineEdit->status();
-        }
-
+        const auto status = widgetStatus(w);
         const auto mouse = getMouseState(fixedState);
         const auto focus = getFocusState(optPanelLineEdit->state);
-        const auto& bgColor = _impl->theme.textFieldBackgroundColor(mouse);
-        const auto& borderColor = _impl->theme.textFieldBorderColor(mouse, focus, status);
+        const auto& bgColor = textFieldBackgroundColor(mouse, status);
+        const auto& borderColor = textFieldBorderColor(mouse, focus, status);
         const auto borderW = _impl->theme.borderWidth;
         const auto radiusF = static_cast<double>(_impl->theme.borderRadius);
         const auto& radiuses = radiusAllAngles ? RadiusesF{ radiusF } : RadiusesF{ radiusF, 0., 0., radiusF };
@@ -497,7 +475,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           const auto active = getActiveState(opt->state);
           const auto widgetHasFocus = w->hasFocus();
           const auto focus = widgetHasFocus && selection == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
-          const auto& fgColor = _impl->theme.listItemForegroundColor(mouse, selection, focus, active);
+          const auto& fgColor = listItemForegroundColor(mouse, selection, focus, active);
           p->setRenderHint(QPainter::Antialiasing, true);
           p->setBrush(Qt::NoBrush);
           p->setPen(QPen(fgColor, iconPenWidth, Qt::SolidLine, Qt::RoundCap));
@@ -514,8 +492,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto mouse = getMouseState(optItem->state);
         const auto selected = getSelectionState(optItem->state);
         const auto active = getActiveState(optItem->state);
-        const auto& checkBoxFgColor = _impl->theme.listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
-        const auto& checkBoxBgColor = _impl->theme.listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
+        const auto& checkBoxFgColor = listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
+        const auto& checkBoxBgColor = listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
         const auto radius = _impl->theme.checkBoxBorderRadius;
         // Ensure the rect is a perfect square, centered in optButton->rect;.
         const auto indicatorSize = std::max(optItem->rect.width(), optItem->rect.height());
@@ -530,8 +508,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         const auto checkState = getCheckState(optButton->state);
         const auto mouse = getMouseState(optButton->state);
-        const auto& bgColor = _impl->theme.checkButtonBackgroundColor(mouse, checkState);
-        const auto& fgColor = _impl->theme.checkButtonForegroundColor(mouse, checkState);
+        const auto& bgColor = checkButtonBackgroundColor(mouse, checkState);
+        const auto& fgColor = checkButtonForegroundColor(mouse, checkState);
         // Ensure the rect is a perfect square, centered in optButton->rect.
         const auto indicatorSize = std::max(optButton->rect.width(), optButton->rect.height());
         const auto indicatorX = optButton->rect.x() + (optButton->rect.width() - indicatorSize);
@@ -558,7 +536,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto indicatorType = optHeader->sortIndicator;
         const auto mouse = getMouseState(optHeader->state);
         const auto checked = getCheckState(optHeader->state);
-        const auto& fgColor = _impl->theme.tableHeaderFgColor(mouse, checked);
+        const auto& fgColor = tableHeaderFgColor(mouse, checked);
         p->setRenderHint(QPainter::Antialiasing, true);
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(fgColor, 1.001, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -592,7 +570,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_IndicatorToolBarSeparator: {
       const auto& rect = opt->rect;
-      const auto& color = _impl->theme.toolBarSeparatorColor();
+      const auto& color = toolBarSeparatorColor();
       const auto horizontal = opt->state.testFlag(State_Horizontal);
       const auto lineW = _impl->theme.borderWidth;
       constexpr auto padding = 0; //_impl->theme.spacing / 2;
@@ -612,8 +590,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     }
       return;
     case PE_PanelTipLabel: {
-      const auto& bgColor = _impl->theme.toolTipBackgroundColor();
-      const auto& borderColor = _impl->theme.toolTipBorderColor();
+      const auto& bgColor = toolTipBackgroundColor();
+      const auto& borderColor = toolTipBorderColor();
       // More investigation is needed to make rounded tooltips on Windows.
       // Currently we only support this feature on MacOS.
 #ifdef WIN32
@@ -637,7 +615,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto shadowW = _impl->theme.spacing * 3;
       const auto endPos = QPointF(rect.topLeft()) + QPointF{ static_cast<double>(shadowW), 0. };
       auto gradient = QLinearGradient(startPos, endPos);
-      const auto& startColor = _impl->theme.tabBarShadowColor();
+      const auto& startColor = tabBarShadowColor();
       const auto& endColor = _impl->theme.shadowColorTransparent;
       gradient.setColorAt(0., startColor);
       gradient.setColorAt(1., endColor);
@@ -659,7 +637,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto endPos = QPointF(rect.topLeft()) + QPointF{ static_cast<double>(shadowW), 0. };
       auto gradient = QLinearGradient(startPos, endPos);
       const auto& startColor = _impl->theme.shadowColorTransparent;
-      const auto& endColor = _impl->theme.tabBarShadowColor();
+      const auto& endColor = tabBarShadowColor();
       gradient.setColorAt(0., startColor);
       gradient.setColorAt(1., endColor);
       const auto compModeBackup = p->compositionMode();
@@ -669,7 +647,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
       // Filled rectangle below scroll buttons.
       const auto filledRect = QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
-      p->fillRect(filledRect, _impl->theme.tabBarBackgroundColor());
+      p->fillRect(filledRect, tabBarBackgroundColor());
     }
       return;
     case PE_PanelScrollAreaCorner:
@@ -692,7 +670,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto selection = getSelectionState(itemState);
         const auto focus = getFocusState(itemState); // Has the cell focus? (Always false when the QWidget doesn't have focus.)
         const auto active = getActiveState(itemState); // Has the QWidget focus?
-        const auto& color = _impl->theme.listItemBackgroundColor(mouse, selection, focus, active);
+        const auto& color = listItemBackgroundColor(mouse, selection, focus, active);
         p->fillRect(rect, color);
 
         // Border on the left if necessary.
@@ -702,7 +680,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
               const auto lineW = _impl->theme.borderWidth;
               const auto p1 = QPointF(rect.x() + lineW * .5, rect.y());
               const auto p2 = QPointF(rect.x() + lineW * .5, rect.y() + rect.height());
-              const auto& lineColor = _impl->theme.tableLineColor();
+              const auto& lineColor = tableLineColor();
               p->setRenderHint(QPainter::Antialiasing, false);
               p->setPen(QPen(lineColor, lineW));
               p->drawLine(p1, p2);
@@ -716,7 +694,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
               const auto lineW = _impl->theme.borderWidth;
               const auto p1 = QPointF(rect.x(), rect.y() + lineW * .5);
               const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + lineW * .5);
-              const auto& lineColor = _impl->theme.tableLineColor();
+              const auto& lineColor = tableLineColor();
               p->setRenderHint(QPainter::Antialiasing, false);
               p->setPen(QPen(lineColor, lineW));
               p->drawLine(p1, p2);
@@ -739,7 +717,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         //const auto multiSelection = itemView ? itemView->selectionMode() != QAbstractItemView::SelectionMode::SingleSelection : false;
         const auto showCellFocus = true; //multiColumn ? isCurrentCell : multiSelection;
         const auto cellFocus = showCellFocus ? focus : FocusState::NotFocused;
-        const auto& borderColor = _impl->theme.cellItemFocusBorderColor(cellFocus, selection, active);
+        const auto& borderColor = cellItemFocusBorderColor(cellFocus, selection, active);
         const auto borderW = _impl->theme.borderWidth * 2;
         auto borderRect = optItem->rect;
         borderRect.setLeft(0);
@@ -752,7 +730,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         // Draw alternate row color.
         const auto alternate = getAlternateState(optItem->features);
         const auto mouse = optItem->state.testFlag(State_Enabled) ? MouseState::Normal : MouseState::Disabled;
-        const auto& color = _impl->theme.listItemRowBackgroundColor(mouse, alternate);
+        const auto& color = listItemRowBackgroundColor(mouse, alternate);
         p->fillRect(optItem->rect, color);
 
         // Draw selection color in the arrow area.
@@ -801,7 +779,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           const auto radius = static_cast<double>(rect.height()) / 2.;
           const auto mouse = getTabItemMouseState(opt->state, tabHovered);
           const auto selected = getSelectionState(opt->state);
-          const auto& bgColor = _impl->theme.tabCloseButtonBackgroundColor(mouse, selected);
+          const auto& bgColor = tabCloseButtonBackgroundColor(mouse, selected);
           const auto currentBgColor = _impl->animations.animateBackgroundColor(button, bgColor, duration);
           p->setRenderHint(QPainter::Antialiasing, true);
           p->setPen(Qt::NoPen);
@@ -809,7 +787,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           p->drawRoundedRect(rect, radius, radius);
 
           // Foreground.
-          const auto& fgColor = _impl->theme.tabCloseButtonForegroundColor(mouse, selected);
+          const auto& fgColor = tabCloseButtonForegroundColor(mouse, selected);
           const auto currentFgColor = _impl->animations.animateForegroundColor(button, fgColor, duration);
           p->setPen(QPen(currentFgColor, iconPenWidth, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
           p->setBrush(Qt::NoBrush);
@@ -823,8 +801,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       //p->fillRect(opt->rect, QColor(255, 0, 0, 64));
 
       const auto radius = _impl->theme.borderRadius;
-      const auto& bgColor = _impl->theme.menuBackgroundColor();
-      const auto& borderColor = _impl->theme.menuBorderColor();
+      const auto& bgColor = menuBackgroundColor();
+      const auto& borderColor = menuBorderColor();
       const auto borderW = _impl->theme.borderWidth;
       p->setRenderHint(QPainter::Antialiasing, true);
       const auto totalRect = opt->rect;
@@ -844,17 +822,12 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       drawRoundedRectBorder(p, frameRect, borderColor, borderW, radius);
     }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case PE_CommandButtonPanel:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
         const auto radius = _impl->theme.borderRadius;
         const auto mouse = getMouseState(optButton->state);
         const auto role = getColorRole(optButton->state, false);
-        const auto& bgColor = _impl->theme.commandButtonBackgroundColor(mouse, role);
+        const auto& bgColor = commandButtonBackgroundColor(mouse, role);
         const auto& currentColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         p->setPen(Qt::NoPen);
         p->setBrush(currentColor);
@@ -885,7 +858,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           const auto pxRatio = getPixelRatio(w);
           const auto& pixmap = getPixmap(icon, iconSize, pxRatio, mouse, checked);
           if (!pixmap.isNull() && !iconRect.isEmpty()) {
-            const auto& iconColor = _impl->theme.commandButtonIconColor(mouse, role);
+            const auto& iconColor = commandButtonIconColor(mouse, role);
             const auto colorize = isAutoIconColorEnabled(w);
             const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, iconColor) : pixmap;
             p->drawPixmap(iconRect, colorizedPixmap);
@@ -918,7 +891,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           const auto textX = availableX;
           const auto textY = totalTextY;
           const auto textRect = QRect{ textX, textY, availableW, textH };
-          const auto& textColor = _impl->theme.commandButtonTextColor(mouse, role);
+          const auto& textColor = commandButtonTextColor(mouse, role);
           const auto elidedText = boldFm.elidedText(text, Qt::ElideRight, availableW, Qt::TextSingleLine);
           p->setFont(_impl->theme.fontBold);
           p->setPen(textColor);
@@ -929,7 +902,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           const auto descriptionX = availableX;
           const auto descriptionY = totalTextY + textH + vSpacing;
           const auto descriptionRect = QRect{ descriptionX, descriptionY, availableW, descriptionH };
-          const auto& descriptionColor = _impl->theme.commandButtonDescriptionColor(mouse, role);
+          const auto& descriptionColor = commandButtonDescriptionColor(mouse, role);
           const auto elidedDescription = fm.elidedText(description, Qt::ElideRight, availableW, Qt::TextSingleLine);
           p->setFont(_impl->theme.fontRegular);
           p->setPen(descriptionColor);
@@ -939,9 +912,6 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         p->setFont(backupFont);
       }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     default:
       break;
   }
@@ -949,7 +919,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 }
 
 void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
-  switch (ce) {
+  switch (static_cast<quint64>(ce)) {
     case CE_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Button background and border.
@@ -975,7 +945,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto mouse = getMouseState(optButton->state);
         const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
         const auto role = getColorRole(optButton->state, isDefault);
-        const auto& fgColor = _impl->theme.buttonForegroundColor(mouse, role);
+        const auto& fgColor = buttonForegroundColor(mouse, role);
         const auto& currentFgColor = _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
         const auto indicatorSize = pixelMetric(PM_MenuButtonIndicator, opt, w);
         const auto spacing = _impl->theme.spacing;
@@ -1062,7 +1032,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Draw text and icon.
         const auto mouse = getMouseState(optButton->state);
-        const auto& fgColor = _impl->theme.labelForegroundColor(mouse);
+        const auto& fgColor = labelForegroundColor(mouse);
         const auto spacing = _impl->theme.spacing;
         const auto pxRatio = getPixelRatio(w);
         const auto checked = getCheckState(optButton->state);
@@ -1145,7 +1115,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto drawShape = tabIsSelected || (!mouseOverButtons && mouseOverTab);
         if (drawShape) {
           const auto radius = _impl->theme.borderRadius;
-          const auto& bgColor = _impl->theme.tabBackgroundColor(mouse, selection);
+          const auto& bgColor = tabBackgroundColor(mouse, selection);
           const auto& radiuses = tabIsSelected ? RadiusesF(radius, radius, radius, radius) : RadiusesF(radius, radius, 0., 0.);
           drawTab(p, tabOpt->rect, radiuses, bgColor);
         }
@@ -1163,7 +1133,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         const auto mouse = getMouseState(tabOpt->state);
         const auto selection = getSelectionState(tabOpt->state);
-        const auto& fgColor = _impl->theme.tabForegroundColor(mouse, selection);
+        const auto& fgColor = tabForegroundColor(mouse, selection);
 
         const auto spacing = _impl->theme.spacing;
         const auto& icon = tabOpt->icon;
@@ -1240,7 +1210,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         // Background.
         const auto radius = optProgressBar->rect.height() / 2.;
         const auto mouse = getMouseState(optProgressBar->state);
-        const auto& color = _impl->theme.progressBarGrooveColor(mouse);
+        const auto& color = progressBarGrooveColor(mouse);
         drawRoundedRect(p, optProgressBar->rect, color, radius);
       }
       return;
@@ -1249,7 +1219,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         // Draw foreground rect.
         const auto radius = optProgressBar->rect.height() / 2.;
         const auto mouse = getMouseState(optProgressBar->state);
-        const auto& color = _impl->theme.progressBarValueColor(mouse);
+        const auto& color = progressBarValueColor(mouse);
         const auto indeterminate = optProgressBar->maximum == 0 && optProgressBar->minimum == 0;
 
         if (indeterminate) {
@@ -1276,7 +1246,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ProgressBarLabel:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         const auto mouse = getMouseState(optProgressBar->state);
-        const auto& color = _impl->theme.labelForegroundColor(mouse);
+        const auto& color = labelForegroundColor(mouse);
         const auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
         p->setBrush(Qt::NoBrush);
         p->setPen(color);
@@ -1286,7 +1256,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_MenuItem:
       if (const auto* optMenuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(opt)) {
         if (optMenuItem->menuItemType == QStyleOptionMenuItem::Separator) {
-          const auto& color = _impl->theme.menuSeparatorColor();
+          const auto& color = menuSeparatorColor();
           const auto hMargin = 0;
           const auto rect = optMenuItem->rect.marginsRemoved(QMargins(hMargin, 0, hMargin, 0));
           const auto separatorThickness = _impl->theme.borderWidth;
@@ -1297,7 +1267,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           // Background.
           const auto& bgRect = optMenuItem->rect;
-          const auto& bgColor = _impl->theme.menuItemBackgroundColor(mouse);
+          const auto& bgColor = menuItemBackgroundColor(mouse);
           const auto radius = _impl->theme.menuItemBorderRadius;
           p->setRenderHint(QPainter::Antialiasing, true);
           p->setPen(Qt::NoPen);
@@ -1306,7 +1276,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           // Foreground.
           const auto spacing = _impl->theme.spacing;
-          const auto& fgColor = _impl->theme.menuItemForegroundColor(mouse);
+          const auto& fgColor = menuItemForegroundColor(mouse);
           const auto pxRatio = getPixelRatio(w);
           const auto menuHasCheckable = optMenuItem->menuHasCheckableItems;
           const auto checkable = optMenuItem->checkType != QStyleOptionMenuItem::NotCheckable;
@@ -1336,8 +1306,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
               constexpr auto borderW = 0.;
               const auto selected = getSelectionState(optMenuItem->state);
               const auto active = getActiveState(optMenuItem->state);
-              const auto& boxFgColor = _impl->theme.listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
-              const auto& boxBgColor = _impl->theme.listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
+              const auto& boxFgColor = listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
+              const auto& boxBgColor = listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
 
               // TODO draw smaller checks.
               if (isRadio) {
@@ -1379,7 +1349,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
               const auto shortcutX = fgRect.x() + fgRect.width() - shortcutW;
               const auto shortcutRect = QRect{ shortcutX, fgRect.y(), shortcutW, fgRect.height() };
               constexpr auto shortcutFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
-              const auto& shortcutColor = _impl->theme.menuItemSecondaryForegroundColor(mouse);
+              const auto& shortcutColor = menuItemSecondaryForegroundColor(mouse);
               p->setPen(shortcutColor);
               p->drawText(shortcutRect, shortcutFlags, shortcut);
 
@@ -1434,14 +1404,14 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_MenuBarItem:
       if (const auto* optMenuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(opt)) {
         // MenuBar background.
-        const auto& barBgColor = _impl->theme.menuBarBackgroundColor();
+        const auto& barBgColor = menuBarBackgroundColor();
         p->fillRect(optMenuItem->rect, barBgColor);
 
         // Item.
         const auto mouse = getMenuItemMouseState(optMenuItem->state);
         const auto selected = getSelectionState(optMenuItem->state);
-        const auto& bgColor = _impl->theme.menuBarItemBackgroundColor(mouse, selected);
-        const auto& fgColor = _impl->theme.menuBarItemForegroundColor(mouse, selected);
+        const auto& bgColor = menuBarItemBackgroundColor(mouse, selected);
+        const auto& fgColor = menuBarItemForegroundColor(mouse, selected);
         auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignHCenter;
         if (styleHint(SH_UnderlineShortcut, opt, w)) {
           textFlags |= Qt::TextShowMnemonic;
@@ -1460,7 +1430,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       }
       return;
     case CE_MenuBarEmptyArea: {
-      const auto& bgColor = _impl->theme.menuBarBackgroundColor();
+      const auto& bgColor = menuBarBackgroundColor();
       p->fillRect(opt->rect, bgColor);
     }
       return;
@@ -1473,7 +1443,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Little hack to avoid having a checked extension button.
         auto buttonState = optToolButton->state;
-        const auto isExtensionButton = w->objectName() == QStringLiteral("qt_toolbar_ext_button");
+        const auto isExtensionButton = (w && w->objectName() == QStringLiteral("qt_toolbar_ext_button"));
         if (isExtensionButton) {
           buttonState.setFlag(State_On, false);
         }
@@ -1486,7 +1456,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto mouse = getToolButtonMouseState(buttonState);
         const auto role = getColorRole(buttonState, false);
         const auto checked = getCheckState(buttonState);
-        const auto& fgColor = _impl->theme.toolButtonForegroundColor(mouse, role);
+        const auto& fgColor = toolButtonForegroundColor(mouse, role);
         const auto spacing = _impl->theme.spacing;
         const auto hasMenu = optToolButton->features.testFlag(QStyleOptionToolButton::HasMenu);
         const auto leftPadding = buttonStyle == Qt::ToolButtonTextOnly ? spacing * 2 : spacing;
@@ -1558,17 +1528,17 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_HeaderSection:
       if (const auto* optHeader = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
-        const auto* tableView = qobject_cast<const QTableView*>(w->parentWidget());
+        const auto* tableView = (w ? qobject_cast<const QTableView*>(w->parentWidget()) : nullptr);
         const auto& rect = opt->rect;
         // Background.
         const auto mouse = getMouseState(opt->state);
         const auto checked = getCheckState(opt->state);
-        const auto& bgColor = _impl->theme.tableHeaderBgColor(mouse, checked);
+        const auto& bgColor = tableHeaderBgColor(mouse, checked);
         p->fillRect(rect, bgColor);
         p->setRenderHint(QPainter::Antialiasing, false);
 
         // Lines.
-        const auto& lineColor = _impl->theme.tableLineColor();
+        const auto& lineColor = tableLineColor();
         const auto lineW = _impl->theme.borderWidth;
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(lineColor, lineW));
@@ -1627,7 +1597,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           iconSpaceW = iconExtent + spacing;
           textAvailableW -= iconSpaceW;
         }
-        const auto textW = std::min(fm.horizontalAdvance(text), textAvailableW);
+        const auto tw = fm.size(Qt::TextSingleLine, text).width();
+        const auto textW = std::min(tw, textAvailableW);
         const auto labelW = textW + iconSpaceW;
         const auto labelAlignment = optHeader->textAlignment; // We don't care about iconAlignment to make things simpler.
         auto labelX = 0;
@@ -1645,7 +1616,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         const auto mouse = getMouseState(optHeader->state);
         const auto checked = getCheckState(optHeader->state);
-        const auto& fgColor = _impl->theme.tableHeaderFgColor(mouse, checked);
+        const auto& fgColor = tableHeaderFgColor(mouse, checked);
 
         // Icon.
         if (hasIcon) {
@@ -1670,7 +1641,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       }
       return;
     case CE_HeaderEmptyArea: {
-      const auto& bgColor = _impl->theme.tableHeaderBgColor(MouseState::Normal, CheckState::NotChecked);
+      const auto& bgColor = tableHeaderBgColor(MouseState::Normal, CheckState::NotChecked);
       p->fillRect(opt->rect, bgColor);
     }
       return;
@@ -1784,7 +1755,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
-          optFocus.rect = optFocus.rect.marginsRemoved(QMargins(borderW, borderW, borderW, borderW));
+          const auto treeView = qobject_cast<const QAbstractItemView*>(monitoredWidget->parentWidget()->parentWidget());
+          const auto margin = treeView? borderW * 2: borderW;
+          optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
           // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible.
           if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget->parentWidget())) {
@@ -1849,7 +1822,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto& totalRect = optComboBox->rect;
         // Draw text and icon.
         const auto mouse = getMouseState(optComboBox->state);
-        const auto& fgColor = _impl->theme.comboBoxForegroundColor(mouse);
+        const auto& fgColor = comboBoxForegroundColor(mouse);
         const auto& currentFgColor = _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
         const auto indicatorSize = _impl->theme.iconSize;
         const auto spacing = _impl->theme.spacing;
@@ -1885,7 +1858,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textRect = QRect{ availableX, contentRect.y(), availableW, contentRect.height() };
           constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
-          p->setPen(fgColor);
+
+          const auto status = widgetStatus(w);
+          const auto textColor = comboBoxTextColor(mouse, status);
+          p->setPen(textColor);
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
 
@@ -1936,7 +1912,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto active = getActiveState(optItem->state);
 
         // We show the selected color on the whole row, not only the cell.
-        const auto widgetHasFocus = w->hasFocus();
+        const auto widgetHasFocus = (w && w->hasFocus());
         const auto focus = widgetHasFocus && selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
 
         // Checkbox, if any.
@@ -1966,7 +1942,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Actual content.
         const auto itemMouse = getMouseState(optItem->state);
-        const auto& fgColor = _impl->theme.listItemForegroundColor(itemMouse, selected, focus, active);
+        const auto& fgColor = listItemForegroundColor(itemMouse, selected, focus, active);
         const auto contentRect = fgRect.adjusted(checkBoxSpace, 0, 0, 0);
         auto availableW = contentRect.width();
         auto availableX = contentRect.x();
@@ -1987,7 +1963,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           availableX += iconW + iconSpacing;
 
           if (itemMouse == MouseState::Disabled && !colorize) {
-            const auto& bgColor = _impl->theme.listItemBackgroundColor(MouseState::Normal, selected, focus, active);
+            const auto& bgColor = listItemBackgroundColor(MouseState::Normal, selected, focus, active);
             const auto premultipiedColor = getColorSourceOver(bgColor, fgColor);
             const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
             const auto opacity = selected == SelectionState::Selected ? 0.3 : 0.25;
@@ -2009,7 +1985,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textRect = QRect{ textX, contentRect.y(), availableW, contentRect.height() };
           const auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
-          p->setPen(fgColor);
+          const QBrush &b = optItem->palette.brush(QPalette::Text);
+          p->setPen(b.color());
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
       }
@@ -2017,13 +1994,16 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ShapedFrame:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
         const auto frameShape = frameOpt->frameShape;
+
+        const auto lineW = _impl->theme.borderWidth;
+        const auto& lineColor = frameBorderColor();
+        const QPen& pen = QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap);
+
         switch (frameShape) {
           case QFrame::HLine:
           case QFrame::VLine: {
-            const auto lineW = _impl->theme.borderWidth;
-            const auto& lineColor = _impl->theme.frameBorderColor();
             p->setBrush(Qt::NoBrush);
-            p->setPen(QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap));
+            p->setPen(pen);
             if (frameShape == QFrame::HLine) {
               const auto p1 = QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height() / 2);
               const auto p2 = QPoint(opt->rect.x() + opt->rect.width(), p1.y());
@@ -2040,8 +2020,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
                 if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
                   const auto& palette = _impl->theme.palette;
                   const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, bgRole);
-                  p->setPen(Qt::NoPen);
+                  p->setPen(pen);
                   p->setBrush(bgColor);
+                  p->setRenderHint(QPainter::Antialiasing, true);
                   p->drawRect(frameOpt->rect);
                 }
             }
@@ -2049,11 +2030,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         }
       }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case CE_CommandButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
         // Button background and border.
@@ -2071,9 +2047,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         drawPrimitive(peLabel, &optLabel, p, w);
       }
       return;
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     default:
       break;
   }
@@ -2238,10 +2211,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       if (const auto* optItem = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
         const auto& rect = optItem->rect;
         const auto iconRect = subElementRect(SE_ItemViewItemDecoration, opt, w);
-        const auto hMargin = _impl->theme.spacing;
-        const auto spacing = _impl->theme.spacing;
-        const auto textX = (iconRect.isValid() ? iconRect.x() + iconRect.width() : hMargin) + spacing;
-        const auto textW = rect.width() - textX - hMargin;
+        const auto textX = iconRect.isValid() ? iconRect.x() + iconRect.width() : rect.x();
+        const auto textW = iconRect.isValid() ? rect.width() - iconRect.width() - iconRect.x() : rect.width();
         return QRect{ textX, rect.y(), textW, rect.height() };
       }
       return {};
@@ -2384,7 +2355,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             const auto upButtonHovered = upButtonActive;
             const auto upButtonPressed = upButtonActive && spinboxOpt->state.testFlag(State_Sunken);
             const auto upMouse = getMouseState(upButtonPressed, upButtonHovered, upButtonEnabled);
-            const auto& upButtonBgColor = _impl->theme.spinBoxButtonBackgroundColor(upMouse);
+            const auto& upButtonBgColor = spinBoxButtonBackgroundColor(upMouse);
             const auto& currentColor = _impl->animations.animateBackgroundColor(w, upButtonBgColor, _impl->theme.animationDuration);
 
             // Draw background.
@@ -2393,7 +2364,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             p->drawPath(upButtonPath);
 
             // Draw icon.
-            const auto& fgColor = _impl->theme.spinBoxButtonForegroundColor(upMouse);
+            const auto& fgColor = spinBoxButtonForegroundColor(upMouse);
             const auto& currentFgColor = _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
             const auto iconSize = _impl->theme.iconSize / 2;
             const auto translateY = _impl->theme.borderWidth;
@@ -2410,7 +2381,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             const auto downButtonHovered = downButtonActive;
             const auto downButtonPressed = downButtonActive && spinboxOpt->state.testFlag(State_Sunken);
             const auto downMouse = getMouseState(downButtonPressed, downButtonHovered, downButtonEnabled);
-            const auto& downButtonBgColor = _impl->theme.spinBoxButtonBackgroundColor(downMouse);
+            const auto& downButtonBgColor = spinBoxButtonBackgroundColor(downMouse);
             const auto& currentColor = _impl->animations.animateBackgroundColor2(w, downButtonBgColor, _impl->theme.animationDuration);
 
             // Draw background.
@@ -2419,7 +2390,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             p->drawPath(downButtonPath);
 
             // Draw icon.
-            const auto& fgColor = _impl->theme.spinBoxButtonForegroundColor(downMouse);
+            const auto& fgColor = spinBoxButtonForegroundColor(downMouse);
             const auto& currentFgColor = _impl->animations.animateForegroundColor2(w, fgColor, _impl->theme.animationDuration);
             const auto iconSize = _impl->theme.iconSize / 2;
             p->setPen(QPen(currentFgColor, iconPenWidth, Qt::SolidLine, Qt::FlatCap));
@@ -2454,7 +2425,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         // that should be animated.
         const auto mouse = getMouseState(scrollBarOpt->state);
         const auto horizontal = scrollBarOpt->orientation == Qt::Horizontal;
-        const auto thickness = _impl->theme.getScrollBarThickness(mouse);
+        const auto thickness = getScrollBarThickness(mouse);
         const auto currentThickness = _impl->animations.animateProgress(w, thickness, _impl->theme.animationDuration * 2);
 
         // Groove.
@@ -2462,7 +2433,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         const auto currentGrooveRect = horizontal ? QRectF(grooveRect.x(), grooveRect.y() + grooveRect.height() - currentThickness, grooveRect.width(), currentThickness)
                                                   : QRectF(grooveRect.x() + grooveRect.width() - currentThickness, grooveRect.y(), currentThickness, grooveRect.height());
 
-        const auto& grooveColor = _impl->theme.scrollBarGrooveColor(mouse);
+        const auto& grooveColor = scrollBarGrooveColor(mouse);
         const auto& currentGrooveColor = _impl->animations.animateBackgroundColor(w, grooveColor, _impl->theme.animationDuration * 2);
         const auto grooveRadius = horizontal ? currentGrooveRect.height() / 2. : currentGrooveRect.width() / 2.;
         p->setRenderHint(QPainter::Antialiasing, true);
@@ -2476,7 +2447,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           const auto currentHandleRect = horizontal ? QRectF(handleRect.x(), handleRect.y() + handleRect.height() - currentThickness, handleRect.width(), currentThickness)
                                                     : QRectF(handleRect.x() + handleRect.width() - currentThickness, handleRect.y(), currentThickness, handleRect.height());
           const auto handleMouse = getScrollBarHandleState(scrollBarOpt->state, scrollBarOpt->activeSubControls);
-          const auto& handleColor = _impl->theme.scrollBarHandleColor(handleMouse);
+          const auto& handleColor = scrollBarHandleColor(handleMouse);
           const auto& currentHandleColor = _impl->animations.animateBackgroundColor2(w, handleColor, _impl->theme.animationDuration);
           const auto handleRadius = horizontal ? currentHandleRect.height() / 2. : currentHandleRect.width() / 2.;
           p->setBrush(currentHandleColor);
@@ -2508,7 +2479,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         if (sliderOpt->subControls.testFlag(SC_SliderTickmarks) && sliderOpt->tickPosition != QSlider::NoTicks) {
           const auto tickmarksRect = subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);
           const auto tickThickness = _impl->theme.sliderTickThickness;
-          const auto& tickColor = _impl->theme.sliderTickColor(mouse);
+          const auto& tickColor = sliderTickColor(mouse);
 
           // Little trick to avoid having two colors with alpha<255 above one another.
           if (disabled) {
@@ -2529,8 +2500,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         const auto grooveRect = subControlRect(CC_Slider, opt, SC_SliderGroove, w);
 
         if (sliderOpt->subControls.testFlag(SC_SliderGroove) && grooveRect.isValid()) {
-          const auto& grooveColor = _impl->theme.sliderGrooveColor(mouse);
-          const auto& valueColor = _impl->theme.sliderValueColor(mouse);
+          const auto& grooveColor = sliderGrooveColor(mouse);
+          const auto& valueColor = sliderValueColor(mouse);
           const auto radius = grooveRect.height() / 2.;
 
           // Little trick to avoid having two colors with alpha<255 above one another.
@@ -2552,7 +2523,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         if (sliderOpt->subControls.testFlag(SC_SliderHandle) && handleRect.isValid()) {
           static QPixmap dropShadowPixmap;
           const auto handleMouse = sliderOpt->activeSubControls == QStyle::SC_SliderHandle ? widgetMouse : mouse;
-          const auto& handleColor = _impl->theme.sliderHandleColor(handleMouse);
+          const auto& handleColor = sliderHandleColor(handleMouse);
           const auto& currentColor = _impl->animations.animateForegroundColor(w, handleColor, _impl->theme.animationDuration);
 
           p->setRenderHint(QPainter::Antialiasing, true);
@@ -2622,7 +2593,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             buttonOpt.state.setFlag(State_Raised, true);
 
             // Draw an opaque background to hide tabs below.
-            p->fillRect(toolbuttonOpt->rect, _impl->theme.tabBarBackgroundColor());
+            p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor());
 
             // Rect.
             const auto spacing = _impl->theme.spacing;
@@ -2659,13 +2630,13 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           // Background.
           const auto menuButtonMouse = getToolButtonMouseState(menuButtonState);
           const auto role = getColorRole(toolbuttonOpt->state, false);
-          const auto& bgColor = _impl->theme.toolButtonBackgroundColor(menuButtonMouse, role);
+          const auto& bgColor = toolButtonBackgroundColor(menuButtonMouse, role);
           const auto& currentColor = _impl->animations.animateBackgroundColor2(w, bgColor, _impl->theme.animationDuration);
           drawRoundedRect(p, menuButtonRect, currentColor, menuButtonRadiuses);
 
           // Line.
           const auto lineW = _impl->theme.borderWidth;
-          const auto& lineColor = _impl->theme.toolButtonSeparatorColor(mouse, role);
+          const auto& lineColor = toolButtonSeparatorColor(mouse, role);
           const auto lineX = buttonRect.x() + buttonRect.width() - lineW / 2.;
           const auto lineMargin = 0; //_impl->theme.spacing / 2.;
           const auto lineY1 = static_cast<double>(buttonRect.y() + lineMargin);
@@ -2681,7 +2652,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           const auto arrowX = menuButtonRect.x() + (menuButtonRect.width() - arrowSize.width()) / 2;
           const auto arrowY = menuButtonRect.y() + (menuButtonRect.height() - arrowSize.height()) / 2;
           const auto arrowRect = QRect{ arrowX, arrowY, arrowSize.width(), arrowSize.height() };
-          const auto& arrowColor = _impl->theme.toolButtonForegroundColor(menuButtonMouse, role);
+          const auto& arrowColor = toolButtonForegroundColor(menuButtonMouse, role);
           const auto& currentArrowColor = _impl->animations.animateForegroundColor2(w, arrowColor, _impl->theme.animationDuration);
           const auto path = getMenuIndicatorPath(arrowRect);
           p->setPen(QPen(currentArrowColor, iconPenWidth, Qt::SolidLine, Qt::RoundCap));
@@ -2701,7 +2672,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         if (dialOpt->subControls.testFlag(SC_DialTickmarks)) {
           const auto tickmarksRect = subControlRect(cc, opt, SC_DialTickmarks, w);
           const auto tickThickness = _impl->theme.dialMarkThickness;
-          const auto& tickColor = _impl->theme.dialTickColor(mouse);
+          const auto& tickColor = dialTickColor(mouse);
           const auto tickLength = _impl->theme.dialTickLength;
           const auto minArcLength = dialOpt->notchTarget * 2;
           drawDialTickMarks(p, tickmarksRect, tickColor, min, max, tickThickness, tickLength, dialOpt->singleStep, dialOpt->pageStep, minArcLength);
@@ -2720,14 +2691,14 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
         // Dial shape.
         const auto dialRect = subControlRect(cc, opt, SC_DialGroove, w);
-        const auto& dialBgColor = _impl->theme.dialBackgroundColor(mouse);
-        const auto& dialHandleColor = _impl->theme.dialHandleColor(mouse);
-        const auto& dialGrooveColor = _impl->theme.dialGrooveColor(mouse);
-        const auto& dialValueColor = _impl->theme.dialValueColor(mouse);
-        const auto& dialMarkColor = _impl->theme.dialMarkColor(mouse);
-        const auto& currentHandleColor = _impl->animations.animateBackgroundColor(w, dialHandleColor, _impl->theme.animationDuration);
+        const auto& bgColor = dialBackgroundColor(mouse);
+        const auto& handleColor = dialHandleColor(mouse);
+        const auto& grooveColor = dialGrooveColor(mouse);
+        const auto& valueColor = dialValueColor(mouse);
+        const auto& markColor = dialMarkColor(mouse);
+        const auto& currentHandleColor = _impl->animations.animateBackgroundColor(w, handleColor, _impl->theme.animationDuration);
 
-        drawDial(p, dialRect, dialOpt->minimum, dialOpt->maximum, currentProgress, dialBgColor, currentHandleColor, dialGrooveColor, dialValueColor, dialMarkColor, _impl->theme.dialGrooveThickness,
+        drawDial(p, dialRect, dialOpt->minimum, dialOpt->maximum, currentProgress, bgColor, currentHandleColor, grooveColor, valueColor, markColor, _impl->theme.dialGrooveThickness,
           _impl->theme.dialMarkLength, _impl->theme.dialMarkThickness);
       }
       return;
@@ -2748,7 +2719,7 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           const auto& fm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : groupBoxOpt->fontMetrics;
           const auto elidedText = fm.elidedText(groupBoxOpt->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
           const auto mouse = getMouseState(groupBoxOpt->state);
-          const auto& textColor = _impl->theme.groupBoxTitleColor(mouse);
+          const auto& textColor = groupBoxTitleColor(mouse);
           constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setFont(_impl->theme.fontBold);
           p->setPen(textColor);
@@ -2801,7 +2772,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_ComboBox:
-      if (const auto* optComboBox = qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
         const auto popupRect = subControlRect(cc, opt, SC_ComboBoxListBoxPopup, w);
         if (popupRect.isValid() && popupRect.contains(pos)) {
           return SC_ComboBoxListBoxPopup;
@@ -2824,7 +2795,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_ScrollBar:
-      if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
         // Keep the scrollbar handle testing at the top so the handle has priority.
         const auto sliderRect = subControlRect(cc, opt, SC_ScrollBarSlider, w);
         if (sliderRect.isValid() && sliderRect.contains(pos)) {
@@ -2881,7 +2852,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_ToolButton:
-      if (const auto* optToolButton = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
         const auto buttonRect = subControlRect(cc, opt, SC_ToolButton, w);
         if (buttonRect.isValid() && buttonRect.contains(pos)) {
           return SC_ToolButton;
@@ -2894,7 +2865,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_Dial:
-      if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
         const auto handleRect = subControlRect(cc, opt, SC_DialHandle, w);
         if (handleRect.isValid() && handleRect.contains(pos)) {
           return SC_DialHandle;
@@ -2912,7 +2883,7 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
       }
       return SC_None;
     case CC_GroupBox:
-      if (const auto* groupBoxOpt = qstyleoption_cast<const QStyleOptionGroupBox*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionGroupBox*>(opt)) {
         // Here we cheat to avoid having a gap between the CheckBox and the Label where it
         // doesn't hit any SubControl. We want it to always hit the CheckBox.
         const auto checkBoxRect = subControlRect(cc, opt, SC_GroupBoxCheckBox, w);
@@ -3148,7 +3119,7 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
       }
       return {};
     case CC_TitleBar:
-      if (const auto* titleBarOpt = qstyleoption_cast<const QStyleOptionTitleBar*>(opt)) {
+      if (qstyleoption_cast<const QStyleOptionTitleBar*>(opt)) {
         switch (sc) {
           case SC_TitleBarSysMenu:
             return {};
@@ -3272,7 +3243,7 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
 }
 
 QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt, const QSize& contentSize, const QWidget* widget) const {
-  switch (ct) {
+  switch (static_cast<quint64>(ct)) {
     case CT_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         const auto hasIcon = !optButton->icon.isNull();
@@ -3471,6 +3442,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         }
         return QSize{};
       }
+      break;
     case CT_MenuBarItem: {
       const auto hPadding = _impl->theme.spacing;
       const auto vPadding = _impl->theme.spacing / 2;
@@ -3552,7 +3524,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto r = optFrame->rect;
         const auto w = r.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
-        return QSize{ w, h };
+        const auto treeView = qobject_cast<const QAbstractItemView*>(widget->parentWidget()->parentWidget());
+        return treeView? contentSize: QSize{ w, h };
       }
       break;
     case CT_SpinBox:
@@ -3623,18 +3596,16 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto hasCheck = features.testFlag(QStyleOptionViewItem::HasCheckIndicator);
         const auto& checkSize = hasCheck ? _impl->theme.iconSize : QSize{ 0, 0 };
 
-        // Don't take into account the actual content: let the ListView be resized as needed.
-        const auto w = 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
+        auto font = QFont(widget->font());
+        const auto fm = QFontMetrics(font);
+        const auto textW = fm.horizontalAdvance(optItem->text);
+
+        const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;
         const auto h = std::max({ iconSize.height() + spacing, textH + spacing, defaultH });
         return QSize{ w, h };
       }
       break;
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case CT_CommandButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
         const auto iconSize = _impl->theme.iconSizeMedium;
@@ -3653,9 +3624,6 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         return QSize{ w, h };
       }
       break;
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     default:
       break;
   }
@@ -3663,22 +3631,14 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
 }
 
 int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const QWidget* w) const {
-  switch (m) {
+  switch (static_cast<quint64>(m)) {
     // Icons.
     case PM_SmallIconSize:
       return _impl->theme.iconSize.height();
     case PM_LargeIconSize:
       return _impl->theme.iconSizeLarge.height();
-#if defined(__APPLE__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wenum-compare-switch"
-#  pragma clang diagnostic ignored "-Wswitch"
-#endif
     case PM_MediumIconSize:
       return _impl->theme.iconSizeMedium.height();
-#if defined(__APPLE__)
-#  pragma clang diagnostic pop
-#endif
     // Button.
     case PM_ButtonMargin:
       return _impl->theme.spacing;
@@ -4101,7 +4061,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
 
     // Table
     case SH_Table_GridLineColor:
-      return _impl->theme.tableLineColor().rgba();
+      return tableLineColor().rgba();
     case SH_Header_ArrowAlignment:
       return Qt::AlignRight | Qt::AlignVCenter;
 
@@ -4530,7 +4490,9 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Ensure widgets are not compressed vertically.
   if (shouldNotBeVerticallyCompressed(w)) {
-    w->setMinimumHeight(w->sizeHint().height());
+    if (0 == w->minimumHeight()) {
+      w->setMinimumHeight(w->sizeHint().height());
+    }
   }
 
   if (shouldNotHaveWheelEvents(w)) {
@@ -4572,7 +4534,6 @@ void QlementineStyle::polish(QWidget* w) {
 
 void QlementineStyle::unpolish(QWidget* w) {
   QCommonStyle::unpolish(w);
-  w->setFont(_impl->theme.fontMedium);
 
   // TODO revert all hacks made in QlementineStyle::polish(QWidget* w)
 
@@ -4584,5 +4545,852 @@ void QlementineStyle::unpolish(QWidget* w) {
     w->setMouseTracking(false);
   }
 }
-#pragma endregion
+
+QColor const& QlementineStyle::color(MouseState const mouse, ColorRole const role) const {
+  const auto primary = role == ColorRole::Primary;
+
+  switch (mouse) {
+    case MouseState::Pressed:
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.neutralColorPressed;
+    case MouseState::Hovered:
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.neutralColorHovered;
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColorDisabled;
+    case MouseState::Transparent:
+      return primary ? _impl->theme.primaryColorTransparent : _impl->theme.neutralColorTransparent;
+    case MouseState::Normal:
+    default:
+      return primary ? _impl->theme.primaryColor : _impl->theme.neutralColor;
+  }
+}
+
+QColor const& QlementineStyle::frameBackgroundColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.backgroundColorMainTransparent;
+  else
+    return _impl->theme.backgroundColorMain1;
+}
+
+QColor const& QlementineStyle::buttonBackgroundColor(MouseState const mouse, ColorRole const role) const {
+  const auto primary = role == ColorRole::Primary;
+
+  switch (mouse) {
+    case MouseState::Pressed:
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.adaptativeColor5;
+    case MouseState::Hovered:
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.adaptativeColor4;
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColor1;
+    case MouseState::Transparent:
+      return primary ? _impl->theme.primaryColorTransparent : _impl->theme.adaptativeColorTransparent;
+    case MouseState::Normal:
+    default:
+      return primary ? _impl->theme.primaryColor : _impl->theme.adaptativeColor3;
+  }
+}
+
+QColor const& QlementineStyle::buttonForegroundColor(MouseState const mouse, ColorRole const role) const {
+  const auto primary = role == ColorRole::Primary;
+
+  switch (mouse) {
+    case MouseState::Pressed:
+      return primary ? _impl->theme.primaryColorForegroundPressed : _impl->theme.neutralColor;
+    case MouseState::Hovered:
+      return primary ? _impl->theme.primaryColorForegroundHovered : _impl->theme.neutralColor;
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralColorDisabled;
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
+  }
+}
+
+QColor const& QlementineStyle::toolButtonBackgroundColor(MouseState const mouse, ColorRole const role) const {
+  const auto primary = role == ColorRole::Primary;
+
+  switch (mouse) {
+    case MouseState::Pressed:
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.adaptativeColor3;
+    case MouseState::Hovered:
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.adaptativeColor2;
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColorTransparent;
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return primary ? _impl->theme.primaryColor : _impl->theme.adaptativeColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::toolButtonForegroundColor(MouseState const mouse, ColorRole const role) const {
+  const auto primary = role == ColorRole::Primary;
+
+  switch (mouse) {
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralColorDisabled;
+    default:
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
+  }
+}
+
+QColor const& QlementineStyle::toolButtonSeparatorColor(MouseState const mouse, ColorRole const role) const {
+  Q_UNUSED(role)
+  switch (mouse) {
+    case MouseState::Pressed:
+      return _impl->theme.adaptativeColor5;
+    case MouseState::Hovered:
+      return _impl->theme.adaptativeColor3;
+    case MouseState::Normal:
+      return _impl->theme.adaptativeColor2;
+    case MouseState::Disabled:
+    default:
+      return _impl->theme.adaptativeColor1;
+  }
+}
+
+QColor const& QlementineStyle::commandButtonBackgroundColor(MouseState const mouse, ColorRole const role) const {
+  return toolButtonBackgroundColor(mouse, role);
+}
+
+QColor const& QlementineStyle::commandButtonTextColor(MouseState const mouse, ColorRole const role) const {
+  return toolButtonForegroundColor(mouse, role);
+}
+
+QColor const& QlementineStyle::commandButtonDescriptionColor(MouseState const mouse, ColorRole const role) const {
+  const auto primary = role == ColorRole::Primary;
+
+  switch (mouse) {
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralAlternativeColorDisabled;
+    default:
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralAlternativeColor;
+  }
+}
+
+QColor const& QlementineStyle::commandButtonIconColor(MouseState const mouse, ColorRole const role) const {
+  return commandButtonDescriptionColor(mouse, role);
+}
+
+QColor const& QlementineStyle::checkButtonBackgroundColor(MouseState const mouse, CheckState const checked) const {
+  switch (checked) {
+    case CheckState::Checked:
+    case CheckState::Indeterminate:
+      return buttonBackgroundColor(mouse, ColorRole::Primary);
+    case CheckState::NotChecked:
+    default:
+      return buttonBackgroundColor(mouse, ColorRole::Neutral);
+  }
+}
+
+QColor const& QlementineStyle::checkButtonForegroundColor(MouseState const mouse, CheckState const checked) const {
+  Q_UNUSED(checked)
+  return buttonForegroundColor(mouse, ColorRole::Primary);
+}
+
+QColor const& QlementineStyle::radioButtonBackgroundColor(MouseState const mouse, CheckState const checked) const {
+  return checkButtonBackgroundColor(mouse, checked);
+}
+
+QColor const& QlementineStyle::radioButtonForegroundColor(MouseState const mouse, CheckState const checked) const {
+  return checkButtonForegroundColor(mouse, checked);
+}
+
+QColor const& QlementineStyle::comboBoxBackgroundColor(MouseState const mouse) const {
+  return buttonBackgroundColor(mouse, ColorRole::Neutral);
+}
+
+QColor const& QlementineStyle::comboBoxForegroundColor(MouseState const mouse) const {
+  return buttonForegroundColor(mouse, ColorRole::Neutral);
+}
+
+QColor const& QlementineStyle::comboBoxTextColor(MouseState const mouse, Status const status) const {
+  switch (status) {
+    case Status::Error:
+      return _impl->theme.statusColorError;
+    case Status::Warning:
+      return _impl->theme.statusColorWarning;
+    case Status::Success:
+      return _impl->theme.statusColorSuccess;
+    case Status::Info:
+    case Status::Default:
+    default:
+      return comboBoxForegroundColor(mouse);
+  }
+}
+
+QColor const& QlementineStyle::spinBoxBackgroundColor(MouseState const mouse) const {
+  return textFieldBackgroundColor(mouse, Status::Default);
+}
+
+QColor const& QlementineStyle::spinBoxBorderColor(MouseState const mouse, FocusState const focus) const {
+  return textFieldBorderColor(mouse, focus, Status::Default);
+}
+
+QColor const& QlementineStyle::spinBoxButtonBackgroundColor(MouseState const mouse) const {
+  return buttonBackgroundColor(mouse, ColorRole::Neutral);
+}
+
+QColor const& QlementineStyle::spinBoxButtonForegroundColor(MouseState const mouse) const {
+  return buttonForegroundColor(mouse, ColorRole::Neutral);
+}
+
+QColor const& QlementineStyle::listItemRowBackgroundColor(MouseState const mouse, AlternateState const alternate) const {
+  const auto isAlternate = alternate == AlternateState::Alternate;
+  const auto isEnabled = mouse != MouseState::Disabled;
+  return _impl->theme.palette.color(isEnabled ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, isAlternate ? QPalette::ColorRole::AlternateBase : QPalette::ColorRole::Base);
+}
+
+QColor const& QlementineStyle::listItemBackgroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
+  Q_UNUSED(focus)
+  const auto isSelected = selected == SelectionState::Selected;
+  const auto isActive = active == ActiveState::Active;
+
+  if (isActive) {
+    switch (mouse) {
+      case MouseState::Pressed:
+        return isSelected ? _impl->theme.primaryColor : _impl->theme.adaptativeColor3;
+      case MouseState::Hovered:
+        return isSelected ? _impl->theme.primaryColor : _impl->theme.adaptativeColor1;
+      case MouseState::Disabled:
+        return isSelected ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColorTransparent;
+      case MouseState::Transparent:
+      case MouseState::Normal:
+      default:
+        return isSelected ? _impl->theme.primaryColor : _impl->theme.adaptativeColorTransparent;
+    }
+  } else {
+    switch (mouse) {
+      case MouseState::Pressed:
+        return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.adaptativeColor3;
+      case MouseState::Hovered:
+        return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.adaptativeColor1;
+      case MouseState::Disabled:
+        return isSelected ? _impl->theme.adaptativeColor1 : _impl->theme.adaptativeColorTransparent;
+      case MouseState::Transparent:
+      case MouseState::Normal:
+      default:
+        return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.adaptativeColorTransparent;
+    }
+  }
+}
+
+QColor const& QlementineStyle::listItemForegroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
+  Q_UNUSED(focus)
+  const auto isSelected = selected == SelectionState::Selected;
+  const auto isActive = active == ActiveState::Active;
+
+  if (isActive) {
+    switch (mouse) {
+      case MouseState::Disabled:
+        return isSelected ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralColorDisabled;
+      case MouseState::Hovered:
+      case MouseState::Pressed:
+      case MouseState::Transparent:
+      case MouseState::Normal:
+      default:
+        return isSelected ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
+    }
+  } else {
+    switch (mouse) {
+      case MouseState::Disabled:
+        return _impl->theme.neutralColorDisabled;
+      case MouseState::Hovered:
+      case MouseState::Pressed:
+      case MouseState::Transparent:
+      case MouseState::Normal:
+      default:
+        return _impl->theme.neutralColor;
+    }
+  }
+}
+
+QColor const& QlementineStyle::listItemCaptionForegroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
+  Q_UNUSED(focus)
+  const auto isSelected = selected == SelectionState::Selected;
+  const auto isActive = active == ActiveState::Active;
+
+  if (isActive) {
+    switch (mouse) {
+      case MouseState::Disabled:
+        return isSelected ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralAlternativeColorDisabled;
+      case MouseState::Hovered:
+      case MouseState::Pressed:
+      case MouseState::Transparent:
+      case MouseState::Normal:
+      default:
+        return isSelected ? _impl->theme.primaryColorForeground : _impl->theme.neutralAlternativeColor;
+    }
+  } else {
+    switch (mouse) {
+      case MouseState::Disabled:
+        return _impl->theme.neutralAlternativeColorDisabled;
+      case MouseState::Hovered:
+      case MouseState::Pressed:
+      case MouseState::Transparent:
+      case MouseState::Normal:
+      default:
+        return _impl->theme.neutralAlternativeColor;
+    }
+  }
+}
+
+QColor const& QlementineStyle::listItemCheckButtonBackgroundColor(MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
+  Q_UNUSED(active)
+  const auto isChecked = checked != CheckState::NotChecked;
+  const auto isEnabled = mouse != MouseState::Disabled;
+  switch (selected) {
+    case SelectionState::Selected:
+      if (isEnabled)
+        return isChecked ? _impl->theme.adaptativeColor5 : _impl->theme.adaptativeColor4;
+      else
+        return isChecked ? _impl->theme.adaptativeColor2 : _impl->theme.adaptativeColor1;
+    case SelectionState::NotSelected:
+    default:
+      if (isEnabled)
+        return isChecked ? _impl->theme.primaryColor : _impl->theme.adaptativeColor4;
+      else
+        return isChecked ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColor1;
+  }
+}
+
+QColor const& QlementineStyle::listItemCheckButtonForegroundColor(MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
+  Q_UNUSED(selected)
+  Q_UNUSED(active)
+  return checkButtonForegroundColor(mouse, checked);
+}
+
+QColor const& QlementineStyle::cellItemFocusBorderColor(FocusState const focus, SelectionState const selected, ActiveState const active) const {
+  Q_UNUSED(active)
+  if (selected == SelectionState::Selected)
+    return focus == FocusState::Focused ? _impl->theme.adaptativeColor5 : _impl->theme.adaptativeColorTransparent;
+  else
+    return focus == FocusState::Focused ? _impl->theme.primaryColor : _impl->theme.primaryColorTransparent;
+}
+
+QColor const& QlementineStyle::menuBackgroundColor() const {
+  return _impl->theme.backgroundColorMain1;
+}
+
+QColor const& QlementineStyle::menuBorderColor() const {
+  return _impl->theme.borderColor3;
+}
+
+QColor const& QlementineStyle::menuSeparatorColor() const {
+  return _impl->theme.borderColor3;
+}
+
+QColor const& QlementineStyle::menuItemBackgroundColor(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Hovered:
+      return _impl->theme.primaryColor;
+    case MouseState::Pressed:
+      return _impl->theme.primaryColorHovered;
+    case MouseState::Disabled:
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return _impl->theme.primaryColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::menuItemForegroundColor(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Hovered:
+      return _impl->theme.primaryColorForegroundHovered;
+    case MouseState::Pressed:
+      return _impl->theme.primaryColorForegroundPressed;
+    case MouseState::Disabled:
+      return _impl->theme.neutralColorDisabled;
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return _impl->theme.neutralColor;
+  }
+}
+
+QColor const& QlementineStyle::menuItemSecondaryForegroundColor(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Hovered:
+      return _impl->theme.primaryColorForegroundHovered;
+    case MouseState::Pressed:
+      return _impl->theme.primaryColorForegroundPressed;
+    case MouseState::Disabled:
+      return _impl->theme.neutralAlternativeColorDisabled;
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return _impl->theme.neutralAlternativeColor;
+  }
+}
+
+QColor const& QlementineStyle::menuBarBackgroundColor() const {
+  return _impl->theme.backgroundColorMain1;
+}
+
+QColor const& QlementineStyle::menuBarBorderColor() const {
+  return _impl->theme.borderColor3;
+}
+
+QColor const& QlementineStyle::menuBarItemBackgroundColor(MouseState const mouse, SelectionState const selected) const {
+  Q_UNUSED(selected)
+  switch (mouse) {
+    case MouseState::Hovered:
+      return _impl->theme.adaptativeColor1;
+    case MouseState::Pressed:
+      return _impl->theme.adaptativeColor3;
+    case MouseState::Disabled:
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return _impl->theme.adaptativeColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::menuBarItemForegroundColor(MouseState const mouse, SelectionState const selected) const {
+  Q_UNUSED(selected)
+  switch (mouse) {
+    case MouseState::Hovered:
+      return _impl->theme.neutralColor;
+    case MouseState::Pressed:
+      return _impl->theme.neutralColor;
+    case MouseState::Disabled:
+      return _impl->theme.neutralColorDisabled;
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return _impl->theme.neutralColor;
+  }
+}
+
+QColor const& QlementineStyle::tabBarBackgroundColor() const {
+  return _impl->theme.backgroundColorMain3;
+}
+
+QColor const& QlementineStyle::tabBarShadowColor() const {
+  return _impl->theme.shadowColor2;
+}
+
+QColor const& QlementineStyle::tabBarBottomShadowColor() const {
+  return _impl->theme.shadowColor1;
+}
+
+QColor const& QlementineStyle::tabBackgroundColor(MouseState const mouse, SelectionState const selected) const {
+  const auto isSelected = selected == SelectionState::Selected;
+
+  switch (mouse) {
+    case MouseState::Hovered:
+      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor1;
+    case MouseState::Pressed:
+      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor2;
+    case MouseState::Normal:
+      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColorTransparent;
+    case MouseState::Disabled:
+    case MouseState::Transparent:
+    default:
+      return _impl->theme.adaptativeColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::tabForegroundColor(MouseState const mouse, SelectionState const selected) const {
+  Q_UNUSED(selected)
+  return buttonForegroundColor(mouse, ColorRole::Neutral);
+}
+
+QColor const& QlementineStyle::tabCloseButtonBackgroundColor(MouseState const mouse, SelectionState const selected) const {
+  Q_UNUSED(selected)
+  switch (mouse) {
+    case MouseState::Pressed:
+      return _impl->theme.adaptativeColor5;
+    case MouseState::Hovered:
+      return _impl->theme.adaptativeColor3;
+    case MouseState::Normal:
+    case MouseState::Disabled:
+    case MouseState::Transparent:
+    default:
+      return _impl->theme.adaptativeColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::tabCloseButtonForegroundColor(MouseState const mouse, SelectionState const selected) const {
+  switch (mouse) {
+    case MouseState::Pressed:
+    case MouseState::Hovered:
+    case MouseState::Normal:
+      return _impl->theme.neutralColor;
+    case MouseState::Disabled:
+    case MouseState::Transparent:
+      return _impl->theme.neutralColorTransparent;
+    default:
+      return selected == SelectionState::Selected ? _impl->theme.neutralColor : _impl->theme.neutralColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::progressBarGrooveColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.adaptativeColor1;
+  else
+    return _impl->theme.adaptativeColor2;
+}
+
+QColor const& QlementineStyle::progressBarValueColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.primaryColorDisabled;
+  else
+    return _impl->theme.primaryColor;
+}
+
+QColor const& QlementineStyle::textFieldBackgroundColor(MouseState const mouse, Status const status) const {
+    Q_UNUSED(status);
+    if (mouse == MouseState::Disabled)
+      return _impl->theme.adaptativeColorTransparent;
+    else
+      return _impl->theme.adaptativeColor1;
+}
+
+QColor const& QlementineStyle::textFieldBorderColor(MouseState const mouse, FocusState const focus, Status const status) const {
+  if (mouse == MouseState::Disabled) {
+    return _impl->theme.borderColor1;
+  } else {
+    switch (status) {
+      case Status::Error:
+        if (focus == FocusState::Focused || mouse == MouseState::Hovered || mouse == MouseState::Pressed)
+          return _impl->theme.statusColorErrorHovered;
+        else
+          return _impl->theme.statusColorError;
+      case Status::Warning:
+        if (focus == FocusState::Focused || mouse == MouseState::Hovered || mouse == MouseState::Pressed)
+          return _impl->theme.statusColorWarningHovered;
+        else
+          return _impl->theme.statusColorWarning;
+      case Status::Success:
+        if (focus == FocusState::Focused || mouse == MouseState::Hovered || mouse == MouseState::Pressed)
+          return _impl->theme.statusColorSuccessHovered;
+        else
+          return _impl->theme.statusColorSuccess;
+      case Status::Info:
+      case Status::Default:
+      default:
+        if (focus == FocusState::Focused || mouse == MouseState::Hovered || mouse == MouseState::Pressed)
+          return _impl->theme.primaryColor;
+        else
+          return _impl->theme.borderColor3;
+    }
+  }
+}
+
+QColor const& QlementineStyle::textFieldForegroundColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.neutralColorDisabled;
+  else
+    return _impl->theme.neutralColor;
+}
+
+QColor const& QlementineStyle::sliderGrooveColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.adaptativeColor1;
+  else
+    return _impl->theme.adaptativeColor2;
+}
+
+QColor const& QlementineStyle::sliderValueColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.primaryColorDisabled;
+  else
+    return _impl->theme.primaryColor;
+}
+
+QColor const& QlementineStyle::sliderHandleColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.primaryColorDisabled;
+  else if (mouse == MouseState::Pressed)
+    return _impl->theme.primaryColorPressed;
+  else if (mouse == MouseState::Hovered)
+    return _impl->theme.primaryColorHovered;
+  else
+    return _impl->theme.primaryColor;
+}
+
+QColor const& QlementineStyle::sliderTickColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.borderColor1;
+  else
+    return _impl->theme.borderColor3;
+}
+
+QColor const& QlementineStyle::dialHandleColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.adaptativeColor1;
+  else
+    return _impl->theme.adaptativeColor2;
+}
+
+QColor const& QlementineStyle::dialGrooveColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.adaptativeColor1;
+  else
+    return _impl->theme.adaptativeColor5;
+}
+
+QColor const& QlementineStyle::dialValueColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.primaryColorDisabled;
+  else
+    return _impl->theme.primaryColor;
+}
+
+QColor const& QlementineStyle::dialTickColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.adaptativeColor1;
+  else
+    return _impl->theme.adaptativeColor5;
+}
+
+QColor const& QlementineStyle::dialMarkColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.neutralColorDisabled;
+  else
+    return _impl->theme.neutralColor;
+}
+
+QColor const& QlementineStyle::dialBackgroundColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.adaptativeColor1;
+  else
+    return _impl->theme.adaptativeColor5;
+}
+
+QColor const& QlementineStyle::labelForegroundColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.neutralColorDisabled;
+  else
+    return _impl->theme.neutralColor;
+}
+
+QColor const& QlementineStyle::labelCaptionForegroundColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.neutralAlternativeColorDisabled;
+  else
+    return _impl->theme.neutralAlternativeColor;
+}
+
+QColor const& QlementineStyle::toolBarBackgroundColor() const {
+  return _impl->theme.backgroundColorMain1;
+}
+
+QColor const& QlementineStyle::toolBarBorderColor() const {
+  return _impl->theme.borderColor3;
+}
+
+QColor const& QlementineStyle::toolBarSeparatorColor() const {
+  return _impl->theme.neutralColorDisabled;
+}
+
+QColor const& QlementineStyle::toolTipBackgroundColor() const {
+  return _impl->theme.neutralColor;
+}
+
+QColor const& QlementineStyle::toolTipBorderColor() const {
+  return _impl->theme.neutralColorPressed;
+}
+
+QColor const& QlementineStyle::toolTipForegroundColor() const {
+  return _impl->theme.neutralColorForeground;
+}
+
+QColor const& QlementineStyle::scrollBarGrooveColor(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Hovered:
+    case MouseState::Pressed:
+      return _impl->theme.adaptativeColor4;
+    default:
+      return _impl->theme.adaptativeColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::scrollBarHandleColor(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Hovered:
+      return _impl->theme.neutralColorHovered;
+    case MouseState::Pressed:
+      return _impl->theme.neutralColorPressed;
+    case MouseState::Disabled:
+      return _impl->theme.adaptativeColorTransparent;
+    case MouseState::Normal:
+      return _impl->theme.adaptativeColor5;
+    case MouseState::Transparent:
+    default:
+      return _impl->theme.adaptativeColor4;
+  }
+}
+
+int QlementineStyle::getScrollBarThickness(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Hovered:
+    case MouseState::Pressed:
+      return _impl->theme.scrollBarThicknessFull;
+    default:
+      return _impl->theme.scrollBarThicknessSmall;
+  }
+}
+
+QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Disabled:
+      return _impl->theme.borderColor1;
+    default:
+      return _impl->theme.borderColor3;
+  }
+}
+
+QColor const& QlementineStyle::groupBoxTitleColor(MouseState const mouse) const {
+  return labelForegroundColor(mouse);
+}
+
+QColor const& QlementineStyle::focusBorderColor() const {
+  return _impl->theme.focusColor;
+}
+
+QColor const& QlementineStyle::frameBorderColor() const {
+  return _impl->theme.borderColor3;
+}
+
+const QFont& QlementineStyle::fontForTextRole(TextRole role) const {
+  switch (role) {
+    case TextRole::Caption:
+      return _impl->theme.fontCaption;
+    case TextRole::H1:
+      return _impl->theme.fontH1;
+    case TextRole::H2:
+      return _impl->theme.fontH2;
+    case TextRole::H3:
+      return _impl->theme.fontH3;
+    case TextRole::H4:
+      return _impl->theme.fontH4;
+    case TextRole::H5:
+      return _impl->theme.fontH5;
+    default:
+      return _impl->theme.fontRegular;
+  }
+}
+
+QPalette QlementineStyle::paletteForTextRole(TextRole role) const {
+  auto result = QPalette{ _impl->theme.palette };
+
+  const auto& textColor = colorForTextRole(role, MouseState::Normal);
+  const auto& textColorDisabled = colorForTextRole(role, MouseState::Disabled);
+
+  result.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Text, textColor);
+  result.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::WindowText, textColor);
+  result.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::BrightText, textColor);
+
+  result.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Text, textColorDisabled);
+  result.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::WindowText, textColorDisabled);
+  result.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::BrightText, textColorDisabled);
+
+  return result;
+}
+
+QColor const& QlementineStyle::switchGrooveColor(MouseState const mouse, CheckState const checked) const {
+  const auto primary = checked == CheckState::Checked;
+
+  switch (mouse) {
+    case MouseState::Pressed:
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.adaptativeColor5;
+    case MouseState::Hovered:
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.adaptativeColor4;
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColor1;
+    case MouseState::Normal:
+    default:
+      return primary ? _impl->theme.primaryColor : _impl->theme.adaptativeColor3;
+  }
+}
+
+QColor const& QlementineStyle::switchHandleColor(MouseState const mouse, CheckState const checked) const {
+  const auto primary = checked == CheckState::Checked;
+
+  switch (mouse) {
+    case MouseState::Pressed:
+      return primary ? _impl->theme.primaryColorForegroundPressed : _impl->theme.neutralAlternativeColorPressed;
+    case MouseState::Hovered:
+      return primary ? _impl->theme.primaryColorForegroundHovered : _impl->theme.neutralAlternativeColorHovered;
+    case MouseState::Disabled:
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralAlternativeColorDisabled;
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralAlternativeColor;
+  }
+}
+
+QColor const& QlementineStyle::tableHeaderBgColor(MouseState const mouse, CheckState const) const {
+  switch (mouse) {
+    case MouseState::Pressed:
+      return _impl->theme.adaptativeColor5;
+    case MouseState::Hovered:
+      return _impl->theme.adaptativeColor2;
+    case MouseState::Disabled:
+      return _impl->theme.adaptativeColor3;
+    case MouseState::Transparent:
+    case MouseState::Normal:
+    default:
+      return _impl->theme.adaptativeColor3;
+  }
+}
+
+QColor const& QlementineStyle::tableHeaderFgColor(MouseState const mouse, CheckState const) const {
+  switch (mouse) {
+    case MouseState::Disabled:
+      return _impl->theme.neutralColorDisabled;
+    default:
+      return _impl->theme.neutralColor;
+  }
+}
+
+QColor const& QlementineStyle::tableLineColor() const {
+  return _impl->theme.neutralAlternativeColor;
+}
+
+QColor const& QlementineStyle::colorForTextRole(TextRole role, MouseState const mouse) const {
+  switch (role) {
+    case TextRole::Caption:
+      return mouse == MouseState::Disabled ? _impl->theme.neutralAlternativeColorDisabled : _impl->theme.neutralAlternativeColor;
+    case TextRole::H1:
+    case TextRole::H2:
+    case TextRole::H3:
+    case TextRole::H4:
+    case TextRole::H5:
+    case TextRole::Default:
+    default:
+      return mouse == MouseState::Disabled ? _impl->theme.neutralColorDisabled : _impl->theme.neutralColor;
+  }
+}
+
+int QlementineStyle::pixelSizeForTextRole(TextRole role) const {
+  switch (role) {
+    case TextRole::Caption:
+      return _impl->theme.fontSizeS1;
+    case TextRole::H1:
+      return _impl->theme.fontSizeH1;
+    case TextRole::H2:
+      return _impl->theme.fontSizeH2;
+    case TextRole::H3:
+      return _impl->theme.fontSizeH3;
+    case TextRole::H4:
+      return _impl->theme.fontSizeH4;
+    case TextRole::H5:
+      return _impl->theme.fontSizeH5;
+    default:
+      return _impl->theme.fontSize;
+  }
+}
+
+Status QlementineStyle::widgetStatus(QWidget const* widget) const {
+    if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
+        return qlementineLineEdit->status();
+    }
+    return Status::Default;
+}
+
 } // namespace oclero::qlementine

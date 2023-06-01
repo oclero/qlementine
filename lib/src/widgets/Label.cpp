@@ -39,11 +39,11 @@ Label::Label(const QString& text, QWidget* parent)
 
 Label::~Label() {}
 
-Theme::TextRole Label::role() const {
+TextRole Label::role() const {
   return _role;
 }
 
-void Label::setRole(Theme::TextRole role) {
+void Label::setRole(TextRole role) {
   if (role != _role) {
     _role = role;
     // Change text font, size and color.
@@ -71,9 +71,8 @@ bool Label::eventFilter(QObject*, QEvent* e) {
 
 void Label::updatePaletteFromTheme() {
   if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style())) {
-    const auto& theme = qlementineStyle->theme();
-    const auto& font = theme.fontForTextRole(_role);
-    const auto palette = theme.paletteForTextRole(_role);
+    const auto& font = qlementineStyle->fontForTextRole(_role);
+    const auto palette = qlementineStyle->paletteForTextRole(_role);
     setFont(font);
     setPalette(palette);
     updateGeometry();
