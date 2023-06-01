@@ -1,4 +1,4 @@
-﻿// MIT License
+// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -26,6 +26,7 @@
 #include <oclero/qlementine/animation/WidgetAnimator.hpp>
 #include <oclero/qlementine/animation/WidgetAnimationManager.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
+#include <oclero/qlementine/utils/FontUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/RadiusesF.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
@@ -2152,7 +2153,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         auto font = QFont{ w->font() };
         font.setBold(true);
         const auto fm = QFontMetrics(font);
-        const auto textW = fm.horizontalAdvance(optHeader->text);
+        const auto textW = qlementine::textWidth(fm, optHeader->text);
 
         const auto arrowX = rect.x() + rect.width() - paddingH - arrowW;
         const auto intersectsArrow = hasArrow ? rect.x() + paddingH + (rect.width() - textW) / 2 + textW > arrowX : false;
@@ -3252,7 +3253,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
 
         auto contentWidth = 0;
         if (hasText) {
-          contentWidth += optButton->fontMetrics.horizontalAdvance(optButton->text);
+          contentWidth += qlementine::textWidth(optButton->fontMetrics, optButton->text);
         }
         if (hasIcon) {
           contentWidth += optButton->iconSize.width();
@@ -3394,8 +3395,10 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
       break;
     case CT_ProgressBar:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
-        const auto showText = optProgressBar->textVisible;
-        const auto labelW = showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, QStringLiteral("100%")).width() : 0;
+        const auto indeterminate = optProgressBar->maximum == 0 && optProgressBar->minimum == 0;
+        const auto showText = !indeterminate && optProgressBar->textVisible;
+        const auto maximumText = indeterminate ? QString{} : QString("%1%").arg(optProgressBar->maximum);
+        const auto labelW = showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, maximumText).width() : 0;
         const auto labelH = showText ? optProgressBar->fontMetrics.height() : 0;
         const auto spacing = _impl->theme.spacing;
         const auto barH = _impl->theme.progressBarGrooveHeight;
@@ -3553,7 +3556,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto lineW = _impl->theme.borderWidth;
         const auto iconExtent = pixelMetric(PM_SmallIconSize, opt);
         const auto fm = QFontMetrics(font);
-        const auto textW = fm.horizontalAdvance(optHeader->text);
+        const auto textW = qlementine::textWidth(fm, optHeader->text);
         const auto& icon = optHeader->icon;
         const auto hasIcon = !icon.isNull();
         const auto iconW = hasIcon ? iconExtent + spacing : 0;
@@ -3598,7 +3601,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
 
         auto font = QFont(widget->font());
         const auto fm = QFontMetrics(font);
-        const auto textW = fm.horizontalAdvance(optItem->text);
+        const auto textW = qlementine::textWidth(fm, optItem->text);
 
         const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;

@@ -25,6 +25,7 @@
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
+#include <oclero/qlementine/utils/FontUtils.hpp>
 
 #include <QPainter>
 
@@ -145,7 +146,7 @@ QSize ComboBoxDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIn
     const auto& text = textVariant.isValid() && textVariant.type() == QVariant::Type::String ? textVariant.value<QString>() : QString{};
     const auto iconVariant = idx.data(Qt::DecorationRole);
     const auto& icon = iconVariant.isValid() && iconVariant.type() == QVariant::Type::Icon ? iconVariant.value<QIcon>() : QIcon{};
-    const auto textW = fm.horizontalAdvance(text);
+    const auto textW = qlementine::textWidth(fm, text);
     const auto iconW = !icon.isNull() ? iconSize.width() + spacing : 0;
     const auto w = std::max(0, hPadding + iconW + textW + hPadding);
     const auto h = std::max(theme.controlHeightMedium, std::max(iconSize.height(), vPadding) + vPadding);
