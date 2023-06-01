@@ -25,6 +25,7 @@
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/widgets/RoundedFocusFrame.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
+#include <oclero/qlementine/utils/FontUtils.hpp>
 
 #include <QPainter>
 #include <QKeyEvent>
@@ -453,13 +454,13 @@ void AbstractItemListWidget::updateItemsSizeHints() {
     }
 
     if (!item.text.isEmpty()) {
-      itemW += fm.horizontalAdvance(item.text);
+      itemW += qlementine::textWidth(fm, item.text);
       ++elementCount;
     }
 
     if (!item.badge.isEmpty()) {
       const auto badgeW =
-        std::max(badgeH, badgePadding.left() + badgePadding.right() + badgeFm.horizontalAdvance(item.badge));
+        std::max(badgeH, badgePadding.left() + badgePadding.right() + qlementine::textWidth(badgeFm, item.badge));
       itemW += badgeW;
       ++elementCount;
     }
@@ -824,7 +825,7 @@ void AbstractItemListWidget::drawItemForeground(QPainter& p, const Item& item) c
   const auto badgeH = badgeFm.height() + badgePadding.top() + badgePadding.bottom();
   const auto badgeRadius = badgeH / 2;
   const auto badgeW =
-    std::max(badgeH, badgePadding.left() + badgePadding.right() + badgeFm.horizontalAdvance(item.badge));
+    std::max(badgeH, badgePadding.left() + badgePadding.right() + qlementine::textWidth(badgeFm, item.badge));
   const auto& itemRect = item.rect;
   const auto itemContentW = std::min(item.sizeHint.width(), itemRect.width());
   const auto itemContentH = itemRect.height();

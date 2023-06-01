@@ -29,6 +29,7 @@
 
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
+#include <oclero/qlementine/utils/FontUtils.hpp>
 
 #include <QPainter>
 #include <QEvent>
@@ -56,7 +57,7 @@ QSize Switch::sizeHint() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
 
   const auto fm = fontMetrics();
-  const auto textW = fm.horizontalAdvance(text());
+  const auto textW = qlementine::textWidth(fm, text());
   const auto textH = fm.height();
   const auto spacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
   const auto switchRect = getSwitchRect();

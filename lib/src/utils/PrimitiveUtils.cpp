@@ -23,6 +23,7 @@
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
+#include <oclero/qlementine/utils/FontUtils.hpp>
 
 #include <QTextLayout>
 #include <QTextLine>
@@ -1424,7 +1425,7 @@ void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text
     } else {
       const auto lineText = removeTrailingWhitespaces(textLayout.text().mid(line.textStart(), line.textLength()));
       const auto ellipsis = QString("…");
-      const auto ellipsisWidth = fontMetrics.horizontalAdvance(ellipsis);
+      const auto ellipsisWidth = qlementine::textWidth(fontMetrics, ellipsis);
       auto elidedLineText = removeTrailingWhitespaces(fontMetrics.elidedText(lineText, Qt::TextElideMode::ElideRight, maxWidth - ellipsisWidth, Qt::TextSingleLine));
       if (!elidedLineText.endsWith(ellipsis)) {
         elidedLineText = removeTrailingWhitespaces(elidedLineText);
@@ -1475,7 +1476,7 @@ void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, 
   auto x = 0;
 
   for (const auto& part : parts) {
-    const auto textRect = QRect(0, 0, std::max(minimumTextW, fm.horizontalAdvance(part)), fm.height());
+    const auto textRect = QRect(0, 0, std::max(minimumTextW, qlementine::textWidth(fm, part)), fm.height());
     const auto fgRect = textRect.marginsAdded(padding);
     const auto bgRect = fgRect.marginsAdded(bgMargins);
     const auto delta = textRect.topLeft() - bgRect.topLeft();
@@ -1531,7 +1532,7 @@ QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme) {
 
   // Add items widths.
   for (const auto& part : parts) {
-    const auto textRect = QRect(0, 0, std::max(minimumTextW, fm.horizontalAdvance(part)), fm.height());
+    const auto textRect = QRect(0, 0, std::max(minimumTextW, qlementine::textWidth(fm, part)), fm.height());
     const auto fgRect = textRect.marginsAdded(padding);
     const auto bgRect = fgRect.marginsAdded(bgMargins);
     w += bgRect.width();
