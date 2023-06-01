@@ -347,6 +347,62 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_label() {
+    windowContent = new QWidget(&owner);
+    windowContentLayout = new QVBoxLayout(windowContent);
+
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Sandbox");
+      label->setRole(TextRole::H1);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Headline 2");
+      label->setRole(TextRole::H2);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Headline 3");
+      label->setRole(TextRole::H3);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Headline 4");
+      label->setRole(TextRole::H4);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Headline 5");
+      label->setRole(TextRole::H5);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme.");
+      label->setRole(TextRole::Default);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setText("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets.");
+      label->setRole(TextRole::Caption);
+      windowContentLayout->addWidget(label);
+    }
+    owner.setCentralWidget(windowContent);
+  }
+
+  void setupUi_basicWidgets() {
+    auto* scrollArea = new QScrollArea(&owner);
+    auto* scrollAreaContent = new QWidget(scrollArea);
+    scrollAreaContent->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    windowContentLayout = new QVBoxLayout(scrollAreaContent);
+    windowContent = scrollAreaContent;
+
+#if 0
     {
       auto* label = new Label(windowContent);
       label->setWordWrap(true);
@@ -1324,7 +1380,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     _impl->setupUI_label();
 //  _impl->setupUI_button();
 //  _impl->setupUI_buttonVariants();
-//   _impl->setupUI_checkbox();
+//  _impl->setupUI_checkbox();
 //  _impl->setupUI_radioButton();
 //  _impl->setupUI_commandLinkButton();
 //  _impl->setupUI_sliderAndProgressBar();
