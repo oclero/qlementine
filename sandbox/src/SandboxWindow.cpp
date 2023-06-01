@@ -212,8 +212,6 @@ struct SandboxWindow::Impl {
       }
     }
 #endif
-
-
   }
 
   void beginSetupUi() {
@@ -258,6 +256,8 @@ struct SandboxWindow::Impl {
         reloadJsonAction->setEnabled(!lastJsonThemePath.isEmpty());
         reloadJsonAction->setToolTip(lastJsonThemePath);
       }
+    }
+  }
 #endif
 
   void setupMenuBar() {
@@ -347,9 +347,6 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_label() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QVBoxLayout(windowContent);
-
     {
       auto* label = new Label(windowContent);
       label->setText("Sandbox");
@@ -390,37 +387,6 @@ struct SandboxWindow::Impl {
       auto* label = new Label(windowContent);
       label->setText("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets.");
       label->setRole(TextRole::Caption);
-      windowContentLayout->addWidget(label);
-    }
-    owner.setCentralWidget(windowContent);
-  }
-
-  void setupUi_basicWidgets() {
-    auto* scrollArea = new QScrollArea(&owner);
-    auto* scrollAreaContent = new QWidget(scrollArea);
-    scrollAreaContent->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-    windowContentLayout = new QVBoxLayout(scrollAreaContent);
-    windowContent = scrollAreaContent;
-
-#if 0
-    {
-      auto* label = new Label(windowContent);
-      label->setWordWrap(true);
-      label->setText("Sandbox Application");
-      label->setRole(Theme::TextRole::H2);
-      windowContentLayout->addWidget(label);
-    }
-    {
-      auto* label = new Label(windowContent);
-      label->setWordWrap(true);
-      label->setText("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme.");
-      windowContentLayout->addWidget(label);
-    }
-    {
-      auto* label = new Label(windowContent);
-      label->setWordWrap(true);
-      label->setText("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets.");
-      label->setRole(Theme::TextRole::Caption);
       windowContentLayout->addWidget(label);
     }
   }
@@ -1218,7 +1184,6 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUi_navigationBar() {
-
     const QIcon dummyIcon(":/refresh.svg");
 
     auto* navBar = new NavigationBar(windowContent);
