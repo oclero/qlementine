@@ -14,6 +14,7 @@
 #include <oclero/qlementine/widgets/PopoverButton.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
+#include <oclero/qlementine/widgets/Label.hpp>
 
 #include <QFileSystemWatcher>
 #include <QContextMenuEvent>
@@ -36,6 +37,8 @@
 #include <QProgressBar>
 #include <QHeaderView>
 #include <QApplication>
+#include <QMessageBox>
+#include <QDial>
 
 namespace oclero::qlementine::sandbox {
 class ContextMenuEventFilter : public QObject {
@@ -209,6 +212,29 @@ struct SandboxWindow::Impl {
       }
     }
 #endif
+
+
+  }
+
+  void beginSetupUi() {
+    // Create a scrollarea to wrap everything §the window can be quite huge).
+    globalScrollArea = new QScrollArea(&owner);
+    windowContent = new QWidget(globalScrollArea);
+    windowContent->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    windowContentLayout = new QVBoxLayout(windowContent);
+
+    setupShortcuts();
+    //setupMenuBar();
+  }
+
+  void endSetupUi() {
+    // Add a spacer at the bottom.
+    windowContentLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
+
+    // Set the QMainWindow's central widget.
+    globalScrollArea->setWidget(windowContent);
+    globalScrollArea->setWidgetResizable(true);
+    owner.setCentralWidget(globalScrollArea);
   }
 
 #if 0
@@ -320,31 +346,38 @@ struct SandboxWindow::Impl {
     QObject::connect(quitShortcut, &QShortcut::activated, quitShortcut, [this]() { QApplication::quit(); });*/
   }
 
-  void setupUi_basicWidgets() {
-    auto* scrollArea = new QScrollArea(&owner);
-    auto* scrollAreaContent = new QWidget(scrollArea);
-    scrollAreaContent->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-    windowContentLayout = new QVBoxLayout(scrollAreaContent);
-    windowContent = scrollAreaContent;
-
-#if 0
+  void setupUI_label() {
     {
-      auto* label = new QLabel(windowContent);
+      auto* label = new Label(windowContent);
+      label->setWordWrap(true);
+      label->setText("Sandbox Application");
+      label->setRole(Theme::TextRole::H2);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
       label->setWordWrap(true);
       label->setText("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme.");
       windowContentLayout->addWidget(label);
     }
-#endif
-#if 0
     {
-      auto* button = new QPushButton(windowContent);
-      button->setText("Button with a very long text that can be elided");
-      button->setIcon(QIcon(":/refresh.svg"));
-      button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      windowContentLayout->addWidget(button);
+      auto* label = new Label(windowContent);
+      label->setWordWrap(true);
+      label->setText("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets.");
+      label->setRole(Theme::TextRole::Caption);
+      windowContentLayout->addWidget(label);
     }
-#endif
-#if 0
+  }
+
+  void setupUI_button() {
+    auto* button = new QPushButton(windowContent);
+    button->setText("Button with a very long text that can be elided");
+    button->setIcon(QIcon(":/refresh.svg"));
+    button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    windowContentLayout->addWidget(button);
+  }
+
+  void setupUI_buttonVariants() {
     {
       // Text, fixed size
       auto* button = new QPushButton(windowContent);
@@ -414,491 +447,463 @@ struct SandboxWindow::Impl {
       button->setMenu(menu);
       windowContentLayout->addWidget(button);
     }
-#endif
-#if 1
-    {
-      for (auto i = 0; i < 2; ++i) {
-        auto* checkbox = new QCheckBox(windowContent);
-        checkbox->setChecked(true);
-        checkbox->setIcon(QIcon(":/refresh.svg"));
-        checkbox->setText(QString("Checkbox %1 with a very long text").arg(i));
-        checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-        windowContentLayout->addWidget(checkbox);
-      }
-    }
-#endif
-#if 1
-    {
-      auto* radioGroup = new QButtonGroup(windowContent);
+  }
 
-      for (auto i = 0; i < 2; ++i) {
-        auto* radiobutton = new QRadioButton(windowContent);
-        radiobutton->setChecked(true);
-        radiobutton->setIcon(QIcon(":/refresh.svg"));
-        radiobutton->setText(QString("RadioButton %1 with a very long text").arg(i));
-        radiobutton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-        radioGroup->addButton(radiobutton);
-        windowContentLayout->addWidget(radiobutton);
-      }
+  void setupUI_checkbox() {
+    for (auto i = 0; i < 2; ++i) {
+      auto* checkbox = new QCheckBox(windowContent);
+      checkbox->setChecked(true);
+      checkbox->setIcon(QIcon(":/refresh.svg"));
+      const auto tristate = i % 2 == 0;
+      checkbox->setText(QString("%1 checkbox %2 with a very long text")
+                        .arg(tristate ? "Tristate" : "Normal")
+                        .arg(i));
+      checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      checkbox->setTristate(tristate);
+      windowContentLayout->addWidget(checkbox);
     }
-#endif
-#if 1
-    {
-      const QIcon icon(":/plus_24.svg");
-      auto* button = new CommandLinkButton(windowContent);
-      button->setText("First Line with a very long text that should be cropped");
-      button->setDescription("Second Line that could be very long and should be cropped");
-      button->setIcon(icon);
-      button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      windowContentLayout->addWidget(button);
-    }
-#endif
-#if 1
-    {
-      constexpr auto min = 0;
-      constexpr auto max = 100;
-      constexpr auto val = 5;
-      constexpr auto singleStep = (max - min) / max;
-      constexpr auto pageStep = (max - min) / 10;
+  }
 
-      auto* progressBar = new QProgressBar(windowContent);
-      progressBar->setMaximum(max);
-      progressBar->setMinimum(min);
-      progressBar->setValue(val);
-      progressBar->setTextVisible(true);
-      progressBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      windowContentLayout->addWidget(progressBar);
+  void setupUI_radioButton() {
+    auto* radioGroup = new QButtonGroup(windowContent);
 
-      auto* slider = new QSlider(windowContent);
-      slider->setOrientation(Qt::Orientation::Horizontal);
-      slider->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      slider->setMinimum(min);
-      slider->setMaximum(max);
-      slider->setPageStep(pageStep);
-      slider->setSingleStep(singleStep);
-      slider->setValue(val);
-      QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
-      windowContentLayout->addWidget(slider);
+    for (auto i = 0; i < 2; ++i) {
+      auto* radiobutton = new QRadioButton(windowContent);
+      radiobutton->setChecked(true);
+      radiobutton->setIcon(QIcon(":/refresh.svg"));
+      radiobutton->setText(QString("RadioButton %1 with a very long text").arg(i));
+      radiobutton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      radioGroup->addButton(radiobutton);
+      windowContentLayout->addWidget(radiobutton);
     }
-#endif
-#if 0
-    {
-      auto* slider = new QSlider(windowContent);
-      slider->setOrientation(Qt::Orientation::Horizontal);
-      slider->setMinimum(0);
-      slider->setMaximum(10);
-      slider->setPageStep(1);
-      slider->setSingleStep(1);
-      slider->setValue(5);
-      //slider->setEnabled(false);
-      slider->setTickPosition(QSlider::TickPosition::TicksAbove);
-      slider->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      windowContentLayout->addWidget(slider);
-    }
-#endif
-#if 1
-    {
-      auto* lineEdit = new QLineEdit(windowContent);
-      lineEdit->setText("Text");
-      lineEdit->setPlaceholderText("Placeholder");
-      lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      windowContentLayout->addWidget(lineEdit);
-      lineEdit->setClearButtonEnabled(true);
-    }
-#endif
-#if 0
-    {
-      auto* dial = new QDial(windowContent);
-      dial->setOrientation(Qt::Orientation::Horizontal);
-      dial->setMinimum(0);
-      dial->setMaximum(100);
-      dial->setPageStep(10);
-      dial->setSingleStep(1);
-      dial->setValue(5);
-      dial->setNotchesVisible(true);
-      dial->setFixedSize(48, 48);
-      windowContentLayout->addWidget(dial);
-    }
-#endif
-#if 1
-    {
-      auto* spinbox = new QSpinBox(windowContent);
-      spinbox->setMinimum(0);
-      spinbox->setMaximum(100);
-      spinbox->setValue(50);
-      spinbox->setSingleStep(1);
-      spinbox->setSuffix("km/h");
-      spinbox->setPrefix("$");
-      spinbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-      windowContentLayout->addWidget(spinbox);
-    }
-#endif
-#if 1
-    {
-      auto* combobox = new QComboBox(windowContent);
-      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      combobox->setFocusPolicy(Qt::NoFocus);
-      for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
-      }
-      auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
-      auto* item = model->item(2);
-      item->setEnabled(false);
+  }
 
-      windowContentLayout->addWidget(combobox);
+  void setupUI_commandLinkButton() {
+    const QIcon icon(":/plus_24.svg");
+    auto* button = new CommandLinkButton(windowContent);
+    button->setText("First Line with a very long text that should be cropped");
+    button->setDescription("Second Line that could be very long and should be cropped");
+    button->setIcon(icon);
+    button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    windowContentLayout->addWidget(button);
+  }
+
+  void setupUI_sliderAndProgressBar() {
+    constexpr auto min = 0;
+    constexpr auto max = 100;
+    constexpr auto val = 5;
+    constexpr auto singleStep = (max - min) / max;
+    constexpr auto pageStep = (max - min) / 10;
+
+    auto* progressBar = new QProgressBar(windowContent);
+    progressBar->setMaximum(max);
+    progressBar->setMinimum(min);
+    progressBar->setValue(val);
+    progressBar->setTextVisible(true);
+    progressBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    windowContentLayout->addWidget(progressBar);
+
+    auto* slider = new QSlider(windowContent);
+    slider->setOrientation(Qt::Orientation::Horizontal);
+    slider->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    slider->setMinimum(min);
+    slider->setMaximum(max);
+    slider->setPageStep(pageStep);
+    slider->setSingleStep(singleStep);
+    slider->setValue(val);
+    QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
+    windowContentLayout->addWidget(slider);
+  }
+
+  void setupUI_sliderWithTicks() {
+    auto* slider = new QSlider(windowContent);
+    slider->setOrientation(Qt::Orientation::Horizontal);
+    slider->setMinimum(0);
+    slider->setMaximum(10);
+    slider->setPageStep(1);
+    slider->setSingleStep(1);
+    slider->setValue(5);
+    //slider->setEnabled(false);
+    slider->setTickPosition(QSlider::TickPosition::TicksAbove);
+    slider->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    windowContentLayout->addWidget(slider);
+  }
+
+  void setupUI_lineEdit() {
+    auto* lineEdit = new QLineEdit(windowContent);
+    lineEdit->setText("Text");
+    lineEdit->setPlaceholderText("Placeholder");
+    lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    windowContentLayout->addWidget(lineEdit);
+    lineEdit->setClearButtonEnabled(true);
+  }
+
+  void setupUI_dial() {
+    auto* dial = new QDial(windowContent);
+    dial->setOrientation(Qt::Orientation::Horizontal);
+    dial->setMinimum(0);
+    dial->setMaximum(100);
+    dial->setPageStep(10);
+    dial->setSingleStep(1);
+    dial->setValue(5);
+    dial->setNotchesVisible(true);
+    dial->setFixedSize(48, 48);
+    windowContentLayout->addWidget(dial);
+  }
+
+  void setupUI_spinBox() {
+    auto* spinbox = new QSpinBox(windowContent);
+    spinbox->setMinimum(0);
+    spinbox->setMaximum(100);
+    spinbox->setValue(50);
+    spinbox->setSingleStep(1);
+    spinbox->setSuffix("km/h");
+    spinbox->setPrefix("$");
+    spinbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    windowContentLayout->addWidget(spinbox);
+  }
+
+  void setupUI_comboBox() {
+    auto* combobox = new QComboBox(windowContent);
+    combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    combobox->setFocusPolicy(Qt::NoFocus);
+    for (auto i = 0; i < 4; ++i) {
+      combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
     }
-#endif
-#if 0
-    {
-      auto* listView = new QListWidget(windowContent);
-      listView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
-      //listView->setAlternatingRowColors(true);
+    auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
+    auto* item = model->item(2);
+    item->setEnabled(false);
 
-      for (auto i = 0; i < 6; ++i) {
-        auto* item = new QListWidgetItem(QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
-        item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
-        item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+    windowContentLayout->addWidget(combobox);
+  }
 
-        listView->addItem(item);
-      }
-      listView->item(0)->setSelected(true);
-      windowContentLayout->addWidget(listView);
+  void setupUI_listView() {
+    auto* listView = new QListWidget(windowContent);
+    listView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+    //listView->setAlternatingRowColors(true);
+
+    for (auto i = 0; i < 6; ++i) {
+      auto* item = new QListWidgetItem(QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
+      item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
+      item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+
+      listView->addItem(item);
     }
-#endif
-#if 1
-    {
-      auto* treeWidget = new QTreeWidget(windowContent);
-      treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
-      treeWidget->setAlternatingRowColors(false);
-      treeWidget->setColumnCount(1);
-      treeWidget->setHeaderHidden(true);
-      treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-      QlementineStyle::setAutoIconColorEnabled(treeWidget, false);
+    listView->item(0)->setSelected(true);
+    windowContentLayout->addWidget(listView);
+  }
 
-      for (auto i = 0; i < 3; ++i) {
-        auto* root = new QTreeWidgetItem(treeWidget);
-        root->setText(0, QString("Root %1").arg(i + 1));
-        root->setIcon(0, QIcon(":/scene_object.svg"));
-        root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
+  void setupUI_treeWidget() {
+    auto* treeWidget = new QTreeWidget(windowContent);
+    treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+    treeWidget->setAlternatingRowColors(false);
+    treeWidget->setColumnCount(1);
+    treeWidget->setHeaderHidden(true);
+    treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    QlementineStyle::setAutoIconColorEnabled(treeWidget, false);
 
-        for (auto j = 0; j < 3; ++j) {
-          auto* child = new QTreeWidgetItem(root);
-          child->setText(0, QString("Child %1 of Root %2").arg(j).arg(i));
-          child->setIcon(0, j == 2 ? QIcon(":/scene_light.svg") : QIcon(":/scene_object.svg"));
-          child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j).arg(i));
+    for (auto i = 0; i < 3; ++i) {
+      auto* root = new QTreeWidgetItem(treeWidget);
+      root->setText(0, QString("Root %1").arg(i + 1));
+      root->setIcon(0, QIcon(":/scene_object.svg"));
+      root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
 
-          for (auto k = 0; k < 3; ++k) {
-            auto* subChild = new QTreeWidgetItem(child);
-            subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
-            subChild->setIcon(0, QIcon(":/scene_material.svg"));
-            subChild->setText(1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
-          }
+      for (auto j = 0; j < 3; ++j) {
+        auto* child = new QTreeWidgetItem(root);
+        child->setText(0, QString("Child %1 of Root %2").arg(j).arg(i));
+        child->setIcon(0, j == 2 ? QIcon(":/scene_light.svg") : QIcon(":/scene_object.svg"));
+        child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j).arg(i));
+
+        for (auto k = 0; k < 3; ++k) {
+          auto* subChild = new QTreeWidgetItem(child);
+          subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
+          subChild->setIcon(0, QIcon(":/scene_material.svg"));
+          subChild->setText(1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
         }
       }
-
-      treeWidget->topLevelItem(0)->setSelected(true), windowContentLayout->addWidget(treeWidget);
     }
-#endif
-#if 1
-    {
-      auto* menuBar = owner.menuBar();
-      // NB: it looks like MacOS' native menu bar has an issue with QIcon, so we have to force
-      // it to generate icons for High-DPI screens.
-      const auto icon = makeIconFromSvg(":/refresh.svg", owner.iconSize());
 
-      for (auto i = 0; i < 5; ++i) {
-        auto* menu = menuBar->addMenu(QString("Menu &%1").arg(i));
+    treeWidget->topLevelItem(0)->setSelected(true), windowContentLayout->addWidget(treeWidget);
+  }
 
-        for (auto j = 0; j < 10; ++j) {
-          auto* action = menu->addAction(icon, QString("Menu %1 - Action &%2").arg(i).arg(j));
+  void setupUI_menu() {
+    auto* menuBar = owner.menuBar();
+    // NB: it looks like MacOS' native menu bar has an issue with QIcon, so we have to force
+    // it to generate icons for High-DPI screens.
+    const auto icon = makeIconFromSvg(":/refresh.svg", owner.iconSize());
 
-          if (j == 0) {
-            auto* subMenu = new QMenu(menuBar);
+    for (auto i = 0; i < 5; ++i) {
+      auto* menu = menuBar->addMenu(QString("Menu &%1").arg(i));
 
-            auto* subActionGroup = new QActionGroup(subMenu);
-            for (auto k = 0; k < 6; ++k) {
-              auto* subAction = subMenu->addAction(icon, QString("SubMenu %1 - Action &%2").arg(j).arg(k));
+      for (auto j = 0; j < 10; ++j) {
+        auto* action = menu->addAction(icon, QString("Menu %1 - Action &%2").arg(i).arg(j));
 
-              if (k % 2 == 0) {
-                subAction->setEnabled(false);
-              }
-              subActionGroup->addAction(subAction);
-              subAction->setCheckable(true);
+        if (j == 0) {
+          auto* subMenu = new QMenu(menuBar);
+
+          auto* subActionGroup = new QActionGroup(subMenu);
+          for (auto k = 0; k < 6; ++k) {
+            auto* subAction = subMenu->addAction(icon, QString("SubMenu %1 - Action &%2").arg(j).arg(k));
+
+            if (k % 2 == 0) {
+              subAction->setEnabled(false);
             }
-
-            action->setMenu(subMenu);
-          } else if (j == 1) {
-            action->setCheckable(true);
-            action->setChecked(true);
-          } else if (j % 2 == 0) {
-            const auto key_number = (Qt::Key)(Qt::Key_0 + j);
-            action->setShortcut(QKeySequence(Qt::CTRL + (Qt::Key_0 + key_number)));
-          } else if (j % 3 == 0) {
-            const auto key_number = (Qt::Key)(Qt::Key_0 + j);
-            action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::ALT + (Qt::Key_0 + key_number)));
-          } else if (j % 5 == 0) {
-            action->setEnabled(false);
+            subActionGroup->addAction(subAction);
+            subAction->setCheckable(true);
           }
+
+          action->setMenu(subMenu);
+        } else if (j == 1) {
+          action->setCheckable(true);
+          action->setChecked(true);
+        } else if (j % 2 == 0) {
+          const auto key_number = (Qt::Key)(Qt::Key_0 + j);
+          action->setShortcut(QKeySequence(Qt::CTRL + (Qt::Key_0 + key_number)));
+        } else if (j % 3 == 0) {
+          const auto key_number = (Qt::Key)(Qt::Key_0 + j);
+          action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::ALT + (Qt::Key_0 + key_number)));
+        } else if (j % 5 == 0) {
+          action->setEnabled(false);
         }
       }
     }
-#endif
-#if 0
+  }
+
+  void setupUI_toolButton() {
+    auto* toolButton = new QToolButton(toolbar);
+    toolButton->setIcon(QIcon(":/refresh.svg"));
+    toolButton->setText(QString("Button with a very long text that can be elided"));
+    toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    toolButton->setCheckable(true);
+    toolButton->setChecked(true);
+    toolButton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    windowContentLayout->addWidget(toolButton);
+  }
+
+  void setupUI_toolButtonsVariants() {
+    const auto icon = QIcon(":/refresh.svg");
+
+    toolbar = owner.addToolBar("ToolBar name");
+    //toolbar->set
+    toolbar->setAllowedAreas(Qt::ToolBarArea::TopToolBarArea);
+    toolbar->setMovable(false);
+    toolbar->setFloatable(false);
+    toolbar->setIconSize(QSize(16, 16));
+    toolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonFollowStyle);
+
+    auto count = 0;
+
+    // Button 1: Icon only
     {
       auto* toolButton = new QToolButton(toolbar);
-      toolButton->setIcon(QIcon(":/refresh.svg"));
-      toolButton->setText(QString("Button with a very long text that can be elided"));
+      toolButton->setIcon(icon);
+      toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+      count++;
+      toolbar->addWidget(toolButton);
+    }
+    // Button 2: Text only
+    {
+      auto* toolButton = new QToolButton(toolbar);
+      toolButton->setIcon(icon);
+      toolButton->setText(QString("Button"));
+      toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+      count++;
+      toolbar->addWidget(toolButton);
+    }
+    // Button 3: Icon and Text.
+    {
+      auto* toolButton = new QToolButton(toolbar);
+      toolButton->setIcon(icon);
+      toolButton->setText(QString("Button"));
+      toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+      count++;
+      toolbar->addWidget(toolButton);
+    }
+    // Button 4: Icon and Text, checkable.
+    {
+      auto* toolButton = new QToolButton(toolbar);
+      toolButton->setIcon(icon);
+      toolButton->setText(QString("Button"));
+      toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
       toolButton->setCheckable(true);
       toolButton->setChecked(true);
-      toolButton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      windowContentLayout->addWidget(toolButton);
+      count++;
+      toolbar->addWidget(toolButton);
     }
-#endif
-#if 1
+    // Button 5: Icon only + menu
     {
-      const auto icon = QIcon(":/refresh.svg");
-
-      toolbar = owner.addToolBar("ToolBar name");
-      //toolbar->set
-      toolbar->setAllowedAreas(Qt::ToolBarArea::TopToolBarArea);
-      toolbar->setMovable(false);
-      toolbar->setFloatable(false);
-      toolbar->setIconSize(QSize(16, 16));
-      toolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonFollowStyle);
-
-      auto count = 0;
-
-      // Button 1: Icon only
-      {
-        auto* toolButton = new QToolButton(toolbar);
-        toolButton->setIcon(icon);
-        toolButton->setText(QString("Button"));
-        toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        count++;
-        toolbar->addWidget(toolButton);
-      }
-      // Button 2: Text only
-      {
-        auto* toolButton = new QToolButton(toolbar);
-        toolButton->setIcon(icon);
-        toolButton->setText(QString("Button"));
-        toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        count++;
-        toolbar->addWidget(toolButton);
-      }
-      // Button 3: Icon and Text.
-      {
-        auto* toolButton = new QToolButton(toolbar);
-        toolButton->setIcon(icon);
-        toolButton->setText(QString("Button"));
-        toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        count++;
-        toolbar->addWidget(toolButton);
-      }
-      // Button 4: Icon and Text, checkable.
-      {
-        auto* toolButton = new QToolButton(toolbar);
-        toolButton->setIcon(icon);
-        toolButton->setText(QString("Button"));
-        toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        toolButton->setCheckable(true);
-        toolButton->setChecked(true);
-        count++;
-        toolbar->addWidget(toolButton);
-      }
-      // Button 5: Icon only + menu
-      {
-        auto* toolButton = new QToolButton(toolbar);
-        toolButton->setIcon(icon);
-        toolButton->setText(QString("Button"));
-        toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        auto* subMenu = new QMenu("Menu title", toolButton);
-        toolButton->setMenu(subMenu);
-        subMenu->addAction(icon, "Sub Action 1");
-        subMenu->addAction(icon, "Sub Action 2");
-        count++;
-        toolbar->addWidget(toolButton);
-      }
-
-      // Button 6: Text only + menu
-      {
-        auto* toolButton = new QToolButton(toolbar);
-        toolButton->setIcon(icon);
-        toolButton->setText(QString("Button"));
-        toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        auto* subMenu = new QMenu("Menu title", toolButton);
-        toolButton->setMenu(subMenu);
-        subMenu->addAction(icon, "Sub Action 1");
-        subMenu->addAction(icon, "Sub Action 2");
-        count++;
-        toolbar->addWidget(toolButton);
-      }
-
-      // Button 6: Icon and Text + menu
-      {
-        auto* toolButton = new QToolButton(toolbar);
-        toolButton->setIcon(icon);
-        toolButton->setText(QString("Button"));
-        toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        auto* subMenu = new QMenu("Menu title", toolButton);
-        toolButton->setMenu(subMenu);
-        subMenu->addAction(icon, "Sub Action 1");
-        subMenu->addAction(icon, "Sub Action 2");
-        count++;
-        toolbar->addWidget(toolButton);
-      }
+      auto* toolButton = new QToolButton(toolbar);
+      toolButton->setIcon(icon);
+      toolButton->setText(QString("Button"));
+      toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+      auto* subMenu = new QMenu("Menu title", toolButton);
+      toolButton->setMenu(subMenu);
+      subMenu->addAction(icon, "Sub Action 1");
+      subMenu->addAction(icon, "Sub Action 2");
+      count++;
+      toolbar->addWidget(toolButton);
     }
-#endif
-#if 1
-    {
-      const QIcon icon(":/scene_object.svg");
-      const QIcon icon2(":/scene_light.svg");
-      auto* tabBar = new QTabBar(windowContent);
-      tabBar->setFocusPolicy(Qt::NoFocus);
-      tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      tabBar->setTabsClosable(true);
-      QlementineStyle::setAutoIconColorEnabled(tabBar, false);
-      tabBar->setMovable(true);
-      tabBar->setExpanding(/*true*/ false);
-      tabBar->setChangeCurrentOnDrag(true);
-      //tabBar->setUsesScrollButtons(false);
-      windowContentLayout->addWidget(tabBar);
-      //windowContentLayout->setAlignment(tabBar, Qt::AlignLeft);
 
-      for (auto i = 0; i < 10; ++i) {
-        auto tabText = QString(i % 2 ? "Tab with a very long text %1" : "Tab short text %1").arg(i);
-        if (i % 2 == 0) {
-          tabBar->addTab(icon, tabText);
-        } else {
-          tabBar->addTab(icon2, tabText);
-        }
-        tabBar->setTabToolTip(i, tabText);
+    // Button 6: Text only + menu
+    {
+      auto* toolButton = new QToolButton(toolbar);
+      toolButton->setIcon(icon);
+      toolButton->setText(QString("Button"));
+      toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+      auto* subMenu = new QMenu("Menu title", toolButton);
+      toolButton->setMenu(subMenu);
+      subMenu->addAction(icon, "Sub Action 1");
+      subMenu->addAction(icon, "Sub Action 2");
+      count++;
+      toolbar->addWidget(toolButton);
+    }
+
+    // Button 6: Icon and Text + menu
+    {
+      auto* toolButton = new QToolButton(toolbar);
+      toolButton->setIcon(icon);
+      toolButton->setText(QString("Button"));
+      toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+      auto* subMenu = new QMenu("Menu title", toolButton);
+      toolButton->setMenu(subMenu);
+      subMenu->addAction(icon, "Sub Action 1");
+      subMenu->addAction(icon, "Sub Action 2");
+      count++;
+      toolbar->addWidget(toolButton);
+    }
+  }
+
+  void setupUI_tabBar() {
+    const QIcon icon(":/scene_object.svg");
+    const QIcon icon2(":/scene_light.svg");
+    auto* tabBar = new QTabBar(windowContent);
+    tabBar->setFocusPolicy(Qt::NoFocus);
+    tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    tabBar->setTabsClosable(true);
+    QlementineStyle::setAutoIconColorEnabled(tabBar, false);
+    tabBar->setMovable(true);
+    tabBar->setExpanding(/*true*/ false);
+    tabBar->setChangeCurrentOnDrag(true);
+    //tabBar->setUsesScrollButtons(false);
+    windowContentLayout->addWidget(tabBar);
+    //windowContentLayout->setAlignment(tabBar, Qt::AlignLeft);
+
+    for (auto i = 0; i < 10; ++i) {
+      auto tabText = QString(i % 2 ? "Tab with a very long text %1" : "Tab short text %1").arg(i);
+      if (i % 2 == 0) {
+        tabBar->addTab(icon, tabText);
+      } else {
+        tabBar->addTab(icon2, tabText);
       }
-
-      tabBar->setCurrentIndex(1);
-
-      //windowContentLayout->setContentsMargins(0, 0, 0, 16);
-
-      QObject::connect(tabBar, &QTabBar::tabCloseRequested, tabBar, [tabBar](int index) {
-        tabBar->removeTab(index);
-      });
+      tabBar->setTabToolTip(i, tabText);
     }
-#endif
-#if 1
-    {
-      auto* groupBox = new QGroupBox(windowContent);
-      groupBox->setTitle("Title of the GroupBox that can be very long");
-      groupBox->setCheckable(true);
-      groupBox->setAlignment(Qt::AlignRight);
-      groupBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
-      auto* radioGroup = new QButtonGroup(groupBox);
+    tabBar->setCurrentIndex(1);
 
-      auto* radio1 = new QRadioButton("Radio button 1");
-      radio1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      radioGroup->addButton(radio1);
+    //windowContentLayout->setContentsMargins(0, 0, 0, 16);
 
-      auto* radio2 = new QRadioButton("Radio button 2");
-      radio2->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      radioGroup->addButton(radio2);
+    QObject::connect(tabBar, &QTabBar::tabCloseRequested, tabBar, [tabBar](int index) {
+      tabBar->removeTab(index);
+    });
+  }
 
-      auto* button1 = new QPushButton("Button 1");
-      button1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  void setupUI_groupBox() {
+    auto* groupBox = new QGroupBox(windowContent);
+    groupBox->setTitle("Title of the GroupBox that can be very long");
+    groupBox->setCheckable(true);
+    groupBox->setAlignment(Qt::AlignRight);
+    groupBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
-      auto* button2 = new QPushButton("Button 2");
-      button2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    auto* radioGroup = new QButtonGroup(groupBox);
 
-      radio1->setChecked(true);
+    auto* radio1 = new QRadioButton("Radio button 1");
+    radio1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    radioGroup->addButton(radio1);
 
-      auto* vbox = new QVBoxLayout(groupBox);
-      vbox->setContentsMargins(0, 0, 0, 0);
-      groupBox->setLayout(vbox);
-      //vbox->setSpacing(0);
-      vbox->addWidget(radio1);
-      vbox->addWidget(radio2);
-      vbox->addWidget(button1);
-      vbox->addWidget(button2);
-      vbox->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
+    auto* radio2 = new QRadioButton("Radio button 2");
+    radio2->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    radioGroup->addButton(radio2);
 
-      windowContentLayout->addWidget(groupBox);
-    }
-#endif
-#if 0
-    {
-      // Widget to test the different bounding boxes returned by QFontMetrics.
-      auto* customPaintWidget = new CustomPaintWidget(windowContent);
-      customPaintWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-      customPaintWidget->setMinimumSize(100, 100);
-      windowContentLayout->addWidget(customPaintWidget);
-    }
-#endif
-#if 0
-    {
-      const auto title = "Title of the QMessageBox";
-      const auto text =
-        R"(Lorem ipsum dolor sit amet, consectetur <a href="#">adipiscing elit</a>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)";
-      const auto informativeText =
-        R"(Vitae ut et dolorem eum. Rerum aut aut quis <a href="#">dolorum facere</a> quod veniam accusantium.
+    auto* button1 = new QPushButton("Button 1");
+    button1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    auto* button2 = new QPushButton("Button 2");
+    button2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    radio1->setChecked(true);
+
+    auto* vbox = new QVBoxLayout(groupBox);
+    vbox->setContentsMargins(0, 0, 0, 0);
+    groupBox->setLayout(vbox);
+    //vbox->setSpacing(0);
+    vbox->addWidget(radio1);
+    vbox->addWidget(radio2);
+    vbox->addWidget(button1);
+    vbox->addWidget(button2);
+    vbox->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
+
+    windowContentLayout->addWidget(groupBox);
+  }
+
+  void setupUI_fontMetricsTests() {
+    // Widget to test the different bounding boxes returned by QFontMetrics.
+    auto* customPaintWidget = new CustomPaintWidget(windowContent);
+    customPaintWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    customPaintWidget->setMinimumSize(100, 100);
+    windowContentLayout->addWidget(customPaintWidget);
+  }
+
+  void setupUI_messageBox() {
+    const auto title = "Title of the QMessageBox";
+    const auto text =
+      R"(Lorem ipsum dolor sit amet, consectetur <a href="#">adipiscing elit</a>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)";
+    const auto informativeText =
+      R"(Vitae ut et dolorem eum. Rerum aut aut quis <a href="#">dolorum facere</a> quod veniam accusantium.
 Accusamus quidem sed possimus aut consequatur soluta ut. Soluta ut enim quo reiciendis a tempora dolorum min…)";
-      const auto detailedText =
-        R"(Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    const auto detailedText =
+      R"(Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum)";
-      const auto buttons = QMessageBox::StandardButton::Ok | QMessageBox::StandardButton::Cancel;
-      auto* qMessageBox = new QMessageBox(QMessageBox::Icon::Information, title, text, buttons, &owner);
-      qMessageBox->setInformativeText(informativeText);
-      qMessageBox->setDetailedText(detailedText);
-      qMessageBox->show();
+    const auto buttons = QMessageBox::StandardButton::Ok | QMessageBox::StandardButton::Cancel;
+    auto* qMessageBox = new QMessageBox(QMessageBox::Icon::Information, title, text, buttons, &owner);
+    qMessageBox->setInformativeText(informativeText);
+    qMessageBox->setDetailedText(detailedText);
+    qMessageBox->show();
 
-      QObject::connect(qMessageBox, &QMessageBox::finished, qMessageBox, []() { std::exit(0); });
-    }
-#endif
-#if 0
-    {
-      const auto iconSize = QSize(128, 128);
+    QObject::connect(qMessageBox, &QMessageBox::finished, qMessageBox, []() { std::exit(0); });
+  }
 
-      auto* label1 = new QLabel(windowContent);
-      label1->setFixedSize(iconSize);
-      const auto icon1 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
-      label1->setPixmap(icon1.pixmap(iconSize.width()));
-      windowContentLayout->addWidget(label1);
+  void setupUI_messageBoxIcons() {
+    const auto iconSize = QSize(128, 128);
 
-      auto* label2 = new QLabel(windowContent);
-      label2->setFixedSize(iconSize);
-      const auto icon2 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
-      label2->setPixmap(icon2.pixmap(iconSize.width()));
-      windowContentLayout->addWidget(label2);
+    auto* label1 = new QLabel(windowContent);
+    label1->setFixedSize(iconSize);
+    const auto icon1 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
+    label1->setPixmap(icon1.pixmap(iconSize.width()));
+    windowContentLayout->addWidget(label1);
 
-      auto* label3 = new QLabel(windowContent);
-      label3->setFixedSize(iconSize);
-      const auto icon3 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation);
-      label3->setPixmap(icon3.pixmap(iconSize.width()));
-      windowContentLayout->addWidget(label3);
+    auto* label2 = new QLabel(windowContent);
+    label2->setFixedSize(iconSize);
+    const auto icon2 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
+    label2->setPixmap(icon2.pixmap(iconSize.width()));
+    windowContentLayout->addWidget(label2);
 
-      auto* label4 = new QLabel(windowContent);
-      label4->setFixedSize(iconSize);
-      const auto icon4 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion);
-      label4->setPixmap(icon4.pixmap(iconSize.width()));
-      windowContentLayout->addWidget(label4);
-    }
-#endif
+    auto* label3 = new QLabel(windowContent);
+    label3->setFixedSize(iconSize);
+    const auto icon3 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation);
+    label3->setPixmap(icon3.pixmap(iconSize.width()));
+    windowContentLayout->addWidget(label3);
 
-    windowContentLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
-    auto* centralWidgetContent = scrollArea;
-    scrollArea->setWidget(scrollAreaContent);
-    scrollArea->setWidgetResizable(true);
-    owner.setCentralWidget(centralWidgetContent);
+    auto* label4 = new QLabel(windowContent);
+    label4->setFixedSize(iconSize);
+    const auto icon4 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion);
+    label4->setPixmap(icon4.pixmap(iconSize.width()));
+    windowContentLayout->addWidget(label4);
   }
 
   void setupUi_treeView() {
-    auto* scrollArea = new QScrollArea(&owner);
-    auto* scrollAreaContent = new QWidget(scrollArea);
-    scrollAreaContent->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    windowContentLayout = new QVBoxLayout(scrollAreaContent);
-    windowContent = scrollAreaContent;
-
     {
       auto* treeWidget = new QTreeWidget(windowContent);
       treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
@@ -983,22 +988,11 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       windowContentLayout->addWidget(tableView);
     }
 
-    windowContentLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
-    auto* centralWidgetContent = scrollArea;
-    scrollArea->setWidget(scrollAreaContent);
-    scrollArea->setWidgetResizable(true);
-    owner.setCentralWidget(centralWidgetContent);
-
     owner.resize(400, 700);
   }
 
   void setupUi_expander() {
-    auto* scrollArea = new QScrollArea(&owner);
-    auto* scrollAreaContent = new QWidget(scrollArea);
-    scrollAreaContent->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    windowContentLayout = new QVBoxLayout(scrollAreaContent);
-    windowContent = scrollAreaContent;
-
+    windowContent->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     {
       auto* container = new CustomBgWidget(windowContent);
       auto* containerLayout = new QVBoxLayout(container);
@@ -1028,18 +1022,9 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
       windowContentLayout->addWidget(container);
     }
-
-    windowContentLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
-    auto* centralWidgetContent = scrollArea;
-    scrollArea->setWidget(scrollAreaContent);
-    scrollArea->setWidgetResizable(true);
-    owner.setCentralWidget(centralWidgetContent);
   }
 
   void setupUi_popover() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QVBoxLayout(windowContent);
-
 #if 0
     auto* popoverButton = new PopoverButton("Open popup", windowContent);
     popoverButton->popover()->setPreferredPosition(Popover::Position::Top);
@@ -1174,13 +1159,9 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     QObject::connect(popover, &Popover::verticalSpacingChanged, &owner, [vSpacingSpinBox, popover]() {
       vSpacingSpinBox->setValue(popover->verticalSpacing());
     });
-
-    owner.setCentralWidget(windowContent);
   }
 
   void setupUi_navigationBar() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QVBoxLayout(windowContent);
 
     const QIcon dummyIcon(":/refresh.svg");
 
@@ -1196,22 +1177,15 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     windowContentLayout->addWidget(navBar);
     windowContentLayout->addWidget(segmCtrl);
-    owner.setCentralWidget(windowContent);
   }
 
   void setupUi_switch() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QVBoxLayout(windowContent);
-
     const QIcon dummyIcon(":/refresh.svg");
-
     auto* switchWidget = new Switch(windowContent);
     switchWidget->setText("Label of the Switch");
     switchWidget->setIcon(dummyIcon);
     switchWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-
     windowContentLayout->addWidget(switchWidget);
-    owner.setCentralWidget(windowContent);
   }
 
   static QPixmap getInputPixmap() {
@@ -1241,8 +1215,6 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   void setupUi_blur() {
     //constexpr auto extendImage = true;
     constexpr auto initialBlur = 1;
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QHBoxLayout(windowContent);
 
     const auto inputPixmap = getInputPixmap();
     auto* labelBefore = new QLabel(windowContent);
@@ -1266,14 +1238,9 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       labelAfter->setPixmap(outputPixmap);
     });
     windowContentLayout->addWidget(slider, 0, Qt::AlignLeft);
-
-    owner.setCentralWidget(windowContent);
   }
 
   void setupUi_focus() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QVBoxLayout(windowContent);
-
     auto* button1 = new QPushButton("Button 1");
     button1->setObjectName("button1");
     windowContentLayout->addWidget(button1);
@@ -1281,14 +1248,9 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     auto* button2 = new QPushButton("Button 2");
     button2->setObjectName("button2");
     windowContentLayout->addWidget(button2);
-
-    owner.setCentralWidget(windowContent);
   }
 
   void setup_badge() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QHBoxLayout(windowContent);
-
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Info, StatusBadgeSize::Medium, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Error, StatusBadgeSize::Medium, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Success, StatusBadgeSize::Medium, windowContent));
@@ -1297,73 +1259,26 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Error, StatusBadgeSize::Small, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Success, StatusBadgeSize::Small, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Warning, StatusBadgeSize::Small, windowContent));
-
-    owner.setCentralWidget(windowContent);
   }
-#if 0
-  void setup_flowLayout() {
-    windowContent = new QWidget(&owner);
-    windowContent->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    windowContentLayout = new QVBoxLayout(windowContent);
-
-    auto* container = new CustomBgWidget(windowContent);
-    container->setMinimumSize(0, 0);
-    container->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    container->customSizeHint = QSize(0, 0);
-    container->bgColor = QColor(255, 0, 0, 32);
-    container->showBounds = true;
-    auto* containerLayout = new qlementine::FlowLayout(container);
-    containerLayout->setContentsMargins(0, 0, 0, 0);
-    container->setLayout(containerLayout);
-    windowContentLayout->addWidget(container);
-
-    auto* addButton = new QPushButton("Add", windowContent);
-    windowContentLayout->addWidget(addButton);
-    auto* removeButton = new QPushButton("Remove", windowContent);
-    windowContentLayout->addWidget(removeButton);
-
-    QObject::connect(addButton, &QPushButton::clicked, addButton, [container, containerLayout]() {
-      auto* element = new QPushButton(QString::number(containerLayout->count()), container);
-      containerLayout->addWidget(element);
-    });
-    QObject::connect(removeButton, &QPushButton::clicked, removeButton, [containerLayout]() {
-      if (auto* layoutItem = containerLayout->takeAt(0)) {
-        if (auto* w = layoutItem->widget()) {
-          delete w;
-        }
-        delete layoutItem;
-      }
-    });
-    owner.setCentralWidget(windowContent);
-  }
-#endif
 
   void setup_specialProgressBar() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QVBoxLayout(windowContent);
-
-    //{
-    //  auto* progressBar = new QProgressBar(windowContent);
-    //  progressBar->setTextVisible(false);
-    //  progressBar->setRange(0, 100);
-    //  progressBar->setValue(30);
-    //  progressBar->setInvertedAppearance(true);
-    //  windowContentLayout->addWidget(progressBar);
-    //}
+    {
+      auto* progressBar = new QProgressBar(windowContent);
+      progressBar->setTextVisible(false);
+      progressBar->setRange(0, 100);
+      progressBar->setValue(30);
+      progressBar->setInvertedAppearance(true);
+      windowContentLayout->addWidget(progressBar);
+    }
     {
       auto* progressBar = new QProgressBar(windowContent);
       progressBar->setTextVisible(false);
       progressBar->setRange(0, 0);
       windowContentLayout->addWidget(progressBar);
     }
-
-    owner.setCentralWidget(windowContent);
   }
 
-  void setup_lineEdit() {
-    windowContent = new QWidget(&owner);
-    windowContentLayout = new QVBoxLayout(windowContent);
-
+  void setup_lineEditStatus() {
     const QIcon dummyIcon(":/refresh.svg");
 
     auto* lineEdit = new LineEdit(windowContent);
@@ -1383,8 +1298,6 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       const auto value = static_cast<Status>(comboBoxStatus->itemData(index).toInt());
       lineEdit->setStatus(value);
     });
-
-    owner.setCentralWidget(windowContent);
   }
 
   SandboxWindow& owner;
@@ -1393,6 +1306,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
   QWidget* windowContent{ nullptr };
   QBoxLayout* windowContentLayout{ nullptr };
+  QScrollArea* globalScrollArea{nullptr};
   QToolBar* toolbar{ nullptr };
 
   QAction* reloadJsonAction{ nullptr };
@@ -1404,17 +1318,43 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   , _impl(new Impl(*this)) {
   setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
 
-  //_impl->setupMenuBar();
-  _impl->setupShortcuts();
-  //_impl->setupUi_basicWidgets();
-  //_impl->setupUi_popover();
-  //_impl->setupUi_focus();
-  //_impl->setupUi_treeView();
-  //_impl->setupUi_expander();
-  //_impl->setup_badge();
-  //_impl->setup_flowLayout();
-  //_impl->setup_specialProgressBar();
-  _impl->setup_lineEdit();
+  _impl->beginSetupUi();
+  {
+    // Uncomment the line to show the corresponding widget.
+    _impl->setupUI_label();
+//  _impl->setupUI_button();
+//  _impl->setupUI_buttonVariants();
+//   _impl->setupUI_checkbox();
+//  _impl->setupUI_radioButton();
+//  _impl->setupUI_commandLinkButton();
+//  _impl->setupUI_sliderAndProgressBar();
+//  _impl->setupUI_sliderWithTicks();
+//  _impl->setupUI_lineEdit();
+//  _impl->setupUI_dial();
+//  _impl->setupUI_spinBox();
+//  _impl->setupUI_comboBox();
+//  _impl->setupUI_listView();
+//  _impl->setupUI_treeWidget();
+//  _impl->setupUI_menu();
+//  _impl->setupUI_toolButton();
+//  _impl->setupUI_toolButtonsVariants();
+//  _impl->setupUI_tabBar();
+//  _impl->setupUI_groupBox();
+//  _impl->setupUI_fontMetricsTests();
+//  _impl->setupUI_messageBox();
+//  _impl->setupUI_messageBoxIcons();
+//  _impl->setupUi_treeView();
+//  _impl->setupUi_expander();
+//  _impl->setupUi_popover();
+//  _impl->setupUi_navigationBar();
+//  _impl->setupUi_switch();
+//  _impl->setupUi_blur();
+//  _impl->setupUi_focus();
+//  _impl->setup_badge();
+//  _impl->setup_specialProgressBar();
+//  _impl->setup_lineEditStatus();
+  }
+  _impl->endSetupUi();
 }
 
 SandboxWindow::~SandboxWindow() = default;
