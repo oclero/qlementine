@@ -599,7 +599,7 @@ void CsdWindow::setupUi() {
         auto* fmenu = menu->addMenu("File");
         auto* emenu = menu->addMenu("Edit");
         auto* vmenu = menu->addMenu("View");
-        auto* wmenu = menu->addMenu("Window");
+        menu->addMenu("Window");
         auto* hmenu = menu->addMenu("Help");
         widget->setMenuBar(menu);
         auto* anew = fmenu->addAction(icon, "New");
