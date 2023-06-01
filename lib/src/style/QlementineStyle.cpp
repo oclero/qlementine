@@ -26,6 +26,7 @@
 #include <oclero/qlementine/animation/WidgetAnimator.hpp>
 #include <oclero/qlementine/animation/WidgetAnimationManager.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
+#include <oclero/qlementine/utils/FontUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/RadiusesF.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
@@ -335,14 +336,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto role = getColorRole(opt->state, isDefault);
         const auto& bgColor = buttonBackgroundColor(mouse, role);
         const auto& currentBgColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
-
-        auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
-        if (const auto* optButtonRoundedRect = qstyleoption_cast<const QStyleOptionButttonRoundedRect*>(opt)) {
-          if (optButtonRoundedRect->status == QStyleOptionButttonRoundedRect::INITIALIZED) {
-            borderRadius = optButtonRoundedRect->radiuses;
-          }
-        }
-
+        const auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
         drawRoundedRect(p, optButton->rect, currentBgColor, borderRadius);
       }
       return;
@@ -426,7 +420,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_PanelLineEdit:
       if (const auto* optPanelLineEdit = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
         auto radiusAllAngles = true;
-        const auto parentSpinBox = qobject_cast<const QAbstractSpinBox*>(w->parentWidget());
+        const auto* parentSpinBox = qobject_cast<const QAbstractSpinBox*>(w->parentWidget());
         if (parentSpinBox && parentSpinBox->buttonSymbols() != QAbstractSpinBox::NoButtons) {
           radiusAllAngles = false;
         }
@@ -1755,12 +1749,20 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
-          const auto treeView = qobject_cast<const QAbstractItemView*>(monitoredWidget->parentWidget()->parentWidget());
-          const auto margin = treeView? borderW * 2: borderW;
+
+          // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
+          auto isTabCellEditor = false;
+          if (const auto* parent1 = monitoredWidget ? monitoredWidget->parentWidget() : nullptr) {
+            if (const auto* parent2 = qobject_cast<const QAbstractItemView*>(parent1->parentWidget())) {
+              isTabCellEditor = true;
+            }
+          }
+
+          const auto margin = isTabCellEditor ? borderW * 2: borderW;
           optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
           // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible.
-          if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget->parentWidget())) {
+          if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget ? monitoredWidget->parentWidget() : nullptr)) {
             if (spinbox->buttonSymbols() != QAbstractSpinBox::NoButtons) {
               optFocus.radiuses.topRight = 0.;
               optFocus.radiuses.bottomRight = 0.;
@@ -1800,7 +1802,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             customRadius = roundedFocusFrame->radiuses();
           }
 
-          optFocus.rect = monitoredWidget->rect().translated(borderW * 2, borderW * 2).marginsAdded(QMargins(borderW, borderW, borderW, borderW));
+          optFocus.rect = monitoredWidget ? monitoredWidget->rect().translated(borderW * 2, borderW * 2).marginsAdded(QMargins(borderW, borderW, borderW, borderW)) : QRect{};
           optFocus.radiuses = customRadius >= 0 ? customRadius : _impl->theme.borderRadius;
         }
 
@@ -2152,7 +2154,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         auto font = QFont{ w->font() };
         font.setBold(true);
         const auto fm = QFontMetrics(font);
-        const auto textW = fm.horizontalAdvance(optHeader->text);
+        const auto textW = qlementine::textWidth(fm, optHeader->text);
 
         const auto arrowX = rect.x() + rect.width() - paddingH - arrowW;
         const auto intersectsArrow = hasArrow ? rect.x() + paddingH + (rect.width() - textW) / 2 + textW > arrowX : false;
@@ -2252,6 +2254,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_ToolButtonLayoutItem:
     case SE_FrameLayoutItem:
     case SE_GroupBoxLayoutItem:
+      break;
 
     // TabWidget
     case SE_TabWidgetLayoutItem:
@@ -3252,7 +3255,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
 
         auto contentWidth = 0;
         if (hasText) {
-          contentWidth += optButton->fontMetrics.horizontalAdvance(optButton->text);
+          contentWidth += qlementine::textWidth(optButton->fontMetrics, optButton->text);
         }
         if (hasIcon) {
           contentWidth += optButton->iconSize.width();
@@ -3394,8 +3397,10 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
       break;
     case CT_ProgressBar:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
-        const auto showText = optProgressBar->textVisible;
-        const auto labelW = showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, QStringLiteral("100%")).width() : 0;
+        const auto indeterminate = optProgressBar->maximum == 0 && optProgressBar->minimum == 0;
+        const auto showText = !indeterminate && optProgressBar->textVisible;
+        const auto maximumText = indeterminate ? QString{} : QString("%1%").arg(optProgressBar->maximum);
+        const auto labelW = showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, maximumText).width() : 0;
         const auto labelH = showText ? optProgressBar->fontMetrics.height() : 0;
         const auto spacing = _impl->theme.spacing;
         const auto barH = _impl->theme.progressBarGrooveHeight;
@@ -3553,7 +3558,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto lineW = _impl->theme.borderWidth;
         const auto iconExtent = pixelMetric(PM_SmallIconSize, opt);
         const auto fm = QFontMetrics(font);
-        const auto textW = fm.horizontalAdvance(optHeader->text);
+        const auto textW = qlementine::textWidth(fm, optHeader->text);
         const auto& icon = optHeader->icon;
         const auto hasIcon = !icon.isNull();
         const auto iconW = hasIcon ? iconExtent + spacing : 0;
@@ -3598,7 +3603,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
 
         auto font = QFont(widget->font());
         const auto fm = QFontMetrics(font);
-        const auto textW = fm.horizontalAdvance(optItem->text);
+        const auto textW = qlementine::textWidth(fm, optItem->text);
 
         const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;

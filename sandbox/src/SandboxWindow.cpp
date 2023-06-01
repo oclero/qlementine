@@ -63,7 +63,7 @@ protected:
   }
 };
 
-class CustomPaintWidget : public QWidget {
+class FontMetricsTestsWidget : public QWidget {
   using QWidget::QWidget;
 
   void paintEvent(QPaintEvent*) override {
@@ -870,10 +870,10 @@ struct SandboxWindow::Impl {
 
   void setupUI_fontMetricsTests() {
     // Widget to test the different bounding boxes returned by QFontMetrics.
-    auto* customPaintWidget = new CustomPaintWidget(windowContent);
-    customPaintWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    customPaintWidget->setMinimumSize(100, 100);
-    windowContentLayout->addWidget(customPaintWidget);
+    auto* fontMetricsWidget = new FontMetricsTestsWidget(windowContent);
+    fontMetricsWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    fontMetricsWidget->setMinimumSize(100, 100);
+    windowContentLayout->addWidget(fontMetricsWidget);
   }
 
   void setupUI_messageBox() {
