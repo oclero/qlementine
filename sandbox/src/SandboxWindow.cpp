@@ -14,6 +14,7 @@
 #include <oclero/qlementine/widgets/PopoverButton.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
+#include <oclero/qlementine/widgets/Label.hpp>
 
 #include <QFileSystemWatcher>
 #include <QContextMenuEvent>
@@ -346,10 +347,26 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_label() {
-    auto* label = new QLabel(windowContent);
-    label->setWordWrap(true);
-    label->setText("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme.");
-    windowContentLayout->addWidget(label);
+    {
+      auto* label = new Label(windowContent);
+      label->setWordWrap(true);
+      label->setText("Sandbox Application");
+      label->setRole(Theme::TextRole::H2);
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setWordWrap(true);
+      label->setText("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme.");
+      windowContentLayout->addWidget(label);
+    }
+    {
+      auto* label = new Label(windowContent);
+      label->setWordWrap(true);
+      label->setText("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets.");
+      label->setRole(Theme::TextRole::Caption);
+      windowContentLayout->addWidget(label);
+    }
   }
 
   void setupUI_button() {
@@ -437,8 +454,12 @@ struct SandboxWindow::Impl {
       auto* checkbox = new QCheckBox(windowContent);
       checkbox->setChecked(true);
       checkbox->setIcon(QIcon(":/refresh.svg"));
-      checkbox->setText(QString("Checkbox %1 with a very long text").arg(i));
+      const auto tristate = i % 2 == 0;
+      checkbox->setText(QString("%1 checkbox %2 with a very long text")
+                        .arg(tristate ? "Tristate" : "Normal")
+                        .arg(i));
       checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      checkbox->setTristate(tristate);
       windowContentLayout->addWidget(checkbox);
     }
   }
@@ -1303,7 +1324,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     _impl->setupUI_label();
 //  _impl->setupUI_button();
 //  _impl->setupUI_buttonVariants();
-//  _impl->setupUI_checkbox();
+//   _impl->setupUI_checkbox();
 //  _impl->setupUI_radioButton();
 //  _impl->setupUI_commandLinkButton();
 //  _impl->setupUI_sliderAndProgressBar();
