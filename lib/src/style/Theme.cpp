@@ -473,10 +473,6 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       fontRegular.setWeight(QFont::Weight::Normal);
       fontRegular.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
 
-      fontMedium = defaultFont;
-      fontMedium.setWeight(QFont::Weight::Medium);
-      fontMedium.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
-
       fontBold = defaultFont;
       fontBold.setWeight(QFont::Weight::Bold);
       fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));

@@ -94,33 +94,21 @@ struct QlementineStyleImpl {
 
   /// Registers all the theme fonts to Qt's font database.
   void installFonts() {
-      /*
 #if defined(WIN32)
     const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.ttf");
 #else
     const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.otf");
 #endif
-
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Regular")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Italic")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Bold")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-BoldItalic")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Medium")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-MediumItalic")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Light")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-LightItalic")));
 
     const auto fixedFontPath = QString(":/qlementine/resources/fonts/roboto-mono/%1.ttf");
-
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Regular")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Italic")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Bold")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-BoldItalic")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Medium")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-MediumItalic")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Light")));
-    QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-LightItalic")));
-    */
   }
 
   /// Some widgets need to have a QPalette explicitely set.
@@ -4546,7 +4534,6 @@ void QlementineStyle::polish(QWidget* w) {
 
 void QlementineStyle::unpolish(QWidget* w) {
   QCommonStyle::unpolish(w);
-  w->setFont(_impl->theme.fontMedium);
 
   // TODO revert all hacks made in QlementineStyle::polish(QWidget* w)
 

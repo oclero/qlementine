@@ -184,7 +184,6 @@ public: // Values.
   int tabBarPaddingTop{ 4 };
 
   QFont fontRegular;
-  QFont fontMedium;
   QFont fontBold;
 
   QFont fontH1;
