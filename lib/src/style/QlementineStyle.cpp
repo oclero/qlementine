@@ -172,6 +172,7 @@ struct QlementineStyleImpl {
   WidgetAnimationManager animations;
   std::unordered_map<int, QIcon> standardIconCache;
   bool useMenuForComboBoxPopup{ false };
+  bool autoIconColorEnabled{ false };
 };
 
 QlementineStyle::QlementineStyle(QObject* parent)
@@ -247,14 +248,32 @@ void QlementineStyle::triggerCompleteRepaint() {
   }
 }
 
+// Sets whether automatic icon colorization is enabled for the style.
+void QlementineStyle::setAutoIconColorEnabled(bool enabled) {
+    _impl->autoIconColorEnabled = enabled;
+}
+
+bool QlementineStyle::isAutoIconColorEnabled() const {
+    return _impl->autoIconColorEnabled;
+}
+
+// Sets whether automatic icon colorization is enabled for a specific widget.
+// This overrides the default value from isAutoIconColorEnabled().
 void QlementineStyle::setAutoIconColorEnabled(QWidget* widget, bool enabled) {
   if (widget) {
     widget->setProperty(Property_DisableAutoIconColor, !enabled);
   }
 }
 
-bool QlementineStyle::isAutoIconColorEnabled(const QWidget* widget) {
-  return widget && !widget->property(Property_DisableAutoIconColor).toBool();
+bool QlementineStyle::isAutoIconColorEnabled(const QWidget* widget) const {
+  if (!widget) {
+      return isAutoIconColorEnabled();
+  }
+  const auto property = widget->property(Property_DisableAutoIconColor);
+  if (!property.isValid()) {
+    return isAutoIconColorEnabled();
+  }
+  return !property.toBool();
 }
 
 QIcon QlementineStyle::makeIcon(const QString& svgPath) {
@@ -4511,7 +4530,7 @@ void QlementineStyle::polish(QWidget* w) {
     comboBox->setItemDelegate(new ComboBoxDelegate(comboBox));
     comboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
   } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
-    tabBar->installEventFilter(new TabBarEventFilter(tabBar));
+    tabBar->installEventFilter(new TabBarEventFilter(*this, tabBar));
   } else if (auto* label = qobject_cast<QLabel*>(w)) {
     const auto labelObjName = label->objectName();
     const auto isInformativeLabel = labelObjName == QStringLiteral("qt_msgbox_informativelabel");

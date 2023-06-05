@@ -89,7 +89,9 @@ QPixmap LineEdit::getPixmap() const {
   const auto iconSize = QSize{ iconExtent, iconExtent };
   const auto pxRatio = getPixelRatio(this);
 
-  if (QlementineStyle::isAutoIconColorEnabled(this)) {
+  const auto qlementineStyle = qobject_cast<QlementineStyle*>(style());
+  const auto autoColorize = qlementineStyle && qlementineStyle->isAutoIconColorEnabled(this);
+  if (autoColorize) {
     const auto pixmap = qlementine::getPixmap(_icon, iconSize, pxRatio, MouseState::Normal, CheckState::NotChecked);
     const auto colorGroup = isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled;
     const auto& color = palette().color(colorGroup, QPalette::ColorRole::Text);
