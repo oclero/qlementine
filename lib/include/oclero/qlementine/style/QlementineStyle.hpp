@@ -80,8 +80,11 @@ public:
 
   void triggerCompleteRepaint();
 
-  static void setAutoIconColorEnabled(QWidget* widget, bool enabled);
-  static bool isAutoIconColorEnabled(const QWidget* widget);
+  void setAutoIconColorEnabled(bool enabled);
+  bool isAutoIconColorEnabled() const;
+
+  void setAutoIconColorEnabled(QWidget* widget, bool enabled);
+  bool isAutoIconColorEnabled(const QWidget* widget) const;
 
   static QIcon makeIcon(const QString& svgPath);
 
