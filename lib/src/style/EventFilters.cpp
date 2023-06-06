@@ -192,7 +192,7 @@ private:
   QTabBar* _tabBar{ nullptr };
 };
 
-TabBarEventFilter::TabBarEventFilter(QTabBar* tabBar)
+TabBarEventFilter::TabBarEventFilter(QlementineStyle& style, QTabBar* tabBar)
   : QObject(tabBar)
   , _tabBar(tabBar) {
   // Tweak left/right buttons.
@@ -204,14 +204,14 @@ TabBarEventFilter::TabBarEventFilter(QTabBar* tabBar)
     _leftButton->setFocusPolicy(Qt::NoFocus);
     _leftButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     _leftButton->setFixedSize(_leftButton->sizeHint());
-    QlementineStyle::setAutoIconColorEnabled(_leftButton, false);
+    style.setAutoIconColorEnabled(_leftButton, false);
     _leftButton->installEventFilter(buttonEvtFilter);
 
     _rightButton = toolButtons.at(1);
     _rightButton->setFocusPolicy(Qt::NoFocus);
     _rightButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     _rightButton->setFixedSize(_rightButton->sizeHint());
-    QlementineStyle::setAutoIconColorEnabled(_rightButton, false);
+    style.setAutoIconColorEnabled(_rightButton, false);
     _rightButton->installEventFilter(buttonEvtFilter);
   }
 }

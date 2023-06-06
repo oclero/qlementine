@@ -67,7 +67,7 @@ private:
 
 class TabBarEventFilter : public QObject {
 public:
-  TabBarEventFilter(QTabBar* tabBar);
+  TabBarEventFilter(QlementineStyle& style, QTabBar* tabBar);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
