@@ -1772,7 +1772,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
           auto isTabCellEditor = false;
           if (const auto* parent1 = monitoredWidget ? monitoredWidget->parentWidget() : nullptr) {
-            if (const auto* parent2 = qobject_cast<const QAbstractItemView*>(parent1->parentWidget())) {
+            if (qobject_cast<const QAbstractItemView*>(parent1->parentWidget())) {
               isTabCellEditor = true;
             }
           }
