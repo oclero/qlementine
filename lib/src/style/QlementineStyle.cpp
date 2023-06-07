@@ -1994,7 +1994,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             p->setOpacity(backupOpacity);
           } else {
             const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, fgColor) : pixmap;
-            p->drawPixmap(pixmapRect, colorizedPixmap);
+            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, optItem, w);
+            iconRect.moveLeft(pixmapRect.left());
+            p->drawPixmap(iconRect, colorizedPixmap);
           }
         }
 
@@ -2220,9 +2222,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
           const auto& rect = optItem->rect;
           const auto checkBoxRect = subElementRect(SE_ItemViewItemCheckIndicator, opt, w);
           const auto& iconSize = _impl->theme.iconSize;
-          const auto spacing = _impl->theme.spacing;
           const auto hMargin = _impl->theme.spacing;
-          const auto iconX = (checkBoxRect.isValid() ? checkBoxRect.x() + checkBoxRect.width() : hMargin) + spacing;
+          const auto iconX = (checkBoxRect.isValid() ? checkBoxRect.x() + checkBoxRect.width() : hMargin);
           const auto iconY = rect.y() + (rect.height() - iconSize.height()) / 2;
           return QRect{ iconX, iconY, iconSize.width(), iconSize.height() };
         }
