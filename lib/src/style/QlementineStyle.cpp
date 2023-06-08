@@ -1,4 +1,4 @@
-// MIT License
+﻿// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -40,7 +40,6 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 
 #include "EventFilters.hpp"
-#include "QtWidgets/qtreeview.h"
 
 #include <QFontDatabase>
 #include <QToolTip>
@@ -243,7 +242,8 @@ void QlementineStyle::triggerCompleteRepaint() {
 });*/
 
   // Repaint all top-level widgets.
-  for (auto* const widget : QApplication::topLevelWidgets()) {
+  const auto topLevelWidgets = QApplication::topLevelWidgets();
+  for (auto* widget : topLevelWidgets) {
     widget->update();
   }
 }
