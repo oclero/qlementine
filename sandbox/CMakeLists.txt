@@ -22,7 +22,7 @@ target_link_libraries(sandbox
 
 set_target_properties(sandbox PROPERTIES
   INTERNAL_CONSOLE OFF
-  EXCLUDE_FROM_ALL ON
+  EXCLUDE_FROM_ALL OFF
   FOLDER sandbox
   AUTOMOC ON
   AUTORCC ON
