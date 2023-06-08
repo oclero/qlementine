@@ -340,10 +340,15 @@ struct SandboxWindow::Impl {
       }
     });
 
-    /*auto* quitShortcut = new QShortcut(Qt::Key_Escape, &owner);
+    auto* quitShortcut = new QShortcut(Qt::Key_Escape, &owner);
     quitShortcut->setAutoRepeat(false);
     quitShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
-    QObject::connect(quitShortcut, &QShortcut::activated, quitShortcut, [this]() { QApplication::quit(); });*/
+    QObject::connect(quitShortcut, &QShortcut::activated, quitShortcut, [this]() {
+      QApplication::quit();
+    });
+    QObject::connect(quitShortcut, &QShortcut::activatedAmbiguously, quitShortcut, [this]() {
+      QApplication::quit();
+    });
   }
 
   void setupUI_label() {
