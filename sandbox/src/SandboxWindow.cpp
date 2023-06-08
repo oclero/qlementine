@@ -477,9 +477,7 @@ struct SandboxWindow::Impl {
       checkbox->setChecked(true);
       checkbox->setIcon(QIcon(":/refresh.svg"));
       const auto tristate = i % 2 == 0;
-      checkbox->setText(QString("%1 checkbox %2 with a very long text")
-                        .arg(tristate ? "Tristate" : "Normal")
-                        .arg(i));
+      checkbox->setText(QString("%1 checkbox %2 with a very long text").arg(tristate ? "Tristate" : "Normal").arg(i));
       checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       checkbox->setTristate(tristate);
       windowContentLayout->addWidget(checkbox);
@@ -605,7 +603,8 @@ struct SandboxWindow::Impl {
     //listView->setAlternatingRowColors(true);
 
     for (auto i = 0; i < 6; ++i) {
-      auto* item = new QListWidgetItem(QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
+      auto* item = new QListWidgetItem(
+        QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
       item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
       item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
 
@@ -622,7 +621,7 @@ struct SandboxWindow::Impl {
     treeWidget->setColumnCount(1);
     treeWidget->setHeaderHidden(true);
     treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    QlementineStyle::setAutoIconColorEnabled(treeWidget, false);
+    qlementineStyle->setAutoIconColorEnabled(treeWidget, false);
 
     for (auto i = 0; i < 3; ++i) {
       auto* root = new QTreeWidgetItem(treeWidget);
@@ -803,7 +802,7 @@ struct SandboxWindow::Impl {
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     tabBar->setTabsClosable(true);
-    QlementineStyle::setAutoIconColorEnabled(tabBar, false);
+    qlementineStyle->setAutoIconColorEnabled(tabBar, false);
     tabBar->setMovable(true);
     tabBar->setExpanding(/*true*/ false);
     tabBar->setChangeCurrentOnDrag(true);
@@ -894,7 +893,9 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     qMessageBox->setDetailedText(detailedText);
     qMessageBox->show();
 
-    QObject::connect(qMessageBox, &QMessageBox::finished, qMessageBox, []() { std::exit(0); });
+    QObject::connect(qMessageBox, &QMessageBox::finished, qMessageBox, []() {
+      std::exit(0);
+    });
   }
 
   void setupUI_messageBoxIcons() {
@@ -934,7 +935,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       treeWidget->setHeaderHidden(true);
       treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
       treeWidget->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-      QlementineStyle::setAutoIconColorEnabled(treeWidget, false);
+      qlementineStyle->setAutoIconColorEnabled(treeWidget, false);
 
       for (auto i = 0; i < 3; ++i) {
         auto* root = new QTreeWidgetItem(treeWidget);
@@ -968,7 +969,8 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       listView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
 
       for (auto i = 0; i < 3; ++i) {
-        auto* item = new QListWidgetItem(QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
+        auto* item = new QListWidgetItem(
+          QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
         item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
         item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
 
@@ -1144,10 +1146,11 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     // Synchronize position.
     comboBoxPosition->setCurrentIndex(comboBoxPosition->findData(static_cast<int>(popover->preferredPosition())));
-    QObject::connect(comboBoxPosition, qOverload<int>(&QComboBox::currentIndexChanged), &owner, [comboBoxPosition, popover](int index) {
-      const auto pos = static_cast<Popover::Position>(comboBoxPosition->itemData(index).toInt());
-      popover->setPreferredPosition(pos);
-    });
+    QObject::connect(comboBoxPosition, qOverload<int>(&QComboBox::currentIndexChanged), &owner,
+      [comboBoxPosition, popover](int index) {
+        const auto pos = static_cast<Popover::Position>(comboBoxPosition->itemData(index).toInt());
+        popover->setPreferredPosition(pos);
+      });
     QObject::connect(popover, &Popover::preferredPositionChanged, &owner, [popover, comboBoxPosition]() {
       QSignalBlocker b{ comboBoxPosition };
       comboBoxPosition->setCurrentIndex(comboBoxPosition->findData(static_cast<int>(popover->preferredPosition())));
@@ -1155,10 +1158,11 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     // Synchronize alignment.
     comboBoxAlignment->setCurrentIndex(comboBoxAlignment->findData(static_cast<int>(popover->preferredAlignment())));
-    QObject::connect(comboBoxAlignment, qOverload<int>(&QComboBox::currentIndexChanged), &owner, [comboBoxAlignment, popover](int index) {
-      const auto align = static_cast<Popover::Alignment>(comboBoxAlignment->itemData(index).toInt());
-      popover->setPreferredAlignment(align);
-    });
+    QObject::connect(comboBoxAlignment, qOverload<int>(&QComboBox::currentIndexChanged), &owner,
+      [comboBoxAlignment, popover](int index) {
+        const auto align = static_cast<Popover::Alignment>(comboBoxAlignment->itemData(index).toInt());
+        popover->setPreferredAlignment(align);
+      });
     QObject::connect(popover, &Popover::preferredAlignmentChanged, &owner, [popover, comboBoxAlignment]() {
       QSignalBlocker b{ comboBoxAlignment };
       comboBoxAlignment->setCurrentIndex(comboBoxAlignment->findData(static_cast<int>(popover->preferredAlignment())));
@@ -1315,10 +1319,11 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     comboBoxStatus->addItem("Warning", static_cast<int>(Status::Warning));
     comboBoxStatus->addItem("Success", static_cast<int>(Status::Success));
     windowContentLayout->addWidget(comboBoxStatus);
-    QObject::connect(comboBoxStatus, qOverload<int>(&QComboBox::currentIndexChanged), &owner, [comboBoxStatus, lineEdit](int index) {
-      const auto value = static_cast<Status>(comboBoxStatus->itemData(index).toInt());
-      lineEdit->setStatus(value);
-    });
+    QObject::connect(
+      comboBoxStatus, qOverload<int>(&QComboBox::currentIndexChanged), &owner, [comboBoxStatus, lineEdit](int index) {
+        const auto value = static_cast<Status>(comboBoxStatus->itemData(index).toInt());
+        lineEdit->setStatus(value);
+      });
   }
 
   SandboxWindow& owner;
@@ -1327,7 +1332,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
   QWidget* windowContent{ nullptr };
   QBoxLayout* windowContentLayout{ nullptr };
-  QScrollArea* globalScrollArea{nullptr};
+  QScrollArea* globalScrollArea{ nullptr };
   QToolBar* toolbar{ nullptr };
 
   QAction* reloadJsonAction{ nullptr };
@@ -1343,37 +1348,37 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   {
     // Uncomment the line to show the corresponding widget.
     _impl->setupUI_label();
-//  _impl->setupUI_button();
-//  _impl->setupUI_buttonVariants();
-//  _impl->setupUI_checkbox();
-//  _impl->setupUI_radioButton();
-//  _impl->setupUI_commandLinkButton();
-//  _impl->setupUI_sliderAndProgressBar();
-//  _impl->setupUI_sliderWithTicks();
-//  _impl->setupUI_lineEdit();
-//  _impl->setupUI_dial();
-//  _impl->setupUI_spinBox();
-//  _impl->setupUI_comboBox();
-//  _impl->setupUI_listView();
-//  _impl->setupUI_treeWidget();
-//  _impl->setupUI_menu();
-//  _impl->setupUI_toolButton();
-//  _impl->setupUI_toolButtonsVariants();
-//  _impl->setupUI_tabBar();
-//  _impl->setupUI_groupBox();
-//  _impl->setupUI_fontMetricsTests();
-//  _impl->setupUI_messageBox();
-//  _impl->setupUI_messageBoxIcons();
-//  _impl->setupUi_treeView();
-//  _impl->setupUi_expander();
-//  _impl->setupUi_popover();
-//  _impl->setupUi_navigationBar();
-//  _impl->setupUi_switch();
-//  _impl->setupUi_blur();
-//  _impl->setupUi_focus();
-//  _impl->setup_badge();
-//  _impl->setup_specialProgressBar();
-//  _impl->setup_lineEditStatus();
+    //  _impl->setupUI_button();
+    //  _impl->setupUI_buttonVariants();
+    //  _impl->setupUI_checkbox();
+    //  _impl->setupUI_radioButton();
+    //  _impl->setupUI_commandLinkButton();
+    //  _impl->setupUI_sliderAndProgressBar();
+    //  _impl->setupUI_sliderWithTicks();
+    //  _impl->setupUI_lineEdit();
+    //  _impl->setupUI_dial();
+    //  _impl->setupUI_spinBox();
+    //  _impl->setupUI_comboBox();
+    //  _impl->setupUI_listView();
+    //  _impl->setupUI_treeWidget();
+    //  _impl->setupUI_menu();
+    //  _impl->setupUI_toolButton();
+    //  _impl->setupUI_toolButtonsVariants();
+    //  _impl->setupUI_tabBar();
+    //  _impl->setupUI_groupBox();
+    //  _impl->setupUI_fontMetricsTests();
+    //  _impl->setupUI_messageBox();
+    //  _impl->setupUI_messageBoxIcons();
+    //  _impl->setupUi_treeView();
+    //  _impl->setupUi_expander();
+    //  _impl->setupUi_popover();
+    //  _impl->setupUi_navigationBar();
+    //  _impl->setupUi_switch();
+    //  _impl->setupUi_blur();
+    //  _impl->setupUi_focus();
+    //  _impl->setup_badge();
+    //  _impl->setup_specialProgressBar();
+    //  _impl->setup_lineEditStatus();
   }
   _impl->endSetupUi();
 }
