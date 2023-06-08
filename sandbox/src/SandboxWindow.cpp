@@ -622,7 +622,7 @@ struct SandboxWindow::Impl {
     treeWidget->setColumnCount(1);
     treeWidget->setHeaderHidden(true);
     treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    QlementineStyle::setAutoIconColorEnabled(treeWidget, false);
+    qlementineStyle->setAutoIconColorEnabled(treeWidget, false);
 
     for (auto i = 0; i < 3; ++i) {
       auto* root = new QTreeWidgetItem(treeWidget);
@@ -803,7 +803,7 @@ struct SandboxWindow::Impl {
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     tabBar->setTabsClosable(true);
-    QlementineStyle::setAutoIconColorEnabled(tabBar, false);
+    qlementineStyle->setAutoIconColorEnabled(tabBar, false);
     tabBar->setMovable(true);
     tabBar->setExpanding(/*true*/ false);
     tabBar->setChangeCurrentOnDrag(true);
@@ -934,7 +934,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       treeWidget->setHeaderHidden(true);
       treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
       treeWidget->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-      QlementineStyle::setAutoIconColorEnabled(treeWidget, false);
+      qlementineStyle->setAutoIconColorEnabled(treeWidget, false);
 
       for (auto i = 0; i < 3; ++i) {
         auto* root = new QTreeWidgetItem(treeWidget);
