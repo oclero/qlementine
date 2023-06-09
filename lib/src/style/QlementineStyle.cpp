@@ -325,15 +325,12 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_FrameGroupBox:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
-        const auto hasBackground = !frameOpt->features.testFlag(QStyleOptionFrame::Flat);
-        if (hasBackground) {
-          const auto mouse = qlementine::getMouseState(frameOpt->state);
-          const auto& bgColor = groupBoxBackgroundColor(mouse);
-          const auto& borderColor = groupBoxBorderColor(mouse);
-          const auto borderW = _impl->theme.borderWidth;
-          drawRoundedRect(p, frameOpt->rect, bgColor, _impl->theme.borderRadius);
-          drawRoundedRectBorder(p, frameOpt->rect, borderColor, borderW, _impl->theme.borderRadius);
-        }
+        const auto mouse = qlementine::getMouseState(frameOpt->state);
+        const auto& bgColor = groupBoxBackgroundColor(mouse);
+        const auto& borderColor = groupBoxBorderColor(mouse);
+        const auto borderW = _impl->theme.borderWidth;
+        drawRoundedRect(p, frameOpt->rect, bgColor, _impl->theme.borderRadius);
+        drawRoundedRectBorder(p, frameOpt->rect, borderColor, borderW, _impl->theme.borderRadius);
       }
       return;
     case PE_FrameLineEdit:
@@ -2753,20 +2750,23 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
 
         // Frame
-        const auto frameRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, w);
-        QStyleOptionFrame frameOpt;
-        frameOpt.QStyleOption::operator=(*groupBoxOpt);
-        frameOpt.features = groupBoxOpt->features;
-        frameOpt.state = groupBoxOpt->state;
-        frameOpt.rect = frameRect;
+        const auto hasFrame = !groupBoxOpt->features.testFlag(QStyleOptionFrame::Flat);
+        if (hasFrame) {
+          const auto frameRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, w);
+          QStyleOptionFrame frameOpt;
+          frameOpt.QStyleOption::operator=(*groupBoxOpt);
+          frameOpt.features = groupBoxOpt->features;
+          frameOpt.state = groupBoxOpt->state;
+          frameOpt.rect = frameRect;
 
-        // If the groupbox is disabled (because its parent is disabled), or if it is not checked,
-        // tweak the state to reflect that.
-        const auto checked = qlementine::getCheckState(groupBoxOpt->state);
-        if (checked == CheckState::NotChecked && groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox)) {
-          frameOpt.state.setFlag(QStyle::State_Enabled, false);
+          // If the groupbox is disabled (because its parent is disabled), or if it is not checked,
+          // tweak the state to reflect that.
+          const auto checked = qlementine::getCheckState(groupBoxOpt->state);
+          if (checked == CheckState::NotChecked && groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox)) {
+            frameOpt.state.setFlag(QStyle::State_Enabled, false);
+          }
+          drawPrimitive(PE_FrameGroupBox, &frameOpt, p, w);
         }
-        drawPrimitive(PE_FrameGroupBox, &frameOpt, p, w);
       }
       return;
     case CC_MdiControls:
@@ -3210,11 +3210,12 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
         const auto& rect = groupBoxOpt->rect;
         const auto hasTitle = groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel);
         const auto hasCheckbox = groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox);
+        const auto hasFrame = !groupBoxOpt->features.testFlag(QStyleOptionFrame::Flat);
         const auto labelH = hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
         const auto& checkBoxSize = _impl->theme.iconSize;
-        const auto titleBottomSpacing = hasTitle || hasCheckbox ? _impl->theme.spacing : 0;
-        const auto titleH = std::max(labelH, checkBoxSize.height());
-        const auto leftPadding = _impl->theme.spacing / 2;
+        const auto titleBottomSpacing = hasFrame && (hasTitle || hasCheckbox) ? _impl->theme.spacing / 2 : 0;
+        const auto titleH = hasTitle || hasCheckbox ? std::max(labelH, checkBoxSize.height()) : 0;
+        const auto leftPadding = hasTitle || hasCheckbox ? _impl->theme.spacing: 0;
 
         switch (sc) {
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
@@ -3608,15 +3609,16 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
       if (const auto* groupBoxOpt = qstyleoption_cast<const QStyleOptionGroupBox*>(opt)) {
         const auto hasTitle = groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel);
         const auto hasCheckbox = groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox);
+        const auto hasFrame = !groupBoxOpt->features.testFlag(QStyleOptionFrame::Flat);
         const auto fm = QFontMetrics(_impl->theme.fontH5);
         const auto labelH = hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
         const auto labelW = fm.boundingRect(groupBoxOpt->rect, Qt::AlignLeft, groupBoxOpt->text).width();
         const auto& checkBoxSize = _impl->theme.iconSize;
-        const auto titleBottomSpacing = hasTitle || hasCheckbox ? _impl->theme.spacing : 0;
-        const auto titleH = std::max(labelH, checkBoxSize.height());
+        const auto titleBottomSpacing = hasFrame && (hasTitle || hasCheckbox) ? _impl->theme.spacing / 2 : 0;
+        const auto titleH = hasTitle || hasCheckbox ? std::max(labelH, checkBoxSize.height()) : 0;
         const auto spacing = _impl->theme.spacing;
         const auto titleW = checkBoxSize.width() + spacing + labelW;
-        const auto leftPadding = _impl->theme.spacing / 2;
+        const auto leftPadding = hasTitle || hasCheckbox ? _impl->theme.spacing : 0;
         const auto w = std::max(contentSize.width() + leftPadding, titleW);
         const auto h = titleH + titleBottomSpacing + contentSize.height();
         return QSize{ w, h };
