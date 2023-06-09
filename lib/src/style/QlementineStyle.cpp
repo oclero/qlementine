@@ -1,4 +1,4 @@
-// MIT License
+﻿// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -5281,12 +5281,12 @@ QColor const& QlementineStyle::groupBoxTitleColor(MouseState const mouse) const 
   return labelForegroundColor(mouse);
 }
 
-QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const /*mouse*/) const {
-  return _impl->theme.backgroundColorMain2;
+QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
+  return mouse == MouseState::Disabled ? _impl->theme.adaptativeColorTransparent : _impl->theme.adaptativeColor1;
 }
 
 QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
-  return mouse == MouseState::Disabled ? _impl->theme.borderColor1 : _impl->theme.borderColor3;
+  return mouse == MouseState::Disabled ? _impl->theme.borderColor2 : _impl->theme.borderColor3;
 }
 
 QColor const& QlementineStyle::focusBorderColor() const {
