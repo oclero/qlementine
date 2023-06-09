@@ -1380,12 +1380,47 @@ QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses) {
   return path;
 }
 
-void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& bgColor) {
+void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& bgColor, bool drawShadow,
+  const QColor& shadowColor) {
+  if (drawShadow) {
+    drawTabShadow(p, rect, radius, shadowColor);
+  }
   const auto path = getTabPath(rect, radius);
   p->setRenderHint(QPainter::Antialiasing, true);
   p->setPen(Qt::NoPen);
   p->setBrush(bgColor);
   p->drawPath(path);
+}
+
+void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color) {
+  // Draw the tab in a temporary buffer.
+  const auto path = getTabPath(rect, radius);
+  const auto pathRect = path.boundingRect().toAlignedRect();
+  QPixmap pathPixmap(pathRect.size());
+  {
+    pathPixmap.fill(Qt::transparent);
+    QPainter pixmapPainter(&pathPixmap);
+    pixmapPainter.setRenderHint(QPainter::Antialiasing, true);
+    pixmapPainter.setPen(Qt::NoPen);
+    pixmapPainter.setBrush(Qt::black);
+    pixmapPainter.drawPath(path.translated(-pathRect.x(), -pathRect.y()));
+  }
+
+  // Get the blurred version of the temporary buffer.
+  constexpr auto blurRadius = 2;
+  constexpr auto shadowX = 0;
+  constexpr auto shadowY = blurRadius / 2;
+  const auto shadowPixmap = getDropShadowPixmap(pathPixmap, blurRadius, color);
+
+  // Draw the shadow buffer.
+  const auto deltaX = (shadowPixmap.width() - pathRect.width()) / 2 + shadowX;
+  const auto deltaY = (shadowPixmap.height() - pathRect.height()) / 2 + shadowY - blurRadius;
+  const auto shadowRect = QRect(QPoint(pathRect.x() - deltaX, pathRect.y() - deltaY), shadowPixmap.size());
+
+  const auto modeBackup = p->compositionMode();
+  p->setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
+  p->drawPixmap(shadowRect, shadowPixmap);
+  p->setCompositionMode(modeBackup);
 }
 
 void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text, const QPaintDevice* paintDevice) {

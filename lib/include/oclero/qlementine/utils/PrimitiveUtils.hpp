@@ -1,4 +1,4 @@
-// MIT License
+﻿// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -218,7 +218,10 @@ void drawDial(QPainter* p, QRect const& rect, int min, int max, double value, QC
 QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses);
 
 /// Draws a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
-void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor);
+void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor, bool drawShadow = false, const QColor& shadowColor = Qt::black);
+
+/// Draws the shadow of a rounded tab.
+void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color);
 
 /// Draws an elided text (with an ellipsis "…" at the end if necessary) inside a QRect.
 /// The difference with Qt's method is the ellipsis (Qt doesn't draw one and just cuts the text).

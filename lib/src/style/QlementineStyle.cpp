@@ -1,4 +1,4 @@
-﻿// MIT License
+// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -62,6 +62,7 @@
 #include <QScrollArea>
 #include <QMessageBox>
 #include <QTextEdit>
+#include <QTimer>
 
 #include <cmath>
 #include <mutex>
@@ -163,6 +164,22 @@ struct QlementineStyleImpl {
       }
     }
     return icon;
+  }
+
+  bool areTabBarScrollButtonsVisible(const QTabBar* tabBar) const {
+    if (!tabBar->usesScrollButtons())
+      return false;
+
+    // Ignore right button They go in pair: if one is visible, the other is too.
+    const auto toolButtons = tabBar->findChildren<QToolButton*>();
+    auto leftButtonVisible = false;
+    for (const auto* toolButton : toolButtons) {
+      if (toolButton->arrowType() == Qt::ArrowType::LeftArrow) {
+          leftButtonVisible = toolButton->isVisible();
+          break;
+      }
+    }
+    return leftButtonVisible;
   }
 
   QlementineStyle& owner;
@@ -339,15 +356,38 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return; // Let PE_PanelMenu do the drawing.
     case PE_FrameStatusBarItem:
       break;
-    case PE_FrameTabWidget:
-      return; // Avoid unwanted borders.
+    case PE_FrameTabWidget:{
+      // QTabWidget.cpp, line 1296, in QTabWidget::paintEvent():
+      // The widget does not draw the Tab bar background unless it's in
+      // document mode. We always want that background, whatever the mode,
+      // so this hack does the trick.
+      const auto* tabWidget = qobject_cast<const QTabWidget*>(w);
+      const auto documentMode = tabWidget && tabWidget->documentMode();
+      const auto* tabBar = tabWidget ? tabWidget->tabBar() : nullptr;
+      if (!documentMode && tabBar) {
+        // Draw a border around the content.
+        const auto radius = _impl->theme.borderRadius * 1.5;
+        const auto& borderColor = tabBarBackgroundColor();
+        const auto borderW = _impl->theme.borderWidth;
+        drawRoundedRectBorder(p, opt->rect.adjusted(0, -borderW, 0, 0), borderColor, borderW, RadiusesF(0., 0., radius, radius));
+
+        // Draw the background of the tab bar.
+        const auto tabBarHeight = _impl->theme.controlHeightLarge + _impl->theme.spacing;
+        QStyleOptionTabBarBase tabBarOpt;
+        tabBarOpt.init(tabBar);
+        tabBarOpt.rect = QRect(0, 0, opt->rect.width(), tabBarHeight);
+        tabBarOpt.shape = tabBar->shape();
+        tabBarOpt.documentMode = documentMode;
+        drawPrimitive(PE_FrameTabBarBase, &tabBarOpt, p, tabBar);
+      }
+    }
+      return;
     case PE_FrameWindow:
       break;
     case PE_FrameButtonBevel:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
         const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
-
         const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
         const auto role = getColorRole(opt->state, isDefault);
         const auto& bgColor = buttonBackgroundColor(mouse, role);
@@ -356,14 +396,15 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         drawRoundedRect(p, optButton->rect, currentBgColor, borderRadius);
       }
       return;
-    case PE_FrameTabBarBase: {
-      const auto& rect = opt->rect;
-      p->fillRect(rect, tabBarBackgroundColor());
-      const auto borderW = _impl->theme.borderWidth;
-      const auto& borderColor = tabBarBottomShadowColor();
-      const auto borderRect = QRect(rect.x(), rect.y() + rect.height() - borderW, rect.width(), borderW);
-      p->fillRect(borderRect, borderColor);
-    }
+    case PE_FrameTabBarBase:
+      if (const auto* optTabBar = qstyleoption_cast<const QStyleOptionTabBarBase*>(opt)) {
+        if (optTabBar->documentMode) {
+          p->fillRect(opt->rect, tabBarBackgroundColor());
+        } else {
+          const auto radius = _impl->theme.borderRadius * 1.5;
+          drawRoundedRect(p, opt->rect, tabBarBackgroundColor(), RadiusesF(radius, radius, 0., 0.));
+        }
+      }
       return;
     case PE_PanelButtonCommand:
       break;
@@ -376,13 +417,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto& rect = optToolButton->rect;
 
         // Special case/hack for buttons in TabBar.
-        const auto isTabBarScrollButton = qobject_cast<const QTabBar*>(w->parentWidget()) != nullptr && optToolButton->arrowType != Qt::NoArrow;
+        const auto isTabBarScrollButton =
+          qobject_cast<const QTabBar*>(w->parentWidget()) != nullptr && optToolButton->arrowType != Qt::NoArrow;
         const auto hasMenu = optToolButton->features.testFlag(QStyleOptionToolButton::HasMenu);
         const auto isMenuBarExtensionButton = qobject_cast<const QMenuBar*>(w->parentWidget()) != nullptr;
         const auto radius = isMenuBarExtensionButton ? _impl->theme.menuBarItemBorderRadius : _impl->theme.borderRadius;
 
         // Radiuses depend on the type of ToolButton.
-        const auto& buttonRadiuses = isTabBarScrollButton ? RadiusesF{ rect.height() } : (hasMenu ? RadiusesF{ radius, 0., 0., radius } : RadiusesF{ radius });
+        const auto& buttonRadiuses = isTabBarScrollButton
+                                       ? RadiusesF{ rect.height() }
+                                       : (hasMenu ? RadiusesF{ radius, 0., 0., radius } : RadiusesF{ radius });
 
         // Little hack to avoid having a checked extension button.
         auto buttonState = optToolButton->state;
@@ -620,6 +664,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_IndicatorTabTear: {
       // TODO Handle vertical TabBar.
+      const auto* tabBar = qobject_cast<const QTabBar*>(w);
+      const auto documentMode = tabBar && tabBar->documentMode();
       const auto& rect = opt->rect;
       const auto startPos = QPointF(rect.topLeft());
       const auto shadowW = _impl->theme.spacing * 3;
@@ -629,9 +675,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto& endColor = _impl->theme.shadowColorTransparent;
       gradient.setColorAt(0., startColor);
       gradient.setColorAt(1., endColor);
+      const auto radius = _impl->theme.borderRadius * 1.5;
       const auto compModeBackup = p->compositionMode();
       p->setCompositionMode(QPainter::CompositionMode_Multiply);
-      p->fillRect(rect, gradient);
+
+      drawRoundedRect(p, rect, gradient, documentMode ? 0. : RadiusesF(radius, 0., 0., 0.));
       p->setCompositionMode(compModeBackup);
     }
       return;
@@ -656,8 +704,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       p->setCompositionMode(compModeBackup);
 
       // Filled rectangle below scroll buttons.
+      // We need to fill the whole surface to ensure tabs are not visible below.
       const auto filledRect = QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
-      p->fillRect(filledRect, tabBarBackgroundColor());
+      p->fillRect(filledRect, _impl->theme.backgroundColorMain1);
     }
       return;
     case PE_PanelScrollAreaCorner:
@@ -759,18 +808,6 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           const auto tabIndex = tabBar->tabAt(w->mapToParent(rect.center()));
           const auto tabSelected = opt->state.testFlag(State_Selected);
 
-          // Avoid drawing the button if it is below the right tear part.
-          QStyleOption tabBarOpt;
-          tabBarOpt.rect = tabBar->rect();
-          const auto tearRightRect = subElementRect(SE_TabBarTearIndicatorRight, &tabBarOpt, tabBar);
-          const auto shadowW = _impl->theme.spacing * 3;
-          const auto deadZoneRect = tearRightRect.adjusted(shadowW, 0, 0, 0);
-          const auto buttonTopLeftInTabBar = button->mapTo(tabBar, rect.topLeft());
-          const auto buttonRectInTabBar = rect.translated(buttonTopLeftInTabBar);
-          if (deadZoneRect.contains(buttonRectInTabBar)) {
-            return;
-          }
-
           auto tabHovered = false;
           if (tabBar->underMouse()) {
             const auto mousePos = tabBar->mapFromGlobal(QCursor::pos());
@@ -802,7 +839,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           p->setPen(QPen(currentFgColor, iconPenWidth, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin));
           p->setBrush(Qt::NoBrush);
           const auto& iconSize = _impl->theme.iconSize;
-          const auto closeRect = QRect(rect.x() + (rect.width() - iconSize.width()) / 2, rect.y() + (rect.height() - iconSize.height()) / 2, iconSize.width(), iconSize.height());
+          const auto closeRect = QRect(rect.x() + (rect.width() - iconSize.width()) / 2,
+            rect.y() + (rect.height() - iconSize.height()) / 2, iconSize.width(), iconSize.height());
           drawCloseIndicator(closeRect, p);
         }
       }
@@ -1084,6 +1122,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       if (const auto* tabOpt = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
         const auto paddingTop = _impl->theme.spacing / 2;
         const auto* tabBar = qobject_cast<const QTabBar*>(w);
+        const auto isClosable = tabBar->tabsClosable();
         const auto isFirst = tabBar->tabAt(tabOpt->rect.topLeft()) == 0;
         const auto isLast = tabBar->tabAt(tabOpt->rect.topLeft()) == tabBar->count() - 1;
         const auto paddingLeft = isFirst ? _impl->theme.spacing : 0;
@@ -1098,10 +1137,12 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         // Foreground.
         const auto contentPaddingLeft = _impl->theme.spacing;
         const auto contentPaddingRight = _impl->theme.spacing * 2;
-        const auto closeButtonVisible = tabOpt->state.testFlag(State_MouseOver) || tabOpt->state.testFlag(QStyle::State_Selected);
+        const auto closeButtonVisible =
+          isClosable && (tabOpt->state.testFlag(State_MouseOver) || tabOpt->state.testFlag(QStyle::State_Selected));
         const auto closeButtonW = closeButtonVisible ? _impl->theme.spacing + _impl->theme.iconSize.width() : 0;
         auto tabFgOpt = QStyleOptionTab(*tabOpt);
-        tabFgOpt.rect.adjust(paddingLeft + contentPaddingLeft, paddingTop, -contentPaddingRight - closeButtonW - paddingRight, 0);
+        tabFgOpt.rect.adjust(
+          paddingLeft + contentPaddingLeft, paddingTop, -contentPaddingRight - closeButtonW - paddingRight, 0);
         drawControl(CE_TabBarTabLabel, &tabFgOpt, p, w);
       }
       return;
@@ -1110,30 +1151,35 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto mouse = getMouseState(tabOpt->state);
         const auto selection = getSelectionState(tabOpt->state);
         const auto mouseOverTab = mouse == MouseState::Hovered || mouse == MouseState::Pressed;
+        const auto mousePressed = mouse == MouseState::Pressed;
         const auto tabIsSelected = selection == SelectionState::Selected;
 
         // Avoid drawing the tab if the mouse is over scroll buttons.
         const auto* tabBar = qobject_cast<const QTabBar*>(w);
         const auto cursorPos = tabBar->mapFromGlobal(QCursor::pos());
         const auto spacing = _impl->theme.spacing;
-        const auto buttonsW = _impl->theme.controlHeightMedium * 2 + spacing * 3;
+        const auto buttonsVisible = _impl->areTabBarScrollButtonsVisible(tabBar);
+        const auto buttonsW = buttonsVisible ? _impl->theme.controlHeightMedium * 2 + spacing * 3 : 0;
         const auto mouseOverButtons = cursorPos.x() > tabBar->width() - buttonsW;
 
         // The tab shape must be drawn in these cases:
         // - Always when the tab is selected.
         // - When the tab is actually hovered (i.e. the mouse isn't over the left/right buttons).
         const auto drawShape = tabIsSelected || (!mouseOverButtons && mouseOverTab);
+        const auto drawShadow = tabIsSelected && !mousePressed;
         if (drawShape) {
           const auto radius = _impl->theme.borderRadius;
           const auto& bgColor = tabBackgroundColor(mouse, selection);
-          const auto& radiuses = tabIsSelected ? RadiusesF(radius, radius, radius, radius) : RadiusesF(radius, radius, 0., 0.);
-          drawTab(p, tabOpt->rect, radiuses, bgColor);
+          const auto& radiuses =
+            tabIsSelected ? RadiusesF(radius, radius, radius, radius) : RadiusesF(radius, radius, 0., 0.);
+          drawTab(p, tabOpt->rect, radiuses, bgColor, drawShadow, _impl->theme.shadowColor2);
         }
       }
       return;
     case CE_TabBarTabLabel:
       if (const auto* tabOpt = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
-        const auto isVertical = tabOpt->shape == QTabBar::RoundedEast || tabOpt->shape == QTabBar::RoundedWest || tabOpt->shape == QTabBar::TriangularEast || tabOpt->shape == QTabBar::TriangularWest;
+        const auto isVertical = tabOpt->shape == QTabBar::RoundedEast || tabOpt->shape == QTabBar::RoundedWest
+                                || tabOpt->shape == QTabBar::TriangularEast || tabOpt->shape == QTabBar::TriangularWest;
         // TODO draw vertical tab.
         if (isVertical) {
           return;
@@ -1151,14 +1197,17 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto& fm = tabOpt->fontMetrics;
         const auto textAvailableWidth = rect.width() - iconSize.width() - spacing;
         const auto elidedText = fm.elidedText(tabOpt->text, Qt::ElideMiddle, textAvailableWidth, Qt::TextSingleLine);
-        const auto hasText = elidedText != QStringLiteral("…");
-        const auto textW = hasText ? fm.boundingRect(rect, Qt::AlignLeft, elidedText).width() : 0;
-        const auto contentDesiredW = textW + spacing + iconSize.width();
-        const auto parentTabBar = qobject_cast<const QTabBar*>(w);
-        const auto expandingTabBar = parentTabBar && parentTabBar->expanding();
+        const auto hasText = elidedText != QString("…");
 
-        auto availableW = expandingTabBar ? contentDesiredW : rect.width();
-        auto availableX = expandingTabBar ? rect.x() + (rect.width() - contentDesiredW) / 2 : rect.x();
+        // TODO handle expanding QTabBar.
+        //const auto textW = hasText ? fm.boundingRect(rect, Qt::AlignLeft, elidedText).width() : 0;
+        // const auto contentDesiredW = textW + spacing + iconSize.width();
+        // const auto parentTabBar = qobject_cast<const QTabBar*>(w);
+        // const auto expandingTabBar = parentTabBar && parentTabBar->expanding();
+        // auto availableW = expandingTabBar ? contentDesiredW : rect.width();
+        // auto availableX = expandingTabBar ? rect.x() + (rect.width() - contentDesiredW) / 2 : rect.x();
+        auto availableW = rect.width();
+        auto availableX = rect.x();
 
         // Icon.
         if (!iconSize.isEmpty()) {
@@ -1185,11 +1234,14 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (availableW > 0 && hasText) {
           const auto textRect = QRect{ availableX, rect.y(), availableW, rect.height() };
           auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
-          if (expandingTabBar) {
-            textFlags |= Qt::AlignHCenter;
-          } else {
-            textFlags |= Qt::AlignLeft;
-          }
+          // TODO handle expanding QTabBar.
+          // if (expandingTabBar) {
+          //   textFlags |= Qt::AlignHCenter;
+          // } else {
+          //   textFlags |= Qt::AlignLeft;
+          // }
+          textFlags |= Qt::AlignLeft;
+
           p->setBrush(Qt::NoBrush);
           p->setPen(fgColor);
           p->drawText(textRect, textFlags, elidedText);
@@ -2298,7 +2350,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       const auto& rect = opt->rect;
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
       const auto shadowW = _impl->theme.spacing * 3;
-      return QRect(rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height());
+      return QRect(
+        rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height());
     }
     case SE_TabBarTabLeftButton:
       // Button on the left of a tab.
@@ -2324,7 +2377,10 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto rightBorderW = _impl->theme.borderWidth;
         const auto x = rect.x() + rect.width() - spacing - w - rightBorderW;
         const auto y = rect.y() + paddingTop + (rect.height() - paddingTop - h) / 2;
-        return QRect{ x, y, w, h };
+        const auto isLast = optTab->position == QStyleOptionTab::TabPosition::End
+                            || optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
+        const auto paddingRight = isLast ? _impl->theme.spacing : 0;
+        return QRect{ x - paddingRight, y, w, h };
       }
       return {};
     case SE_TabBarTabText:
@@ -2592,7 +2648,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         const auto hasMenu = toolbuttonOpt->features.testFlag(QStyleOptionToolButton::HasMenu);
         const auto isMouseOver = toolbuttonOpt->state.testFlag(State_MouseOver);
         const auto isPressed = toolbuttonOpt->state.testFlag(State_Sunken);
-        const auto isTabBarScrollButton = qobject_cast<QTabBar*>(w->parentWidget()) != nullptr && toolbuttonOpt->arrowType != Qt::NoArrow;
+        const auto* parentTabBar = qobject_cast<QTabBar*>(w->parentWidget());
+        const auto isTabBarScrollButton = parentTabBar != nullptr && toolbuttonOpt->arrowType != Qt::NoArrow;
         const auto radius = _impl->theme.borderRadius;
         const auto buttonActive = toolbuttonOpt->activeSubControls.testFlag(SC_ToolButton);
         const auto menuButtonActive = toolbuttonOpt->activeSubControls.testFlag(SC_ToolButtonMenu);
@@ -2614,15 +2671,22 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             buttonOpt.state.setFlag(State_Raised, true);
 
             // Draw an opaque background to hide tabs below.
-            p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor());
+            const auto isLeftButton = toolbuttonOpt->arrowType == Qt::ArrowType::LeftArrow;
+            if (parentTabBar->documentMode() || isLeftButton) {
+              p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor());
+            } else {
+              const auto bgRadius = _impl->theme.borderRadius * 1.5;
+              drawRoundedRect(p, toolbuttonOpt->rect, tabBarBackgroundColor(), RadiusesF(0., bgRadius, 0., 0.));
+            }
 
             // Rect.
             const auto spacing = _impl->theme.spacing;
             const auto buttonSize = QSize{ _impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium };
-            const auto isLeftButton = toolbuttonOpt->arrowType == Qt::ArrowType::LeftArrow;
-            const auto buttonX = isLeftButton ? buttonRect.x() + buttonRect.width() - buttonSize.width() - spacing / 2 : buttonRect.x() + spacing / 2;
+            const auto buttonX = isLeftButton ? buttonRect.x() + buttonRect.width() - buttonSize.width() - spacing / 2
+                                              : buttonRect.x() + spacing / 2;
             const auto topPadding = spacing / 2;
-            const auto buttonY = buttonRect.y() + topPadding + (buttonRect.height() - topPadding - buttonSize.height()) / 2;
+            const auto buttonY =
+              buttonRect.y() + topPadding + (buttonRect.height() - topPadding - buttonSize.height()) / 2;
             buttonOpt.rect = QRect{ QPoint{ buttonX, buttonY }, buttonSize };
 
             // Icon.
@@ -3495,10 +3559,6 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
       return contentSize;
     case CT_TabBarTab:
       if (const auto* tabOpt = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
-        //        const auto hPadding = _impl->theme.spacing;
-        //        const auto vPadding = _impl->theme.spacing / 4;
-        //        const auto& iconSize = _impl->theme.iconSize;
-
         const auto spacing = _impl->theme.spacing;
         const auto h = _impl->theme.controlHeightLarge + spacing;
         auto w = contentSize.width();
@@ -3520,16 +3580,15 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         // Add space for close button.
         w += spacing * 2 + _impl->theme.controlHeightMedium;
 
-        // Don't make tabs too long or too short.
+        // TODO Handle expanding tab bar.
         // TODO Choose min/max values according to available space and total tab count.
-
+        // Don't make tabs too long or too short.
         //auto count = 0;
         //auto availableW = 0;
         //if (const auto* tabBar = qobject_cast<const QTabBar*>(widget)) {
         //  count = tabBar->count();
         //  if (tabBar->sizePolicy().horizontalPolicy() == QSizePolicy::Ignored) {
         //    availableW = tabBar->width();
-
         //  }
         //}
 
@@ -5025,9 +5084,9 @@ QColor const& QlementineStyle::tabBackgroundColor(MouseState const mouse, Select
 
   switch (mouse) {
     case MouseState::Hovered:
-      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor1;
-    case MouseState::Pressed:
       return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor2;
+    case MouseState::Pressed:
+      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor3;
     case MouseState::Normal:
       return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColorTransparent;
     case MouseState::Disabled:
@@ -5042,7 +5101,8 @@ QColor const& QlementineStyle::tabForegroundColor(MouseState const mouse, Select
   return buttonForegroundColor(mouse, ColorRole::Neutral);
 }
 
-QColor const& QlementineStyle::tabCloseButtonBackgroundColor(MouseState const mouse, SelectionState const selected) const {
+QColor const& QlementineStyle::tabCloseButtonBackgroundColor(
+  MouseState const mouse, SelectionState const selected) const {
   Q_UNUSED(selected)
   switch (mouse) {
     case MouseState::Pressed:
@@ -5057,7 +5117,8 @@ QColor const& QlementineStyle::tabCloseButtonBackgroundColor(MouseState const mo
   }
 }
 
-QColor const& QlementineStyle::tabCloseButtonForegroundColor(MouseState const mouse, SelectionState const selected) const {
+QColor const& QlementineStyle::tabCloseButtonForegroundColor(
+  MouseState const mouse, SelectionState const selected) const {
   switch (mouse) {
     case MouseState::Pressed:
     case MouseState::Hovered:
