@@ -1,4 +1,4 @@
-﻿// MIT License
+// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -3606,7 +3606,6 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
       break;
     case CT_GroupBox:
       if (const auto* groupBoxOpt = qstyleoption_cast<const QStyleOptionGroupBox*>(opt)) {
-        const auto& rect = groupBoxOpt->rect;
         const auto hasTitle = groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel);
         const auto hasCheckbox = groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox);
         const auto fm = QFontMetrics(_impl->theme.fontH5);
