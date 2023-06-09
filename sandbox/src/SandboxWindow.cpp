@@ -836,12 +836,14 @@ struct SandboxWindow::Impl {
 
   void setupUI_groupBox() {
     for (auto i = 0; i < 3; ++i) {
-
       auto* groupBox = new QGroupBox(windowContent);
-      groupBox->setTitle(QString("Title of the GroupBox %1 that can be very long").arg(i + 1));
-      groupBox->setCheckable(i % 2 == 0);
       groupBox->setAlignment(Qt::AlignRight);
       groupBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+
+      // QGroupBox features:
+      groupBox->setTitle(QString("Title of the GroupBox %1 that can be very long").arg(i + 1));
+      groupBox->setCheckable(true);
+      groupBox->setFlat(false);
 
       auto* radioGroup = new QButtonGroup(groupBox);
 
@@ -857,13 +859,13 @@ struct SandboxWindow::Impl {
       button1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
       auto* button2 = new QPushButton("Button 2");
-      button2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      button2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
       radio1->setChecked(true);
 
       auto* vbox = new QVBoxLayout(groupBox);
-      //vbox->setContentsMargins(0, 0, 0, 0);
       groupBox->setLayout(vbox);
+      //vbox->setContentsMargins(0, 0, 0, 0);
       //vbox->setSpacing(0);
       vbox->addWidget(radio1);
       vbox->addWidget(radio2);
