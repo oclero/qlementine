@@ -343,10 +343,10 @@ struct SandboxWindow::Impl {
     auto* quitShortcut = new QShortcut(Qt::Key_Escape, &owner);
     quitShortcut->setAutoRepeat(false);
     quitShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
-    QObject::connect(quitShortcut, &QShortcut::activated, quitShortcut, [this]() {
+    QObject::connect(quitShortcut, &QShortcut::activated, quitShortcut, []() {
       QApplication::quit();
     });
-    QObject::connect(quitShortcut, &QShortcut::activatedAmbiguously, quitShortcut, [this]() {
+    QObject::connect(quitShortcut, &QShortcut::activatedAmbiguously, quitShortcut, []() {
       QApplication::quit();
     });
   }
