@@ -1,4 +1,4 @@
-﻿// MIT License
+// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -179,48 +179,48 @@ QPainterPath getMultipleRadiusesRectPath(QRectF const& rect, RadiusesF const& ra
   return path;
 }
 
-void drawRoundedRect(QPainter* p, QRectF const& rect, QColor const& color, qreal const radius) {
+void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, qreal const radius) {
   if (radius < 0.1) {
-    p->fillRect(rect, color);
+    p->fillRect(rect, brush);
   } else {
     p->setRenderHint(QPainter::RenderHint::Antialiasing, true);
     p->setPen(Qt::NoPen);
-    p->setBrush(color);
+    p->setBrush(brush);
     p->drawRoundedRect(rect, radius, radius);
   }
 }
 
-void drawRoundedRectF(QPainter* p, QRectF const& rect, QColor const& color, RadiusesF const& radiuses) {
+void drawRoundedRectF(QPainter* p, QRectF const& rect, QBrush const& brush, RadiusesF const& radiuses) {
   if (radiuses.hasSameRadius()) {
-    drawRoundedRect(p, rect, color, radiuses.topLeft);
+    drawRoundedRect(p, rect, brush, radiuses.topLeft);
   } else {
     const auto path = getMultipleRadiusesRectPath(rect, radiuses);
     p->setRenderHint(QPainter::Antialiasing, true);
     p->setPen(Qt::NoPen);
-    p->setBrush(color);
+    p->setBrush(brush);
     p->drawPath(path);
   }
 }
 
-void drawRoundedRect(QPainter* p, QRect const& rect, QColor const& color, qreal const radius) {
+void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, qreal const radius) {
   if (radius < 0.1) {
-    p->fillRect(rect, color);
+    p->fillRect(rect, brush);
   } else {
     p->setRenderHint(QPainter::RenderHint::Antialiasing, true);
     p->setPen(Qt::NoPen);
-    p->setBrush(color);
+    p->setBrush(brush);
     p->drawRoundedRect(rect, radius, radius);
   }
 }
 
-void drawRoundedRect(QPainter* p, QRect const& rect, QColor const& color, RadiusesF const& radiuses) {
+void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, RadiusesF const& radiuses) {
   if (radiuses.hasSameRadius()) {
-    drawRoundedRect(p, rect, color, radiuses.topLeft);
+    drawRoundedRect(p, rect, brush, radiuses.topLeft);
   } else {
     const auto path = getMultipleRadiusesRectPath(rect, radiuses);
     p->setRenderHint(QPainter::Antialiasing, true);
     p->setPen(Qt::NoPen);
-    p->setBrush(color);
+    p->setBrush(brush);
     p->drawPath(path);
   }
 }

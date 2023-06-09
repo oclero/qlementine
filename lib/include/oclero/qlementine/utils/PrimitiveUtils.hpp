@@ -1,4 +1,4 @@
-﻿// MIT License
+// MIT License
 //
 // Copyright (c) 2023 Olivier Clero
 //
@@ -41,16 +41,16 @@ void drawEllipseBorder(QPainter* p, QRectF const& rect, QColor const& color, qre
 QPainterPath getMultipleRadiusesRectPath(QRectF const& rect, RadiusesF const& radiuses);
 
 /// Draws an antialiased rect.
-void drawRoundedRect(QPainter* p, QRectF const& rect, QColor const& color, qreal const radius = 0.);
+void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, qreal const radius = 0.);
 
 // Draws an antialiased rect with different radiuses.
-void drawRoundedRect(QPainter* p, QRectF const& rect, QColor const& color, RadiusesF const& radiuses);
+void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, RadiusesF const& radiuses);
 
 /// Draws an antialiased rect.
-void drawRoundedRect(QPainter* p, QRect const& rect, QColor const& color, qreal const radius = 0.);
+void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, qreal const radius = 0.);
 
 // Draws an antialiased rect with different radiuses.
-void drawRoundedRect(QPainter* p, QRect const& rect, QColor const& color, RadiusesF const& radiuses);
+void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, RadiusesF const& radiuses);
 
 /// Draws an antialiased pixel-perfect border for the rounded rect.
 void drawRoundedRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, qreal const radius = 0.);
