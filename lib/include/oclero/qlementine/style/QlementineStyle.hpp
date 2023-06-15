@@ -227,8 +227,9 @@ public:
   virtual QColor const& scrollBarHandleColor(MouseState const mouse) const;
   virtual int getScrollBarThickness(MouseState const mouse) const;
 
-  virtual QColor const& groupBoxBorderColor(MouseState const mouse) const;
   virtual QColor const& groupBoxTitleColor(MouseState const mouse) const;
+  virtual QColor const& groupBoxBorderColor(MouseState const mouse) const;
+  virtual QColor const& groupBoxBackgroundColor(MouseState const mouse) const;
 
   virtual QColor const& focusBorderColor() const;
   virtual QColor const& frameBorderColor() const;

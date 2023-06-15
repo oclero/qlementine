@@ -835,41 +835,46 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_groupBox() {
-    auto* groupBox = new QGroupBox(windowContent);
-    groupBox->setTitle("Title of the GroupBox that can be very long");
-    groupBox->setCheckable(true);
-    groupBox->setAlignment(Qt::AlignRight);
-    groupBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    for (auto i = 0; i < 3; ++i) {
+      auto* groupBox = new QGroupBox(windowContent);
+      groupBox->setAlignment(Qt::AlignRight);
+      groupBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
-    auto* radioGroup = new QButtonGroup(groupBox);
+      // QGroupBox features:
+      groupBox->setTitle(QString("Title of the GroupBox %1 that can be very long").arg(i + 1));
+      groupBox->setCheckable(true);
+      groupBox->setFlat(false);
 
-    auto* radio1 = new QRadioButton("Radio button 1");
-    radio1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    radioGroup->addButton(radio1);
+      auto* radioGroup = new QButtonGroup(groupBox);
 
-    auto* radio2 = new QRadioButton("Radio button 2");
-    radio2->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    radioGroup->addButton(radio2);
+      auto* radio1 = new QRadioButton("Radio button 1");
+      radio1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      radioGroup->addButton(radio1);
 
-    auto* button1 = new QPushButton("Button 1");
-    button1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      auto* radio2 = new QRadioButton("Radio button 2");
+      radio2->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      radioGroup->addButton(radio2);
 
-    auto* button2 = new QPushButton("Button 2");
-    button2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      auto* button1 = new QPushButton("Button 1");
+      button1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    radio1->setChecked(true);
+      auto* button2 = new QPushButton("Button 2");
+      button2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    auto* vbox = new QVBoxLayout(groupBox);
-    vbox->setContentsMargins(0, 0, 0, 0);
-    groupBox->setLayout(vbox);
-    //vbox->setSpacing(0);
-    vbox->addWidget(radio1);
-    vbox->addWidget(radio2);
-    vbox->addWidget(button1);
-    vbox->addWidget(button2);
-    vbox->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
+      radio1->setChecked(true);
 
-    windowContentLayout->addWidget(groupBox);
+      auto* vbox = new QVBoxLayout(groupBox);
+      groupBox->setLayout(vbox);
+      //vbox->setContentsMargins(0, 0, 0, 0);
+      //vbox->setSpacing(0);
+      vbox->addWidget(radio1);
+      vbox->addWidget(radio2);
+      vbox->addWidget(button1);
+      vbox->addWidget(button2);
+      vbox->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
+
+      windowContentLayout->addWidget(groupBox);
+    }
   }
 
   void setupUI_fontMetricsTests() {
@@ -1352,7 +1357,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   _impl->beginSetupUi();
   {
     // Uncomment the line to show the corresponding widget.
-    _impl->setupUI_label();
+    //  _impl->setupUI_label();
     //  _impl->setupUI_button();
     //  _impl->setupUI_buttonVariants();
     //  _impl->setupUI_checkbox();
@@ -1370,7 +1375,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //  _impl->setupUI_toolButton();
     //  _impl->setupUI_toolButtonsVariants();
     //  _impl->setupUI_tabBar();
-    //  _impl->setupUI_groupBox();
+    _impl->setupUI_groupBox();
     //  _impl->setupUI_fontMetricsTests();
     //  _impl->setupUI_messageBox();
     //  _impl->setupUI_messageBoxIcons();
