@@ -592,6 +592,8 @@ struct SandboxWindow::Impl {
     auto* combobox = new QComboBox(windowContent);
     combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     combobox->setFocusPolicy(Qt::NoFocus);
+    combobox->setIconSize(QSize(8, 8));
+
     for (auto i = 0; i < 4; ++i) {
       combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
     }
@@ -1375,7 +1377,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //  _impl->setupUI_toolButton();
     //  _impl->setupUI_toolButtonsVariants();
     //  _impl->setupUI_tabBar();
-    _impl->setupUI_groupBox();
+    //  _impl->setupUI_groupBox();
     //  _impl->setupUI_fontMetricsTests();
     //  _impl->setupUI_messageBox();
     //  _impl->setupUI_messageBoxIcons();
