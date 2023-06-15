@@ -25,7 +25,7 @@ formLayout->addRow(new Label(TEXT, TextRole::H4, &owner));
 formLayout->addRow(new Label(TEXT, TextRole::Caption, &owner));
 
 #define ADD_COLOR_EDITOR(NAME, DESCRIPTION) \
-{ const auto pair = makeColorEditorAndLabel(#NAME, #DESCRIPTION, &owner, theme.NAME, \
+{ const auto pair = makeColorEditorAndLabel(#NAME, DESCRIPTION, &owner, theme.NAME, \
                                       [this](const QColor& c) \
                                       { theme.NAME = c; emit owner.themeChanged(theme); }); \
   this->NAME##Editor = pair.second; \
@@ -65,11 +65,11 @@ std::pair<QWidget*, ColorEditor*> makeColorEditorAndLabel(const QString& label, 
   leftColumnLayout->setContentsMargins(0, 0, 0, 0);
   const auto vSpacing = leftColumn->style()->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
   leftColumnLayout->setSpacing(vSpacing / 4);
-  auto* nameLabel = new Label(label, TextRole::Default, leftColumn);
+  auto* nameLabel = new Label(label, Theme::TextRole::Default, leftColumn);
   nameLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
   leftColumnLayout->addWidget(nameLabel);
   if (!description.isEmpty()) {
-    auto* descriptionLabel = new Label(description, TextRole::Caption, leftColumn);
+    auto* descriptionLabel = new Label(description, Theme::TextRole::Caption, leftColumn);
     leftColumnLayout->addWidget(descriptionLabel);
   }
 
@@ -360,7 +360,7 @@ struct ThemeEditor::Impl {
   void setupUi() {
     auto* globalLayout = new QVBoxLayout(&owner);
     owner.setLayout(globalLayout);
-
+    const auto vSpacing = owner.style()->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
     const auto hSpacing = owner.style()->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
 
     auto* formLayout = new QFormLayout();

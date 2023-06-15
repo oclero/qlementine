@@ -89,8 +89,7 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
     const auto circleRect = QRect(QPoint{ circleX, circleY }, QSize{ circleW, circleH });
     // Get opacity animated in qlinedit_p.cpp:436
     const auto opacity = _button->property(QByteArrayLiteral("opacity")).toDouble();
-    const auto pixelRatio = getPixelRatio(_button);
-    const auto pixmap = getPixmap(_button->icon(), theme.iconSize, pixelRatio, mouse, CheckState::NotChecked);
+    const auto pixmap = getPixmap(_button->icon(), theme.iconSize, mouse, CheckState::NotChecked);
     const auto pixmapX = circleRect.x() + (circleRect.width() - theme.iconSize.width()) / 2;
     const auto pixmapY = circleRect.y() + (circleRect.height() - theme.iconSize.height()) / 2;
     const auto pixmapRect = QRect{ { pixmapX, pixmapY }, theme.iconSize };
@@ -135,8 +134,7 @@ bool CommandLinkButtonPaintEventFilter::eventFilter(QObject* watchedObject, QEve
     const auto radius = theme.borderRadius;
 
     const auto iconSize = theme.iconSize;
-    const auto pxRatio = getPixelRatio(_button);
-    const auto pixmap = getPixmap(_button->icon(), iconSize, pxRatio, mouse, CheckState::NotChecked);
+    const auto pixmap = getPixmap(_button->icon(), iconSize, mouse, CheckState::NotChecked);
     const auto pixmapX = fgRect.x();
     const auto pixmapY = fgRect.y() + (fgRect.height() - iconSize.height()) / 2;
     const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };

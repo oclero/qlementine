@@ -87,19 +87,18 @@ bool LineEdit::event(QEvent* e) {
 QPixmap LineEdit::getPixmap() const {
   const auto iconExtent = style()->pixelMetric(QStyle::PM_SmallIconSize);
   const auto iconSize = QSize{ iconExtent, iconExtent };
-  const auto pxRatio = getPixelRatio(this);
 
-  const auto qlementineStyle = qobject_cast<QlementineStyle*>(style());
+  const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style());
   const auto autoColorize = qlementineStyle && qlementineStyle->isAutoIconColorEnabled(this);
   if (autoColorize) {
-    const auto pixmap = qlementine::getPixmap(_icon, iconSize, pxRatio, MouseState::Normal, CheckState::NotChecked);
+    const auto pixmap = qlementine::getPixmap(_icon, iconSize, MouseState::Normal, CheckState::NotChecked);
     const auto colorGroup = isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled;
     const auto& color = palette().color(colorGroup, QPalette::ColorRole::Text);
     const auto colorizedPixmap = qlementine::colorizePixmap(pixmap, color);
     return colorizedPixmap;
   } else {
     const auto mouse = isEnabled() ? MouseState::Normal : MouseState::Disabled;
-    const auto pixmap = qlementine::getPixmap(_icon, iconSize, pxRatio, mouse, CheckState::NotChecked);
+    const auto pixmap = qlementine::getPixmap(_icon, iconSize, mouse, CheckState::NotChecked);
     return pixmap;
   }
 }
@@ -114,14 +113,14 @@ void LineEdit::updateFont() {
     } else {
       const auto systemFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
       setFont(systemFont);
-    }    
+    }
   } else {
     if (qlementineStyle) {
       setFont(qlementineStyle->theme().fontRegular);
     } else {
       const auto systemFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
       setFont(systemFont);
-    }    
+    }
   }
 }
 

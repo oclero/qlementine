@@ -720,13 +720,43 @@ double getPixelRatio(QWidget const* w) {
   return pixelRatio;
 }
 
-QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, double const pixelRatio, MouseState const mouse, CheckState const checked) {
+QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked) {
   const auto iconMode = getIconMode(mouse);
   const auto iconState = getIconState(checked);
-  const auto pixmapSize = iconSize * pixelRatio;
-  auto pixmap = icon.pixmap(pixmapSize, iconMode, iconState);
-  pixmap.setDevicePixelRatio(pixelRatio);
-  return pixmap;
+  // QIcon::pixmap will automatically get the correct pixel ratio based on the QApplication's pixel ratio.
+  return icon.pixmap(iconSize, iconMode, iconState);
+}
+
+
+QRect drawIcon(const QRect &rect, QPainter *p, const QIcon &icon,
+               const MouseState mouse, const CheckState checked, bool colorize, const QColor& color) {
+  if (rect.isEmpty() || icon.isNull()) {
+    return { rect.x(), rect.y(), 0, 0 };
+  }
+
+  // Get pixmap to draw.
+  const auto iconSize = rect.size();
+  const auto& pixmap = getPixmap(icon, iconSize, mouse, checked);
+  const auto& targetPixmap = colorize ? getColorizedPixmap(pixmap, color) : pixmap;
+
+  if (targetPixmap.isNull()) {
+    return { rect.x(), rect.y(), 0, 0 };
+  }
+
+  // Get rect to draw the pixmap in.
+  // The pixmap may be smaller than the requested size, so we center it in the rect by default.
+  const auto targetPixelRatio = targetPixmap.devicePixelRatio();
+  const auto targetW = static_cast<int>((qreal) targetPixmap.width() / (targetPixelRatio));
+  const auto targetH = static_cast<int>((qreal) targetPixmap.height() / (targetPixelRatio));
+  const auto targetX = rect.x() + (rect.width() - targetW) / 2;
+  const auto targetY = rect.y() + (rect.height() - targetH) / 2;
+  const auto targetRect = QRect{targetX, targetY, targetW, targetH };
+
+  // Draw the pixmap.
+  p->drawPixmap(targetRect, targetPixmap);
+
+  // Return the actual rect where the pixmap was drawn.
+  return targetRect;
 }
 
 std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text) {
@@ -788,7 +818,7 @@ void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor&
   }
 }
 
-void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixmap, const QString& text, const QFontMetrics& fontMetrics, QColor const& textColor, const double pixelRatio,
+void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixmap, const QString& text, const QFontMetrics& fontMetrics, QColor const& textColor,
   const int spacing, Qt::Alignment const alignment, const QString& secondaryText, QColor const& secondaryTextColor, bool const useMnemonic, bool const showMnemonic,
   Qt::TextElideMode const elideMode) {
   p->setRenderHint(QPainter::Antialiasing, true);
@@ -820,7 +850,7 @@ void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixma
   // Draw icon.
   if (hasIcon) {
     // Get pixmap size.
-    const auto pixmapPixelRatio = iconPixmap.devicePixelRatio() * pixelRatio;
+    const auto pixmapPixelRatio = iconPixmap.devicePixelRatio();
     const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) iconPixmap.width() / pixmapPixelRatio) : 0;
     const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) iconPixmap.height() / pixmapPixelRatio) : 0;
     const auto pixmapX = contentRect.x();
@@ -1565,4 +1595,5 @@ QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme) {
 
   return QSize{ w, h };
 }
+
 } // namespace oclero::qlementine

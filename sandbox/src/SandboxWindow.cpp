@@ -1467,7 +1467,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //  _impl->setup_specialProgressBar();
 //  _impl->setup_lineEditStatus();
 //  _impl->setup_colorButton();
-    _impl->setup_themeEditor();
+//  _impl->setup_themeEditor();
   }
   _impl->endSetupUi();
 }

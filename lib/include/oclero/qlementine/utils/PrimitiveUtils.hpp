@@ -145,7 +145,17 @@ void drawCloseIndicator(const QRect& rect, QPainter* p);
 /// Draws a treeview indicator.
 void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
 
-QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, double const pixelRatio, MouseState const mouse, CheckState const checked);
+#pragma endregion
+
+#pragma region Pixmap / Icons
+
+/// Gets the QPixmap that corresponds to the state and matches the best the desired iconSize.
+/// NB: the QPixmap may not be equal to iconSize: it can be smaller, but never larger.
+QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked);
+
+/// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
+QRect drawIcon(const QRect& rect, QPainter*p, const QIcon& icon,
+               const MouseState mouse, const CheckState checked, bool colorize = false, const QColor& color = {});
 
 /// Generates a pixmap for a specific state of QLineEdit's clear button.
 QPixmap makeClearButtonPixmap(QSize const& size, QColor const& color);
