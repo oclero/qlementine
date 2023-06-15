@@ -340,7 +340,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_FrameStatusBarItem:
       break;
     case PE_FrameTabWidget:
-      break;
+      return; // Avoid unwanted borders.
     case PE_FrameWindow:
       break;
     case PE_FrameButtonBevel:
