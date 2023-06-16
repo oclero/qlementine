@@ -26,7 +26,7 @@
 	"neutralColorForegroundDisabled": "#ffffff99",
 	"neutralColorForegroundHovered": "#ffffff",
 	"neutralColorForegroundPressed": "#ffffff",
-	"neutralColorHovered": "#0c0c0c",
+	"neutralColorHovered": "#333333",
 	"neutralColorPressed": "#262626",
 	"primaryColor": "#349886",
 	"primaryColorDisabled": "#3498863f",
