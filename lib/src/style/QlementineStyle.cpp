@@ -3416,7 +3416,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto framePadding = pixelMetric(PM_ComboBoxFrameWidth, optComboBox, widget);
         actualContentSize.rwidth() += framePadding * 2;
 
-        // Add space for indicator.
+        // Add space for indicator (NB: this is the arrow on the right, not the icon).
         const auto indicatorSize = _impl->theme.iconSize;
         actualContentSize.rwidth() += _impl->theme.spacing + indicatorSize.width();
 
