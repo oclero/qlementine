@@ -808,12 +808,16 @@ struct SandboxWindow::Impl {
     auto* tabBar = new QTabBar(windowContent);
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    tabBar->setTabsClosable(true);
     qlementineStyle->setAutoIconColorEnabled(tabBar, false);
+
+    // QTabBar features.
+    tabBar->setTabsClosable(true);
     tabBar->setMovable(true);
     tabBar->setExpanding(/*true*/ false);
     tabBar->setChangeCurrentOnDrag(true);
-    //tabBar->setUsesScrollButtons(false);
+    tabBar->setDocumentMode(true);
+    tabBar->setUsesScrollButtons(true);
+
     windowContentLayout->addWidget(tabBar);
     //windowContentLayout->setAlignment(tabBar, Qt::AlignLeft);
 
@@ -834,6 +838,37 @@ struct SandboxWindow::Impl {
     QObject::connect(tabBar, &QTabBar::tabCloseRequested, tabBar, [tabBar](int index) {
       tabBar->removeTab(index);
     });
+  }
+
+  void setupUI_tabWidget() {
+    const QStringList icons = { ":/scene_object.svg", ":/scene_light.svg", ":/scene_material.svg" };
+    auto* tabWidget =  new QTabWidget(windowContent);
+
+    tabWidget->setDocumentMode(false);
+    tabWidget->setTabsClosable(true);
+    tabWidget->setMovable(true);
+    tabWidget->setUsesScrollButtons(true);
+    QObject::connect(tabWidget, &QTabWidget::tabCloseRequested, tabWidget, [tabWidget](int index) {
+      tabWidget->removeTab(index);
+    });
+
+    windowContentLayout->addWidget(tabWidget);
+
+    for (auto i = 0; i < 5; ++i) {
+      auto* tabContent = new QWidget(); // Parent will be set by QTabWidget.
+      tabContent->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      auto* tabContentLayout = new QVBoxLayout(tabContent);
+
+      // Dummy tab content.
+      for (auto j = 0; j < (i + 1); ++j) {
+        tabContentLayout->addWidget(new QPushButton("Button", tabContent));
+      }
+      tabContentLayout->addSpacerItem(new QSpacerItem(0,0, QSizePolicy::Fixed, QSizePolicy::Expanding));
+
+      const auto label = QString("Tab %1 with very long text that is very long").arg(i + 1);
+      const auto icon = QIcon(icons.at(i % icons.size()));
+      tabWidget->addTab(tabContent, icon, label);
+    }
   }
 
   void setupUI_groupBox() {
@@ -1377,6 +1412,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //  _impl->setupUI_toolButton();
     //  _impl->setupUI_toolButtonsVariants();
     //  _impl->setupUI_tabBar();
+    //  _impl->setupUI_tabWidget();
     //  _impl->setupUI_groupBox();
     //  _impl->setupUI_fontMetricsTests();
     //  _impl->setupUI_messageBox();

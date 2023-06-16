@@ -32,6 +32,7 @@
 #include <QObject>
 #include <QMenu>
 #include <QMenuBar>
+#include <QTimer>
 
 namespace oclero::qlementine {
 LineEditButtonEventFilter::LineEditButtonEventFilter(QlementineStyle& style, WidgetAnimationManager& animManager, QToolButton* button)
@@ -238,6 +239,11 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         return true;
       }
     }
+    // Trigger a whole painting refresh because the tabs painting order and masking
+    // creates undesired visual artifacts.
+    QTimer::singleShot(0, this, [this]() {
+      _tabBar->update();
+    });
   } else if (type == QEvent::Wheel) {
     const auto* wheelEvent = static_cast<QWheelEvent*>(evt);
     auto delta = wheelEvent->pixelDelta().x();

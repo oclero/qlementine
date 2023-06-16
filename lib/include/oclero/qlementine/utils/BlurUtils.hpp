@@ -25,6 +25,8 @@
 #pragma once
 
 #include <cmath>
+#include <cassert>
+#include <algorithm>
 
 namespace oclero::qlementine {
 enum class EdgePolicy {
