@@ -65,11 +65,11 @@ std::pair<QWidget*, ColorEditor*> makeColorEditorAndLabel(const QString& label, 
   leftColumnLayout->setContentsMargins(0, 0, 0, 0);
   const auto vSpacing = leftColumn->style()->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
   leftColumnLayout->setSpacing(vSpacing / 4);
-  auto* nameLabel = new Label(label, Theme::TextRole::Default, leftColumn);
+  auto* nameLabel = new Label(label, TextRole::Default, leftColumn);
   nameLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
   leftColumnLayout->addWidget(nameLabel);
   if (!description.isEmpty()) {
-    auto* descriptionLabel = new Label(description, Theme::TextRole::Caption, leftColumn);
+    auto* descriptionLabel = new Label(description, TextRole::Caption, leftColumn);
     leftColumnLayout->addWidget(descriptionLabel);
   }
 
