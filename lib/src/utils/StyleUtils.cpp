@@ -38,6 +38,8 @@
 #include <QRadioButton>
 #include <QToolButton>
 
+#include <oclero/qlementine/widgets/ColorButton.hpp>
+
 namespace oclero::qlementine {
 bool shouldHaveHoverEvents(const QWidget* w) {
   return qobject_cast<const QAbstractButton*>(w) || qobject_cast<const QComboBox*>(w) || qobject_cast<const QMenuBar*>(w) || qobject_cast<const QScrollBar*>(w)
@@ -55,9 +57,10 @@ bool shouldHaveBoldFont(const QWidget* w) {
 }
 
 bool shouldHaveExternalFocusFrame(const QWidget* w) {
-  return (w && (qobject_cast<const QCheckBox*>(w) || qobject_cast<const QPushButton*>(w) || qobject_cast<const QRadioButton*>(w) || qobject_cast<const QToolButton*>(w))
-           && !qobject_cast<const QTabBar*>(w->parentWidget()))
-         || qobject_cast<const QComboBox*>(w) || qobject_cast<const QLineEdit*>(w) || (!qobject_cast<const QScrollBar*>(w) && qobject_cast<const QAbstractSlider*>(w))
+  return (w && qobject_cast<const QAbstractButton*>(w) && !qobject_cast<const QTabBar*>(w->parentWidget()))
+         || qobject_cast<const QComboBox*>(w)
+         || qobject_cast<const QLineEdit*>(w)
+         || (!qobject_cast<const QScrollBar*>(w) && qobject_cast<const QAbstractSlider*>(w))
          || qobject_cast<const QGroupBox*>(w);
 }
 

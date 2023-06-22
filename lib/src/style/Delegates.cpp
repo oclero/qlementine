@@ -26,6 +26,7 @@
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/FontUtils.hpp>
+#include <oclero/qlementine/utils/ColorUtils.hpp>
 
 #include <QPainter>
 
@@ -83,19 +84,20 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     if (availableW > 0 && !icon.isNull()) {
       const auto spacing = theme.spacing;
       const auto& iconSize = opt.decorationSize; // Get icon size.
-      const auto pxRatio = getPixelRatio(_widget);
-      const auto pixmap = getPixmap(icon, iconSize, pxRatio, mouse, CheckState::NotChecked);
-      const auto colorize = qlementineStyle ? qlementineStyle->isAutoIconColorEnabled(_widget) : false;
+      const auto pixmap = getPixmap(icon, iconSize, mouse, CheckState::NotChecked);
+      const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_widget->style());
+      const auto colorize = qlementineStyle && qlementineStyle->isAutoIconColorEnabled(_widget);
       const auto pixmapPixelRatio = pixmap.devicePixelRatio();
-      const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) pixmap.width() / pixmapPixelRatio) : 0;
-      const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) pixmap.height() / pixmapPixelRatio) : 0;
-      const auto pixmapX = availableX;
+      const auto pixmapW = pixmapPixelRatio != 0 ? static_cast<int>((qreal) pixmap.width() / pixmapPixelRatio) : 0;
+      const auto pixmapH = pixmapPixelRatio != 0 ? static_cast<int>((qreal) pixmap.height() / pixmapPixelRatio) : 0;
+      const auto pixmapX = availableX + (iconSize.width() - pixmapW) / 2; // Center the icon in the rect.
       const auto pixmapY = fgRect.y() + (fgRect.height() - pixmapH) / 2;
       const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
       availableW -= iconSize.width() + spacing;
       availableX += iconSize.width() + spacing;
 
       if (mouse == MouseState::Disabled && !colorize) {
+        // Change only the icon's tint and opacity, so it looks disabled.
         const auto& bgColor = qlementineStyle ? qlementineStyle->listItemBackgroundColor(MouseState::Normal, selected, focus, active) : Theme().adaptativeColorTransparent;
         const auto premultipiedColor = getColorSourceOver(bgColor, fgColor);
         const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
@@ -105,6 +107,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
         p->drawPixmap(pixmapRect, tintedPixmap);
         p->setOpacity(backupOpacity);
       } else {
+        // Actually color the whole icon if needed.
         const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, fgColor) : pixmap;
         p->drawPixmap(pixmapRect, colorizedPixmap);
       }

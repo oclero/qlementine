@@ -77,14 +77,14 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius = 0
 /// even for values close to min or max.
 void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value, qreal const radius = 0., bool inverted = false);
 
-/// Gets the color with the new alpha channel (from 0.0 to 1.0).
-QColor colorWithAlphaF(QColor const& color, qreal alpha);
+/// Draws a color mark. Will draw a border if the contrast between color and background is not high enough.
+void drawColorMark(QPainter* p, QRect const& rect,
+                   const QColor& color, const QColor& borderColor, int borderWidth = 1);
 
-/// Gets the color the new alpha chanel (from 0 to 255).
-QColor colorWithAlpha(QColor const& color, int alpha);
-
-/// Gets the resulting color by applying the foreground color over the background color with 'SourceOver' composition mode.
-QColor getColorSourceOver(const QColor& bg, const QColor& fg);
+/// Draws the border of a color mark.
+void drawColorMarkBorder(QPainter* p,
+                         QRect const& rect, const QColor& borderColor,
+                         int borderWidth);
 
 /// Draws a semi-transparent red rectangle.
 void drawDebugRect(const QRect& rect, QPainter* p);
@@ -145,7 +145,17 @@ void drawCloseIndicator(const QRect& rect, QPainter* p);
 /// Draws a treeview indicator.
 void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
 
-QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, double const pixelRatio, MouseState const mouse, CheckState const checked);
+#pragma endregion
+
+#pragma region Pixmap / Icons
+
+/// Gets the QPixmap that corresponds to the state and matches the best the desired iconSize.
+/// NB: the QPixmap may not be equal to iconSize: it can be smaller, but never larger.
+QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked);
+
+/// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
+QRect drawIcon(const QRect& rect, QPainter*p, const QIcon& icon,
+               const MouseState mouse, const CheckState checked, bool colorize = false, const QColor& color = {});
 
 /// Generates a pixmap for a specific state of QLineEdit's clear button.
 QPixmap makeClearButtonPixmap(QSize const& size, QColor const& color);

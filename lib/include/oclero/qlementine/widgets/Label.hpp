@@ -15,6 +15,7 @@ class Label : public QLabel {
 public:
   explicit Label(QWidget* parent = nullptr);
   explicit Label(const QString& text, QWidget* parent = nullptr);
+  explicit Label(const QString& text, TextRole role = TextRole::Default, QWidget* parent = nullptr);
   ~Label();
 
   TextRole role() const;
