@@ -218,7 +218,8 @@ QPixmap makePixmapFromSvg(const QString& svgPath, const QSize& size) {
   return pixmap;
 }
 
-QPixmap makePixmapFromSvg(const QString& backgroundSvgPath, const QColor& backgroundColor, const QString& foregroundSvgPath, const QColor& foregroundColor, const QSize& size) {
+QPixmap makePixmapFromSvg(const QString& backgroundSvgPath, const QColor& backgroundColor,
+  const QString& foregroundSvgPath, const QColor& foregroundColor, const QSize& size) {
   const auto bgPixmap = makePixmapFromSvg(backgroundSvgPath, size);
   const auto fgPixmap = makePixmapFromSvg(foregroundSvgPath, size);
   const auto coloredBgPixmap = colorizePixmap(bgPixmap, backgroundColor);
@@ -242,7 +243,8 @@ QPixmap makeRoundedPixmap(QPixmap const& input, const RadiusesF& radiuses) {
   return makeRoundedPixmap(input, radiuses.topLeft, radiuses.topRight, radiuses.bottomRight, radiuses.bottomLeft);
 }
 
-QPixmap makeRoundedPixmap(QPixmap const& input, double topLeft, double topRight, double bottomRight, double bottomLeft) {
+QPixmap makeRoundedPixmap(
+  QPixmap const& input, double topLeft, double topRight, double bottomRight, double bottomLeft) {
   if (input.isNull())
     return {};
 
@@ -270,7 +272,8 @@ QPixmap makeFitPixmap(QPixmap const& input, const QSize& size) {
   result.fill(Qt::transparent);
 
   QPainter p(&result);
-  const auto scaledInput = input.scaled(size, Qt::AspectRatioMode::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+  const auto scaledInput =
+    input.scaled(size, Qt::AspectRatioMode::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
   const auto x = (result.width() - scaledInput.width()) / 2.;
   const auto y = (result.height() - scaledInput.height()) / 2.;
 

@@ -30,7 +30,8 @@
 
 namespace oclero::qlementine {
 QWidget* makeHorizontalLine(QWidget* parentWidget, int maxWidth) {
-  const auto* qlementineStyle = parentWidget ? qobject_cast<qlementine::QlementineStyle*>(parentWidget->style()) : nullptr;
+  const auto* qlementineStyle =
+    parentWidget ? qobject_cast<qlementine::QlementineStyle*>(parentWidget->style()) : nullptr;
   const auto lineThickness = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
 
   auto* line = new QFrame(parentWidget);
@@ -47,7 +48,8 @@ QWidget* makeHorizontalLine(QWidget* parentWidget, int maxWidth) {
 }
 
 QWidget* makeVerticalLine(QWidget* parentWidget, int maxHeight) {
-  const auto* qlementineStyle = parentWidget ? qobject_cast<qlementine::QlementineStyle*>(parentWidget->style()) : nullptr;
+  const auto* qlementineStyle =
+    parentWidget ? qobject_cast<qlementine::QlementineStyle*>(parentWidget->style()) : nullptr;
   const auto lineThickness = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
 
   auto* line = new QFrame(parentWidget);

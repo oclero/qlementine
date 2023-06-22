@@ -173,7 +173,8 @@ bool FramelessWindow::event(QEvent* e) {
       _impl->createBehavior();
 
       // Usually called before showing on screen.
-      const auto systemWindowType = windowFlags().testFlag(Qt::WindowType::Dialog) ? SystemWindowType::Dialog : SystemWindowType::Default;
+      const auto systemWindowType =
+        windowFlags().testFlag(Qt::WindowType::Dialog) ? SystemWindowType::Dialog : SystemWindowType::Default;
       _impl->titleBar->setSystemWindowType(systemWindowType);
     } break;
     case QEvent::Type::WindowStateChange:

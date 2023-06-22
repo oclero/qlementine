@@ -33,5 +33,5 @@ double pixelSizeToPointSize(double pixelSize, double dpi);
  * @param text The text to compute the width for.
  * @return The width of the text in logical pixels.
  */
-int textWidth(const QFontMetrics &fm, const QString& text);
+int textWidth(const QFontMetrics& fm, const QString& text);
 } // namespace oclero::qlementine

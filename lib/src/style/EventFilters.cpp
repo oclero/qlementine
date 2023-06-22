@@ -35,7 +35,8 @@
 #include <QTimer>
 
 namespace oclero::qlementine {
-LineEditButtonEventFilter::LineEditButtonEventFilter(QlementineStyle& style, WidgetAnimationManager& animManager, QToolButton* button)
+LineEditButtonEventFilter::LineEditButtonEventFilter(
+  QlementineStyle& style, WidgetAnimationManager& animManager, QToolButton* button)
   : QObject(button)
   , _style(style)
   , _animManager(animManager)
@@ -110,7 +111,8 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
   return QObject::eventFilter(watchedObject, evt);
 }
 
-CommandLinkButtonPaintEventFilter::CommandLinkButtonPaintEventFilter(QlementineStyle& style, WidgetAnimationManager& animManager, QCommandLinkButton* button)
+CommandLinkButtonPaintEventFilter::CommandLinkButtonPaintEventFilter(
+  QlementineStyle& style, WidgetAnimationManager& animManager, QCommandLinkButton* button)
   : QObject(button)
   , _style(style)
   , _animManager(animManager)
@@ -300,7 +302,8 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
       if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style())) {
         const auto menuItemHPadding = qlementineStyle->theme().spacing;
         const auto menuDropShadowWidth = qlementineStyle->theme().spacing;
-        const auto menuRect = _menu->geometry().translated(-menuDropShadowWidth - menuItemHPadding, -menuDropShadowWidth);
+        const auto menuRect =
+          _menu->geometry().translated(-menuDropShadowWidth - menuItemHPadding, -menuDropShadowWidth);
         _menu->setGeometry(menuRect);
       }
     }

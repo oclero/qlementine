@@ -49,7 +49,6 @@ struct ThemeMeta {
 
 /// Color and sizes configuration for a Qlementine Theme.
 class Theme {
-
 public: // Ctor.
   Theme();
   Theme(Theme const& other) = default;

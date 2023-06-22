@@ -168,7 +168,8 @@ void Theme::initializePalette() {
   // ItemViews.
   // Compute color without alpha, to avoid color blending when the QTreeView is animating.
   const auto itemViewBase = getColorSourceOver(backgroundColorMain1, adaptativeColor2);
-  const auto itemViewAlternate = getColorSourceOver(itemViewBase, colorWithAlpha(adaptativeColor1, adaptativeColor1.alpha() / 2));
+  const auto itemViewAlternate =
+    getColorSourceOver(itemViewBase, colorWithAlpha(adaptativeColor1, adaptativeColor1.alpha() / 2));
   const auto itemViewDisabled = getColorSourceOver(backgroundColorMain1, adaptativeColor1);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Base, itemViewBase);
   palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Base, itemViewDisabled);

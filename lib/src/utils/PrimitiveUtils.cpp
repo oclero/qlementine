@@ -107,7 +107,8 @@ AngleRadius getAngleRadius(const QPointF& p1, const QPointF& angularPoint, const
   }
 
   // Translation need to center in the rect.
-  const auto pointOnCircle = getColinearVector(circleCenter, radius, circleCenter.x() - angularPoint.x(), circleCenter.y() - angularPoint.y());
+  const auto pointOnCircle =
+    getColinearVector(circleCenter, radius, circleCenter.x() - angularPoint.x(), circleCenter.y() - angularPoint.y());
   const auto translation = 2 * QPoint(angularPoint.x() - pointOnCircle.x(), angularPoint.y() - pointOnCircle.y());
 
   constexpr auto radiansToDegrees = 180. / QLEMENTINE_PI;
@@ -226,7 +227,8 @@ void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, Radius
   }
 }
 
-void drawRoundedRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, qreal const radius) {
+void drawRoundedRectBorder(
+  QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, qreal const radius) {
   if (borderWidth > 0) {
     p->setRenderHint(QPainter::RenderHint::Antialiasing);
     p->setPen(QPen{ color, borderWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
@@ -242,11 +244,13 @@ void drawRoundedRectBorder(QPainter* p, QRectF const& rect, QColor const& color,
   }
 }
 
-void drawRoundedRectBorder(QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, qreal const radius) {
+void drawRoundedRectBorder(
+  QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, qreal const radius) {
   drawRoundedRectBorder(p, QRectF(rect), color, borderWidth, radius);
 }
 
-void drawRoundedRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses) {
+void drawRoundedRectBorder(
+  QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses) {
   if (borderWidth > 0) {
     if (radiuses.hasSameRadius()) {
       drawRoundedRectBorder(p, rect, color, borderWidth, radiuses.topLeft);
@@ -268,7 +272,8 @@ void drawRoundedRectBorder(QPainter* p, QRectF const& rect, QColor const& color,
   }
 }
 
-void drawRoundedRectBorder(QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses) {
+void drawRoundedRectBorder(
+  QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses) {
   drawRoundedRectBorder(p, QRectF(rect), color, borderWidth, radiuses);
 }
 
@@ -312,13 +317,16 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius) {
   QPainterPath path;
   const auto diameter = radius * 2.;
   path.moveTo(angle1.startPoint);
-  path.arcTo(QRectF(angle1.centerPoint.x() - radius, angle1.centerPoint.y() - radius, diameter, diameter), angle1.startAngle, angle1.sweepAngle);
+  path.arcTo(QRectF(angle1.centerPoint.x() - radius, angle1.centerPoint.y() - radius, diameter, diameter),
+    angle1.startAngle, angle1.sweepAngle);
 
   path.lineTo(angle2.startPoint);
-  path.arcTo(QRectF(angle2.centerPoint.x() - radius, angle2.centerPoint.y() - radius, diameter, diameter), angle2.startAngle, angle2.sweepAngle);
+  path.arcTo(QRectF(angle2.centerPoint.x() - radius, angle2.centerPoint.y() - radius, diameter, diameter),
+    angle2.startAngle, angle2.sweepAngle);
 
   path.lineTo(angle3.startPoint);
-  path.arcTo(QRectF(angle3.centerPoint.x() - radius, angle3.centerPoint.y() - radius, diameter, diameter), angle3.startAngle, angle3.sweepAngle);
+  path.arcTo(QRectF(angle3.centerPoint.x() - radius, angle3.centerPoint.y() - radius, diameter, diameter),
+    angle3.startAngle, angle3.sweepAngle);
 
   path.lineTo(angle1.startPoint);
   path.closeSubpath();
@@ -331,7 +339,8 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius) {
   p->translate(-tr_x, -tr_y);
 }
 
-void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value, qreal const radius, bool inverted) {
+void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value,
+  qreal const radius, bool inverted) {
   const auto ratio = (max != min) ? (value - min) / (max - min) : 0;
   const auto w = static_cast<int>(rect.width() * ratio);
   const auto x = inverted ? rect.x() + rect.width() - w : rect.x();
@@ -347,8 +356,7 @@ void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& colo
   p->restore();
 }
 
-void drawColorMark(QPainter* p, QRect const& rect, const QColor& color,
-                   const QColor& borderColor, int borderWidth) {
+void drawColorMark(QPainter* p, QRect const& rect, const QColor& color, const QColor& borderColor, int borderWidth) {
   // Draw background.
   const auto circleDiameter = rect.height();
   const auto markRect = QRect((rect.width() - circleDiameter) / 2, 0, circleDiameter, circleDiameter);
@@ -363,9 +371,7 @@ void drawColorMark(QPainter* p, QRect const& rect, const QColor& color,
   drawEllipseBorder(p, markRect, borderColor, borderWidth * 1.5); // get better readability.
 }
 
-void drawColorMarkBorder(QPainter* p,
-                         QRect const& rect, const QColor& borderColor,
-                         int borderWidth) {
+void drawColorMarkBorder(QPainter* p, QRect const& rect, const QColor& borderColor, int borderWidth) {
   const auto circleDiameter = rect.height();
   const auto markRect = QRect((rect.width() - circleDiameter) * 0.5, 0, circleDiameter, circleDiameter);
   drawEllipseBorder(p, markRect, borderColor, borderWidth * 1.5); // get better readability.
@@ -483,11 +489,13 @@ void drawRadioButtonIndicator(const QRect& rect, QPainter* p, qreal progress) {
 
   const auto indicatorW = rect.width() * intendedRatio * progress;
   const auto indicatorH = rect.height() * intendedRatio * progress;
-  const auto ellipseRect = QRectF{ rect.x() + (rect.width() - indicatorW) / 2., rect.y() + (rect.height() - indicatorH) / 2., indicatorW, indicatorH };
+  const auto ellipseRect = QRectF{ rect.x() + (rect.width() - indicatorW) / 2.,
+    rect.y() + (rect.height() - indicatorH) / 2., indicatorW, indicatorH };
   p->drawEllipse(ellipseRect);
 }
 
-void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p, QAbstractSpinBox::ButtonSymbols buttonSymbol, QStyle::SubControl subControl, QSize const& iconSize) {
+void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p, QAbstractSpinBox::ButtonSymbols buttonSymbol,
+  QStyle::SubControl subControl, QSize const& iconSize) {
   if (buttonSymbol == QAbstractSpinBox::NoButtons)
     return;
 
@@ -728,8 +736,8 @@ QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mou
 }
 
 
-QRect drawIcon(const QRect &rect, QPainter *p, const QIcon &icon,
-               const MouseState mouse, const CheckState checked, bool colorize, const QColor& color) {
+QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
+  bool colorize, const QColor& color) {
   if (rect.isEmpty() || icon.isNull()) {
     return { rect.x(), rect.y(), 0, 0 };
   }
@@ -750,7 +758,7 @@ QRect drawIcon(const QRect &rect, QPainter *p, const QIcon &icon,
   const auto targetH = static_cast<int>((qreal) targetPixmap.height() / (targetPixelRatio));
   const auto targetX = rect.x() + (rect.width() - targetW) / 2;
   const auto targetY = rect.y() + (rect.height() - targetH) / 2;
-  const auto targetRect = QRect{targetX, targetY, targetW, targetH };
+  const auto targetRect = QRect{ targetX, targetY, targetW, targetH };
 
   // Draw the pixmap.
   p->drawPixmap(targetRect, targetPixmap);
@@ -768,7 +776,8 @@ std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text) {
   return { label, shortcut };
 }
 
-void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor, QColor const& fgColor, const qreal borderWidth, qreal progress) {
+void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
+  QColor const& fgColor, const qreal borderWidth, qreal progress) {
   // Background.
   p->setRenderHint(QPainter::RenderHint::Antialiasing);
   p->setPen(Qt::NoPen);
@@ -788,7 +797,8 @@ void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, cons
   }
 }
 
-void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor, QColor const& fgColor, const qreal borderWidth, qreal progress, CheckState checkState) {
+void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor,
+  QColor const& fgColor, const qreal borderWidth, qreal progress, CheckState checkState) {
   // Background.
   p->setRenderHint(QPainter::RenderHint::Antialiasing);
   if (radius < 1) {
@@ -818,8 +828,9 @@ void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor&
   }
 }
 
-void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixmap, const QString& text, const QFontMetrics& fontMetrics, QColor const& textColor,
-  const int spacing, Qt::Alignment const alignment, const QString& secondaryText, QColor const& secondaryTextColor, bool const useMnemonic, bool const showMnemonic,
+void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixmap, const QString& text,
+  const QFontMetrics& fontMetrics, QColor const& textColor, const int spacing, Qt::Alignment const alignment,
+  const QString& secondaryText, QColor const& secondaryTextColor, bool const useMnemonic, bool const showMnemonic,
   Qt::TextElideMode const elideMode) {
   p->setRenderHint(QPainter::Antialiasing, true);
 
@@ -835,7 +846,9 @@ void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixma
   const auto secondaryTextW = hasSecondaryText ? fontMetrics.size(Qt::TextShowMnemonic, secondaryText).width() : 0;
   const auto iconSpacing = hasIcon && hasText ? spacing : 0;
   const auto secondaryTextSpacing = hasSecondaryText ? spacing : 0;
-  const auto contentW = centered || rightAligned ? std::min(rect.width(), iconW + iconSpacing + textW + secondaryTextSpacing + secondaryTextW) : rect.width();
+  const auto contentW = centered || rightAligned
+                          ? std::min(rect.width(), iconW + iconSpacing + textW + secondaryTextSpacing + secondaryTextW)
+                          : rect.width();
 
   auto contentX = rect.x();
   if (alignment.testFlag(Qt::AlignHCenter)) {
@@ -866,7 +879,8 @@ void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixma
   if (hasSecondaryText && availableWidth > secondaryTextW) {
     const auto secondaryTextX = contentRect.x() + contentRect.width() - secondaryTextW;
     const auto secondaryTextRect = QRect{ secondaryTextX, contentRect.y(), secondaryTextW, contentRect.height() };
-    constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
+    constexpr auto textFlags =
+      Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
     availableWidth -= secondaryTextW + secondaryTextSpacing;
     p->setPen(secondaryTextColor);
     p->drawText(secondaryTextRect, textFlags, secondaryText);
@@ -929,7 +943,8 @@ QPixmap makeClearButtonPixmap(QSize const& size, QColor const& fgColor) {
   return pixmap;
 }
 
-void updateUncheckableButtonIconPixmap(QIcon& icon, const QSize& size, QlementineStyle const& style, const PixmapMakerFunc& func) {
+void updateUncheckableButtonIconPixmap(
+  QIcon& icon, const QSize& size, QlementineStyle const& style, const PixmapMakerFunc& func) {
   if (!func)
     return;
 
@@ -1230,8 +1245,8 @@ int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int
   return tickInterval;
 }
 
-void drawSliderTickMarks(
-  QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max, const int interval, const int tickThickness, const int singleStep, const int pageStep) {
+void drawSliderTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
+  const int interval, const int tickThickness, const int singleStep, const int pageStep) {
   const auto sliderLength = tickmarksRect.width();
   const auto tickInterval = getTickInterval(interval, singleStep, pageStep, min, max, sliderLength);
 
@@ -1243,14 +1258,15 @@ void drawSliderTickMarks(
 
   auto v = min;
   while (v <= max) {
-    const auto x1 = std::min(tickmarksRect.right(), tickmarksRect.left() + QStyle::sliderPositionFromValue(min, max, v, sliderLength));
+    const auto x1 = std::min(
+      tickmarksRect.right(), tickmarksRect.left() + QStyle::sliderPositionFromValue(min, max, v, sliderLength));
     p->drawLine(x1, y1, x1, y2);
     v += tickInterval;
   }
 }
 
-void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max, const int tickThickness, const int tickLength, const int singleStep,
-  const int pageStep, const int minArcLength) {
+void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
+  const int tickThickness, const int tickLength, const int singleStep, const int pageStep, const int minArcLength) {
   p->setRenderHint(QPainter::Antialiasing, true);
   p->setPen(QPen(tickColor, tickThickness, Qt::SolidLine, Qt::FlatCap));
   p->setBrush(Qt::NoBrush);
@@ -1282,8 +1298,9 @@ void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& ti
   }
 }
 
-void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value, QColor const& bgColor, QColor const& handleColor, QColor const& grooveColor, QColor const& valueColor,
-  QColor const& markColor, const int grooveThickness, const int markLength, const int markThickness) {
+void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value, QColor const& bgColor,
+  QColor const& handleColor, QColor const& grooveColor, QColor const& valueColor, QColor const& markColor,
+  const int grooveThickness, const int markLength, const int markThickness) {
   constexpr auto totalAngleDegrees = 360;
   constexpr auto deadAngleDegrees = 90;
   constexpr auto angleSpreadDegrees = totalAngleDegrees - deadAngleDegrees;
@@ -1300,7 +1317,8 @@ void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value
 
   // Value line.
   const auto halfGrooveThickness = grooveThickness / 2.;
-  const auto arcRect = QRectF(dialRect).marginsRemoved({ halfGrooveThickness, halfGrooveThickness, halfGrooveThickness, halfGrooveThickness });
+  const auto arcRect = QRectF(dialRect).marginsRemoved(
+    { halfGrooveThickness, halfGrooveThickness, halfGrooveThickness, halfGrooveThickness });
   constexpr auto startAngle = startAngleDegrees * qtAnglePrecision;
   const auto ratio = max != min ? (double) (value - min) / (max - min) : 0.;
   const auto angleLength = -(angleSpreadDegrees * ratio) * qtAnglePrecision;
@@ -1325,7 +1343,8 @@ void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value
   p->drawPie(dialRect, startAngle, deadAngleDegrees * qtAnglePrecision);
 
   // Front.
-  const auto dialFrontRect = dialRect.marginsRemoved({ grooveThickness, grooveThickness, grooveThickness, grooveThickness });
+  const auto dialFrontRect =
+    dialRect.marginsRemoved({ grooveThickness, grooveThickness, grooveThickness, grooveThickness });
   p->setPen(Qt::NoPen);
 
   // TMP : fix transparent color.
@@ -1478,7 +1497,8 @@ void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text
       const auto lineText = removeTrailingWhitespaces(textLayout.text().mid(line.textStart(), line.textLength()));
       const auto ellipsis = QString("…");
       const auto ellipsisWidth = qlementine::textWidth(fontMetrics, ellipsis);
-      auto elidedLineText = removeTrailingWhitespaces(fontMetrics.elidedText(lineText, Qt::TextElideMode::ElideRight, maxWidth - ellipsisWidth, Qt::TextSingleLine));
+      auto elidedLineText = removeTrailingWhitespaces(
+        fontMetrics.elidedText(lineText, Qt::TextElideMode::ElideRight, maxWidth - ellipsisWidth, Qt::TextSingleLine));
       if (!elidedLineText.endsWith(ellipsis)) {
         elidedLineText = removeTrailingWhitespaces(elidedLineText);
         elidedLineText += ellipsis;
@@ -1508,7 +1528,8 @@ QString displayedShortcutString(const QKeySequence& shortcut) {
   return shortcutStr;
 }
 
-void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme, bool enabled, Qt::Alignment alignment) {
+void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme, bool enabled,
+  Qt::Alignment alignment) {
   const auto shortcutStr = displayedShortcutString(shortcut);
   if (shortcutStr.isEmpty())
     return;

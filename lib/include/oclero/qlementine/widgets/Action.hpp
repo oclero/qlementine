@@ -18,9 +18,11 @@ public:
   explicit Action(const QKeySequence& shortcut, QObject* parent = nullptr);
   explicit Action(const QKeySequence& shortcut, Qt::ShortcutContext shortcutContext, QObject* parent = nullptr);
   explicit Action(const QString& text, const QKeySequence& shortcut, QObject* parent = nullptr);
-  explicit Action(const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext, QObject* parent = nullptr);
+  explicit Action(const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext,
+    QObject* parent = nullptr);
   explicit Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut, QObject* parent = nullptr);
-  explicit Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext, QObject* parent = nullptr);
+  explicit Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut,
+    const Qt::ShortcutContext shortcutContext, QObject* parent = nullptr);
 
   void setCallback(const std::function<void()>& cb);
   void setEnabledPredicate(const std::function<bool()>& cb);

@@ -28,7 +28,8 @@ namespace oclero::qlementine {
 WindowsTitleMenuBarProxyStyle::WindowsTitleMenuBarProxyStyle(QStyle* parent)
   : QProxyStyle(parent) {}
 
-QSize WindowsTitleMenuBarProxyStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget) const {
+QSize WindowsTitleMenuBarProxyStyle::sizeFromContents(
+  QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget) const {
   if (type == CT_MenuBar) {
     const auto result = QProxyStyle::sizeFromContents(type, option, size, widget);
     return QSize{ result.width(), 30 };
@@ -39,14 +40,16 @@ QSize WindowsTitleMenuBarProxyStyle::sizeFromContents(QStyle::ContentsType type,
   return QProxyStyle::sizeFromContents(type, option, size, widget);
 }
 
-void WindowsTitleMenuBarProxyStyle::drawControl(QStyle::ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
+void WindowsTitleMenuBarProxyStyle::drawControl(
+  QStyle::ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
   if (element == CE_MenuBarItem) {
     const auto* menuItemOption = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
     if (!menuItemOption)
       return;
 
     const auto& state = menuItemOption->state;
-    const auto isNormalState = !state.testFlag(State_MouseOver) && !state.testFlag(State_Selected) && !state.testFlag(State_Sunken) && state.testFlag(State_Enabled);
+    const auto isNormalState = !state.testFlag(State_MouseOver) && !state.testFlag(State_Selected)
+                               && !state.testFlag(State_Sunken) && state.testFlag(State_Enabled);
 
     // Draw only text in default/normal mode.
     if (isNormalState) {
@@ -64,7 +67,8 @@ void WindowsTitleMenuBarProxyStyle::drawControl(QStyle::ControlElement element, 
       if (widget && !widget->hasFocus()) {
         textFlags |= Qt::TextHideMnemonic;
       }
-      proxy()->drawItemText(painter, option->rect, textFlags, menuItemOption->palette, menuItemOption->state & State_Enabled, menuItemOption->text, textRole);
+      proxy()->drawItemText(painter, option->rect, textFlags, menuItemOption->palette,
+        menuItemOption->state & State_Enabled, menuItemOption->text, textRole);
       return;
     }
   } else if (element == CE_MenuBarEmptyArea) {
@@ -75,7 +79,8 @@ void WindowsTitleMenuBarProxyStyle::drawControl(QStyle::ControlElement element, 
   return QProxyStyle::drawControl(element, option, painter, widget);
 }
 
-void WindowsTitleMenuBarProxyStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
+void WindowsTitleMenuBarProxyStyle::drawPrimitive(
+  PrimitiveElement pe, const QStyleOption* option, QPainter* painter, const QWidget* widget) const {
   if (pe == QStyle::PE_PanelMenuBar) {
     // Don't draw anything.
     return;
