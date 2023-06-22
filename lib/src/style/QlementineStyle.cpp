@@ -177,8 +177,8 @@ struct QlementineStyleImpl {
     auto leftButtonVisible = false;
     for (const auto* toolButton : toolButtons) {
       if (toolButton->arrowType() == Qt::ArrowType::LeftArrow) {
-          leftButtonVisible = toolButton->isVisible();
-          break;
+        leftButtonVisible = toolButton->isVisible();
+        break;
       }
     }
     return leftButtonVisible;
@@ -269,11 +269,11 @@ void QlementineStyle::triggerCompleteRepaint() {
 
 // Sets whether automatic icon colorization is enabled for the style.
 void QlementineStyle::setAutoIconColorEnabled(bool enabled) {
-    _impl->autoIconColorEnabled = enabled;
+  _impl->autoIconColorEnabled = enabled;
 }
 
 bool QlementineStyle::isAutoIconColorEnabled() const {
-    return _impl->autoIconColorEnabled;
+  return _impl->autoIconColorEnabled;
 }
 
 // Sets whether automatic icon colorization is enabled for a specific widget.
@@ -286,7 +286,7 @@ void QlementineStyle::setAutoIconColorEnabled(QWidget* widget, bool enabled) {
 
 bool QlementineStyle::isAutoIconColorEnabled(const QWidget* widget) const {
   if (!widget) {
-      return isAutoIconColorEnabled();
+    return isAutoIconColorEnabled();
   }
   const auto property = widget->property(Property_DisableAutoIconColor);
   if (!property.isValid()) {
@@ -331,7 +331,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto& borderColor = focusBorderColor();
         const auto focused = optFocus->state.testFlag(State_HasFocus);
         const auto progress = focused ? 1. : 0.;
-        const auto currentProgress = _impl->animations.animateFocusBorderProgress(w, progress, _impl->theme.focusAnimationDuration);
+        const auto currentProgress =
+          _impl->animations.animateFocusBorderProgress(w, progress, _impl->theme.focusAnimationDuration);
         const auto currentBorderW = currentProgress * _impl->theme.focusBorderWidth;
         const auto margin = (1. - currentProgress) * _impl->theme.focusBorderWidth;
         const auto currentFocusRect = QRectF(optFocus->rect).marginsRemoved(QMarginsF(margin, margin, margin, margin));
@@ -358,7 +359,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return; // Let PE_PanelMenu do the drawing.
     case PE_FrameStatusBarItem:
       break;
-    case PE_FrameTabWidget:{
+    case PE_FrameTabWidget: {
       // QTabWidget.cpp, line 1296, in QTabWidget::paintEvent():
       // The widget does not draw the Tab bar background unless it's in
       // document mode. We always want that background, whatever the mode,
@@ -371,7 +372,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto radius = _impl->theme.borderRadius * 1.5;
         const auto& borderColor = tabBarBackgroundColor();
         const auto borderW = _impl->theme.borderWidth;
-        drawRoundedRectBorder(p, opt->rect.adjusted(0, -borderW, 0, 0), borderColor, borderW, RadiusesF(0., 0., radius, radius));
+        drawRoundedRectBorder(
+          p, opt->rect.adjusted(0, -borderW, 0, 0), borderColor, borderW, RadiusesF(0., 0., radius, radius));
 
         // Draw the background of the tab bar.
         const auto tabBarHeight = _impl->theme.controlHeightLarge + _impl->theme.spacing;
@@ -393,7 +395,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
         const auto role = getColorRole(opt->state, isDefault);
         const auto& bgColor = buttonBackgroundColor(mouse, role);
-        const auto& currentBgColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
+        const auto& currentBgColor =
+          _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         const auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
         drawRoundedRect(p, optButton->rect, currentBgColor, borderRadius);
       }
@@ -501,7 +504,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto borderW = _impl->theme.borderWidth;
         const auto radiusF = static_cast<double>(_impl->theme.borderRadius);
         const auto& radiuses = radiusAllAngles ? RadiusesF{ radiusF } : RadiusesF{ radiusF, 0., 0., radiusF };
-        const auto& currentBorderColor = _impl->animations.animateBorderColor(w, borderColor, _impl->theme.animationDuration);
+        const auto& currentBorderColor =
+          _impl->animations.animateBorderColor(w, borderColor, _impl->theme.animationDuration);
 
         // Background.
         drawRoundedRect(p, rect, bgColor, radiuses);
@@ -524,13 +528,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           const auto indicatorSize = _impl->theme.iconSize;
           const auto hShift = _impl->theme.spacing / 4;
           const auto indicatorRect =
-            QRect(QPoint{ hShift + optItem->rect.x() + (optItem->rect.width() - indicatorSize.width()) / 2, optItem->rect.y() + (optItem->rect.height() - indicatorSize.height()) / 2 }, indicatorSize);
+            QRect(QPoint{ hShift + optItem->rect.x() + (optItem->rect.width() - indicatorSize.width()) / 2,
+                    optItem->rect.y() + (optItem->rect.height() - indicatorSize.height()) / 2 },
+              indicatorSize);
 
           const auto mouse = getMouseState(opt->state);
           const auto selection = getSelectionState(opt->state);
           const auto active = getActiveState(opt->state);
           const auto widgetHasFocus = w->hasFocus();
-          const auto focus = widgetHasFocus && selection == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
+          const auto focus =
+            widgetHasFocus && selection == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
           const auto& fgColor = listItemForegroundColor(mouse, selection, focus, active);
           p->setRenderHint(QPainter::Antialiasing, true);
           p->setBrush(Qt::NoBrush);
@@ -556,7 +563,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto indicatorX = optItem->rect.x() + (optItem->rect.width() - indicatorSize);
         const auto indicatorY = optItem->rect.y() + (optItem->rect.height() - indicatorSize);
         const auto indicatorRect = QRect{ indicatorX, indicatorY, indicatorSize, indicatorSize };
-        drawCheckButton(p, indicatorRect, radius, checkBoxBgColor, {}, checkBoxFgColor, 0, checkBoxProgress, checkState);
+        drawCheckButton(
+          p, indicatorRect, radius, checkBoxBgColor, {}, checkBoxFgColor, 0, checkBoxProgress, checkState);
       }
       return;
     case PE_IndicatorCheckBox:
@@ -574,14 +582,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isRadio = pe == PE_IndicatorRadioButton;
         const auto progress = checkState == CheckState::NotChecked ? 0. : 1.;
         constexpr auto borderW = 0.;
-        const auto& currentBgColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
+        const auto& currentBgColor =
+          _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         const auto currentProgress = _impl->animations.animateProgress(w, progress, _impl->theme.animationDuration);
 
         if (isRadio) {
           drawRadioButton(p, indicatorRect, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress);
         } else {
           const auto radius = _impl->theme.checkBoxBorderRadius;
-          drawCheckButton(p, indicatorRect, radius, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress, checkState);
+          drawCheckButton(
+            p, indicatorRect, radius, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress, checkState);
         }
       }
       return;
@@ -729,7 +739,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto itemState = optItem->state;
         const auto mouse = getMouseState(itemState);
         const auto selection = getSelectionState(itemState);
-        const auto focus = getFocusState(itemState); // Has the cell focus? (Always false when the QWidget doesn't have focus.)
+        const auto focus =
+          getFocusState(itemState); // Has the cell focus? (Always false when the QWidget doesn't have focus.)
         const auto active = getActiveState(itemState); // Has the QWidget focus?
         const auto& color = listItemBackgroundColor(mouse, selection, focus, active);
         p->fillRect(rect, color);
@@ -860,7 +871,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto frameRect = totalRect.marginsRemoved({ shadowPadding, shadowPadding, shadowPadding, shadowPadding });
       const auto dropShadowRadius = shadowPadding / 3.;
       const auto dropShadowOffsetY = shadowPadding / 4;
-      const auto dropShadowPixmap = getDropShadowPixmap(frameRect.size(), radius * 2, dropShadowRadius, _impl->theme.shadowColor1);
+      const auto dropShadowPixmap =
+        getDropShadowPixmap(frameRect.size(), radius * 2, dropShadowRadius, _impl->theme.shadowColor1);
       const auto dropShadowX = frameRect.x() + (frameRect.width() - dropShadowPixmap.width()) / 2;
       const auto dropShadowY = frameRect.y() + (frameRect.height() - dropShadowPixmap.height()) / 2 + dropShadowOffsetY;
 
@@ -918,7 +930,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
             const auto targetH = static_cast<int>((qreal) colorizedPixmap.height() / (pixmapPixelRatio));
             const auto targetX = iconRect.x() + (iconRect.width() - targetW) / 2;
             const auto targetY = iconRect.y() + (iconRect.height() - targetH) / 2;
-            const auto targetRect = QRect{targetX, targetY, targetW, targetH };
+            const auto targetRect = QRect{ targetX, targetY, targetW, targetH };
             p->drawPixmap(targetRect, colorizedPixmap);
 
             const auto iconSpace = iconSize.width() + spacing * 2;
@@ -942,7 +954,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto descriptionH = hasDescription ? fm.height() : 0;
         const auto totalTextH = textH + vSpacing + descriptionH;
         const auto totalTextY = rect.y() + (rect.height() - totalTextH) / 2;
-        constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+        constexpr auto textFlags =
+          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
 
         const auto backupFont = QFont{ p->font() };
         if (hasText) {
@@ -1004,7 +1017,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
         const auto role = getColorRole(optButton->state, isDefault);
         const auto& fgColor = buttonForegroundColor(mouse, role);
-        const auto& currentFgColor = _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
+        const auto& currentFgColor =
+          _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
         const auto indicatorSize = pixelMetric(PM_MenuButtonIndicator, opt, w);
         const auto spacing = _impl->theme.spacing;
         const auto hasMenu = optButton->features.testFlag(QStyleOptionButton::HasMenu);
@@ -1018,7 +1032,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto fmFlags = hasMenu ? Qt::AlignLeft : Qt::AlignCenter;
         const auto textW = optButton->fontMetrics.boundingRect(optButton->rect, fmFlags, optButton->text).width();
         const auto iconSpacing = iconW > 0 && !optButton->text.isEmpty() && textW > 0 ? spacing : 0;
-        const auto& fgRect = hasMenu ? optButton->rect.marginsRemoved(QMargins{ 0, 0, indicatorSize + spacing, 0 }) : optButton->rect;
+        const auto& fgRect =
+          hasMenu ? optButton->rect.marginsRemoved(QMargins{ 0, 0, indicatorSize + spacing, 0 }) : optButton->rect;
         const auto contentW = centered ? std::min(fgRect.width(), iconW + iconSpacing + textW) : fgRect.width();
         const auto contentX = centered ? fgRect.x() + (fgRect.width() - contentW) / 2 : fgRect.x();
         const auto contentRect = QRect(contentX, fgRect.y(), contentW, fgRect.height());
@@ -1030,7 +1045,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (iconW > 0) {
           const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.width() / pixmapPixelRatio) : 0;
           const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.height() / pixmapPixelRatio) : 0;
-          const auto pixmapX = textW == 0 && !hasMenu ? contentRect.x() + (contentRect.width() - pixmapW) / 2 : contentRect.x();
+          const auto pixmapX =
+            textW == 0 && !hasMenu ? contentRect.x() + (contentRect.width() - pixmapW) / 2 : contentRect.x();
           const auto pixmapY = contentRect.y() + (contentRect.height() - pixmapH) / 2;
           const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
           availableW -= pixmapW + iconSpacing;
@@ -1040,7 +1056,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Text.
         if (availableW > 0 && textW > 0) {
-          const auto elidedText = optButton->fontMetrics.elidedText(optButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
+          const auto elidedText =
+            optButton->fontMetrics.elidedText(optButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto elidedTextW = optButton->fontMetrics.boundingRect(optButton->rect, fmFlags, elidedText).width();
           const auto textRect = QRect{ availableX, contentRect.y(), elidedTextW, contentRect.height() };
           auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
@@ -1096,7 +1113,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto colorize = QlementineStyle::isAutoIconColorEnabled(w);
         const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, fgColor) : pixmap;
         const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
-        const auto iconW = colorizedPixmap.isNull() ? 0 : static_cast<int>((qreal) colorizedPixmap.width() / (pixmapPixelRatio) );
+        const auto iconW =
+          colorizedPixmap.isNull() ? 0 : static_cast<int>((qreal) colorizedPixmap.width() / (pixmapPixelRatio));
         const auto iconSpacing = iconW > 0 ? spacing : 0;
         auto availableW = optButton->rect.width();
         auto availableX = optButton->rect.x();
@@ -1117,9 +1135,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Text.
         if (availableW > 0 && !optButton->text.isEmpty()) {
-          const auto elidedText = optButton->fontMetrics.elidedText(optButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
+          const auto elidedText =
+            optButton->fontMetrics.elidedText(optButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto textRect = QRect{ availableX, optButton->rect.y(), availableW, optButton->rect.height() };
-          constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+          constexpr auto textFlags =
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
           p->setPen(fgColor);
           p->drawText(textRect, textFlags, elidedText, nullptr);
@@ -1293,13 +1313,15 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         if (indeterminate) {
           // Goes from 0 to 1.
-          const auto currentProgress = _impl->animations.animateProgress3(w, 1., _impl->theme.animationDuration * 8, true);
+          const auto currentProgress =
+            _impl->animations.animateProgress3(w, 1., _impl->theme.animationDuration * 8, true);
           // Bell that goes from 0 to 1 then 1 to 0, centered on 0.5.
           const auto currentRatio = std::pow(std::sin(QLEMENTINE_PI * currentProgress), 2);
 
           const auto valueRectW = static_cast<int>(optProgressBar->rect.width() * 0.25);
           const auto valueRectX = optProgressBar->rect.x() + (optProgressBar->rect.width() - valueRectW) * currentRatio;
-          const auto valueRect = QRectF(valueRectX, optProgressBar->rect.y(), valueRectW, optProgressBar->rect.height());
+          const auto valueRect =
+            QRectF(valueRectX, optProgressBar->rect.y(), valueRectW, optProgressBar->rect.height());
 
           p->setPen(Qt::NoPen);
           p->setBrush(color);
@@ -1308,7 +1330,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           _impl->animations.animateProgress3(w, 0., 0, false); // Stop loop, just in case.
           const auto progress = optProgressBar->progress;
           const auto currentProgress = _impl->animations.animateProgress(w, progress, _impl->theme.animationDuration);
-          drawProgressBarValueRect(p, optProgressBar->rect, color, optProgressBar->minimum, optProgressBar->maximum, currentProgress, radius, optProgressBar->invertedAppearance);
+          drawProgressBarValueRect(p, optProgressBar->rect, color, optProgressBar->minimum, optProgressBar->maximum,
+            currentProgress, radius, optProgressBar->invertedAppearance);
         }
       }
       return;
@@ -1316,7 +1339,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         const auto mouse = getMouseState(optProgressBar->state);
         const auto& color = labelForegroundColor(mouse);
-        const auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
+        const auto textFlags =
+          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
         p->setBrush(Qt::NoBrush);
         p->setPen(color);
         p->drawText(optProgressBar->rect, textFlags, optProgressBar->text);
@@ -1331,7 +1355,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto separatorThickness = _impl->theme.borderWidth;
           drawMenuSeparator(p, rect, color, separatorThickness);
 
-        } else if (optMenuItem->menuItemType == QStyleOptionMenuItem::Normal || optMenuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
+        } else if (optMenuItem->menuItemType == QStyleOptionMenuItem::Normal
+                   || optMenuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
           const auto mouse = getMenuItemMouseState(optMenuItem->state);
 
           // Background.
@@ -1382,7 +1407,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
                 drawRadioButton(p, checkboxRect, boxBgColor, Qt::transparent, boxFgColor, borderW, progress);
               } else {
                 const auto radius = _impl->theme.checkBoxBorderRadius;
-                drawCheckButton(p, checkboxRect, radius, boxBgColor, Qt::transparent, boxFgColor, borderW, progress, checkState);
+                drawCheckButton(
+                  p, checkboxRect, radius, boxBgColor, Qt::transparent, boxFgColor, borderW, progress, checkState);
               }
             }
 
@@ -1416,7 +1442,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             if (availableW > shortcutW) {
               const auto shortcutX = fgRect.x() + fgRect.width() - shortcutW;
               const auto shortcutRect = QRect{ shortcutX, fgRect.y(), shortcutW, fgRect.height() };
-              constexpr auto shortcutFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
+              constexpr auto shortcutFlags =
+                Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
               const auto& shortcutColor = menuItemSecondaryForegroundColor(mouse);
               p->setPen(shortcutColor);
               p->drawText(shortcutRect, shortcutFlags, shortcut);
@@ -1433,7 +1460,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto elidedText = fm.elidedText(label, Qt::ElideRight, textW, Qt::TextSingleLine);
             const auto textX = availableX;
             const auto textRect = QRect{ textX, fgRect.y(), availableW, fgRect.height() };
-            auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextShowMnemonic | Qt::AlignLeft;
+            auto textFlags =
+              Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextShowMnemonic | Qt::AlignLeft;
             if (useMnemonic) {
               textFlags |= Qt::TextShowMnemonic;
             }
@@ -1530,7 +1558,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto leftPadding = buttonStyle == Qt::ToolButtonTextOnly ? spacing * 2 : spacing;
         const auto hasIcon = showIcon && !iconSize.isEmpty();
         const auto hasText = showText && !optToolButton->text.isEmpty();
-        const auto rightPadding = !hasMenu && (buttonStyle == Qt::ToolButtonTextOnly || buttonStyle == Qt::ToolButtonTextBesideIcon) ? spacing * 2 : spacing;
+        const auto rightPadding =
+          !hasMenu && (buttonStyle == Qt::ToolButtonTextOnly || buttonStyle == Qt::ToolButtonTextBesideIcon)
+            ? spacing * 2
+            : spacing;
         const auto fgRect = rect.adjusted(leftPadding, 0, -rightPadding, 0);
         const auto centered = !hasMenu;
         const auto textW = fm.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text).width();
@@ -1626,7 +1657,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Line at the top.
         const auto horizontalHeaderHidden = tableView ? tableView->horizontalHeader()->isHidden() : true;
-        if (optHeader->orientation == Qt::Horizontal || (horizontalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
+        if (optHeader->orientation == Qt::Horizontal
+            || (horizontalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
           const auto p1 = QPointF(rect.x(), rect.y() + lineW * .5);
           const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + lineW * .5);
           p->drawLine(p1, p2);
@@ -1634,7 +1666,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Line at the left.
         const auto verticalHeaderHidden = tableView ? tableView->verticalHeader()->isHidden() : true;
-        if (optHeader->orientation == Qt::Vertical || (optHeader->orientation == Qt::Horizontal && optHeader->position == QStyleOptionHeader::OnlyOneSection)
+        if (optHeader->orientation == Qt::Vertical
+            || (optHeader->orientation == Qt::Horizontal && optHeader->position == QStyleOptionHeader::OnlyOneSection)
             || (verticalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
           const auto p1 = QPointF(rect.x() + lineW * .5, rect.y());
           const auto p2 = QPointF(rect.x() + lineW * .5, rect.y() + rect.height());
@@ -1667,7 +1700,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto tw = fm.size(Qt::TextSingleLine, text).width();
         const auto textW = std::min(tw, textAvailableW);
         const auto labelW = textW + iconSpaceW;
-        const auto labelAlignment = optHeader->textAlignment; // We don't care about iconAlignment to make things simpler.
+        const auto labelAlignment =
+          optHeader->textAlignment; // We don't care about iconAlignment to make things simpler.
         auto labelX = 0;
         if (labelAlignment.testFlag(Qt::AlignmentFlag::AlignLeft)) {
           labelX = rect.x();
@@ -1849,11 +1883,12 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             }
           }
 
-          const auto margin = isTabCellEditor ? borderW * 2: borderW;
+          const auto margin = isTabCellEditor ? borderW * 2 : borderW;
           optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
           // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible.
-          if (const auto* spinbox = qobject_cast<const QAbstractSpinBox*>(monitoredWidget ? monitoredWidget->parentWidget() : nullptr)) {
+          if (const auto* spinbox =
+                qobject_cast<const QAbstractSpinBox*>(monitoredWidget ? monitoredWidget->parentWidget() : nullptr)) {
             if (spinbox->buttonSymbols() != QAbstractSpinBox::NoButtons) {
               optFocus.radiuses.topRight = 0.;
               optFocus.radiuses.bottomRight = 0.;
@@ -1868,7 +1903,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             optGroupBox.subControls.setFlag(SC_GroupBoxCheckBox, true);
 
             // GroupBox: placed around the CheckBox.
-            const auto checkRect = subControlRect(CC_GroupBox, &optGroupBox, SC_GroupBoxCheckBox, groupBox).marginsAdded(QMargins(borderW, borderW, borderW, borderW));
+            const auto checkRect = subControlRect(CC_GroupBox, &optGroupBox, SC_GroupBoxCheckBox, groupBox)
+                                     .marginsAdded(QMargins(borderW, borderW, borderW, borderW));
             const auto deltaX = pixelMetric(PM_FocusFrameHMargin, opt, w);
             const auto deltaY = pixelMetric(PM_FocusFrameVMargin, opt, w);
             optFocus.rect = checkRect.translated(deltaX, deltaY);
@@ -1893,9 +1929,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             customRadius = roundedFocusFrame->radiuses();
           }
 
-          optFocus.rect = monitoredWidget
-              ? monitoredWidget->rect().translated(borderW * 2, borderW * 2).marginsAdded(QMargins(borderW, borderW, borderW, borderW))
-              : QRect();
+          optFocus.rect = monitoredWidget ? monitoredWidget->rect()
+                                              .translated(borderW * 2, borderW * 2)
+                                              .marginsAdded(QMargins(borderW, borderW, borderW, borderW))
+                                          : QRect();
 
           optFocus.radiuses = customRadius >= 0 ? customRadius : _impl->theme.borderRadius;
         }
@@ -1910,7 +1947,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         // Draw text and icon.
         const auto mouse = getMouseState(optComboBox->state);
         const auto& fgColor = comboBoxForegroundColor(mouse);
-        const auto& currentFgColor = _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
+        const auto& currentFgColor =
+          _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
         const auto indicatorSize = _impl->theme.iconSize;
         const auto spacing = _impl->theme.spacing;
         const auto contentLeftPadding = spacing;
@@ -1940,9 +1978,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Text.
         if (availableW > 0 && !optComboBox->currentText.isEmpty()) {
-          const auto elidedText = optComboBox->fontMetrics.elidedText(optComboBox->currentText, Qt::ElideRight, availableW, Qt::TextSingleLine);
+          const auto elidedText = optComboBox->fontMetrics.elidedText(
+            optComboBox->currentText, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto textRect = QRect{ availableX, contentRect.y(), availableW, contentRect.height() };
-          constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+          constexpr auto textFlags =
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
 
           const auto status = widgetStatus(w);
@@ -1998,7 +2038,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // We show the selected color on the whole row, not only the cell.
         const auto widgetHasFocus = (w && w->hasFocus());
-        const auto focus = widgetHasFocus && selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
+        const auto focus =
+          widgetHasFocus && selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
 
         // Checkbox, if any.
         if (hasCheck) {
@@ -2070,9 +2111,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto elidedText = fm.elidedText(optItem->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto textX = availableX;
           const auto textRect = QRect{ textX, contentRect.y(), availableW, contentRect.height() };
-          const auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+          const auto textFlags =
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
-          const QBrush &b = optItem->palette.brush(QPalette::Text);
+          const QBrush& b = optItem->palette.brush(QPalette::Text);
           p->setPen(b.color());
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
@@ -2103,15 +2145,15 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           } break;
           default: {
             if (w != nullptr) {
-                const auto bgRole = w->backgroundRole();
-                if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
-                  const auto& palette = _impl->theme.palette;
-                  const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, bgRole);
-                  p->setPen(pen);
-                  p->setBrush(bgColor);
-                  p->setRenderHint(QPainter::Antialiasing, true);
-                  p->drawRect(frameOpt->rect);
-                }
+              const auto bgRole = w->backgroundRole();
+              if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
+                const auto& palette = _impl->theme.palette;
+                const auto& bgColor = palette.color(QPalette::ColorGroup::Normal, bgRole);
+                p->setPen(pen);
+                p->setBrush(bgColor);
+                p->setRenderHint(QPainter::Antialiasing, true);
+                p->drawRect(frameOpt->rect);
+              }
             }
           } break;
         }
@@ -2167,7 +2209,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_RadioButtonFocusRect:
     case SE_CheckBoxFocusRect: {
       const auto borderW = _impl->theme.focusBorderWidth;
-      const auto checkRect = subElementRect(SE_CheckBoxIndicator, opt, w).marginsAdded(QMargins(borderW, borderW, borderW, borderW));
+      const auto checkRect =
+        subElementRect(SE_CheckBoxIndicator, opt, w).marginsAdded(QMargins(borderW, borderW, borderW, borderW));
       const auto deltaX = pixelMetric(PM_FocusFrameHMargin, opt, w);
       const auto deltaY = pixelMetric(PM_FocusFrameVMargin, opt, w);
       return checkRect.translated(deltaX, deltaY);
@@ -2204,7 +2247,10 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_ProgressBarGroove:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         const auto showText = optProgressBar->textVisible;
-        const auto labelW = showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, QStringLiteral("100%")).width() : 0;
+        const auto labelW = showText ? optProgressBar->fontMetrics
+                                         .boundingRect(optProgressBar->rect, Qt::AlignRight, QStringLiteral("100%"))
+                                         .width()
+                                     : 0;
         const auto spacing = showText ? _impl->theme.spacing : 0;
         const auto barW = opt->rect.width() - labelW - spacing;
         const auto barH = _impl->theme.progressBarGrooveHeight;
@@ -2215,7 +2261,10 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_ProgressBarLabel:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         const auto showText = optProgressBar->textVisible;
-        const auto labelW = showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, QStringLiteral("100%")).width() : 0;
+        const auto labelW = showText ? optProgressBar->fontMetrics
+                                         .boundingRect(optProgressBar->rect, Qt::AlignRight, QStringLiteral("100%"))
+                                         .width()
+                                     : 0;
         const auto labelH = showText ? optProgressBar->fontMetrics.height() : 0;
         const auto labelX = opt->rect.right() - labelW;
         const auto labelY = opt->rect.y() + (opt->rect.height() - labelH) / 2;
@@ -2242,7 +2291,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto textW = qlementine::textWidth(fm, optHeader->text);
 
         const auto arrowX = rect.x() + rect.width() - paddingH - arrowW;
-        const auto intersectsArrow = hasArrow ? rect.x() + paddingH + (rect.width() - textW) / 2 + textW > arrowX : false;
+        const auto intersectsArrow =
+          hasArrow ? rect.x() + paddingH + (rect.width() - textW) / 2 + textW > arrowX : false;
         const auto shouldCenter = !intersectsArrow;
         if (shouldCenter) {
           labelW += arrowW;
@@ -2431,7 +2481,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
   return QCommonStyle::subElementRect(se, opt, w);
 }
 
-void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex* opt, QPainter* p, const QWidget* w) const {
+void QlementineStyle::drawComplexControl(
+  ComplexControl cc, const QStyleOptionComplex* opt, QPainter* p, const QWidget* w) const {
   switch (cc) {
     case CC_SpinBox:
       if (const auto* spinboxOpt = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
@@ -2443,12 +2494,14 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           if (upButtonRect.isValid()) {
             const auto upButtonActive = spinboxOpt->activeSubControls.testFlag(SC_SpinBoxUp);
             const auto upButtonPath = getMultipleRadiusesRectPath(upButtonRect, RadiusesF{ 0., radius, 0., 0. });
-            const auto upButtonEnabled = spinBoxEnabled && spinboxOpt->stepEnabled.testFlag(QAbstractSpinBox::StepUpEnabled);
+            const auto upButtonEnabled =
+              spinBoxEnabled && spinboxOpt->stepEnabled.testFlag(QAbstractSpinBox::StepUpEnabled);
             const auto upButtonHovered = upButtonActive;
             const auto upButtonPressed = upButtonActive && spinboxOpt->state.testFlag(State_Sunken);
             const auto upMouse = getMouseState(upButtonPressed, upButtonHovered, upButtonEnabled);
             const auto& upButtonBgColor = spinBoxButtonBackgroundColor(upMouse);
-            const auto& currentColor = _impl->animations.animateBackgroundColor(w, upButtonBgColor, _impl->theme.animationDuration);
+            const auto& currentColor =
+              _impl->animations.animateBackgroundColor(w, upButtonBgColor, _impl->theme.animationDuration);
 
             // Draw background.
             p->setPen(Qt::NoPen);
@@ -2457,24 +2510,28 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
             // Draw icon.
             const auto& fgColor = spinBoxButtonForegroundColor(upMouse);
-            const auto& currentFgColor = _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
+            const auto& currentFgColor =
+              _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
             const auto iconSize = _impl->theme.iconSize / 2;
             const auto translateY = _impl->theme.borderWidth;
             p->setPen(QPen(currentFgColor, iconPenWidth, Qt::SolidLine, Qt::FlatCap));
             p->setBrush(Qt::NoBrush);
-            drawSpinBoxArrowIndicator(upButtonRect.translated(0, translateY), p, spinboxOpt->buttonSymbols, SC_SpinBoxUp, iconSize);
+            drawSpinBoxArrowIndicator(
+              upButtonRect.translated(0, translateY), p, spinboxOpt->buttonSymbols, SC_SpinBoxUp, iconSize);
           }
 
           const auto downButtonRect = subControlRect(cc, opt, SC_SpinBoxDown, w);
           if (downButtonRect.isValid()) {
             const auto downButtonActive = spinboxOpt->activeSubControls.testFlag(SC_SpinBoxDown);
             const auto downButtonPath = getMultipleRadiusesRectPath(downButtonRect, RadiusesF{ 0., 0., radius, 0. });
-            const auto downButtonEnabled = spinBoxEnabled && spinboxOpt->stepEnabled.testFlag(QAbstractSpinBox::StepDownEnabled);
+            const auto downButtonEnabled =
+              spinBoxEnabled && spinboxOpt->stepEnabled.testFlag(QAbstractSpinBox::StepDownEnabled);
             const auto downButtonHovered = downButtonActive;
             const auto downButtonPressed = downButtonActive && spinboxOpt->state.testFlag(State_Sunken);
             const auto downMouse = getMouseState(downButtonPressed, downButtonHovered, downButtonEnabled);
             const auto& downButtonBgColor = spinBoxButtonBackgroundColor(downMouse);
-            const auto& currentColor = _impl->animations.animateBackgroundColor2(w, downButtonBgColor, _impl->theme.animationDuration);
+            const auto& currentColor =
+              _impl->animations.animateBackgroundColor2(w, downButtonBgColor, _impl->theme.animationDuration);
 
             // Draw background.
             p->setPen(Qt::NoPen);
@@ -2483,7 +2540,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
             // Draw icon.
             const auto& fgColor = spinBoxButtonForegroundColor(downMouse);
-            const auto& currentFgColor = _impl->animations.animateForegroundColor2(w, fgColor, _impl->theme.animationDuration);
+            const auto& currentFgColor =
+              _impl->animations.animateForegroundColor2(w, fgColor, _impl->theme.animationDuration);
             const auto iconSize = _impl->theme.iconSize / 2;
             p->setPen(QPen(currentFgColor, iconPenWidth, Qt::SolidLine, Qt::FlatCap));
             p->setBrush(Qt::NoBrush);
@@ -2518,15 +2576,20 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         const auto mouse = getMouseState(scrollBarOpt->state);
         const auto horizontal = scrollBarOpt->orientation == Qt::Horizontal;
         const auto thickness = getScrollBarThickness(mouse);
-        const auto currentThickness = _impl->animations.animateProgress(w, thickness, _impl->theme.animationDuration * 2);
+        const auto currentThickness =
+          _impl->animations.animateProgress(w, thickness, _impl->theme.animationDuration * 2);
 
         // Groove.
         const auto grooveRect = subControlRect(CC_ScrollBar, scrollBarOpt, SC_ScrollBarGroove, w);
-        const auto currentGrooveRect = horizontal ? QRectF(grooveRect.x(), grooveRect.y() + grooveRect.height() - currentThickness, grooveRect.width(), currentThickness)
-                                                  : QRectF(grooveRect.x() + grooveRect.width() - currentThickness, grooveRect.y(), currentThickness, grooveRect.height());
+        const auto currentGrooveRect =
+          horizontal ? QRectF(grooveRect.x(), grooveRect.y() + grooveRect.height() - currentThickness,
+            grooveRect.width(), currentThickness)
+                     : QRectF(grooveRect.x() + grooveRect.width() - currentThickness, grooveRect.y(), currentThickness,
+                       grooveRect.height());
 
         const auto& grooveColor = scrollBarGrooveColor(mouse);
-        const auto& currentGrooveColor = _impl->animations.animateBackgroundColor(w, grooveColor, _impl->theme.animationDuration * 2);
+        const auto& currentGrooveColor =
+          _impl->animations.animateBackgroundColor(w, grooveColor, _impl->theme.animationDuration * 2);
         const auto grooveRadius = horizontal ? currentGrooveRect.height() / 2. : currentGrooveRect.width() / 2.;
         p->setRenderHint(QPainter::Antialiasing, true);
         p->setPen(Qt::NoPen);
@@ -2536,11 +2599,15 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         // Handle.
         const auto handleRect = subControlRect(CC_ScrollBar, scrollBarOpt, SC_ScrollBarSlider, w);
         if (!handleRect.isEmpty()) {
-          const auto currentHandleRect = horizontal ? QRectF(handleRect.x(), handleRect.y() + handleRect.height() - currentThickness, handleRect.width(), currentThickness)
-                                                    : QRectF(handleRect.x() + handleRect.width() - currentThickness, handleRect.y(), currentThickness, handleRect.height());
+          const auto currentHandleRect =
+            horizontal ? QRectF(handleRect.x(), handleRect.y() + handleRect.height() - currentThickness,
+              handleRect.width(), currentThickness)
+                       : QRectF(handleRect.x() + handleRect.width() - currentThickness, handleRect.y(),
+                         currentThickness, handleRect.height());
           const auto handleMouse = getScrollBarHandleState(scrollBarOpt->state, scrollBarOpt->activeSubControls);
           const auto& handleColor = scrollBarHandleColor(handleMouse);
-          const auto& currentHandleColor = _impl->animations.animateBackgroundColor2(w, handleColor, _impl->theme.animationDuration);
+          const auto& currentHandleColor =
+            _impl->animations.animateBackgroundColor2(w, handleColor, _impl->theme.animationDuration);
           const auto handleRadius = horizontal ? currentHandleRect.height() / 2. : currentHandleRect.width() / 2.;
           p->setBrush(currentHandleColor);
           p->drawRoundedRect(currentHandleRect, handleRadius, handleRadius);
@@ -2552,7 +2619,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         const auto progress = sliderOpt->sliderPosition;
         // If the user is dragging the handle, we shorten the animation to ensure it correctly follows
         // the mouse cursor with a quick interpolation (otherwise, it snaps and don't animate).
-        const auto handleActive = sliderOpt->state.testFlag(State_Sunken) && sliderOpt->activeSubControls == SubControl::SC_SliderHandle;
+        const auto handleActive =
+          sliderOpt->state.testFlag(State_Sunken) && sliderOpt->activeSubControls == SubControl::SC_SliderHandle;
         const auto duration = handleActive ? _impl->theme.sliderAnimationDuration : _impl->theme.animationDuration;
         const auto currentProgress = _impl->animations.animateProgress(w, progress, duration);
         QStyleOptionSliderF currentSliderOpt;
@@ -2582,7 +2650,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           }
 
           // TODO other tick positions.
-          drawSliderTickMarks(p, tickmarksRect, tickColor, min, max, sliderOpt->tickInterval, tickThickness, sliderOpt->singleStep, sliderOpt->pageStep);
+          drawSliderTickMarks(p, tickmarksRect, tickColor, min, max, sliderOpt->tickInterval, tickThickness,
+            sliderOpt->singleStep, sliderOpt->pageStep);
           if (disabled) {
             p->restore();
           }
@@ -2616,7 +2685,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           static QPixmap dropShadowPixmap;
           const auto handleMouse = sliderOpt->activeSubControls == QStyle::SC_SliderHandle ? widgetMouse : mouse;
           const auto& handleColor = sliderHandleColor(handleMouse);
-          const auto& currentColor = _impl->animations.animateForegroundColor(w, handleColor, _impl->theme.animationDuration);
+          const auto& currentColor =
+            _impl->animations.animateForegroundColor(w, handleColor, _impl->theme.animationDuration);
 
           p->setRenderHint(QPainter::Antialiasing, true);
 
@@ -2632,14 +2702,16 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
               tmpPainter.drawEllipse(QRect{ QPoint{ 0, 0 }, handleRect.size() });
             }
             constexpr auto dropShadowBlurRadius = 1.;
-            dropShadowPixmap = qlementine::getDropShadowPixmap(inputPixmap, dropShadowBlurRadius, _impl->theme.shadowColor2);
+            dropShadowPixmap =
+              qlementine::getDropShadowPixmap(inputPixmap, dropShadowBlurRadius, _impl->theme.shadowColor2);
           }
 
           // Draw drop shadow centered below handle.
           {
             constexpr auto dropShadowOffsetY = 1;
             const auto dropShadowX = handleRect.x() + (handleRect.width() - dropShadowPixmap.width()) / 2;
-            const auto dropShadowY = handleRect.y() + (handleRect.height() - dropShadowPixmap.height()) / 2 + dropShadowOffsetY;
+            const auto dropShadowY =
+              handleRect.y() + (handleRect.height() - dropShadowPixmap.height()) / 2 + dropShadowOffsetY;
             const auto compModebackup = p->compositionMode();
             p->setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
             p->drawPixmap(dropShadowX, dropShadowY, dropShadowPixmap);
@@ -2731,7 +2803,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           const auto menuButtonMouse = getToolButtonMouseState(menuButtonState);
           const auto role = getColorRole(toolbuttonOpt->state, false);
           const auto& bgColor = toolButtonBackgroundColor(menuButtonMouse, role);
-          const auto& currentColor = _impl->animations.animateBackgroundColor2(w, bgColor, _impl->theme.animationDuration);
+          const auto& currentColor =
+            _impl->animations.animateBackgroundColor2(w, bgColor, _impl->theme.animationDuration);
           drawRoundedRect(p, menuButtonRect, currentColor, menuButtonRadiuses);
 
           // Line.
@@ -2753,7 +2826,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           const auto arrowY = menuButtonRect.y() + (menuButtonRect.height() - arrowSize.height()) / 2;
           const auto arrowRect = QRect{ arrowX, arrowY, arrowSize.width(), arrowSize.height() };
           const auto& arrowColor = toolButtonForegroundColor(menuButtonMouse, role);
-          const auto& currentArrowColor = _impl->animations.animateForegroundColor2(w, arrowColor, _impl->theme.animationDuration);
+          const auto& currentArrowColor =
+            _impl->animations.animateForegroundColor2(w, arrowColor, _impl->theme.animationDuration);
           const auto path = getMenuIndicatorPath(arrowRect);
           p->setPen(QPen(currentArrowColor, iconPenWidth, Qt::SolidLine, Qt::RoundCap));
           p->drawPath(path);
@@ -2775,13 +2849,15 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           const auto& tickColor = dialTickColor(mouse);
           const auto tickLength = _impl->theme.dialTickLength;
           const auto minArcLength = dialOpt->notchTarget * 2;
-          drawDialTickMarks(p, tickmarksRect, tickColor, min, max, tickThickness, tickLength, dialOpt->singleStep, dialOpt->pageStep, minArcLength);
+          drawDialTickMarks(p, tickmarksRect, tickColor, min, max, tickThickness, tickLength, dialOpt->singleStep,
+            dialOpt->pageStep, minArcLength);
         }
 
         const auto progress = dialOpt->sliderPosition;
         // If the user is dragging the handle, we shorten the animation to ensure it correctly follows
         // the mouse cursor with a quick interpolation (otherwise, it snaps and don't animate).
-        const auto handleActive = dialOpt->state.testFlag(State_Sunken) && dialOpt->activeSubControls == SubControl::SC_DialHandle;
+        const auto handleActive =
+          dialOpt->state.testFlag(State_Sunken) && dialOpt->activeSubControls == SubControl::SC_DialHandle;
         const auto duration = handleActive ? _impl->theme.sliderAnimationDuration : _impl->theme.animationDuration;
         const auto currentProgress = _impl->animations.animateProgress(w, progress, duration);
         QStyleOptionSliderF currentSliderOpt;
@@ -2796,10 +2872,12 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         const auto& grooveColor = dialGrooveColor(mouse);
         const auto& valueColor = dialValueColor(mouse);
         const auto& markColor = dialMarkColor(mouse);
-        const auto& currentHandleColor = _impl->animations.animateBackgroundColor(w, handleColor, _impl->theme.animationDuration);
+        const auto& currentHandleColor =
+          _impl->animations.animateBackgroundColor(w, handleColor, _impl->theme.animationDuration);
 
-        drawDial(p, dialRect, dialOpt->minimum, dialOpt->maximum, currentProgress, bgColor, currentHandleColor, grooveColor, valueColor, markColor, _impl->theme.dialGrooveThickness,
-          _impl->theme.dialMarkLength, _impl->theme.dialMarkThickness);
+        drawDial(p, dialRect, dialOpt->minimum, dialOpt->maximum, currentProgress, bgColor, currentHandleColor,
+          grooveColor, valueColor, markColor, _impl->theme.dialGrooveThickness, _impl->theme.dialMarkLength,
+          _impl->theme.dialMarkThickness);
       }
       return;
     case CC_GroupBox:
@@ -2818,10 +2896,12 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
           const auto textRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxLabel, w);
           const auto& font = _impl->theme.fontH5;
           const auto fm = QFontMetrics(font);
-          const auto elidedText = fm.elidedText(groupBoxOpt->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
+          const auto elidedText =
+            fm.elidedText(groupBoxOpt->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
           const auto mouse = getMouseState(groupBoxOpt->state);
           const auto& textColor = groupBoxTitleColor(mouse);
-          constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+          constexpr auto textFlags =
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setFont(font);
           p->setPen(textColor);
           p->setRenderHint(QPainter::Antialiasing, true);
@@ -2857,7 +2937,8 @@ void QlementineStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
   QCommonStyle::drawComplexControl(cc, opt, p, w);
 }
 
-QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex* opt, const QPoint& pos, const QWidget* w) const {
+QStyle::SubControl QlementineStyle::hitTestComplexControl(
+  ComplexControl cc, const QStyleOptionComplex* opt, const QPoint& pos, const QWidget* w) const {
   switch (cc) {
     case CC_SpinBox:
       if (const auto* optSpinBox = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
@@ -2958,7 +3039,9 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
         }
 
         const auto grooveRect = subControlRect(cc, optSlider, SC_SliderGroove, w);
-        const auto& clickRect = !handleRect.isValid() ? grooveRect : QRect{ grooveRect.x(), handleRect.y(), grooveRect.width(), handleRect.height() };
+        const auto& clickRect = !handleRect.isValid()
+                                  ? grooveRect
+                                  : QRect{ grooveRect.x(), handleRect.y(), grooveRect.width(), handleRect.height() };
         if (clickRect.isValid() && clickRect.contains(pos)) {
           return SC_SliderGroove;
         }
@@ -3030,7 +3113,8 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(ComplexControl cc, con
   return QCommonStyle::hitTestComplexControl(cc, opt, pos, w);
 }
 
-QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex* opt, SubControl sc, const QWidget* w) const {
+QRect QlementineStyle::subControlRect(
+  ComplexControl cc, const QStyleOptionComplex* opt, SubControl sc, const QWidget* w) const {
   switch (cc) {
     case CC_SpinBox:
       if (const auto* spinboxOpt = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
@@ -3085,7 +3169,8 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
           case SC_ComboBoxArrow: {
             const auto indicatorSize = _impl->theme.iconSize;
             const auto spacing = _impl->theme.spacing;
-            const auto indicatorX = comboBoxOpt->rect.x() + comboBoxOpt->rect.width() - indicatorSize.width() - 2 * spacing;
+            const auto indicatorX =
+              comboBoxOpt->rect.x() + comboBoxOpt->rect.width() - indicatorSize.width() - 2 * spacing;
             const auto indicatorY = comboBoxOpt->rect.y() + (comboBoxOpt->rect.height() - indicatorSize.height()) / 2;
             return QRect{ indicatorX, indicatorY, indicatorSize.width(), indicatorSize.height() };
           } break;
@@ -3117,12 +3202,15 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
         switch (sc) {
           case SC_ScrollBarAddPage: {
             const auto totalLength = horizontal ? rect.width() : rect.height();
-            const auto handleCenter = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum, scrollBarOpt->sliderPosition, totalLength, scrollBarOpt->upsideDown);
-            return horizontal ? QRect(rect.x(), rect.y(), handleCenter, rect.height()) : QRect(rect.x(), rect.y(), rect.width(), handleCenter);
+            const auto handleCenter = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum,
+              scrollBarOpt->sliderPosition, totalLength, scrollBarOpt->upsideDown);
+            return horizontal ? QRect(rect.x(), rect.y(), handleCenter, rect.height())
+                              : QRect(rect.x(), rect.y(), rect.width(), handleCenter);
           } break;
           case SC_ScrollBarSubPage: {
             const auto totalLength = horizontal ? rect.width() : rect.height();
-            const auto handleCenter = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum, scrollBarOpt->sliderPosition, totalLength, scrollBarOpt->upsideDown);
+            const auto handleCenter = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum,
+              scrollBarOpt->sliderPosition, totalLength, scrollBarOpt->upsideDown);
             return horizontal ? QRect(rect.x() + handleCenter, rect.y(), rect.width() - handleCenter, rect.height())
                               : QRect(rect.x(), rect.y() + handleCenter, rect.width(), rect.height() - handleCenter);
           } break;
@@ -3133,22 +3221,26 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
               const auto padding = _impl->theme.scrollBarPadding;
               auto maxLength = horizontal ? rect.width() - 2 * padding : rect.height() - 2 * padding;
               auto minLength = pixelMetric(PM_ScrollBarSliderMin, scrollBarOpt, w);
-              const auto length = std::max(0., static_cast<double>((scrollBarOpt->pageStep * maxLength)) / (range + scrollBarOpt->pageStep));
+              const auto length = std::max(
+                0., static_cast<double>((scrollBarOpt->pageStep * maxLength)) / (range + scrollBarOpt->pageStep));
               if (minLength > maxLength) {
                 std::swap(maxLength, minLength);
               }
               const auto handleLength = std::clamp(static_cast<int>(length), minLength, maxLength);
-              const auto handleStart = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum, scrollBarOpt->sliderPosition, maxLength - handleLength, scrollBarOpt->upsideDown);
-              return horizontal ? QRect(rect.x() + padding + handleStart, rect.y(), handleLength, rect.height() - padding)
-                                : QRect(rect.x(), rect.y() + padding + handleStart, rect.width() - padding, handleLength);
+              const auto handleStart = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum,
+                scrollBarOpt->sliderPosition, maxLength - handleLength, scrollBarOpt->upsideDown);
+              return horizontal
+                       ? QRect(rect.x() + padding + handleStart, rect.y(), handleLength, rect.height() - padding)
+                       : QRect(rect.x(), rect.y() + padding + handleStart, rect.width() - padding, handleLength);
             } else {
               return rect;
             }
           } break;
           case SC_ScrollBarGroove: {
             const auto padding = _impl->theme.scrollBarPadding;
-            return horizontal ? QRect(rect.x() + padding, rect.y(), rect.width() - 2 * padding, rect.height() - padding)
-                              : QRect(rect.x(), rect.y() + padding, rect.width() - padding, rect.height() - 2 * padding);
+            return horizontal
+                     ? QRect(rect.x() + padding, rect.y(), rect.width() - 2 * padding, rect.height() - padding)
+                     : QRect(rect.x(), rect.y() + padding, rect.width() - padding, rect.height() - 2 * padding);
           } break;
           case SC_ScrollBarAddLine:
           case SC_ScrollBarSubLine:
@@ -3225,7 +3317,8 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
           case SC_ToolButton:
             return QRect{ rect.x(), rect.y(), buttonW, rect.height() };
           case SC_ToolButtonMenu:
-            return hasMenu ? QRect{ rect.x() + rect.width() - menuButtonW, rect.y(), menuButtonW, rect.height() } : QRect{};
+            return hasMenu ? QRect{ rect.x() + rect.width() - menuButtonW, rect.y(), menuButtonW, rect.height() }
+                           : QRect{};
           default:
             return {};
         }
@@ -3290,11 +3383,12 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
         const auto hasTitle = groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel);
         const auto hasCheckbox = groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox);
         const auto hasFrame = !groupBoxOpt->features.testFlag(QStyleOptionFrame::Flat);
-        const auto labelH = hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
+        const auto labelH =
+          hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
         const auto& checkBoxSize = _impl->theme.iconSize;
         const auto titleBottomSpacing = hasFrame && (hasTitle || hasCheckbox) ? _impl->theme.spacing / 2 : 0;
         const auto titleH = hasTitle || hasCheckbox ? std::max(labelH, checkBoxSize.height()) : 0;
-        const auto leftPadding = hasTitle || hasCheckbox ? _impl->theme.spacing: 0;
+        const auto leftPadding = hasTitle || hasCheckbox ? _impl->theme.spacing : 0;
 
         switch (sc) {
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
@@ -3308,7 +3402,7 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
           case SC_GroupBoxLabel:
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
             if (groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel)) {
-              const auto& checkBoxSize = hasCheckbox ? _impl->theme.iconSize : QSize{ 0,0 };
+              const auto& checkBoxSize = hasCheckbox ? _impl->theme.iconSize : QSize{ 0, 0 };
               const auto spacing = hasCheckbox ? _impl->theme.spacing : 0;
               const auto labelX = rect.x() + checkBoxSize.width() + spacing;
               const auto labelW = rect.width() - checkBoxSize.width() - spacing;
@@ -3357,7 +3451,8 @@ QRect QlementineStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
   return QCommonStyle::subControlRect(cc, opt, sc, w);
 }
 
-QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt, const QSize& contentSize, const QWidget* widget) const {
+QSize QlementineStyle::sizeFromContents(
+  ContentsType ct, const QStyleOption* opt, const QSize& contentSize, const QWidget* widget) const {
   switch (static_cast<std::underlying_type_t<ContentsType>>(ct)) {
     case CT_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
@@ -3451,7 +3546,9 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
 
         switch (buttonStyle) {
           case Qt::ToolButtonStyle::ToolButtonTextOnly: {
-            const auto textW = optToolButton->fontMetrics.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text).width();
+            const auto textW =
+              optToolButton->fontMetrics.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text)
+                .width();
             const auto leftPadding = spacing * 2;
             const auto rightPadding = hasMenu ? spacing : spacing * 2;
             const auto w = leftPadding + textW + rightPadding + menuSpace;
@@ -3464,7 +3561,9 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
           case Qt::ToolButtonStyle::ToolButtonTextUnderIcon: // Not handled
           case Qt::ToolButtonStyle::ToolButtonTextBesideIcon: {
             const auto iconW = iconSize.width();
-            const auto textW = optToolButton->fontMetrics.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text).width();
+            const auto textW =
+              optToolButton->fontMetrics.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text)
+                .width();
             const auto leftPadding = spacing;
             const auto rightPadding = hasMenu ? spacing : spacing * 2;
             const auto w = leftPadding + iconW + spacing + textW + rightPadding + menuSpace;
@@ -3512,7 +3611,9 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto indeterminate = optProgressBar->maximum == 0 && optProgressBar->minimum == 0;
         const auto showText = !indeterminate && optProgressBar->textVisible;
         const auto maximumText = indeterminate ? QString{} : QString("%1%").arg(optProgressBar->maximum);
-        const auto labelW = showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, maximumText).width() : 0;
+        const auto labelW =
+          showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, maximumText).width()
+                   : 0;
         const auto labelH = showText ? optProgressBar->fontMetrics.height() : 0;
         const auto spacing = _impl->theme.spacing;
         const auto barH = _impl->theme.progressBarGrooveHeight;
@@ -3528,7 +3629,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
           const auto h = _impl->theme.spacing + _impl->theme.borderWidth;
           return QSize{ h, h };
 
-        } else if (optMenuItem->menuItemType == QStyleOptionMenuItem::Normal || optMenuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
+        } else if (optMenuItem->menuItemType == QStyleOptionMenuItem::Normal
+                   || optMenuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
           const auto hPadding = _impl->theme.spacing;
           const auto vPadding = _impl->theme.spacing / 2;
           const auto iconSize = _impl->theme.iconSize;
@@ -3550,7 +3652,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
           const auto iconW = hasIcon ? iconSize.width() + spacing : 0;
 
           // Check or Radio.
-          const auto hasCheck = optMenuItem->menuHasCheckableItems || optMenuItem->checkType != QStyleOptionMenuItem::NotCheckable;
+          const auto hasCheck =
+            optMenuItem->menuHasCheckableItems || optMenuItem->checkType != QStyleOptionMenuItem::NotCheckable;
           const auto checkW = hasCheck ? iconSize.width() + spacing : 0;
 
           const auto w = std::max(0, hPadding + checkW + iconW + labelW + shortcutW + arrowW + hPadding);
@@ -3624,7 +3727,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
     case CT_Slider:
       if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
         const auto& rect = optSlider->rect;
-        return optSlider->orientation == Qt::Horizontal ? QSize{ rect.width(), _impl->theme.controlHeightMedium } : QSize{ _impl->theme.controlHeightMedium, rect.height() };
+        return optSlider->orientation == Qt::Horizontal ? QSize{ rect.width(), _impl->theme.controlHeightMedium }
+                                                        : QSize{ _impl->theme.controlHeightMedium, rect.height() };
       }
       break;
     case CT_ScrollBar:
@@ -3637,7 +3741,7 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto w = r.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
         const auto treeView = qobject_cast<const QAbstractItemView*>(widget->parentWidget()->parentWidget());
-        return treeView? contentSize: QSize{ w, h };
+        return treeView ? contentSize : QSize{ w, h };
       }
       break;
     case CT_SpinBox:
@@ -3685,7 +3789,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto hasCheckbox = groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox);
         const auto hasFrame = !groupBoxOpt->features.testFlag(QStyleOptionFrame::Flat);
         const auto fm = QFontMetrics(_impl->theme.fontH5);
-        const auto labelH = hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
+        const auto labelH =
+          hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
         const auto labelW = fm.boundingRect(groupBoxOpt->rect, Qt::AlignLeft, groupBoxOpt->text).width();
         const auto& checkBoxSize = _impl->theme.iconSize;
         const auto titleBottomSpacing = hasFrame && (hasTitle || hasCheckbox) ? _impl->theme.spacing / 2 : 0;
@@ -3719,7 +3824,8 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto fm = QFontMetrics(font);
         const auto textW = qlementine::textWidth(fm, optItem->text);
 
-        const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0) + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
+        const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0)
+                       + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;
         const auto h = std::max({ iconSize.height() + spacing, textH + spacing, defaultH });
         return QSize{ w, h };
@@ -4214,7 +4320,8 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
         if (auto* mask = qstyleoption_cast<QStyleHintReturnMask*>(shret)) {
           const auto focusBorderW = _impl->theme.focusBorderWidth;
           const auto widgetRect = w->rect();
-          const auto extendedRect = widgetRect.marginsAdded(QMargins(focusBorderW, focusBorderW, focusBorderW, focusBorderW));
+          const auto extendedRect =
+            widgetRect.marginsAdded(QMargins(focusBorderW, focusBorderW, focusBorderW, focusBorderW));
           mask->region = extendedRect;
           return 1;
         }
@@ -4492,7 +4599,8 @@ QPixmap QlementineStyle::generatedIconPixmap(QIcon::Mode im, const QPixmap& pixm
   return QCommonStyle::generatedIconPixmap(im, pixmap, opt);
 }
 
-int QlementineStyle::layoutSpacing(QSizePolicy::ControlType c1, QSizePolicy::ControlType c2, Qt::Orientation o, const QStyleOption* opt, const QWidget* w) const {
+int QlementineStyle::layoutSpacing(QSizePolicy::ControlType c1, QSizePolicy::ControlType c2, Qt::Orientation o,
+  const QStyleOption* opt, const QWidget* w) const {
   return QCommonStyle::layoutSpacing(c1, c2, o, opt, w);
 }
 
@@ -4555,16 +4663,16 @@ void QlementineStyle::polish(QWidget* w) {
   if (shouldHaveExternalFocusFrame(w)) {
     auto* focusFrame = new QFocusFrame(w);
     // If the widget is inside a scrollArea, we need to force the update of the QFocusFrame position.
-//    if (auto* parentScrollArea = findFirstParentOfType<QScrollArea>(w)) {
-//      if (auto* vScrollBar = parentScrollArea->verticalScrollBar()) {
-//        QObject::connect(vScrollBar, &QScrollBar::valueChanged, focusFrame, [w](int){
-//          QTimer::singleShot(1000, w, [w](){
-//            auto* resizeEvent = new QResizeEvent(QSize(), w->size());
-//            QApplication::postEvent(w, resizeEvent);
-//          });
-//        });
-//      }
-//    }
+    //    if (auto* parentScrollArea = findFirstParentOfType<QScrollArea>(w)) {
+    //      if (auto* vScrollBar = parentScrollArea->verticalScrollBar()) {
+    //        QObject::connect(vScrollBar, &QScrollBar::valueChanged, focusFrame, [w](int){
+    //          QTimer::singleShot(1000, w, [w](){
+    //            auto* resizeEvent = new QResizeEvent(QSize(), w->size());
+    //            QApplication::postEvent(w, resizeEvent);
+    //          });
+    //        });
+    //      }
+    //    }
 
     focusFrame->setWidget(w);
   }
@@ -4868,13 +4976,16 @@ QColor const& QlementineStyle::spinBoxButtonForegroundColor(MouseState const mou
   return buttonForegroundColor(mouse, ColorRole::Neutral);
 }
 
-QColor const& QlementineStyle::listItemRowBackgroundColor(MouseState const mouse, AlternateState const alternate) const {
+QColor const& QlementineStyle::listItemRowBackgroundColor(
+  MouseState const mouse, AlternateState const alternate) const {
   const auto isAlternate = alternate == AlternateState::Alternate;
   const auto isEnabled = mouse != MouseState::Disabled;
-  return _impl->theme.palette.color(isEnabled ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, isAlternate ? QPalette::ColorRole::AlternateBase : QPalette::ColorRole::Base);
+  return _impl->theme.palette.color(isEnabled ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
+    isAlternate ? QPalette::ColorRole::AlternateBase : QPalette::ColorRole::Base);
 }
 
-QColor const& QlementineStyle::listItemBackgroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
+QColor const& QlementineStyle::listItemBackgroundColor(
+  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
   Q_UNUSED(focus)
   const auto isSelected = selected == SelectionState::Selected;
   const auto isActive = active == ActiveState::Active;
@@ -4908,7 +5019,8 @@ QColor const& QlementineStyle::listItemBackgroundColor(MouseState const mouse, S
   }
 }
 
-QColor const& QlementineStyle::listItemForegroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
+QColor const& QlementineStyle::listItemForegroundColor(
+  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
   Q_UNUSED(focus)
   const auto isSelected = selected == SelectionState::Selected;
   const auto isActive = active == ActiveState::Active;
@@ -4938,7 +5050,8 @@ QColor const& QlementineStyle::listItemForegroundColor(MouseState const mouse, S
   }
 }
 
-QColor const& QlementineStyle::listItemCaptionForegroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
+QColor const& QlementineStyle::listItemCaptionForegroundColor(
+  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
   Q_UNUSED(focus)
   const auto isSelected = selected == SelectionState::Selected;
   const auto isActive = active == ActiveState::Active;
@@ -4968,7 +5081,8 @@ QColor const& QlementineStyle::listItemCaptionForegroundColor(MouseState const m
   }
 }
 
-QColor const& QlementineStyle::listItemCheckButtonBackgroundColor(MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
+QColor const& QlementineStyle::listItemCheckButtonBackgroundColor(
+  MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
   Q_UNUSED(active)
   const auto isChecked = checked != CheckState::NotChecked;
   const auto isEnabled = mouse != MouseState::Disabled;
@@ -4987,13 +5101,15 @@ QColor const& QlementineStyle::listItemCheckButtonBackgroundColor(MouseState con
   }
 }
 
-QColor const& QlementineStyle::listItemCheckButtonForegroundColor(MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
+QColor const& QlementineStyle::listItemCheckButtonForegroundColor(
+  MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
   Q_UNUSED(selected)
   Q_UNUSED(active)
   return checkButtonForegroundColor(mouse, checked);
 }
 
-QColor const& QlementineStyle::cellItemFocusBorderColor(FocusState const focus, SelectionState const selected, ActiveState const active) const {
+QColor const& QlementineStyle::cellItemFocusBorderColor(
+  FocusState const focus, SelectionState const selected, ActiveState const active) const {
   Q_UNUSED(active)
   if (selected == SelectionState::Selected)
     return focus == FocusState::Focused ? _impl->theme.adaptativeColor5 : _impl->theme.adaptativeColorTransparent;
@@ -5176,14 +5292,15 @@ QColor const& QlementineStyle::progressBarValueColor(MouseState const mouse) con
 }
 
 QColor const& QlementineStyle::textFieldBackgroundColor(MouseState const mouse, Status const status) const {
-    Q_UNUSED(status);
-    if (mouse == MouseState::Disabled)
-      return _impl->theme.adaptativeColorTransparent;
-    else
-      return _impl->theme.adaptativeColor1;
+  Q_UNUSED(status);
+  if (mouse == MouseState::Disabled)
+    return _impl->theme.adaptativeColorTransparent;
+  else
+    return _impl->theme.adaptativeColor1;
 }
 
-QColor const& QlementineStyle::textFieldBorderColor(MouseState const mouse, FocusState const focus, Status const status) const {
+QColor const& QlementineStyle::textFieldBorderColor(
+  MouseState const mouse, FocusState const focus, Status const status) const {
   if (mouse == MouseState::Disabled) {
     return _impl->theme.borderColor1;
   } else {
@@ -5489,7 +5606,8 @@ QColor const& QlementineStyle::tableLineColor() const {
 QColor const& QlementineStyle::colorForTextRole(TextRole role, MouseState const mouse) const {
   switch (role) {
     case TextRole::Caption:
-      return mouse == MouseState::Disabled ? _impl->theme.neutralAlternativeColorDisabled : _impl->theme.neutralAlternativeColor;
+      return mouse == MouseState::Disabled ? _impl->theme.neutralAlternativeColorDisabled
+                                           : _impl->theme.neutralAlternativeColor;
     case TextRole::H1:
     case TextRole::H2:
     case TextRole::H3:
@@ -5521,10 +5639,10 @@ int QlementineStyle::pixelSizeForTextRole(TextRole role) const {
 }
 
 Status QlementineStyle::widgetStatus(QWidget const* widget) const {
-    if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
-        return qlementineLineEdit->status();
-    }
-    return Status::Default;
+  if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
+    return qlementineLineEdit->status();
+  }
+  return Status::Default;
 }
 
 } // namespace oclero::qlementine

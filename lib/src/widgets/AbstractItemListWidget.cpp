@@ -567,9 +567,11 @@ std::tuple<QColor, QColor, QColor, QColor> AbstractItemListWidget::getItemBgAndF
 const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
   if (qlementineStyle != nullptr) {
-      return qlementineStyle->buttonBackgroundColor(isEnabled() ? MouseState::Normal : MouseState::Disabled, ColorRole::Primary);
+    return qlementineStyle->buttonBackgroundColor(
+      isEnabled() ? MouseState::Normal : MouseState::Disabled, ColorRole::Primary);
   }
-  return palette().color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Highlight);
+  return palette().color(
+    isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Highlight);
 }
 
 QRect AbstractItemListWidget::getCurrentItemRect() const {

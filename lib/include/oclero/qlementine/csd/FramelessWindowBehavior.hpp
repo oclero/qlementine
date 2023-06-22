@@ -39,7 +39,8 @@ class FramelessWindowBehavior
   Q_PROPERTY(QMargins resizeMargins READ resizeMargins WRITE setResizeMargins NOTIFY resizeMarginsChanged)
   Q_PROPERTY(QMargins maximizedMargins READ maximizedMargins WRITE setMaximizedMargins NOTIFY maximizedMarginsChanged)
   Q_PROPERTY(int titleBarHeight READ titleBarHeight WRITE setTitleBarHeight NOTIFY titleBarHeightChanged)
-  Q_PROPERTY(int systemMenuAreaWidth READ systemMenuAreaWidth WRITE setSystemMenuAreaWidth NOTIFY systemMenuAreaWidthChanged)
+  Q_PROPERTY(
+    int systemMenuAreaWidth READ systemMenuAreaWidth WRITE setSystemMenuAreaWidth NOTIFY systemMenuAreaWidthChanged)
 
 public:
   /**

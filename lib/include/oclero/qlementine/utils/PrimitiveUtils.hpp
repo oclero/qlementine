@@ -53,16 +53,20 @@ void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, qreal 
 void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, RadiusesF const& radiuses);
 
 /// Draws an antialiased pixel-perfect border for the rounded rect.
-void drawRoundedRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, qreal const radius = 0.);
+void drawRoundedRectBorder(
+  QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, qreal const radius = 0.);
 
 /// Draws an antialiased pixel-perfect border for the rounded rect.
-void drawRoundedRectBorder(QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, qreal const radius = 0.);
+void drawRoundedRectBorder(
+  QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, qreal const radius = 0.);
 
 /// Draws an antialiased pixel-perfect border for the rounded rect.
-void drawRoundedRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses = {});
+void drawRoundedRectBorder(
+  QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses = {});
 
 /// Draws an antialiased pixel-perfect border for the rounded rect.
-void drawRoundedRectBorder(QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses = {});
+void drawRoundedRectBorder(
+  QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses = {});
 
 /// Draws a pixel-perfect border for the rect.
 void drawRectBorder(QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth);
@@ -75,16 +79,14 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius = 0
 
 /// Draws the value of a progress bar. A clipping mask is used to ensure the rectangle radiuses are respected
 /// even for values close to min or max.
-void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value, qreal const radius = 0., bool inverted = false);
+void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value,
+  qreal const radius = 0., bool inverted = false);
 
 /// Draws a color mark. Will draw a border if the contrast between color and background is not high enough.
-void drawColorMark(QPainter* p, QRect const& rect,
-                   const QColor& color, const QColor& borderColor, int borderWidth = 1);
+void drawColorMark(QPainter* p, QRect const& rect, const QColor& color, const QColor& borderColor, int borderWidth = 1);
 
 /// Draws the border of a color mark.
-void drawColorMarkBorder(QPainter* p,
-                         QRect const& rect, const QColor& borderColor,
-                         int borderWidth);
+void drawColorMarkBorder(QPainter* p, QRect const& rect, const QColor& borderColor, int borderWidth);
 
 /// Draws a semi-transparent red rectangle.
 void drawDebugRect(const QRect& rect, QPainter* p);
@@ -116,7 +118,8 @@ void drawPartiallyCheckedCheckBoxIndicator(const QRect& rect, QPainter* p, qreal
 void drawRadioButtonIndicator(const QRect& rect, QPainter* p, qreal progress = 1.);
 
 /// Draws a spinbox up/down indicator (i.e. +/- or up/down arrow).
-void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p, QAbstractSpinBox::ButtonSymbols buttonSymbol, QStyle::SubControl subControl, QSize const& iconSize);
+void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p, QAbstractSpinBox::ButtonSymbols buttonSymbol,
+  QStyle::SubControl subControl, QSize const& iconSize);
 
 /// Draws an arrow that points to the right.
 void drawArrowRight(const QRect& rect, QPainter* p);
@@ -154,8 +157,8 @@ void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
 QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked);
 
 /// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
-QRect drawIcon(const QRect& rect, QPainter*p, const QIcon& icon,
-               const MouseState mouse, const CheckState checked, bool colorize = false, const QColor& color = {});
+QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
+  bool colorize = false, const QColor& color = {});
 
 /// Generates a pixmap for a specific state of QLineEdit's clear button.
 QPixmap makeClearButtonPixmap(QSize const& size, QColor const& color);
@@ -201,10 +204,12 @@ void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& t
 void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const& theme);
 
 /// Draws a RadioButton indicator according to its checked state.
-void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor, QColor const& fgColor, const qreal borderWidth, qreal progress);
+void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
+  QColor const& fgColor, const qreal borderWidth, qreal progress);
 
 /// Draws a CheckButton indicator according to its checked state.
-void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor, const QColor& fgColor, const qreal borderWidth, qreal progress, CheckState checkState);
+void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor,
+  const QColor& fgColor, const qreal borderWidth, qreal progress, CheckState checkState);
 
 /// Draws a menu separator.
 void drawMenuSeparator(QPainter* p, const QRect& rect, QColor const& color, const int thickness);
@@ -213,22 +218,24 @@ void drawMenuSeparator(QPainter* p, const QRect& rect, QColor const& color, cons
 int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int max, int sliderLength);
 
 /// Draws the Slider tick marks.
-void drawSliderTickMarks(
-  QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max, const int interval, const int tickThickness, const int singleStep, const int pageStep);
+void drawSliderTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
+  const int interval, const int tickThickness, const int singleStep, const int pageStep);
 
 /// Draws the Dial tick marks.
-void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max, const int tickThickness, const int tickLength, const int singleStep,
-  const int pageStep, const int minArcLength);
+void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
+  const int tickThickness, const int tickLength, const int singleStep, const int pageStep, const int minArcLength);
 
 /// Draws a Dial.
-void drawDial(QPainter* p, QRect const& rect, int min, int max, double value, QColor const& bgColor, QColor const& handleColor, QColor const& grooveColor, QColor const& valueColor,
-  QColor const& markColor, const int grooveThickness, const int markLength, const int markThickness);
+void drawDial(QPainter* p, QRect const& rect, int min, int max, double value, QColor const& bgColor,
+  QColor const& handleColor, QColor const& grooveColor, QColor const& valueColor, QColor const& markColor,
+  const int grooveThickness, const int markLength, const int markThickness);
 
 /// Gets the path for a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
 QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses);
 
 /// Draws a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
-void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor, bool drawShadow = false, const QColor& shadowColor = Qt::black);
+void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor, bool drawShadow = false,
+  const QColor& shadowColor = Qt::black);
 
 /// Draws the shadow of a rounded tab.
 void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color);
@@ -241,7 +248,8 @@ void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text
 QString removeTrailingWhitespaces(const QString& str);
 
 /// Draws a keyboard shortcut.
-void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme, bool enabled, Qt::Alignment alignment = { Qt::AlignLeft | Qt::AlignVCenter });
+void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme, bool enabled,
+  Qt::Alignment alignment = { Qt::AlignLeft | Qt::AlignVCenter });
 
 /// Gets the necessary size to display the whole shortcut.
 QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme);

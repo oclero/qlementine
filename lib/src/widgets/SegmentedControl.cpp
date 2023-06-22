@@ -56,7 +56,8 @@ const QColor& SegmentedControl::getItemFgColor(MouseState mouse, bool selected, 
 }
 
 const QColor& SegmentedControl::getItemBadgeBgColor(MouseState mouse, bool selected, const Theme& theme) const {
-  return mouse == MouseState::Disabled ? theme.adaptativeColor1 : (selected ? theme.primaryColorForeground : theme.adaptativeColor2);
+  return mouse == MouseState::Disabled ? theme.adaptativeColor1
+                                       : (selected ? theme.primaryColorForeground : theme.adaptativeColor2);
 }
 
 const QColor& SegmentedControl::getItemBadgeFgColor(MouseState mouse, bool selected, const Theme& theme) const {
@@ -70,7 +71,8 @@ void SegmentedControl::initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) c
   const auto* style = this->style();
   const auto deltaX = style->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, this);
   const auto deltaY = style->pixelMetric(QStyle::PM_FocusFrameVMargin, &opt, this);
-  opt.rect = getFocusedItemRect().translated(deltaX, deltaY).marginsAdded({ deltaX / 2, deltaY / 2, deltaX / 2, deltaY / 2 });
+  opt.rect =
+    getFocusedItemRect().translated(deltaX, deltaY).marginsAdded({ deltaX / 2, deltaY / 2, deltaX / 2, deltaY / 2 });
   opt.radiuses = getItemRadius();
 }
 } // namespace oclero::qlementine

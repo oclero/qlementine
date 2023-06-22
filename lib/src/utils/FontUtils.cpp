@@ -33,7 +33,7 @@ double pixelSizeToPointSize(double pixelSize, double dpi) {
   return pixelSize * STANDARD_DPI / dpi;
 }
 
-int textWidth(const QFontMetrics &fm, const QString& text) {
+int textWidth(const QFontMetrics& fm, const QString& text) {
   // After some tests, it looks like QFontMetrics::boundingRect() with these parameters
   // gives the correct results, and ensure the text isn't truncated.
   // Qt's documentation recommends QFontMetrics::horizontalAdvance() but this one gives

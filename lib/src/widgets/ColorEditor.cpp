@@ -30,11 +30,13 @@
 
 namespace oclero::qlementine {
 
-ColorEditor::ColorEditor(QWidget* parent) : QWidget(parent) {
+ColorEditor::ColorEditor(QWidget* parent)
+  : QWidget(parent) {
   setup(Qt::black);
 }
 
-ColorEditor::ColorEditor(const QColor& color, QWidget* parent) : QWidget(parent) {
+ColorEditor::ColorEditor(const QColor& color, QWidget* parent)
+  : QWidget(parent) {
   setup(color);
 }
 

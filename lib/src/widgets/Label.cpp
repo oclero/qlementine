@@ -39,7 +39,9 @@ Label::Label(const QString& text, QWidget* parent)
   qApp->installEventFilter(this);
 }
 
-Label::Label(const QString& text, TextRole role, QWidget* parent) : QLabel(text, parent), _role(role) {
+Label::Label(const QString& text, TextRole role, QWidget* parent)
+  : QLabel(text, parent)
+  , _role(role) {
   updatePaletteFromTheme();
   qApp->installEventFilter(this);
 }

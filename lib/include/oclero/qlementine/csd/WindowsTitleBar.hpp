@@ -41,8 +41,10 @@ class WindowsTitleBar : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
-  Q_PROPERTY(oclero::qlementine::SystemTheme buttonsSystemTheme READ buttonsSystemTheme WRITE setButtonsSystemTheme NOTIFY buttonsSystemThemeChanged)
-  Q_PROPERTY(oclero::qlementine::SystemWindowType systemWindowType READ systemWindowType WRITE setSystemWindowType NOTIFY systemWindowTypeChanged)
+  Q_PROPERTY(oclero::qlementine::SystemTheme buttonsSystemTheme READ buttonsSystemTheme WRITE setButtonsSystemTheme
+      NOTIFY buttonsSystemThemeChanged)
+  Q_PROPERTY(oclero::qlementine::SystemWindowType systemWindowType READ systemWindowType WRITE setSystemWindowType
+      NOTIFY systemWindowTypeChanged)
 
 public:
   explicit WindowsTitleBar(QWidget* parent = nullptr);

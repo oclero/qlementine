@@ -7,11 +7,11 @@
 
 namespace oclero::qlementine {
 class ThemeEditor : public QWidget {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	ThemeEditor(QWidget* parent = nullptr);
-    ~ThemeEditor();
+  ThemeEditor(QWidget* parent = nullptr);
+  ~ThemeEditor();
 
 public:
   const Theme& theme() const;

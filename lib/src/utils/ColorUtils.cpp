@@ -31,7 +31,7 @@ constexpr auto HEX_BASE = 16;
 double getContrastRatio(const QColor& c1, const QColor& c2) {
   // First, pre-compose c1 and c2 over plain white.
 
-    /*
+  /*
      * https://www.w3.org/TR/WCAG/#contrast-minimum
      * https://www.w3.org/TR/WCAG/#dfn-contrast-ratio
      *
@@ -54,7 +54,7 @@ double getContrastRatio(const QColor& c1, const QColor& c2) {
 
     Ratio should be at least 4.5:1
      */
-    return 4.5;
+  return 4.5;
 }
 
 QColor colorWithAlphaF(QColor const& color, qreal alpha) {
@@ -126,7 +126,9 @@ std::optional<QColor> tryGetColorFromVariantList(QVariantList const& variantList
 
 std::optional<QColor> tryGetColorFromRGBAString(QString const& str) {
   // Try parse RGB ("rgb(RRR,GGG,BBB)").
-  static const auto rgbRegExp = QRegularExpression(QStringLiteral("^ *rgb *\\( *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3}) *\\) *$"), QRegularExpression::CaseInsensitiveOption);
+  static const auto rgbRegExp =
+    QRegularExpression(QStringLiteral("^ *rgb *\\( *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3}) *\\) *$"),
+      QRegularExpression::CaseInsensitiveOption);
   const auto rgbMatch = rgbRegExp.match(str);
   if (rgbMatch.hasMatch()) {
     const auto r = rgbMatch.captured(1).toInt();
@@ -136,7 +138,9 @@ std::optional<QColor> tryGetColorFromRGBAString(QString const& str) {
   }
 
   // Try parse RGBA ("rgba(RRR,GGG,BBB,AAA)").
-  static const auto rgbaRegExp = QRegularExpression(QStringLiteral("^ *rgba *\\( *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3})*\\) *$"), QRegularExpression::CaseInsensitiveOption);
+  static const auto rgbaRegExp =
+    QRegularExpression(QStringLiteral("^ *rgba *\\( *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3}) *, *(\\d{1,3})*\\) *$"),
+      QRegularExpression::CaseInsensitiveOption);
   const auto rgbaMatch = rgbaRegExp.match(str);
   if (rgbaMatch.hasMatch()) {
     const auto r = rgbaMatch.captured(1).toInt();
@@ -217,10 +221,9 @@ std::optional<QColor> tryGetColorFromVariant(QVariant const& variant) {
 
 QString toHexRGBA(const QColor& color) {
   return QString("#%1%2%3%4")
-      .arg(QString::number(color.red(), HEX_BASE), 2, '0')
-      .arg(QString::number(color.green(), HEX_BASE), 2, '0')
-      .arg(QString::number(color.blue(), HEX_BASE), 2, '0')
-      .arg(QString::number(color.alpha(), HEX_BASE), 2, '0');
+    .arg(QString::number(color.red(), HEX_BASE), 2, '0')
+    .arg(QString::number(color.green(), HEX_BASE), 2, '0')
+    .arg(QString::number(color.blue(), HEX_BASE), 2, '0')
+    .arg(QString::number(color.alpha(), HEX_BASE), 2, '0');
 }
 } // namespace oclero::qlementine
-

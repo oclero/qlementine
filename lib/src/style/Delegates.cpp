@@ -43,7 +43,8 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
   const auto isSeparator = idx.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
   if (isSeparator) {
     const auto& rect = opt.rect;
-    const auto& color = qlementineStyle ? qlementineStyle->toolBarSeparatorColor() : Theme().neutralAlternativeColorDisabled;
+    const auto& color =
+      qlementineStyle ? qlementineStyle->toolBarSeparatorColor() : Theme().neutralAlternativeColorDisabled;
     const auto lineW = theme.borderWidth;
     constexpr auto padding = 0; //_impl->theme.spacing / 2;
     const auto x = rect.x() + (rect.width() - lineW) / 2.;
@@ -58,7 +59,8 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     // Background.
     const auto hPadding = theme.spacing;
     const auto& bgRect = opt.rect;
-    const auto& bgColor = qlementineStyle ? qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
+    const auto& bgColor =
+      qlementineStyle ? qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
     constexpr auto radius = 0;
     p->setRenderHint(QPainter::Antialiasing, true);
     p->setPen(Qt::NoPen);
@@ -80,7 +82,8 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
 
     // Icon.
     const auto iconVariant = idx.data(Qt::DecorationRole);
-    const auto& icon = iconVariant.isValid() && iconVariant.type() == QVariant::Type::Icon ? iconVariant.value<QIcon>() : QIcon{};
+    const auto& icon =
+      iconVariant.isValid() && iconVariant.type() == QVariant::Type::Icon ? iconVariant.value<QIcon>() : QIcon{};
     if (availableW > 0 && !icon.isNull()) {
       const auto spacing = theme.spacing;
       const auto& iconSize = opt.decorationSize; // Get icon size.
@@ -98,7 +101,9 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
 
       if (mouse == MouseState::Disabled && !colorize) {
         // Change only the icon's tint and opacity, so it looks disabled.
-        const auto& bgColor = qlementineStyle ? qlementineStyle->listItemBackgroundColor(MouseState::Normal, selected, focus, active) : Theme().adaptativeColorTransparent;
+        const auto& bgColor = qlementineStyle
+                                ? qlementineStyle->listItemBackgroundColor(MouseState::Normal, selected, focus, active)
+                                : Theme().adaptativeColorTransparent;
         const auto premultipiedColor = getColorSourceOver(bgColor, fgColor);
         const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
         const auto opacity = selected == SelectionState::Selected ? 1. : 0.25;
@@ -115,7 +120,8 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
 
     // Text.
     const auto textVariant = idx.data(Qt::DisplayRole);
-    const auto& text = textVariant.isValid() && textVariant.type() == QVariant::Type::String ? textVariant.value<QString>() : QString{};
+    const auto& text =
+      textVariant.isValid() && textVariant.type() == QVariant::Type::String ? textVariant.value<QString>() : QString{};
     if (availableW > 0 && !text.isEmpty()) {
       const auto& fm = opt.fontMetrics;
       const auto elidedText = fm.elidedText(text, Qt::ElideRight, availableW);
@@ -146,9 +152,11 @@ QSize ComboBoxDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIn
     const auto& fm = opt.fontMetrics;
 
     const auto textVariant = idx.data(Qt::DisplayRole);
-    const auto& text = textVariant.isValid() && textVariant.type() == QVariant::Type::String ? textVariant.value<QString>() : QString{};
+    const auto& text =
+      textVariant.isValid() && textVariant.type() == QVariant::Type::String ? textVariant.value<QString>() : QString{};
     const auto iconVariant = idx.data(Qt::DecorationRole);
-    const auto& icon = iconVariant.isValid() && iconVariant.type() == QVariant::Type::Icon ? iconVariant.value<QIcon>() : QIcon{};
+    const auto& icon =
+      iconVariant.isValid() && iconVariant.type() == QVariant::Type::Icon ? iconVariant.value<QIcon>() : QIcon{};
     const auto textW = qlementine::textWidth(fm, text);
     const auto iconW = !icon.isNull() ? iconSize.width() + spacing : 0;
     const auto w = std::max(0, hPadding + iconW + textW + hPadding);

@@ -102,7 +102,8 @@ Popover::Popover(QWidget* parent)
 
   auto* popoverLayout = new QVBoxLayout(this);
   popoverLayout->setSpacing(0);
-  popoverLayout->setContentsMargins(dropShadowBlurRadius * 2, dropShadowBlurRadius * 2, dropShadowBlurRadius * 2, dropShadowYOffset + dropShadowBlurRadius * 2);
+  popoverLayout->setContentsMargins(dropShadowBlurRadius * 2, dropShadowBlurRadius * 2, dropShadowBlurRadius * 2,
+    dropShadowYOffset + dropShadowBlurRadius * 2);
 
   // Layout.
   auto* frame = new PopoverFrame(this);
@@ -334,7 +335,8 @@ void Popover::paintEvent(QPaintEvent*) {
   {
     const auto radius = qlementineStyle ? qlementineStyle->theme().borderRadius : 0;
     const auto bgColor = palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
-    const auto borderColor = qlementineStyle ? qlementineStyle->theme().borderColor2 : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Mid);
+    const auto borderColor = qlementineStyle ? qlementineStyle->theme().borderColor2
+                                             : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Mid);
     const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
     const auto bgRect = _frame->rect().translated(_frame->mapTo(this, QPoint(0, 0)));
 
@@ -442,7 +444,8 @@ void Popover::updatePopoverGeometry() {
     auto geometry = getGeometryForPosition(position, _preferredAlignment);
 
     // Success: the popup fits on screen.
-    const auto aboveAnchor = _anchor ? _anchor->rect().translated(_anchor->mapToGlobal(QPoint{ 0, 0 })).intersects(geometry) : false;
+    const auto aboveAnchor =
+      _anchor ? _anchor->rect().translated(_anchor->mapToGlobal(QPoint{ 0, 0 })).intersects(geometry) : false;
     if (screenGeometry.contains(geometry) && !aboveAnchor) {
       // Now, translate it to include the drop shadow.
       const auto dropShadowMargins = layout()->contentsMargins();
@@ -458,10 +461,14 @@ void Popover::updatePopoverGeometry() {
 }
 
 const std::array<Popover::Position, 4>& Popover::positionPriority(Position const position) {
-  static const auto leftPriority = std::array<Position, 4>{ Position::Left, Position::Right, Position::Top, Position::Bottom };
-  static const auto rightPriority = std::array<Position, 4>{ Position::Right, Position::Left, Position::Top, Position::Bottom };
-  static const auto topPriority = std::array<Position, 4>{ Position::Top, Position::Bottom, Position::Left, Position::Right };
-  static const auto bottomPriority = std::array<Position, 4>{ Position::Bottom, Position::Top, Position::Left, Position::Right };
+  static const auto leftPriority =
+    std::array<Position, 4>{ Position::Left, Position::Right, Position::Top, Position::Bottom };
+  static const auto rightPriority =
+    std::array<Position, 4>{ Position::Right, Position::Left, Position::Top, Position::Bottom };
+  static const auto topPriority =
+    std::array<Position, 4>{ Position::Top, Position::Bottom, Position::Left, Position::Right };
+  static const auto bottomPriority =
+    std::array<Position, 4>{ Position::Bottom, Position::Top, Position::Left, Position::Right };
   switch (position) {
     case Position::Left:
       return leftPriority;
@@ -619,8 +626,10 @@ QRect Popover::getFallbackGeometry() const {
   };
 
   const auto dropShadowMargins = layout()->contentsMargins();
-  const auto x = screenGeometry.x() + (screenGeometry.width() - popoverFittedSize.width()) / 2 - dropShadowMargins.left();
-  const auto y = screenGeometry.y() + (screenGeometry.height() - popoverFittedSize.height()) / 2 - dropShadowMargins.top();
+  const auto x =
+    screenGeometry.x() + (screenGeometry.width() - popoverFittedSize.width()) / 2 - dropShadowMargins.left();
+  const auto y =
+    screenGeometry.y() + (screenGeometry.height() - popoverFittedSize.height()) / 2 - dropShadowMargins.top();
   return { QPoint{ x, y }, popoverFittedSize };
 }
 

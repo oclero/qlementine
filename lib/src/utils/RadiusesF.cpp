@@ -30,7 +30,8 @@ RadiusesF::RadiusesF(int left, int right)
   : RadiusesF(static_cast<double>(left), static_cast<double>(right)) {}
 
 RadiusesF::RadiusesF(int topLeft, int topRight, int bottomRight, int bottomLeft)
-  : RadiusesF(static_cast<double>(topLeft), static_cast<double>(topRight), static_cast<double>(bottomRight), static_cast<double>(bottomLeft)) {}
+  : RadiusesF(static_cast<double>(topLeft), static_cast<double>(topRight), static_cast<double>(bottomRight),
+    static_cast<double>(bottomLeft)) {}
 
 RadiusesF::RadiusesF(double radius) {
   *this = radius;
@@ -98,7 +99,8 @@ bool RadiusesF::operator!=(const double rhs) const {
 }
 
 bool RadiusesF::operator==(const RadiusesF& rhs) const {
-  return topLeft == rhs.topLeft && topRight == rhs.topRight && bottomRight == rhs.bottomRight && bottomLeft == rhs.bottomLeft;
+  return topLeft == rhs.topLeft && topRight == rhs.topRight && bottomRight == rhs.bottomRight
+         && bottomLeft == rhs.bottomLeft;
 }
 
 bool RadiusesF::operator!=(const RadiusesF& rhs) const {

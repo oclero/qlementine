@@ -31,11 +31,14 @@
 
 namespace oclero::qlementine {
 
-ColorButton::ColorButton(QWidget *parent) : QAbstractButton(parent) {
+ColorButton::ColorButton(QWidget* parent)
+  : QAbstractButton(parent) {
   setup();
 }
 
-ColorButton::ColorButton(const QColor &color, QWidget *parent) : QAbstractButton(parent), _color(color) {
+ColorButton::ColorButton(const QColor& color, QWidget* parent)
+  : QAbstractButton(parent)
+  , _color(color) {
   setup();
 }
 
@@ -49,50 +52,47 @@ void ColorButton::setup() {
   });
 }
 
-const QColor &ColorButton::color() const {
-    return _color;
+const QColor& ColorButton::color() const {
+  return _color;
 }
 
-void ColorButton::setColor(const QColor &color) {
-    if (color != _color) {
-        _color = color;
-        update();
-        emit colorChanged();
-    }
+void ColorButton::setColor(const QColor& color) {
+  if (color != _color) {
+    _color = color;
+    update();
+    emit colorChanged();
+  }
 }
 
 QSize ColorButton::sizeHint() const {
-    const auto* style = this->style();
-    const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-    const auto extent = qlementineStyle ? qlementineStyle->theme().controlHeightMedium
-                                        : style->pixelMetric(QStyle::PM_DialogButtonsButtonHeight);
-    return QSize(extent, extent);
+  const auto* style = this->style();
+  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
+  const auto extent = qlementineStyle ? qlementineStyle->theme().controlHeightMedium
+                                      : style->pixelMetric(QStyle::PM_DialogButtonsButtonHeight);
+  return QSize(extent, extent);
 }
 
 void ColorButton::paintEvent(QPaintEvent*) {
-    QPainter p(this);
-    const auto* style = this->style();
-    const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-    const auto& theme = qlementineStyle ? qlementineStyle->theme() : qlementine::Theme{};
+  QPainter p(this);
+  const auto* style = this->style();
+  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
+  const auto& theme = qlementineStyle ? qlementineStyle->theme() : qlementine::Theme{};
 
-    const auto opacity = isEnabled() ? 1.0 : 0.35;
-    p.setOpacity(opacity);
-    const auto hasFocus = this->hasFocus();
+  const auto opacity = isEnabled() ? 1.0 : 0.35;
+  p.setOpacity(opacity);
+  const auto hasFocus = this->hasFocus();
 
-    // Background
-    const auto& bgColor = qlementineStyle
-        ? qlementineStyle->theme().backgroundColorMain3
-        : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
-    const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
-    const auto borderColor = qlementineStyle ? qlementineStyle->theme().adaptativeColor5 : Qt::black;
-    qlementine::drawColorMark(&p, rect(), _color, hasFocus ? Qt::transparent : borderColor, borderWidth);
+  // Background
+  const auto& bgColor = qlementineStyle ? qlementineStyle->theme().backgroundColorMain3
+                                        : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
+  const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
+  const auto borderColor = qlementineStyle ? qlementineStyle->theme().adaptativeColor5 : Qt::black;
+  qlementine::drawColorMark(&p, rect(), _color, hasFocus ? Qt::transparent : borderColor, borderWidth);
 
-    // To improve readability when the button has focus, draw a stroke with the focus color.
-    if (hasFocus) {
-      const auto focusColor = qlementineStyle
-          ? qlementineStyle->theme().primaryColor
-          : Qt::white;
-      qlementine::drawColorMarkBorder(&p, rect(), focusColor, borderWidth);
-    }
+  // To improve readability when the button has focus, draw a stroke with the focus color.
+  if (hasFocus) {
+    const auto focusColor = qlementineStyle ? qlementineStyle->theme().primaryColor : Qt::white;
+    qlementine::drawColorMarkBorder(&p, rect(), focusColor, borderWidth);
+  }
 }
 } // namespace oclero::qlementine

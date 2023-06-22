@@ -56,4 +56,3 @@ std::optional<QColor> tryGetColorFromVariant(QVariant const& variant);
 /// Gives the color's hexadecimal RGBA string.
 QString toHexRGBA(const QColor& color);
 } // namespace oclero::qlementine
-

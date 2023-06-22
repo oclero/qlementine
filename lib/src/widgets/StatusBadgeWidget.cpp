@@ -67,14 +67,17 @@ QSize StatusBadgeWidget::sizeHint() const {
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const qlementine::QlementineStyle*>(style);
 
-  auto extent = qlementineStyle ? qlementineStyle->theme().iconSizeMedium.height() : style->pixelMetric(QStyle::PM_LargeIconSize);
+  auto extent =
+    qlementineStyle ? qlementineStyle->theme().iconSizeMedium.height() : style->pixelMetric(QStyle::PM_LargeIconSize);
 
   switch (_badgeSize) {
     case StatusBadgeSize::Small:
-      extent = qlementineStyle ? qlementineStyle->theme().iconSize.height() : style->pixelMetric(QStyle::PM_ButtonIconSize);
+      extent =
+        qlementineStyle ? qlementineStyle->theme().iconSize.height() : style->pixelMetric(QStyle::PM_ButtonIconSize);
       break;
     case StatusBadgeSize::Medium:
-      extent = qlementineStyle ? qlementineStyle->theme().iconSizeMedium.height() : style->pixelMetric(QStyle::PM_LargeIconSize);
+      extent = qlementineStyle ? qlementineStyle->theme().iconSizeMedium.height()
+                               : style->pixelMetric(QStyle::PM_LargeIconSize);
       break;
     default:
       break;

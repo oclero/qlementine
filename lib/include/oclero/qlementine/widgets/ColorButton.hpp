@@ -27,28 +27,28 @@
 
 namespace oclero::qlementine {
 class ColorButton : public QAbstractButton {
-    Q_OBJECT
+  Q_OBJECT
 
-    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+  Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 
 public:
-    ColorButton(QWidget* parent = nullptr);
-    ColorButton(const QColor& color, QWidget* parent = nullptr);
+  ColorButton(QWidget* parent = nullptr);
+  ColorButton(const QColor& color, QWidget* parent = nullptr);
 
-    const QColor& color() const;
-    void setColor(const QColor& color);
+  const QColor& color() const;
+  void setColor(const QColor& color);
 
-    QSize sizeHint() const override;
+  QSize sizeHint() const override;
 
 signals:
-    void colorChanged();
+  void colorChanged();
 
 protected:
-    void paintEvent(QPaintEvent*) override;
+  void paintEvent(QPaintEvent*) override;
 
 private:
-    void setup();
+  void setup();
 
-    QColor _color;
+  QColor _color;
 };
 } // namespace oclero::qlementine

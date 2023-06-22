@@ -55,7 +55,8 @@ protected:
     QPainter p(this);
     p.setFont(font());
     p.setPen(palette().text().color());
-    const auto elidedText = fontMetrics().elidedText(text(), Qt::TextElideMode::ElideRight, width(), Qt::TextSingleLine);
+    const auto elidedText =
+      fontMetrics().elidedText(text(), Qt::TextElideMode::ElideRight, width(), Qt::TextSingleLine);
     p.drawText(rect(), alignment(), elidedText);
   }
 };
@@ -330,14 +331,17 @@ bool WindowsTitleBar::event(QEvent* event) {
 }
 
 void WindowsTitleBar::updateTitleGeometry() {
-  if (systemWindowType() == SystemWindowType::Dialog || (systemWindowType() == SystemWindowType::Default && _menuBar->width() == 0)) {
+  if (systemWindowType() == SystemWindowType::Dialog
+      || (systemWindowType() == SystemWindowType::Default && _menuBar->width() == 0)) {
     // Align left.
     const auto sh = _titleLabel->sizeHint();
     _titleLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     const auto x = _rootLayout->contentsMargins().left() + _iconButton->sizeHint().width() + iconAndTitleSpacing;
     const auto y = (height() - sh.height()) / 2;
-    const auto availableWidth = width() - (_menuBar->isVisibleTo(this) ? _menuBar->width() : 0) - (_minimizeButton->isVisibleTo(this) ? _minimizeButton->width() : 0)
-                                - (_maximizeButton->isVisibleTo(this) ? _maximizeButton->width() : 0) - _closeButton->width() - x;
+    const auto availableWidth = width() - (_menuBar->isVisibleTo(this) ? _menuBar->width() : 0)
+                                - (_minimizeButton->isVisibleTo(this) ? _minimizeButton->width() : 0)
+                                - (_maximizeButton->isVisibleTo(this) ? _maximizeButton->width() : 0)
+                                - _closeButton->width() - x;
     const auto w = std::min(sh.width(), availableWidth);
     _titleLabel->setGeometry(QRect(QPoint(x, y), QSize(w, sh.height())));
     _titleLabel->setVisible(true);
@@ -349,9 +353,12 @@ void WindowsTitleBar::updateTitleGeometry() {
     const auto y = (height() - sh.height()) / 2;
     _titleLabel->setGeometry(QRect(QPoint(x, y), sh));
     const auto titleGeometry = _titleLabel->geometry().marginsAdded({ 16, 0, 4, 0 });
-    const auto overlapsMenuBar = _menuBar->isVisibleTo(this) && _menuBar->width() > 0 && titleGeometry.intersects(_menuBar->geometry());
-    const auto overlapsMinimize = _minimizeButton->isVisibleTo(this) && titleGeometry.intersects(_minimizeButton->geometry());
-    const auto overlapsMaximize = _maximizeButton->isVisibleTo(this) && titleGeometry.intersects(_maximizeButton->geometry());
+    const auto overlapsMenuBar =
+      _menuBar->isVisibleTo(this) && _menuBar->width() > 0 && titleGeometry.intersects(_menuBar->geometry());
+    const auto overlapsMinimize =
+      _minimizeButton->isVisibleTo(this) && titleGeometry.intersects(_minimizeButton->geometry());
+    const auto overlapsMaximize =
+      _maximizeButton->isVisibleTo(this) && titleGeometry.intersects(_maximizeButton->geometry());
     const auto overlapsClose = _closeButton->isVisibleTo(this) && titleGeometry.intersects(_closeButton->geometry());
 
     const auto visible = !overlapsMenuBar && !overlapsMinimize && !overlapsMaximize && !overlapsClose;

@@ -14,29 +14,34 @@
 #include <QStandardPaths>
 
 #define ADD_TITLE(TEXT) \
-formLayout->addItem(new QSpacerItem(0, vSpacing * 3, QSizePolicy::Ignored, QSizePolicy::Fixed)); \
-formLayout->addRow(new Label(TEXT, TextRole::H3, &owner));
+  formLayout->addItem(new QSpacerItem(0, vSpacing * 3, QSizePolicy::Ignored, QSizePolicy::Fixed)); \
+  formLayout->addRow(new Label(TEXT, TextRole::H3, &owner));
 
 #define ADD_SUBTITLE(TEXT) \
-formLayout->addItem(new QSpacerItem(0, vSpacing / 2, QSizePolicy::Ignored, QSizePolicy::Fixed)); \
-formLayout->addRow(new Label(TEXT, TextRole::H4, &owner));
+  formLayout->addItem(new QSpacerItem(0, vSpacing / 2, QSizePolicy::Ignored, QSizePolicy::Fixed)); \
+  formLayout->addRow(new Label(TEXT, TextRole::H4, &owner));
 
-#define ADD_DESCRIPTION(TEXT) \
-formLayout->addRow(new Label(TEXT, TextRole::Caption, &owner));
+#define ADD_DESCRIPTION(TEXT) formLayout->addRow(new Label(TEXT, TextRole::Caption, &owner));
 
 #define ADD_COLOR_EDITOR(NAME, DESCRIPTION) \
-{ const auto pair = makeColorEditorAndLabel(#NAME, DESCRIPTION, &owner, theme.NAME, \
-                                      [this](const QColor& c) \
-                                      { theme.NAME = c; emit owner.themeChanged(theme); }); \
-  this->NAME##Editor = pair.second; \
-  formLayout->addRow(pair.first, pair.second); }
+  { \
+    const auto pair = makeColorEditorAndLabel(#NAME, DESCRIPTION, &owner, theme.NAME, [this](const QColor& c) { \
+      theme.NAME = c; \
+      emit owner.themeChanged(theme); \
+    }); \
+    this->NAME##Editor = pair.second; \
+    formLayout->addRow(pair.first, pair.second); \
+  }
 
 #define ADD_METADATA_TEXT_EDITOR(NAME, DESCRIPTION) \
-{ const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, theme.meta.NAME, \
-                                      [this](const QString& s) \
-                                      { theme.meta.NAME = s; emit owner.themeChanged(theme); }); \
-  this->NAME##Editor = pair.second; \
-  formLayout->addRow(pair.first, pair.second); }
+  { \
+    const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, theme.meta.NAME, [this](const QString& s) { \
+      theme.meta.NAME = s; \
+      emit owner.themeChanged(theme); \
+    }); \
+    this->NAME##Editor = pair.second; \
+    formLayout->addRow(pair.first, pair.second); \
+  }
 
 #define UPDATE_COLOR_EDITOR(NAME) \
   this->NAME##Editor->blockSignals(true); \
@@ -49,12 +54,11 @@ formLayout->addRow(new Label(TEXT, TextRole::Caption, &owner));
   this->NAME##Editor->blockSignals(false);
 
 namespace oclero::qlementine {
-const QString PREVIOUS_PATH_SETTINGS_KEY{"previousPath"};
-const QString DEFAULT_FILE_NAME{"theme.json"};
+const QString PREVIOUS_PATH_SETTINGS_KEY{ "previousPath" };
+const QString DEFAULT_FILE_NAME{ "theme.json" };
 
-std::pair<QWidget*, ColorEditor*> makeColorEditorAndLabel(const QString& label, const QString& description, QWidget* parent,
-                                                      const QColor& initialValue,
-                                                      const std::function<void(const QColor&)>& onChanged) {
+std::pair<QWidget*, ColorEditor*> makeColorEditorAndLabel(const QString& label, const QString& description,
+  QWidget* parent, const QColor& initialValue, const std::function<void(const QColor&)>& onChanged) {
   auto* colorEditor = new ColorEditor(initialValue, parent);
   QObject::connect(colorEditor, &ColorEditor::colorChanged, parent, [colorEditor, onChanged]() {
     onChanged(colorEditor->color());
@@ -77,11 +81,10 @@ std::pair<QWidget*, ColorEditor*> makeColorEditorAndLabel(const QString& label, 
 }
 
 std::pair<QWidget*, LineEdit*> makeTextEditorAndLabel(const QString& label, const QString& description, QWidget* parent,
-                                                     const QString& initialValue,
-                                                     const std::function<void(const QString&)>& onChanged) {
+  const QString& initialValue, const std::function<void(const QString&)>& onChanged) {
   auto* lineEdit = new LineEdit(parent);
   lineEdit->setPlaceholderText(label);
-  QObject::connect(lineEdit, &QLineEdit::editingFinished, parent, [lineEdit, onChanged]{
+  QObject::connect(lineEdit, &QLineEdit::editingFinished, parent, [lineEdit, onChanged] {
     onChanged(lineEdit->text().trimmed());
   });
 
@@ -176,8 +179,8 @@ struct ThemeEditor::Impl {
   LineEdit* authorEditor;
   LineEdit* versionEditor;
 
-  Impl(ThemeEditor& o) : owner(o) {
-  }
+  Impl(ThemeEditor& o)
+    : owner(o) {}
 
   /// Utility to load/save from/to JSON files.
   void setupJSONLoader(QWidget* parent, QFormLayout* formLayout) {
@@ -194,13 +197,15 @@ struct ThemeEditor::Impl {
 
       QObject::connect(loadJsonButton, &QPushButton::pressed, &owner, [this]() {
         // Get previous path.
-        const auto defaultDirPath = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DocumentsLocation);
+        const auto defaultDirPath =
+          QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DocumentsLocation);
         const auto defaultPath = defaultDirPath + '/' + DEFAULT_FILE_NAME;
         QSettings settings;
         const auto previousPath = settings.value(PREVIOUS_PATH_SETTINGS_KEY, defaultPath).toString();
 
         // Get theme from file and set it on the application.
-        const auto fileName = QFileDialog::getOpenFileName(&owner, "Load JSON theme", previousPath, "JSON Files (*.json)");
+        const auto fileName =
+          QFileDialog::getOpenFileName(&owner, "Load JSON theme", previousPath, "JSON Files (*.json)");
         const auto theme = Theme(fileName);
         owner.setTheme(theme);
 
@@ -212,7 +217,6 @@ struct ThemeEditor::Impl {
 
     // 'Save' button.
     {
-
       auto* saveJsonButton = new QPushButton(QIcon::fromTheme("document-save"), "Save JSON file…", parent);
       saveJsonButton->setToolTip("Save the current theme as JSON file to disk.");
       saveJsonButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -220,12 +224,14 @@ struct ThemeEditor::Impl {
 
       QObject::connect(saveJsonButton, &QPushButton::pressed, &owner, [this]() {
         // Get previous path.
-        const auto defaultDirPath = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DocumentsLocation);
+        const auto defaultDirPath =
+          QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DocumentsLocation);
         const auto defaultPath = defaultDirPath + '/' + DEFAULT_FILE_NAME;
         QSettings settings;
         const auto previousPath = settings.value(PREVIOUS_PATH_SETTINGS_KEY, defaultPath).toString();
 
-        const auto fileName = QFileDialog::getSaveFileName(&owner, "Save JSON theme", previousPath, "JSON Files (*.json)");
+        const auto fileName =
+          QFileDialog::getSaveFileName(&owner, "Save JSON theme", previousPath, "JSON Files (*.json)");
         if (!fileName.isEmpty()) {
           const auto jsonDoc = theme.toJson();
           const auto data = jsonDoc.toJson(QJsonDocument::JsonFormat::Indented).replace("    ", "  ");
@@ -240,7 +246,8 @@ struct ThemeEditor::Impl {
             settings.setValue(PREVIOUS_PATH_SETTINGS_KEY, fileName);
             settings.sync();
           } else {
-            QMessageBox::critical(&owner, "Writing Error", QString("Can't write to file:\n%1").arg(fileName), QMessageBox::StandardButton::Ok);
+            QMessageBox::critical(&owner, "Writing Error", QString("Can't write to file:\n%1").arg(fileName),
+              QMessageBox::StandardButton::Ok);
           }
         }
       });
@@ -456,14 +463,16 @@ struct ThemeEditor::Impl {
   Theme theme;
 };
 
-ThemeEditor::ThemeEditor(QWidget* parent) : QWidget(parent), _impl(std::make_unique<Impl>(*this)) {
+ThemeEditor::ThemeEditor(QWidget* parent)
+  : QWidget(parent)
+  , _impl(std::make_unique<Impl>(*this)) {
   _impl->setupUi();
 }
 
-ThemeEditor::~ThemeEditor() { }
+ThemeEditor::~ThemeEditor() {}
 
 const Theme& ThemeEditor::theme() const {
-    return _impl->theme;
+  return _impl->theme;
 }
 
 void ThemeEditor::setTheme(const Theme& theme) {
