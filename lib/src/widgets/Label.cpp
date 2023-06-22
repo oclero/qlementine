@@ -29,17 +29,19 @@
 namespace oclero::qlementine {
 Label::Label(QWidget* parent)
   : QLabel(parent) {
+  updatePaletteFromTheme();
   qApp->installEventFilter(this);
 }
 
 Label::Label(const QString& text, QWidget* parent)
   : QLabel(text, parent) {
+  updatePaletteFromTheme();
   qApp->installEventFilter(this);
 }
 
-Label::Label(const QString& text, Theme::TextRole role, QWidget* parent) : QLabel(text, parent) {
+Label::Label(const QString& text, TextRole role, QWidget* parent) : QLabel(text, parent), _role(role) {
+  updatePaletteFromTheme();
   qApp->installEventFilter(this);
-  setRole(role);
 }
 
 Label::~Label() {}
@@ -67,11 +69,11 @@ bool Label::event(QEvent* e) {
   return QLabel::event(e);
 }
 
-bool Label::eventFilter(QObject*, QEvent* e) {
+bool Label::eventFilter(QObject* obj, QEvent* e) {
   if (e->type() == QEvent::Type::PaletteChange) {
     updatePaletteFromTheme();
   }
-  return false;
+  return QLabel::eventFilter(obj, e);
 }
 
 void Label::updatePaletteFromTheme() {
