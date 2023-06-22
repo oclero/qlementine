@@ -1152,7 +1152,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto paddingTop = _impl->theme.spacing / 2;
         const auto* tabBar = qobject_cast<const QTabBar*>(w);
         const auto tabIndex = tabBar->tabAt(tabOpt->rect.topLeft());
-        const auto isTabClosable = tabBar->tabButton(tabIndex, QTabBar::RightSide) || tabBar->tabButton(tabIndex, QTabBar::LeftSide);
+        const auto isTabClosable =
+          tabBar->tabButton(tabIndex, QTabBar::RightSide) || tabBar->tabButton(tabIndex, QTabBar::LeftSide);
         const auto isClosable = tabBar->tabsClosable() && isTabClosable;
         const auto isFirst = tabIndex == 0;
         const auto isLast = tabIndex == tabBar->count() - 1;
@@ -2072,6 +2073,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         // Actual content.
         const auto itemMouse = getMouseState(optItem->state);
         const auto& fgColor = listItemForegroundColor(itemMouse, selected, focus, active);
+        constexpr auto paletteColorRole = QPalette::ColorRole::Text;
+        const auto paletteColorGroup = getPaletteColorGroup(optItem->state);
+        const auto& actualFgColor =
+          focus == FocusState::Focused ? fgColor : optItem->palette.color(paletteColorGroup, paletteColorRole);
+
         const auto contentRect = fgRect.adjusted(checkBoxSpace, 0, 0, 0);
         auto availableW = contentRect.width();
         auto availableX = contentRect.x();
@@ -2093,7 +2099,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           if (itemMouse == MouseState::Disabled && !colorize) {
             const auto& bgColor = listItemBackgroundColor(MouseState::Normal, selected, focus, active);
-            const auto premultipiedColor = getColorSourceOver(bgColor, fgColor);
+            const auto premultipiedColor = getColorSourceOver(bgColor, actualFgColor);
             const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
             const auto opacity = selected == SelectionState::Selected ? 0.3 : 0.25;
             const auto backupOpacity = p->opacity();
@@ -2101,8 +2107,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             p->drawPixmap(pixmapRect, tintedPixmap);
             p->setOpacity(backupOpacity);
           } else {
-            const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, fgColor) : pixmap;
-            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, optItem, w);
+            const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, actualFgColor) : pixmap;
+            auto iconRect = subElementRect(SE_ItemViewItemDecoration, optItem, w);
             iconRect.moveLeft(pixmapRect.left());
             p->drawPixmap(iconRect, colorizedPixmap);
           }
@@ -2117,8 +2123,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textFlags =
             Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
-          const QBrush& b = optItem->palette.brush(QPalette::Text);
-          p->setPen(b.color());
+          p->setPen(actualFgColor);
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
       }
