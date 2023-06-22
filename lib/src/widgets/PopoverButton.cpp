@@ -38,12 +38,16 @@ PopoverButton::PopoverButton(const QString& text, const QIcon& icon, QWidget* pa
   : QPushButton(icon, text, parent)
   , _popover(new Popover(this)) {
   _popover->setAnchorWidget(this);
-  QObject::connect(this, &PopoverButton::clicked, this, [this]() { _popover->openPopover(); });
+  QObject::connect(this, &PopoverButton::clicked, this, [this]() {
+    _popover->openPopover();
+  });
   QObject::connect(_popover, &Popover::openedChanged, this, [this]() {
     update();
     emit popoverOpenedChanged(_popover->isOpened());
   });
-  QObject::connect(_popover, &Popover::contentWidgetChanged, this, [this]() { emit popoverContentWidgetChanged(); });
+  QObject::connect(_popover, &Popover::contentWidgetChanged, this, [this]() {
+    emit popoverContentWidgetChanged();
+  });
 }
 
 Popover* PopoverButton::popover() const {

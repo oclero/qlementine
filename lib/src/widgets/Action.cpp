@@ -44,7 +44,8 @@ Action::Action(const QKeySequence& shortcut, Qt::ShortcutContext shortcutContext
   setShortcutContext(shortcutContext);
 }
 
-Action::Action(const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext, QObject* parent)
+Action::Action(
+  const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext, QObject* parent)
   : QAction(text, parent) {
   setShortcut(shortcut);
   setShortcutContext(shortcutContext);
@@ -62,7 +63,8 @@ Action::Action(const QIcon& icon, const QString& text, const QKeySequence& short
   setShortcutContext(Qt::ApplicationShortcut);
 }
 
-Action::Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut, const Qt::ShortcutContext shortcutContext, QObject* parent)
+Action::Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut,
+  const Qt::ShortcutContext shortcutContext, QObject* parent)
   : QAction(icon, text, parent) {
   setShortcut(shortcut);
   setShortcutContext(shortcutContext);

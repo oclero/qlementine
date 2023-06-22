@@ -45,7 +45,8 @@ private:
 
 class CommandLinkButtonPaintEventFilter : public QObject {
 public:
-  CommandLinkButtonPaintEventFilter(QlementineStyle& style, WidgetAnimationManager& animManager, QCommandLinkButton* button);
+  CommandLinkButtonPaintEventFilter(
+    QlementineStyle& style, WidgetAnimationManager& animManager, QCommandLinkButton* button);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 

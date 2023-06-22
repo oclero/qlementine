@@ -92,7 +92,9 @@ void IconWidget::paintEvent(QPaintEvent*) {
   if (pixmap.isNull())
     return;
 
-  const auto& colorizedPixmap = autoColorize ? colorizePixmap(pixmap, palette().color(isEnabled() ? QPalette::Normal : QPalette::Disabled, QPalette::Text)) : pixmap;
+  const auto& colorizedPixmap = autoColorize ? colorizePixmap(pixmap,
+                                  palette().color(isEnabled() ? QPalette::Normal : QPalette::Disabled, QPalette::Text))
+                                             : pixmap;
 
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);

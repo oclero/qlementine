@@ -53,14 +53,16 @@ std::pair<QSize, QSize> getStatusBadgeSizes(StatusBadgeSize statusBadgeSize, con
 }
 
 /// Draws the icons by drawing QPainterPaths directly, instead of using SVG files.
-void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize statusBadgeSize, const QColor& color, qreal lineThickness) {
+void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize statusBadgeSize,
+  const QColor& color, qreal lineThickness) {
   switch (statusBadge) {
     case StatusBadge::Success: {
       if (statusBadgeSize == StatusBadgeSize::Small) {
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(color, lineThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         const auto halfLineThickness = lineThickness * 0.5;
-        const auto ellipseRect = QRectF(rect).marginsRemoved(QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
+        const auto ellipseRect = QRectF(rect).marginsRemoved(
+          QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
         p->drawEllipse(ellipseRect);
 
         const auto w = rect.width();
@@ -83,7 +85,8 @@ void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(color, lineThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         const auto halfLineThickness = lineThickness * 0.5;
-        const auto ellipseRect = QRectF(rect).marginsRemoved(QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
+        const auto ellipseRect = QRectF(rect).marginsRemoved(
+          QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
         p->drawEllipse(ellipseRect);
 
         const auto w = rect.width();
@@ -109,7 +112,8 @@ void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(color, lineThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         const auto halfLineThickness = lineThickness * 0.5;
-        const auto ellipseRect = QRectF(rect).marginsRemoved(QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
+        const auto ellipseRect = QRectF(rect).marginsRemoved(
+          QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
         p->drawEllipse(ellipseRect);
 
         const auto w = rect.width();
@@ -134,7 +138,8 @@ void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(color, lineThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         const auto halfLineThickness = lineThickness * 0.5;
-        const auto ellipseRect = QRectF(rect).marginsRemoved(QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
+        const auto ellipseRect = QRectF(rect).marginsRemoved(
+          QMarginsF{ halfLineThickness, halfLineThickness, halfLineThickness, halfLineThickness });
         p->drawEllipse(ellipseRect);
 
         const auto w = rect.width();
@@ -180,7 +185,10 @@ void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge
         const auto triangleMargin = (1. / intendedSize) * w;
         const auto triangleDeltaY = (1.5 / intendedSize) * h;
         const auto triangleRadius = (1. / intendedSize) * h;
-        const auto triangleRect = QRectF(rect).marginsAdded(QMarginsF(triangleMargin, triangleMargin, triangleMargin, triangleMargin)).translated(QPointF(0., triangleDeltaY));
+        const auto triangleRect =
+          QRectF(rect)
+            .marginsAdded(QMarginsF(triangleMargin, triangleMargin, triangleMargin, triangleMargin))
+            .translated(QPointF(0., triangleDeltaY));
         qlementine::drawRoundedTriangle(p, triangleRect, triangleRadius);
 
         {
@@ -207,7 +215,10 @@ void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge
         const auto triangleMargin = (1. / intendedSize) * w;
         const auto triangleDeltaY = (2.5 / intendedSize) * h;
         const auto triangleRadius = (2. / intendedSize) * h;
-        const auto triangleRect = QRectF(rect).marginsAdded(QMarginsF(triangleMargin, triangleMargin, triangleMargin, triangleMargin)).translated(QPointF(0., triangleDeltaY));
+        const auto triangleRect =
+          QRectF(rect)
+            .marginsAdded(QMarginsF(triangleMargin, triangleMargin, triangleMargin, triangleMargin))
+            .translated(QPointF(0., triangleDeltaY));
         qlementine::drawRoundedTriangle(p, triangleRect, triangleRadius);
 
         {
@@ -314,7 +325,8 @@ void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge
   }
 }
 
-void drawStatusBadge(QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize size, const Theme& theme) {
+void drawStatusBadge(
+  QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize size, const Theme& theme) {
   const auto [bgColor, fgColor] = getStatusBadgeColors(statusBadge, theme);
   const auto [badgeSize, iconSize] = getStatusBadgeSizes(size, theme);
   const auto radius = theme.borderRadius * (2. / 3.);

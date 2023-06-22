@@ -10,8 +10,10 @@ namespace oclero::qlementine {
 class Popover : public QWidget {
   Q_OBJECT
 
-  Q_PROPERTY(oclero::qlementine::Popover::Position preferredPosition READ preferredPosition WRITE setPreferredPosition NOTIFY preferredPositionChanged)
-  Q_PROPERTY(oclero::qlementine::Popover::Alignment preferredAlignment READ preferredAlignment WRITE setPreferredAlignment NOTIFY preferredAlignmentChanged)
+  Q_PROPERTY(oclero::qlementine::Popover::Position preferredPosition READ preferredPosition WRITE setPreferredPosition
+      NOTIFY preferredPositionChanged)
+  Q_PROPERTY(oclero::qlementine::Popover::Alignment preferredAlignment READ preferredAlignment WRITE
+      setPreferredAlignment NOTIFY preferredAlignmentChanged)
   Q_PROPERTY(bool isOpened READ isOpened WRITE setOpened NOTIFY openedChanged)
   Q_PROPERTY(QMargins padding READ padding WRITE setPadding NOTIFY paddingChanged)
   Q_PROPERTY(int horizontalSpacing READ horizontalSpacing WRITE setHorizontalSpacing NOTIFY horizontalSpacingChanged)

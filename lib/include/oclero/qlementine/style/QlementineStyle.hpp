@@ -165,12 +165,18 @@ public:
   virtual QColor const& spinBoxButtonForegroundColor(MouseState const mouse) const;
 
   virtual QColor const& listItemRowBackgroundColor(MouseState const mouse, AlternateState const alternate) const;
-  virtual QColor const& listItemBackgroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
-  virtual QColor const& listItemForegroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
-  virtual QColor const& listItemCaptionForegroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
-  virtual QColor const& listItemCheckButtonBackgroundColor(MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const;
-  virtual QColor const& listItemCheckButtonForegroundColor(MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const;
-  virtual QColor const& cellItemFocusBorderColor(FocusState const focus, SelectionState const selected, ActiveState const active) const;
+  virtual QColor const& listItemBackgroundColor(
+    MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
+  virtual QColor const& listItemForegroundColor(
+    MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
+  virtual QColor const& listItemCaptionForegroundColor(
+    MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
+  virtual QColor const& listItemCheckButtonBackgroundColor(
+    MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const;
+  virtual QColor const& listItemCheckButtonForegroundColor(
+    MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const;
+  virtual QColor const& cellItemFocusBorderColor(
+    FocusState const focus, SelectionState const selected, ActiveState const active) const;
 
   virtual QColor const& menuBackgroundColor() const;
   virtual QColor const& menuBorderColor() const;

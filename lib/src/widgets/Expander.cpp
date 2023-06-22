@@ -45,7 +45,8 @@ Expander::Expander(QWidget* parent)
 QSize Expander::sizeHint() const {
   const auto contentSizeHint = _content ? _content->sizeHint() : QSize{ 0, 0 };
   const auto w = contentSizeHint.width();
-  const auto h = _animation.state() == QVariantAnimation::Running ? _animation.currentValue().toInt() : (_expanded ? contentSizeHint.height() : 0);
+  const auto h = _animation.state() == QVariantAnimation::Running ? _animation.currentValue().toInt()
+                                                                  : (_expanded ? contentSizeHint.height() : 0);
   return { w, h };
 }
 

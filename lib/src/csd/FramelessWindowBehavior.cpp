@@ -273,7 +273,8 @@ bool FramelessWindowBehavior::nativeEventFilter(const QByteArray& eventType, voi
 
       const auto hWnd = reinterpret_cast<HWND>(_parentWindowHandle->winId());
       const auto rect = reinterpret_cast<LPRECT>(lParam);
-      ::SetWindowPos(hWnd, NULL, rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+      ::SetWindowPos(hWnd, NULL, rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top,
+        SWP_NOZORDER | SWP_NOACTIVATE);
     } break;
     case WM_NCRBUTTONUP: {
       const auto mousePos = QCursor::pos();
@@ -397,12 +398,15 @@ int FramelessWindowBehavior::hitTest(const QPoint& mousePos) const {
   if (bottom <= 0)
     bottom = GetSystemMetrics(SM_CYFRAME);
 
-  const auto result = (Top * (y < (wfg.top() + top))) | (Left * (x < (wfg.left() + left))) | (Right * (x > (wfg.right() - right))) | (Bottom * (y > (wfg.bottom() - bottom)));
+  const auto result = (Top * (y < (wfg.top() + top))) | (Left * (x < (wfg.left() + left)))
+                      | (Right * (x > (wfg.right() - right))) | (Bottom * (y > (wfg.bottom() - bottom)));
 
   const auto fixedDialog = _parentWindowWidget->windowFlags().testFlag(Qt::WindowType::MSWindowsFixedSizeDialogHint);
   const auto sizePolicy = _parentWindowWidget->sizePolicy();
-  const auto wResizable = !fixedDialog && _parentWindowHandle->minimumWidth() < _parentWindowHandle->maximumWidth() && sizePolicy.horizontalPolicy() != QSizePolicy::Fixed;
-  const auto hResizable = !fixedDialog && _parentWindowHandle->minimumHeight() < _parentWindowHandle->maximumHeight() && sizePolicy.verticalPolicy() != QSizePolicy::Fixed;
+  const auto wResizable = !fixedDialog && _parentWindowHandle->minimumWidth() < _parentWindowHandle->maximumWidth()
+                          && sizePolicy.horizontalPolicy() != QSizePolicy::Fixed;
+  const auto hResizable = !fixedDialog && _parentWindowHandle->minimumHeight() < _parentWindowHandle->maximumHeight()
+                          && sizePolicy.verticalPolicy() != QSizePolicy::Fixed;
 
   switch (result) {
     case Top | Left:
@@ -490,7 +494,8 @@ QRect FramelessWindowBehavior::availableGeometry() const {
     return _parentWindowHandle->screen()->availableGeometry();
   }
 
-  return QRect(monitorInfo.rcWork.left, monitorInfo.rcWork.top, monitorInfo.rcWork.right - monitorInfo.rcWork.left, monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
+  return QRect(monitorInfo.rcWork.left, monitorInfo.rcWork.top, monitorInfo.rcWork.right - monitorInfo.rcWork.left,
+    monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
 #endif // WIN32
 
   return QRect();

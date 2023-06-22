@@ -39,4 +39,18 @@ qreal getDpi(const QWidget* widget);
 QWindow* getWindow(const QWidget* widget);
 
 void clearLayout(QLayout* layout);
+
+template<class T>
+T* findFirstParentOfType(QWidget* child) {
+  auto* parent = child;
+
+  while (parent != nullptr) {
+    parent = parent->parentWidget();
+    if (auto* typedPArent = qobject_cast<T*>(parent)) {
+      return typedPArent;
+    }
+  }
+
+  return nullptr;
+}
 } // namespace oclero::qlementine

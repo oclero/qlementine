@@ -218,7 +218,8 @@ void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int cha
 }
 
 template<typename T>
-void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int channelCount, const float sigma, const unsigned int passCount) {
+void fast_gaussian_blur(
+  T*& in, T*& out, const int w, const int h, const int channelCount, const float sigma, const unsigned int passCount) {
   switch (passCount) {
     case 1:
       fast_gaussian_blur<T, 1>(in, out, w, h, channelCount, sigma);

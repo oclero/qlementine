@@ -93,7 +93,8 @@ void NavigationBar::drawCurrentItemIndicator(QPainter& p) const {
   const auto currentItemRect = getAnimatedCurrentItemRect();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
   const auto thickness = qlementineStyle ? qlementineStyle->theme().borderWidth * 3 : 3;
-  const auto rect = QRect{ currentItemRect.x(), currentItemRect.y() + currentItemRect.height() - thickness, currentItemRect.width(), thickness };
+  const auto rect = QRect{ currentItemRect.x(), currentItemRect.y() + currentItemRect.height() - thickness,
+    currentItemRect.width(), thickness };
   const auto& color = getCurrentItemIndicatorColor();
   p.setPen(Qt::NoPen);
   p.fillRect(rect, color);
