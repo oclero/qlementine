@@ -29,6 +29,8 @@ namespace oclero::qlementine {
 constexpr auto HEX_BASE = 16;
 
 double getContrastRatio(const QColor& c1, const QColor& c2) {
+  Q_UNUSED(c1);
+  Q_UNUSED(c2);
   // First, pre-compose c1 and c2 over plain white.
 
   /*
