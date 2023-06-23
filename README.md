@@ -5,9 +5,9 @@
 # Qlementine
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://mit-license.org/)
-[![CMake version](https://img.shields.io/badge/CMake-3.19+-064F8C?logo=cmake)](https://www.qt.io)
+[![CMake version](https://img.shields.io/badge/CMake-3.17.5+-064F8C?logo=cmake)](https://www.qt.io)
 [![C++ version](https://img.shields.io/badge/C++-17-00599C?logo=++)](https://www.qt.io)
-[![Qt version](https://img.shields.io/badge/Qt-5.15.2+-41CD52?logo=qt)](https://www.qt.io)
+[![Qt version](https://img.shields.io/badge/Qt-5.15.3+-41CD52?logo=qt)](https://www.qt.io)
 
 Modern QStyle for desktop Qt5 applications.
 
@@ -25,9 +25,9 @@ Modern QStyle for desktop Qt5 applications.
 
 ## Requirements
 
-- Platform: Windows, MacOS, Linux.
-- [CMake 3.19+](https://cmake.org/download/)
-- [Qt 5.15+](https://www.qt.io/download-qt-installer)
+- Windows, MacOS or Linux.
+- [CMake 3.17.5+](https://cmake.org/download/)
+- [Qt 5.15.3+](https://www.qt.io/download-qt-installer)
 
 ## Features
 

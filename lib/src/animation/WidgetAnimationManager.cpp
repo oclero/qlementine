@@ -56,7 +56,9 @@ void WidgetAnimationManager::addWidget(const QWidget* widget, WidgetAnimator* wi
   if (!findWidget(widget)) {
     _map.insert_or_assign(widget, widgetAnimator);
 
-    QObject::connect(widget, &QObject::destroyed, widget, [this, widget]() { removeWidget(widget); });
+    QObject::connect(widget, &QObject::destroyed, widget, [this, widget]() {
+      removeWidget(widget);
+    });
   }
 }
 
@@ -80,7 +82,9 @@ WidgetAnimator* WidgetAnimationManager::findWidget(const QWidget* widget) const 
 void WidgetAnimationManager::forEarch(const std::function<void(const QWidget* w, WidgetAnimator* a)>& cb) {
   if (!cb)
     return;
-  std::for_each(_map.begin(), _map.end(), [&cb](const auto& kvp) { cb(kvp.first, kvp.second); });
+  std::for_each(_map.begin(), _map.end(), [&cb](const auto& kvp) {
+    cb(kvp.first, kvp.second);
+  });
 }
 
 void WidgetAnimationManager::stopAll() {

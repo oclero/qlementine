@@ -19,19 +19,35 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#include <QString>
-#include <QFontMetrics>
+#pragma once
+
+#include <QWidget>
+#include <QColor>
 
 namespace oclero::qlementine {
-double pointSizeToPixelSize(double pointSize, double dpi);
+class ColorButton;
+class LineEdit;
 
-double pixelSizeToPointSize(double pixelSize, double dpi);
+class ColorEditor : public QWidget {
+  Q_OBJECT
 
-/**
- * @brief An utility to centralize the calls to QFontMetrics.
- * @param fm The current QFontMetrics to use.
- * @param text The text to compute the width for.
- * @return The width of the text in logical pixels.
- */
-int textWidth(const QFontMetrics& fm, const QString& text);
+  Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+
+public:
+  ColorEditor(QWidget* parent = nullptr);
+  ColorEditor(const QColor& color, QWidget* parent = nullptr);
+
+  const QColor& color() const;
+  void setColor(const QColor& color);
+
+signals:
+  void colorChanged();
+
+private:
+  void setup(const QColor& initialColor);
+  void syncLineEditFromButton();
+
+  ColorButton* _colorButton;
+  LineEdit* _lineEdit;
+};
 } // namespace oclero::qlementine

@@ -4,6 +4,7 @@
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
+#include <oclero/qlementine/utils/ColorUtils.hpp>
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
@@ -15,6 +16,8 @@
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
+#include <oclero/qlementine/widgets/ColorEditor.hpp>
+#include <oclero/qlementine/tools/ThemeEditor.hpp>
 
 #include <QFileSystemWatcher>
 #include <QContextMenuEvent>
@@ -842,7 +845,7 @@ struct SandboxWindow::Impl {
 
   void setupUI_tabWidget() {
     const QStringList icons = { ":/scene_object.svg", ":/scene_light.svg", ":/scene_material.svg" };
-    auto* tabWidget =  new QTabWidget(windowContent);
+    auto* tabWidget = new QTabWidget(windowContent);
 
     tabWidget->setDocumentMode(false);
     tabWidget->setTabsClosable(true);
@@ -863,7 +866,7 @@ struct SandboxWindow::Impl {
       for (auto j = 0; j < (i + 1); ++j) {
         tabContentLayout->addWidget(new QPushButton("Button", tabContent));
       }
-      tabContentLayout->addSpacerItem(new QSpacerItem(0,0, QSizePolicy::Fixed, QSizePolicy::Expanding));
+      tabContentLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
       const auto label = QString("Tab %1 with very long text that is very long").arg(i + 1);
       const auto icon = QIcon(icons.at(i % icons.size()));
@@ -1373,6 +1376,42 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       });
   }
 
+  void setup_colorButton() {
+    auto* colorEditor = new ColorEditor(Qt::red, &owner);
+    windowContentLayout->addWidget(colorEditor);
+  }
+
+  void setup_themeEditor() {
+    auto* themeEditorDialog = new QWidget(&owner);
+    themeEditorDialog->setWindowFlag(Qt::WindowType::Tool);
+    auto* themeEditorDialogLayout = new QVBoxLayout(themeEditorDialog);
+    themeEditorDialogLayout->setContentsMargins(0, 0, 0, 0);
+    auto* themeEditorScrollView = new QScrollArea(themeEditorDialog);
+    themeEditorDialogLayout->addWidget(themeEditorScrollView, 1);
+
+    auto* themeEditor = new ThemeEditor(themeEditorScrollView);
+    themeEditor->setTheme(qobject_cast<const QlementineStyle*>(owner.style())->theme());
+    themeEditorScrollView->setWidget(themeEditor);
+
+    auto* qlementineStyle = qobject_cast<QlementineStyle*>(owner.style());
+    QObject::connect(themeEditor, &ThemeEditor::themeChanged, &owner, [qlementineStyle](const Theme& theme) {
+      qlementineStyle->setTheme(theme);
+    });
+    QObject::connect(qlementineStyle, &QlementineStyle::themeChanged, &owner, [qlementineStyle, themeEditor]() {
+      themeEditor->setTheme(qlementineStyle->theme());
+    });
+
+    themeEditorDialog->installEventFilter(&owner);
+    auto* closeShortcut = new QShortcut(Qt::Key_Escape, themeEditorDialog);
+    QObject::connect(closeShortcut, &QShortcut::activated, &owner, [themeEditorDialog]() {
+      themeEditorDialog->close();
+    });
+
+    themeEditorDialog->resize(themeEditorDialog->sizeHint().width(), 600);
+    themeEditorDialog->move(themeEditorDialog->x() + 300, themeEditorDialog->y() + 300);
+    themeEditorDialog->show();
+  }
+
   SandboxWindow& owner;
   QString lastJsonThemePath;
   QPointer<QlementineStyle> qlementineStyle;
@@ -1394,7 +1433,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   _impl->beginSetupUi();
   {
     // Uncomment the line to show the corresponding widget.
-    //  _impl->setupUI_label();
+    _impl->setupUI_label();
     //  _impl->setupUI_button();
     //  _impl->setupUI_buttonVariants();
     //  _impl->setupUI_checkbox();
@@ -1427,6 +1466,8 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //  _impl->setup_badge();
     //  _impl->setup_specialProgressBar();
     //  _impl->setup_lineEditStatus();
+    //  _impl->setup_colorButton();
+    //  _impl->setup_themeEditor();
   }
   _impl->endSetupUi();
 }
@@ -1436,5 +1477,12 @@ SandboxWindow::~SandboxWindow() = default;
 void SandboxWindow::setCustomStyle(QlementineStyle* style) {
   _impl->qlementineStyle = style;
   _impl->lastJsonThemePath = QStringLiteral(":/light.json");
+}
+
+bool SandboxWindow::eventFilter(QObject* watched, QEvent* event) {
+  if (event->type() == QEvent::Type::Close) {
+    qApp->closeAllWindows();
+  }
+  return QMainWindow::eventFilter(watched, event);
 }
 } // namespace oclero::qlementine::sandbox

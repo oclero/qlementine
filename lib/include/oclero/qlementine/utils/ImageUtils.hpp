@@ -97,7 +97,8 @@ QIcon makeIconFromSvg(const QString& svgPath, const QSize& size);
 QPixmap makePixmapFromSvg(const QString& svgPath, const QSize& size);
 
 /// Makes a QPixmap from the file located at the path in parameter at the desired size.
-QPixmap makePixmapFromSvg(const QString& backgroundSvgPath, const QColor& backgroundSvgColor, const QString& foregroundSvgPath, const QColor& foregroundSvgColor, const QSize& size);
+QPixmap makePixmapFromSvg(const QString& backgroundSvgPath, const QColor& backgroundSvgColor,
+  const QString& foregroundSvgPath, const QColor& foregroundSvgColor, const QSize& size);
 
 /// Makes a QPixmap with rounded corners.
 QPixmap makeRoundedPixmap(QPixmap const& input, double radius);
@@ -120,7 +121,7 @@ QImage getExtendedImage(QPixmap const& input, int padding);
 /// Gets a version of the image with padding around.
 QImage getExtendedImage(QImage const& input, int padding);
 
-  /// Gets a blurred version of the input pixmap
+/// Gets a blurred version of the input pixmap
 QPixmap getBlurredPixmap(QPixmap const& input, double blurRadius, bool const extend);
 
 /// Gets a drop shadow for the input pixmap (i.e. a blurred colorized version).

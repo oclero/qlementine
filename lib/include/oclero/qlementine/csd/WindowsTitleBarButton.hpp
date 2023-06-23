@@ -35,8 +35,10 @@ class WindowsTitleBarButton : public QAbstractButton {
   Q_OBJECT
 
   Q_PROPERTY(WindowsTitleBarButton::ButtonType buttonType READ buttonType WRITE setButtonType NOTIFY buttonTypeChanged)
-  Q_PROPERTY(oclero::qlementine::SystemTheme systemTheme READ systemTheme WRITE setSystemTheme NOTIFY systemThemeChanged)
-  Q_PROPERTY(oclero::qlementine::SystemWindowType systemWindowType READ systemWindowType WRITE setSystemWindowType NOTIFY systemWindowTypeChanged)
+  Q_PROPERTY(
+    oclero::qlementine::SystemTheme systemTheme READ systemTheme WRITE setSystemTheme NOTIFY systemThemeChanged)
+  Q_PROPERTY(oclero::qlementine::SystemWindowType systemWindowType READ systemWindowType WRITE setSystemWindowType
+      NOTIFY systemWindowTypeChanged)
 
 public:
   /**

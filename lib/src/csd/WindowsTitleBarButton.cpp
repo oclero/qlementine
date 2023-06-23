@@ -86,7 +86,8 @@ void WindowsTitleBarButton::setSystemWindowType(const SystemWindowType type) {
 }
 
 QSize WindowsTitleBarButton::sizeHint() const {
-  return _windowType == SystemWindowType::Default ? QSize(systemButtonWidth, systemButtonHeight) : QSize(systemButtonWidthSmall, systemButtonHeight);
+  return _windowType == SystemWindowType::Default ? QSize(systemButtonWidth, systemButtonHeight)
+                                                  : QSize(systemButtonWidthSmall, systemButtonHeight);
 }
 
 const QPixmap& WindowsTitleBarButton::getIcon() const {
@@ -163,7 +164,8 @@ WindowsTitleBarButton::State WindowsTitleBarButton::getState(const QStyleOptionB
   State state;
   if (!option.state.testFlag(QStyle::StateFlag::State_Enabled)) {
     state = State::Disabled;
-  } else if (option.state.testFlag(QStyle::StateFlag::State_Sunken) && option.state.testFlag(QStyle::StateFlag::State_MouseOver)) {
+  } else if (option.state.testFlag(QStyle::StateFlag::State_Sunken)
+             && option.state.testFlag(QStyle::StateFlag::State_MouseOver)) {
     state = State::Pressed;
   } else if (option.state.testFlag(QStyle::StateFlag::State_MouseOver)) {
     state = State::Hovered;
@@ -235,8 +237,10 @@ WindowsTitleBarButton::Theme WindowsTitleBarButton::getTheme(const ButtonType ty
   Theme t;
   switch (type) {
     case ButtonType::Minimize:
-      t.iconNormal = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/minimize.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/minimize.svg"));
-      t.iconHover = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/minimize.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/minimize.svg"));
+      t.iconNormal = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/minimize.svg"))
+                           : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/minimize.svg"));
+      t.iconHover = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/minimize.svg"))
+                          : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/minimize.svg"));
       t.backgroundColorNormal = light ? QColor{ 0, 0, 0, 0 } : QColor{ 255, 255, 255, 0 };
       t.backgroundColorHover = light ? QColor{ 0, 0, 0, 24 } : QColor{ 255, 255, 255, 24 };
       t.backgroundColorPressed = light ? QColor{ 0, 0, 0, 48 } : QColor{ 255, 255, 255, 48 };
@@ -244,12 +248,16 @@ WindowsTitleBarButton::Theme WindowsTitleBarButton::getTheme(const ButtonType ty
       t.backgroundColorDeactivated = light ? QColor{ 0, 0, 0, 0 } : QColor{ 255, 255, 255, 0 };
       break;
     case ButtonType::Maximize:
-      t.iconNormal = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize.svg"));
-      t.iconHover = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize.svg"));
+      t.iconNormal = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize.svg"))
+                           : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize.svg"));
+      t.iconHover = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize.svg"))
+                          : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize.svg"));
       t.alternativeIconNormal =
-        light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize-alternative.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize-alternative.svg"));
+        light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize-alternative.svg"))
+              : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize-alternative.svg"));
       t.alternativeIconHover =
-        light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize-alternative.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize-alternative.svg"));
+        light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/maximize-alternative.svg"))
+              : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/maximize-alternative.svg"));
       t.backgroundColorNormal = light ? QColor{ 0, 0, 0, 0 } : QColor{ 255, 255, 255, 0 };
       t.backgroundColorHover = light ? QColor{ 0, 0, 0, 24 } : QColor{ 255, 255, 255, 24 };
       t.backgroundColorPressed = light ? QColor{ 0, 0, 0, 48 } : QColor{ 255, 255, 255, 48 };
@@ -257,8 +265,10 @@ WindowsTitleBarButton::Theme WindowsTitleBarButton::getTheme(const ButtonType ty
       t.backgroundColorDeactivated = light ? QColor{ 0, 0, 0, 0 } : QColor{ 255, 255, 255, 0 };
       break;
     case ButtonType::Close:
-      t.iconNormal = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/close.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/close.svg"));
-      t.iconHover = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/close-hover.svg")) : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/close-hover.svg"));
+      t.iconNormal = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/close.svg"))
+                           : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/close.svg"));
+      t.iconHover = light ? QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/light/close-hover.svg"))
+                          : QPixmap(QStringLiteral(":/qlementine/resources/csd/windows/dark/close-hover.svg"));
       t.backgroundColorNormal = light ? QColor{ 232, 17, 35, 0 } : QColor{ 232, 17, 35, 0 };
       t.backgroundColorHover = light ? QColor{ 232, 17, 35, 255 } : QColor{ 232, 17, 35, 255 };
       t.backgroundColorPressed = light ? QColor{ 232, 17, 35, 152 } : QColor{ 232, 17, 35, 154 };
