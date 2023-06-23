@@ -1151,9 +1151,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       if (const auto* tabOpt = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
         const auto paddingTop = _impl->theme.spacing / 2;
         const auto* tabBar = qobject_cast<const QTabBar*>(w);
-        const auto isClosable = tabBar->tabsClosable();
-        const auto isFirst = tabBar->tabAt(tabOpt->rect.topLeft()) == 0;
-        const auto isLast = tabBar->tabAt(tabOpt->rect.topLeft()) == tabBar->count() - 1;
+        const auto tabIndex = tabBar->tabAt(tabOpt->rect.topLeft());
+        const auto isTabClosable = tabBar->tabButton(tabIndex, QTabBar::RightSide) || tabBar->tabButton(tabIndex, QTabBar::LeftSide);
+        const auto isClosable = tabBar->tabsClosable() && isTabClosable;
+        const auto isFirst = tabIndex == 0;
+        const auto isLast = tabIndex == tabBar->count() - 1;
         const auto paddingLeft = isFirst ? _impl->theme.spacing : 0;
         const auto paddingRight = isLast ? _impl->theme.spacing : 0;
 
@@ -3741,7 +3743,8 @@ QSize QlementineStyle::sizeFromContents(
         const auto r = optFrame->rect;
         const auto w = r.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
-        const auto treeView = qobject_cast<const QAbstractItemView*>(widget->parentWidget()->parentWidget());
+        const auto* parent = widget->parentWidget();
+        const auto* treeView = parent ? qobject_cast<const QAbstractItemView*>(parent->parentWidget()) : nullptr;
         return treeView ? contentSize : QSize{ w, h };
       }
       break;
