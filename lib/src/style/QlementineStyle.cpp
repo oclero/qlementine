@@ -3623,8 +3623,9 @@ QSize QlementineStyle::sizeFromContents(ContentsType ct, const QStyleOption* opt
         const auto r = optFrame->rect;
         const auto w = r.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
-        const auto treeView = qobject_cast<const QAbstractItemView*>(widget->parentWidget()->parentWidget());
-        return treeView? contentSize: QSize{ w, h };
+        const auto* parent = widget->parentWidget();
+        const auto* treeView = parent ? qobject_cast<const QAbstractItemView*>(parent->parentWidget()) : nullptr;
+        return treeView ? contentSize : QSize{ w, h };
       }
       break;
     case CT_SpinBox:
