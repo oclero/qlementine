@@ -148,10 +148,6 @@ void drawCloseIndicator(const QRect& rect, QPainter* p);
 /// Draws a treeview indicator.
 void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
 
-#pragma endregion
-
-#pragma region Pixmap / Icons
-
 /// Gets the QPixmap that corresponds to the state and matches the best the desired iconSize.
 /// NB: the QPixmap may not be equal to iconSize: it can be smaller, but never larger.
 QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked);

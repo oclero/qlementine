@@ -1875,7 +1875,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // Dial: placed around the handle.
           optFocus.rect = subElementRect(SE_SliderFocusRect, &optDial, dial);
           optFocus.radiuses = optFocus.rect.height() / 2.;
-        } else if (const auto* lineEdit = qobject_cast<const QLineEdit*>(monitoredWidget)) {
+        } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
 
           // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
