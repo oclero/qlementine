@@ -617,7 +617,7 @@ struct SandboxWindow::Impl {
         QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
       item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
       item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
-
+      item->setForeground(i % 2 ? Qt::red : Qt::blue);
       listView->addItem(item);
     }
     listView->item(0)->setSelected(true);
