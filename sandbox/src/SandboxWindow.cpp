@@ -624,6 +624,51 @@ struct SandboxWindow::Impl {
     windowContentLayout->addWidget(listView);
   }
 
+  void setupUI_table() {
+    auto* tableView = new QTableWidget(windowContent);
+    tableView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    tableView->setSortingEnabled(true);
+
+    if (auto* qlementineStyle = qobject_cast<QlementineStyle*>(tableView->style())) {
+      qlementineStyle->setAutoIconColorEnabled(false);
+      qlementineStyle->setAutoIconColorEnabled(tableView, false);
+    }
+
+    constexpr auto columnCount = 3;
+    constexpr auto rowCount = 3;
+    tableView->setColumnCount(columnCount);
+    tableView->setRowCount(rowCount);
+    const QIcon icon(":/scene_object.svg");
+    QVector<Qt::Alignment> columnAlignments;
+
+    for (auto col = 0; col < columnCount; ++col) {
+      const auto alignment = col % 3 == 0 ? Qt::AlignLeft : (col % 3 == 1 ? Qt::AlignRight : Qt::AlignCenter);
+      columnAlignments.append(alignment);
+
+      auto* item = new QTableWidgetItem(QString("Column %1").arg(col + 1));
+      item->setIcon(icon);
+      item->setTextAlignment(alignment);
+      tableView->setHorizontalHeaderItem(col, item);
+    }
+
+    for (auto row = 0; row < rowCount; ++row) {
+      auto* item = new QTableWidgetItem(QString("Row %1").arg(row + 1));
+      item->setIcon(icon);
+      tableView->setVerticalHeaderItem(row, item);
+    }
+
+    for (auto row = 0; row < rowCount; ++row) {
+      for (auto col = 0; col < columnCount; ++col) {
+        auto* item = new QTableWidgetItem(QString("Item at %1, %2").arg(row + 1).arg(col + 1));
+        item->setIcon(icon);
+        item->setTextAlignment(columnAlignments.at(col));
+        tableView->setItem(row, col, item);
+      }
+    }
+
+    windowContentLayout->addWidget(tableView);
+  }
+
   void setupUI_treeWidget() {
     auto* treeWidget = new QTreeWidget(windowContent);
     treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
@@ -1447,6 +1492,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //  _impl->setupUI_comboBox();
     //  _impl->setupUI_listView();
     //  _impl->setupUI_treeWidget();
+      _impl->setupUI_table();
     //  _impl->setupUI_menu();
     //  _impl->setupUI_toolButton();
     //  _impl->setupUI_toolButtonsVariants();
