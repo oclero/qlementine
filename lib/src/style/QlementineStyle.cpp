@@ -5238,9 +5238,9 @@ QColor const& QlementineStyle::tabBackgroundColor(MouseState const mouse, Select
 
   switch (mouse) {
     case MouseState::Hovered:
-      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor2;
+      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor5;
     case MouseState::Pressed:
-      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor3;
+      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.neutralColorPressed;
     case MouseState::Normal:
       return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColorTransparent;
     case MouseState::Disabled:
@@ -5257,17 +5257,17 @@ QColor const& QlementineStyle::tabForegroundColor(MouseState const mouse, Select
 
 QColor const& QlementineStyle::tabCloseButtonBackgroundColor(
   MouseState const mouse, SelectionState const selected) const {
-  Q_UNUSED(selected)
+  const auto isSelected = selected == SelectionState::Selected;
   switch (mouse) {
     case MouseState::Pressed:
-      return _impl->theme.adaptativeColor5;
+      return isSelected ? _impl->theme.adaptativeColor5 : _impl->theme.neutralAlternativeColorPressed;
     case MouseState::Hovered:
-      return _impl->theme.adaptativeColor3;
+      return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.neutralAlternativeColorHovered;
     case MouseState::Normal:
     case MouseState::Disabled:
     case MouseState::Transparent:
     default:
-      return _impl->theme.adaptativeColorTransparent;
+      return isSelected ? _impl->theme.adaptativeColorTransparent : _impl->theme.neutralAlternativeColorTransparent;
   }
 }
 
@@ -5580,7 +5580,7 @@ QColor const& QlementineStyle::switchHandleColor(MouseState const mouse, CheckSt
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralAlternativeColor;
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
   }
 }
 
