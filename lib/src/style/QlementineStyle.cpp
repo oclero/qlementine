@@ -1107,7 +1107,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Draw text and icon.
         const auto mouse = getMouseState(optButton->state);
-        const auto& fgColor = labelForegroundColor(mouse);
+        const auto& fgColor = labelForegroundColor(mouse, w);
         const auto spacing = _impl->theme.spacing;
         const auto checked = getCheckState(optButton->state);
         const auto pixmap = getPixmap(optButton->icon, optButton->iconSize, mouse, checked);
@@ -1342,7 +1342,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ProgressBarLabel:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         const auto mouse = getMouseState(optProgressBar->state);
-        const auto& color = labelForegroundColor(mouse);
+        const auto& color = labelForegroundColor(mouse, w);
         const auto textFlags =
           Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
         p->setBrush(Qt::NoBrush);
@@ -1990,7 +1990,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           p->setBrush(Qt::NoBrush);
 
           const auto status = widgetStatus(w);
-          const auto textColor = comboBoxTextColor(mouse, status);
+          const auto textColor = comboBoxTextColor(mouse, status, w);
           p->setPen(textColor);
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
@@ -2907,7 +2907,7 @@ void QlementineStyle::drawComplexControl(
           const auto elidedText =
             fm.elidedText(groupBoxOpt->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
           const auto mouse = getMouseState(groupBoxOpt->state);
-          const auto& textColor = groupBoxTitleColor(mouse);
+          const auto& textColor = groupBoxTitleColor(mouse, w);
           constexpr auto textFlags =
             Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setFont(font);
@@ -4954,7 +4954,8 @@ QColor const& QlementineStyle::comboBoxForegroundColor(MouseState const mouse) c
   return buttonForegroundColor(mouse, ColorRole::Neutral);
 }
 
-QColor const& QlementineStyle::comboBoxTextColor(MouseState const mouse, Status const status) const {
+QColor const& QlementineStyle::comboBoxTextColor(MouseState const mouse, Status const status, const QWidget* w) const {
+  Q_UNUSED(w);
   switch (status) {
     case Status::Error:
       return _impl->theme.statusColorError;
@@ -5421,7 +5422,8 @@ QColor const& QlementineStyle::dialBackgroundColor(MouseState const mouse) const
     return _impl->theme.adaptativeColor5;
 }
 
-QColor const& QlementineStyle::labelForegroundColor(MouseState const mouse) const {
+QColor const& QlementineStyle::labelForegroundColor(MouseState const mouse, const QWidget* w) const {
+  Q_UNUSED(w);
   if (mouse == MouseState::Disabled)
     return _impl->theme.neutralColorDisabled;
   else
@@ -5495,8 +5497,8 @@ int QlementineStyle::getScrollBarThickness(MouseState const mouse) const {
   }
 }
 
-QColor const& QlementineStyle::groupBoxTitleColor(MouseState const mouse) const {
-  return labelForegroundColor(mouse);
+QColor const& QlementineStyle::groupBoxTitleColor(MouseState const mouse, const QWidget* w) const {
+  return labelForegroundColor(mouse, w);
 }
 
 QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {

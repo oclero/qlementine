@@ -237,7 +237,7 @@ const QColor& Switch::getTextColor() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
   const auto& textColor =
     qlementineStyle
-      ? qlementineStyle->labelForegroundColor(getMouseState(isDown(), _isMouseOver, isEnabled()))
+      ? qlementineStyle->labelForegroundColor(getMouseState(isDown(), _isMouseOver, isEnabled()), this)
       : style->standardPalette().color(
         isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::Text);
   return textColor;

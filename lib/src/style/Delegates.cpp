@@ -77,7 +77,11 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto focus = selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
     auto availableW = fgRect.width();
     auto availableX = fgRect.x();
-    const auto& fgColor = _qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().neutralColor;
+    const auto& fgData = idx.data(Qt::ForegroundRole);
+    auto fgColor = _qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().neutralColor;
+    if (fgData.isValid()) {
+        fgColor = fgData.value<QColor>();
+    }
 
     // Icon.
     const auto iconVariant = idx.data(Qt::DecorationRole);
