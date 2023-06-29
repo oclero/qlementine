@@ -4753,7 +4753,7 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   if (auto* comboBox = qobject_cast<QComboBox*>(w)) {
-    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox));
+    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
     comboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
   } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
     tabBar->installEventFilter(new TabBarEventFilter(*this, tabBar));
