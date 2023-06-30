@@ -80,7 +80,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto& fgData = idx.data(Qt::ForegroundRole);
     auto fgColor = _qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().neutralColor;
     if (fgData.isValid()) {
-        fgColor = fgData.value<QColor>();
+      fgColor = fgData.value<QColor>();
     }
 
     // Icon.

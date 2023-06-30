@@ -157,7 +157,8 @@ public:
 
   virtual QColor const& comboBoxBackgroundColor(MouseState const mouse) const;
   virtual QColor const& comboBoxForegroundColor(MouseState const mouse) const;
-  virtual QColor const& comboBoxTextColor(MouseState const mouse, Status const status, const QWidget* w = nullptr) const;
+  virtual QColor const& comboBoxTextColor(
+    MouseState const mouse, Status const status, const QWidget* w = nullptr) const;
 
   virtual QColor const& spinBoxBackgroundColor(MouseState const mouse) const;
   virtual QColor const& spinBoxBorderColor(MouseState const mouse, FocusState const focus) const;
