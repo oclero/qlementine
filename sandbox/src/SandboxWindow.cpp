@@ -1492,7 +1492,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //  _impl->setupUI_comboBox();
     //  _impl->setupUI_listView();
     //  _impl->setupUI_treeWidget();
-      _impl->setupUI_table();
+    //  _impl->setupUI_table();
     //  _impl->setupUI_menu();
     //  _impl->setupUI_toolButton();
     //  _impl->setupUI_toolButtonsVariants();
