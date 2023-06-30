@@ -1637,11 +1637,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto checked = getCheckState(opt->state);
         const auto& bgColor = tableHeaderBgColor(mouse, checked);
         p->fillRect(rect, bgColor);
-        p->setRenderHint(QPainter::Antialiasing, false);
 
         // Lines.
         const auto& lineColor = tableLineColor();
         const auto lineW = _impl->theme.borderWidth;
+        p->setRenderHint(QPainter::Antialiasing, false);
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(lineColor, lineW));
 
@@ -1681,66 +1681,82 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_HeaderLabel:
       if (const auto* optHeader = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
-        QRect rect = optHeader->rect;
+        // We don't care about iconAlignment to make things simpler.
+        // Label = { icon + text }
+        // We try to respect the label alignment as much as possible, given the available width.
+        const auto& rect = optHeader->rect;
+
+        const auto iconExtent = pixelMetric(PM_SmallIconSize, opt);
         const auto spacing = _impl->theme.spacing;
+
+        const auto hasArrow = optHeader->sortIndicator != QStyleOptionHeader::SortIndicator::None;
+        const auto arrowSpace = spacing / 2 + iconExtent;
+        const auto maxLabelX = hasArrow ? rect.x() + rect.width() - arrowSpace : rect.x() + rect.width();
+        const auto headerAlignment = optHeader->textAlignment;
+
         const auto& text = optHeader->text;
-        const auto headerIsSelected = optHeader->state & QStyle::State_On;
+        const auto headerIsSelected = optHeader->state.testFlag(QStyle::State_On);
         auto font = QFont(p->font());
         if (headerIsSelected) {
           font.setBold(true);
           p->setFont(font);
         }
         const auto fm = QFontMetrics(font);
-        auto availableW = rect.width();
-        auto textAvailableW = availableW;
+        const auto availableW = rect.width();
         const auto& icon = optHeader->icon;
         const auto hasIcon = !icon.isNull();
-        auto iconSpaceW = 0;
-        const auto iconExtent = pixelMetric(PM_SmallIconSize, opt);
-        if (hasIcon) {
-          iconSpaceW = iconExtent + spacing;
-          textAvailableW -= iconSpaceW;
-        }
-        const auto tw = fm.size(Qt::TextSingleLine, text).width();
-        const auto textW = std::min(tw, textAvailableW);
-        const auto labelW = textW + iconSpaceW;
-        const auto labelAlignment =
-          optHeader->textAlignment; // We don't care about iconAlignment to make things simpler.
-        auto labelX = 0;
-        if (labelAlignment.testFlag(Qt::AlignmentFlag::AlignLeft)) {
-          labelX = rect.x();
-        } else if (labelAlignment.testFlag(Qt::AlignmentFlag::AlignRight)) {
-          labelX = rect.x() + rect.width() - labelW;
-        } else {
-          labelX = rect.x() + (rect.width() - labelW) / 2;
-        }
+        const auto iconSpace = hasIcon ? spacing + iconExtent : 0;
+        const auto textAvailableW =
+          availableW - iconSpace - (hasArrow && headerAlignment.testFlag(Qt::AlignRight) ? arrowSpace : 0);
+        const auto textTheoricalW = fm.size(Qt::TextSingleLine, text).width();
+        const auto textW = std::min(textTheoricalW, textAvailableW);
+        const auto labelW = textW + (hasIcon ? iconSpace : 0);
         const auto labelY = rect.y();
         const auto labelH = rect.height();
-        const auto textX = labelX + iconSpaceW;
-        const auto textRect = QRect(textX, labelY, textW, labelH);
+        auto labelX = rect.x();
+        if (optHeader->textAlignment.testFlag(Qt::AlignmentFlag::AlignRight)) {
+          labelX =
+            rect.x() + rect.width() - labelW - (hasArrow && headerAlignment.testFlag(Qt::AlignRight) ? arrowSpace : 0);
+        } else if (optHeader->textAlignment.testFlag(Qt::AlignmentFlag::AlignHCenter)) {
+          labelX = rect.x() + (rect.width() - labelW) / 2;
+        }
+        const auto textX = labelX + iconSpace;
+        auto textRect = QRect(textX, labelY, textW, labelH);
 
         const auto mouse = getMouseState(optHeader->state);
         const auto checked = getCheckState(optHeader->state);
         const auto& fgColor = tableHeaderFgColor(mouse, checked);
 
         // Icon.
-        if (hasIcon) {
+        if (hasIcon && availableW > iconExtent) {
           const auto iconX = labelX;
           const auto iconY = labelY + (labelH - iconExtent) / 2;
           const auto iconRect = QRect(iconX, iconY, iconExtent, iconExtent);
-          const auto colorize = QlementineStyle::isAutoIconColorEnabled(w);
-          const auto iconMode = (optHeader->state & State_Enabled || colorize) ? QIcon::Normal : QIcon::Disabled;
-          const auto iconPixmap = icon.pixmap(qlementine::getWindow(w), { iconExtent, iconExtent }, iconMode);
-          const auto& colorizedPixmap = colorize ? qlementine::colorizePixmap(iconPixmap, fgColor) : iconPixmap;
-          p->drawPixmap(iconRect, colorizedPixmap);
+
+          if (!hasArrow || iconRect.right() <= maxLabelX) {
+            const auto colorize =
+              QlementineStyle::isAutoIconColorEnabled() && QlementineStyle::isAutoIconColorEnabled(w);
+            const auto iconMode = (optHeader->state & State_Enabled || colorize) ? QIcon::Normal : QIcon::Disabled;
+            const auto iconPixmap = icon.pixmap(qlementine::getWindow(w), { iconExtent, iconExtent }, iconMode);
+            const auto& colorizedPixmap = colorize ? qlementine::colorizePixmap(iconPixmap, fgColor) : iconPixmap;
+            p->drawPixmap(iconRect, colorizedPixmap);
+          }
         }
 
         // Text.
         if (textW > 0) {
-          const auto elidedText = fm.elidedText(text, Qt::TextElideMode::ElideRight, textW, Qt::TextSingleLine);
+          if (hasArrow && textRect.right() > maxLabelX) {
+            textRect.setRight(std::min(maxLabelX, textRect.right()));
+          }
+          const auto elidedText =
+            fm.elidedText(text, Qt::TextElideMode::ElideRight, textRect.width(), Qt::TextSingleLine);
           p->setBrush(Qt::NoBrush);
           p->setPen(fgColor);
-          constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignHCenter | Qt::TextSingleLine | Qt::TextHideMnemonic;
+          const auto textHAlignment =
+            headerAlignment.testFlag(Qt::AlignmentFlag::AlignRight) && textTheoricalW < textAvailableW ? Qt::AlignRight
+                                                                                                       : Qt::AlignLeft;
+          auto textFlags = Qt::Alignment{ Qt::AlignVCenter | Qt::TextSingleLine | Qt::TextHideMnemonic };
+          textFlags.setFlag(textHAlignment, true);
           p->drawText(textRect, textFlags, elidedText);
         }
       }
@@ -2283,30 +2299,12 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       break;
     case SE_HeaderLabel:
       if (const auto* optHeader = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
-        const auto hasArrow = optHeader->sortIndicator != QStyleOptionHeader::SortIndicator::None;
         const auto& rect = optHeader->rect;
-        const auto paddingV = pixelMetric(PM_HeaderMargin);
-        const auto paddingH = paddingV * 2;
-        const auto spacing = _impl->theme.spacing;
-        const auto iconExtent = pixelMetric(PM_SmallIconSize);
-        const auto arrowW = hasArrow ? iconExtent + spacing : 0;
-        auto labelW = rect.width() - paddingH - arrowW - paddingH;
-        const auto labelH = rect.height() - paddingV * 2;
-
-        auto font = QFont{ w->font() };
-        font.setBold(true);
-        const auto fm = QFontMetrics(font);
-        const auto textW = qlementine::textWidth(fm, optHeader->text);
-
-        const auto arrowX = rect.x() + rect.width() - paddingH - arrowW;
-        const auto intersectsArrow =
-          hasArrow ? rect.x() + paddingH + (rect.width() - textW) / 2 + textW > arrowX : false;
-        const auto shouldCenter = !intersectsArrow;
-        if (shouldCenter) {
-          labelW += arrowW;
-        }
+        const auto paddingH = pixelMetric(PM_HeaderMargin);
+        const auto labelW = rect.width() - paddingH * 2;
+        const auto labelH = rect.height();
         const auto labelX = rect.x() + paddingH;
-        const auto labelY = rect.y() + (rect.height() - labelH) / 2;
+        const auto labelY = rect.y();
         return QRect{ labelX, labelY, labelW, labelH };
       }
       return {};
@@ -2315,8 +2313,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto hasArrow = optHeader->sortIndicator != QStyleOptionHeader::SortIndicator::None;
         if (hasArrow) {
           const auto& rect = optHeader->rect;
-          const auto paddingV = pixelMetric(PM_HeaderMargin);
-          const auto paddingH = paddingV * 2;
+          const auto paddingH = pixelMetric(PM_HeaderMargin);
           const auto iconExtent = pixelMetric(PM_SmallIconSize);
           const auto arrowW = iconExtent;
           const auto arrowH = iconExtent;
@@ -3784,8 +3781,8 @@ QSize QlementineStyle::sizeFromContents(
         const auto iconW = hasIcon ? iconExtent + spacing : 0;
         const auto hasArrow = optHeader->sortIndicator != QStyleOptionHeader::SortIndicator::None;
         const auto arrowW = hasArrow ? iconExtent + spacing : 0;
-        const auto paddingV = pixelMetric(PM_HeaderMargin);
-        const auto paddingH = paddingV * 2;
+        const auto paddingH = pixelMetric(PM_HeaderMargin);
+        const auto paddingV = paddingH / 2;
         const auto textH = fm.height();
         const auto w = lineW + paddingH + iconW + textW + arrowW + paddingH + lineW;
         const auto h = lineW + paddingV + std::max(iconExtent, textH) + paddingV + lineW;
@@ -4093,13 +4090,13 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
     case PM_ScrollView_ScrollBarOverlap:
       return true;
 
-    // TreeView.
+    // TreeView/TableView.
     case PM_TreeViewIndentation:
       return _impl->theme.spacing * 2.5;
     case PM_HeaderMargin:
-      return _impl->theme.spacing / 2;
+      return _impl->theme.spacing; // Header horizontal padding.
     case PM_HeaderMarkSize:
-      break; // ???
+      return _impl->theme.iconSize.height();
     case PM_HeaderGripMargin:
       break; // ???
 
@@ -5586,7 +5583,9 @@ QColor const& QlementineStyle::switchHandleColor(MouseState const mouse, CheckSt
   }
 }
 
-QColor const& QlementineStyle::tableHeaderBgColor(MouseState const mouse, CheckState const) const {
+QColor const& QlementineStyle::tableHeaderBgColor(MouseState const mouse, CheckState const checked) const {
+  Q_UNUSED(checked)
+
   switch (mouse) {
     case MouseState::Pressed:
       return _impl->theme.adaptativeColor5;
