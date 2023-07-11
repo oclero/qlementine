@@ -2092,7 +2092,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         constexpr auto paletteColorRole = QPalette::ColorRole::Text;
         const auto paletteColorGroup = getPaletteColorGroup(optItem->state);
         const auto& actualFgColor =
-          focus == FocusState::Focused ? fgColor : optItem->palette.color(paletteColorGroup, paletteColorRole);
+          selected == SelectionState::Selected ? fgColor : optItem->palette.color(paletteColorGroup, paletteColorRole);
 
         const auto contentRect = fgRect.adjusted(checkBoxSpace, 0, 0, 0);
         auto availableW = contentRect.width();
@@ -2138,6 +2138,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textRect = QRect{ textX, contentRect.y(), availableW, contentRect.height() };
           const auto textFlags =
             Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+          p->setFont(optItem->font);
           p->setBrush(Qt::NoBrush);
           p->setPen(actualFgColor);
           p->drawText(textRect, textFlags, elidedText, nullptr);
