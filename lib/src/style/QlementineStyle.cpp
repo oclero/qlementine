@@ -65,10 +65,10 @@
 #include <QMessageBox>
 #include <QTextEdit>
 #include <QTimer>
+#include <QDateTimeEdit>
 
 #include <cmath>
 #include <mutex>
-#include <cmath>
 
 static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
 
@@ -136,18 +136,21 @@ struct QlementineStyleImpl {
         case QlementineStyle::SP_Check:
           updateCheckIcon(icon, size, owner);
           break;
+        case QlementineStyle::SP_Calendar:
+          updateUncheckableButtonIconPixmap(icon, size, owner, makeCalendarPixmap);
+          break;
         case QlementineStyle::SP_LineEditClearButton:
-          updateClearButtonIcon(icon, size, owner);
+          updateUncheckableButtonIconPixmap(icon, size, owner, makeClearButtonPixmap);
           break;
         case QlementineStyle::SP_ToolBarVerticalExtensionButton:
         case QlementineStyle::SP_ToolBarHorizontalExtensionButton:
-          updateToolBarExtensionIcon(icon, size, owner);
+          updateUncheckableButtonIconPixmap(icon, size, owner, makeToolBarExtensionPixmap);
           break;
         case QlementineStyle::SP_ArrowLeft:
-          updateArrowLeftIcon(icon, size, owner);
+          updateUncheckableButtonIconPixmap(icon, size, owner, makeArrowLeftPixmap);
           break;
         case QlementineStyle::SP_ArrowRight:
-          updateArrowRightIcon(icon, size, owner);
+          updateUncheckableButtonIconPixmap(icon, size, owner, makeArrowRightPixmap);
           break;
         case QlementineStyle::SP_MessageBoxWarning:
           updateMessageBoxWarningIcon(icon, size, theme);
@@ -323,6 +326,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameFocusRect:
       if (const auto* optFocus = qstyleoption_cast<const QStyleOptionFocusRect*>(opt)) {
+        if (optFocus->rect.isEmpty())
+          return;
+
         // Border-radius hack.
         RadiusesF borderRadiuses;
         if (const auto* optRoundedFocus = qstyleoption_cast<const QStyleOptionFocusRoundedRect*>(opt)) {
@@ -398,8 +404,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto& bgColor = buttonBackgroundColor(mouse, role);
         const auto& currentBgColor =
           _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
-        const auto borderRadius = RadiusesF{ _impl->theme.borderRadius };
-        drawRoundedRect(p, optButton->rect, currentBgColor, borderRadius);
+
+        // Try to get information about rounded corners. By default, all corners are rounded.
+        auto radiuses = RadiusesF{ _impl->theme.borderRadius };
+        if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+          if (optRoundedButton->status == QStyleOptionRoundedButton::INITIALIZED) {
+            radiuses = optRoundedButton->radiuses;
+          }
+        }
+
+        drawRoundedRect(p, optButton->rect, currentBgColor, radiuses);
       }
       return;
     case PE_FrameTabBarBase:
@@ -485,18 +499,18 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_PanelLineEdit:
       if (const auto* optPanelLineEdit = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
+        const auto* parentWidget = w->parentWidget();
         auto radiusAllAngles = true;
-        const auto* parentSpinBox = qobject_cast<const QAbstractSpinBox*>(w->parentWidget());
-        if (parentSpinBox && parentSpinBox->buttonSymbols() != QAbstractSpinBox::NoButtons) {
+        if (qobject_cast<const QAbstractSpinBox*>(parentWidget) != nullptr
+            || qobject_cast<const QComboBox*>(parentWidget) != nullptr) {
           radiusAllAngles = false;
         }
-
-        const auto& rect = optPanelLineEdit->rect;
 
         // Fix qlinedit.cpp:118, State_Sunken is always true.
         auto fixedState = optPanelLineEdit->state;
         fixedState.setFlag(QStyle::State_Sunken, false);
 
+        const auto& rect = optPanelLineEdit->rect;
         const auto status = widgetStatus(w);
         const auto mouse = getMouseState(fixedState);
         const auto focus = getFocusState(optPanelLineEdit->state);
@@ -1006,9 +1020,17 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_PushButtonBevel:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Draw background rect.
-        auto optButtonBg = QStyleOptionButton(*optButton);
-        optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
-        drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
+        // Check if we are given information about rounded corners.
+        const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
+        if (optRoundedButton && optRoundedButton->status == QStyleOptionRoundedButton::INITIALIZED) {
+          auto optButtonBg = QStyleOptionRoundedButton(*optRoundedButton);
+          optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
+          drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
+        } else {
+          auto optButtonBg = QStyleOptionButton(*optButton);
+          optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
+          drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
+        }
       }
       return;
     case CE_PushButtonLabel:
@@ -1894,25 +1916,26 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
+          const auto* parentWidget = monitoredWidget ? monitoredWidget->parentWidget() : nullptr;
 
           // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
-          auto isTabCellEditor = false;
-          if (const auto* parent1 = monitoredWidget ? monitoredWidget->parentWidget() : nullptr) {
-            if (qobject_cast<const QAbstractItemView*>(parent1->parentWidget())) {
-              isTabCellEditor = true;
-            }
-          }
+          const auto isTabCellEditor =
+            parentWidget && qobject_cast<const QAbstractItemView*>(parentWidget->parentWidget());
+
+          // Check if the QLineEdit is within a QSpinBox or a QComboBox.
+          const auto* parentSpinbox = qobject_cast<const QAbstractSpinBox*>(parentWidget);
+          const auto* parentCombobox = qobject_cast<const QComboBox*>(parentWidget);
 
           const auto margin = isTabCellEditor ? borderW * 2 : borderW;
           optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
-          // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible.
-          if (const auto* spinbox =
-                qobject_cast<const QAbstractSpinBox*>(monitoredWidget ? monitoredWidget->parentWidget() : nullptr)) {
-            if (spinbox->buttonSymbols() != QAbstractSpinBox::NoButtons) {
-              optFocus.radiuses.topRight = 0.;
-              optFocus.radiuses.bottomRight = 0.;
-            }
+
+          // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible,
+          // or inside an editable QComboBox.
+          if ((parentSpinbox && parentSpinbox->buttonSymbols() != QAbstractSpinBox::NoButtons)
+              || (parentCombobox && parentCombobox->isEditable())) {
+            optFocus.radiuses.topRight = 0.;
+            optFocus.radiuses.bottomRight = 0.;
           }
         } else if (const auto* groupBox = qobject_cast<const QGroupBox*>(monitoredWidget)) {
           if (groupBox->isCheckable()) {
@@ -1931,6 +1954,13 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             optFocus.radiuses = _impl->theme.checkBoxBorderRadius;
           }
         } else if (const auto* comboBox = qobject_cast<const QComboBox*>(monitoredWidget)) {
+          // Check if the QLineEdit is within a QComboBox.
+          if (comboBox->isEditable()) {
+            // Don't draw the focus border because the QComboBox already has it.
+            optFocus.rect = {};
+            return;
+          }
+
           // Prepare monitored widget QStyleOption.
           QStyleOptionComboBox optComboBox;
           optComboBox.QStyleOption::operator=(*opt);
@@ -2151,7 +2181,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         const auto lineW = _impl->theme.borderWidth;
         const auto& lineColor = frameBorderColor();
-        const QPen& pen = QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap);
+        const auto& pen = QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap);
 
         switch (frameShape) {
           case QFrame::HLine:
@@ -2558,8 +2588,48 @@ void QlementineStyle::drawComplexControl(
       return;
     case CC_ComboBox:
       if (const auto* comboBoxOpt = qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
+        // When the combobox is editable, we draw the shape of a QLineEdit.
+        // When it's not, we draw the shape of a QPushButton.
         if (comboBoxOpt->editable) {
-          // TODO
+          // Simulate an arrow button.
+          const auto arrowButtonRect = subControlRect(CC_ComboBox, comboBoxOpt, SC_ComboBoxArrow, w);
+          QStyleOptionRoundedButton buttonOpt;
+          buttonOpt.rect = arrowButtonRect;
+          buttonOpt.fontMetrics = comboBoxOpt->fontMetrics;
+          buttonOpt.palette = comboBoxOpt->palette;
+          buttonOpt.state = comboBoxOpt->state;
+          buttonOpt.state.setFlag(QStyle::StateFlag::State_On, false);
+          buttonOpt.features.setFlag(QStyleOptionButton::Flat, !comboBoxOpt->frame);
+          buttonOpt.radiuses = RadiusesF{ 0., _impl->theme.borderRadius };
+          drawControl(CE_PushButtonBevel, &buttonOpt, p, w);
+
+          // NB: CE_ComboBoxLabel won't be called for an editable QComboBox,
+          // because the foreground content is drawn by the QLineEdit within the QComboBox.
+          // We still want the arrow indicator, so we have to draw it here.
+          // Non-editable ComboBox foreground drawing is done in CE_ComboBoxLabel.
+          {
+            const auto mouse = getMouseState(comboBoxOpt->state);
+            const auto& fgColor = comboBoxForegroundColor(mouse);
+            const auto& currentFgColor =
+              _impl->animations.animateForegroundColor(w, fgColor, _impl->theme.animationDuration);
+
+            const auto indicatorSize = _impl->theme.iconSize;
+            const auto indicatorX = arrowButtonRect.x() + (arrowButtonRect.width() - indicatorSize.width()) / 2;
+            const auto indicatorY = arrowButtonRect.y() + (arrowButtonRect.height() - indicatorSize.height()) / 2;
+            const auto indicatorRect = QRect{ QPoint{ indicatorX, indicatorY }, indicatorSize };
+
+            if (qobject_cast<const QDateTimeEdit*>(w)) {
+              const auto pixelRatio = getPixelRatio(w);
+              const auto& icon = _impl->getStandardIcon(SP_Calendar, indicatorSize * pixelRatio);
+              const auto colorize =
+                QlementineStyle::isAutoIconColorEnabled() && QlementineStyle::isAutoIconColorEnabled(w);
+              drawIcon(indicatorRect, p, icon, mouse, CheckState::Checked, colorize, currentFgColor);
+            } else {
+              p->setBrush(Qt::NoBrush);
+              p->setPen(QPen(currentFgColor, iconPenWidth, Qt::SolidLine, Qt::FlatCap));
+              drawComboBoxIndicator(indicatorRect, p);
+            }
+          }
         } else {
           // ComboBox background and border (same as a Button).
           QStyleOptionButton buttonOpt;
@@ -2570,8 +2640,6 @@ void QlementineStyle::drawComplexControl(
           buttonOpt.state.setFlag(QStyle::StateFlag::State_On, false);
           buttonOpt.features.setFlag(QStyleOptionButton::Flat, !comboBoxOpt->frame);
           drawControl(CE_PushButtonBevel, &buttonOpt, p, w);
-
-          // NB: ComboBox foreground drawing is done elsewhere.
         }
       }
       return;
@@ -2973,10 +3041,8 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(
       return SC_None;
     case CC_ComboBox:
       if (qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
-        const auto popupRect = subControlRect(cc, opt, SC_ComboBoxListBoxPopup, w);
-        if (popupRect.isValid() && popupRect.contains(pos)) {
-          return SC_ComboBoxListBoxPopup;
-        }
+        // NB: Don't hit-test for the popup (SC_ComboBoxListBoxPopup) because
+        // it's useless and would potentially block some clicks.
 
         const auto editFieldRect = subControlRect(cc, opt, SC_ComboBoxEditField, w);
         if (editFieldRect.isValid() && editFieldRect.contains(pos)) {
@@ -3173,18 +3239,35 @@ QRect QlementineStyle::subControlRect(
       if (const auto* comboBoxOpt = qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
         switch (sc) {
           case SC_ComboBoxArrow: {
+            // Not only the rect for the arrow icon, but the rect for the whole clickable zone,
+            // in which the arrow will be drawn at the center.
             const auto indicatorSize = _impl->theme.iconSize;
-            const auto spacing = _impl->theme.spacing;
-            const auto indicatorX =
-              comboBoxOpt->rect.x() + comboBoxOpt->rect.width() - indicatorSize.width() - 2 * spacing;
-            const auto indicatorY = comboBoxOpt->rect.y() + (comboBoxOpt->rect.height() - indicatorSize.height()) / 2;
-            return QRect{ indicatorX, indicatorY, indicatorSize.width(), indicatorSize.height() };
+            const auto hPadding = _impl->theme.spacing;
+            const auto buttonW = indicatorSize.width() + hPadding * 2;
+            const auto buttonH = comboBoxOpt->rect.height();
+            const auto buttonX = comboBoxOpt->rect.x() + comboBoxOpt->rect.width() - buttonW;
+            const auto buttonY = comboBoxOpt->rect.y();
+            return QRect{ buttonX, buttonY, buttonW, buttonH };
           } break;
           case SC_ComboBoxEditField: {
-            const auto indicatorSize = _impl->theme.iconSize;
-            const auto spacing = _impl->theme.spacing;
-            const auto editFieldW = comboBoxOpt->rect.width() - spacing * 2 + indicatorSize.width();
-            return QRect{ comboBoxOpt->rect.x(), comboBoxOpt->rect.y(), editFieldW, comboBoxOpt->rect.height() };
+            if (comboBoxOpt->editable) {
+              const auto indicatorSize = _impl->theme.iconSize;
+              const auto spacing = _impl->theme.spacing;
+              if (qobject_cast<const QComboBox*>(w) != nullptr) {
+                // Strange hack to place the QLineEdit correctly.
+                const auto indicatorButtonW = spacing * 2 + indicatorSize.width();
+                const auto shiftX = static_cast<int>(spacing * 2.5);
+                const auto editFieldW = comboBoxOpt->rect.width() - indicatorButtonW + shiftX;
+                return QRect{ comboBoxOpt->rect.x() - shiftX, comboBoxOpt->rect.y(), editFieldW,
+                  comboBoxOpt->rect.height() };
+              } else {
+                const auto indicatorButtonW = spacing * 2 + indicatorSize.width();
+                const auto editFieldW = comboBoxOpt->rect.width() - indicatorButtonW;
+                return QRect{ comboBoxOpt->rect.x(), comboBoxOpt->rect.y(), editFieldW, comboBoxOpt->rect.height() };
+              }
+            } else {
+              return QRect{};
+            }
           } break;
           case SC_ComboBoxFrame: {
             const auto frameH = _impl->theme.controlHeightLarge;
@@ -4433,7 +4516,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
 }
 
 QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, const QWidget* w) const {
-  switch (sp) {
+  switch (static_cast<std::underlying_type_t<StandardPixmap>>(sp)) {
     case SP_TitleBarMenuButton:
       break;
     case SP_TitleBarMinButton:
@@ -4588,6 +4671,11 @@ QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, 
       return _impl->getStandardIcon(sp, _impl->theme.iconSize);
     case SP_RestoreDefaultsButton:
       break;
+    // Custom ones.
+    case SP_Check:
+      return _impl->getStandardIcon(sp, _impl->theme.iconSize);
+    case SP_Calendar:
+      return _impl->getStandardIcon(sp, _impl->theme.iconSize);
     default:
       break;
   }

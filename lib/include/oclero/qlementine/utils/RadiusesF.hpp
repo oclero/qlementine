@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <QDebug>
+
 namespace oclero::qlementine {
 // Handles radiuses for the 4 angles (topLeft, topRight, bottomRight, bottomLeft).
 struct RadiusesF {
@@ -53,4 +55,9 @@ struct RadiusesF {
   bool operator==(const RadiusesF& rhs) const;
   bool operator!=(const RadiusesF& rhs) const;
 };
+
+QDebug operator<<(QDebug debug, const RadiusesF& radiuses);
+
 } // namespace oclero::qlementine
+
+Q_DECLARE_METATYPE(oclero::qlementine::RadiusesF);

@@ -41,6 +41,7 @@ public:
 
   enum StandardPixmapExt {
     SP_Check = SP_CustomBase + 1,
+    SP_Calendar,
   };
 
   enum ControlElementExt {

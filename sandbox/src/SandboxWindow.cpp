@@ -42,6 +42,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QDial>
+#include <QDateTimeEdit>
 
 namespace oclero::qlementine::sandbox {
 class ContextMenuEventFilter : public QObject {
@@ -592,19 +593,34 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_comboBox() {
-    auto* combobox = new QComboBox(windowContent);
-    combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    combobox->setFocusPolicy(Qt::NoFocus);
-    combobox->setIconSize(QSize(8, 8));
+    // Editable.
+    {
+      auto* combobox = new QComboBox(windowContent);
+      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      // combobox->setIconSize(QSize(8, 8));
+      combobox->setEditable(true);
 
-    for (auto i = 0; i < 4; ++i) {
-      combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
+      for (auto i = 0; i < 4; ++i) {
+        combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
+      }
+      auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
+      auto* item = model->item(2);
+      item->setEnabled(false);
+
+      windowContentLayout->addWidget(combobox);
     }
-    auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
-    auto* item = model->item(2);
-    item->setEnabled(false);
+    // Non-editable
+    {
+      auto* combobox = new QComboBox(windowContent);
+      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      combobox->setFocusPolicy(Qt::StrongFocus);
 
-    windowContentLayout->addWidget(combobox);
+      for (auto i = 0; i < 4; ++i) {
+        combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
+      }
+
+      windowContentLayout->addWidget(combobox);
+    }
   }
 
   void setupUI_listView() {
@@ -1457,6 +1473,17 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     themeEditorDialog->show();
   }
 
+  void setup_dateTimeEdit() {
+
+    auto* dateTimeEdit = new QDateTimeEdit(windowContent);
+    dateTimeEdit->setMinimumDate(QDate::currentDate().addDays(-365));
+    dateTimeEdit->setMaximumDate(QDate::currentDate().addDays(365));
+    dateTimeEdit->setDisplayFormat("yyyy.MM.dd");
+    dateTimeEdit->setCalendarPopup(true);
+
+    windowContentLayout->addWidget(dateTimeEdit);
+  }
+
   SandboxWindow& owner;
   QString lastJsonThemePath;
   QPointer<QlementineStyle> qlementineStyle;
@@ -1478,7 +1505,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   _impl->beginSetupUi();
   {
     // Uncomment the line to show the corresponding widget.
-    _impl->setupUI_label();
+    //  _impl->setupUI_label();
     //  _impl->setupUI_button();
     //  _impl->setupUI_buttonVariants();
     //  _impl->setupUI_checkbox();
@@ -1514,6 +1541,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //  _impl->setup_lineEditStatus();
     //  _impl->setup_colorButton();
     //  _impl->setup_themeEditor();
+    //  _impl->setup_dateTimeEdit();
   }
   _impl->endSetupUi();
 }

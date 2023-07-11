@@ -53,6 +53,27 @@ public:
   QStyleOptionFocusRoundedRect& operator=(const QStyleOptionFocusRoundedRect&) = default;
 };
 
+/// Allows to customize the radius of a button.
+class QStyleOptionRoundedButton : public QStyleOptionButton {
+public:
+  static constexpr auto INITIALIZED = 2;
+  RadiusesF radiuses;
+  int status{ 0 }; // Needed to track that it was created by us.
+
+  QStyleOptionRoundedButton()
+    : QStyleOptionButton() {
+    radiuses = 0.;
+    status = INITIALIZED;
+  }
+
+  QStyleOptionRoundedButton(const QStyleOptionRoundedButton& other)
+    : QStyleOptionButton(other) {
+    *this = other;
+  }
+
+  QStyleOptionRoundedButton& operator=(const QStyleOptionRoundedButton&) = default;
+};
+
 /// Adds the ability to transition from one visual position to another.
 class QStyleOptionSliderF : public QStyleOptionSlider {
 public:
