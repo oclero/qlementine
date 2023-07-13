@@ -1931,8 +1931,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
           const auto isTabCellEditor =
-            parentWidget && qobject_cast<const QAbstractItemView*>(parentWidget->parentWidget())
-            || parentParentWidget && qobject_cast<const QAbstractItemView*>(parentParentWidget->parentWidget());
+            (parentWidget && qobject_cast<const QAbstractItemView*>(parentWidget->parentWidget()))
+            || (parentParentWidget && qobject_cast<const QAbstractItemView*>(parentParentWidget->parentWidget()));
 
           // Check if the QLineEdit is within a QSpinBox or a QComboBox.
           const auto* parentSpinbox = qobject_cast<const QAbstractSpinBox*>(parentWidget);
