@@ -593,26 +593,26 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_comboBox() {
-    // Editable.
-    {
-      auto* combobox = new QComboBox(windowContent);
-      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      // combobox->setIconSize(QSize(8, 8));
-      combobox->setEditable(true);
+   // Editable.
+   {
+     auto* combobox = new QComboBox(windowContent);
+     combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+     // combobox->setIconSize(QSize(8, 8));
+     combobox->setEditable(true);
 
-      for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
-      }
-      auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
-      auto* item = model->item(2);
-      item->setEnabled(false);
+     for (auto i = 0; i < 4; ++i) {
+       combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
+     }
+     auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
+     auto* item = model->item(2);
+     item->setEnabled(false);
 
-      windowContentLayout->addWidget(combobox);
-    }
+     windowContentLayout->addWidget(combobox);
+   }
     // Non-editable
     {
       auto* combobox = new QComboBox(windowContent);
-      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      combobox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       combobox->setFocusPolicy(Qt::StrongFocus);
 
       for (auto i = 0; i < 4; ++i) {
@@ -627,6 +627,7 @@ struct SandboxWindow::Impl {
     auto* listView = new QListWidget(windowContent);
     listView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
     //listView->setAlternatingRowColors(true);
+    listView->setIconSize(QSize(32, 32));
 
     for (auto i = 0; i < 6; ++i) {
       auto* item = new QListWidgetItem(
@@ -655,15 +656,17 @@ struct SandboxWindow::Impl {
     tableView->setColumnCount(columnCount);
     tableView->setRowCount(rowCount);
     const QIcon icon(":/scene_object.svg");
-    QVector<Qt::Alignment> columnAlignments;
 
+    QVector<Qt::Alignment> columnAlignments;
     for (auto col = 0; col < columnCount; ++col) {
       const auto alignment = col % 3 == 0 ? Qt::AlignLeft : (col % 3 == 1 ? Qt::AlignRight : Qt::AlignCenter);
       columnAlignments.append(alignment);
+    }
 
+    for (auto col = 0; col < columnCount; ++col) {
       auto* item = new QTableWidgetItem(QString("Column %1").arg(col + 1));
       item->setIcon(icon);
-      item->setTextAlignment(alignment);
+      item->setTextAlignment(columnAlignments.at(col));
       tableView->setHorizontalHeaderItem(col, item);
     }
 
@@ -678,6 +681,11 @@ struct SandboxWindow::Impl {
         auto* item = new QTableWidgetItem(QString("Item at %1, %2").arg(row + 1).arg(col + 1));
         item->setIcon(icon);
         item->setTextAlignment(columnAlignments.at(col));
+        item->setFlags(
+              Qt::ItemFlag::ItemIsEditable |
+              Qt::ItemFlag::ItemIsSelectable |
+              Qt::ItemFlag::ItemIsEnabled);
+        item->setData(Qt::DisplayRole, QVariant::fromValue(true));
         tableView->setItem(row, col, item);
       }
     }
