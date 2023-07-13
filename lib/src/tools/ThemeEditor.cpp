@@ -35,7 +35,7 @@
 
 #define ADD_METADATA_TEXT_EDITOR(NAME, DESCRIPTION) \
   { \
-    const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, theme.meta.NAME, [this](const QString& s) { \
+    const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, [this](const QString& s) { \
       theme.meta.NAME = s; \
       emit owner.themeChanged(theme); \
     }); \
@@ -81,7 +81,7 @@ std::pair<QWidget*, ColorEditor*> makeColorEditorAndLabel(const QString& label, 
 }
 
 std::pair<QWidget*, LineEdit*> makeTextEditorAndLabel(const QString& label, const QString& description, QWidget* parent,
-  const QString& initialValue, const std::function<void(const QString&)>& onChanged) {
+  const std::function<void(const QString&)>& onChanged) {
   auto* lineEdit = new LineEdit(parent);
   lineEdit->setPlaceholderText(label);
   QObject::connect(lineEdit, &QLineEdit::editingFinished, parent, [lineEdit, onChanged] {

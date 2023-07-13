@@ -33,6 +33,11 @@
 #include <QStyle>
 
 namespace oclero::qlementine {
+/// Gets the device pixel ratio for the QWidget.
+double getPixelRatio(QWidget const* w);
+
+/// Parses the text to detect the MenuItem's label and shortcut, usually separated by a tab.
+std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text);
 
 /// Draws an antialiased pixel-perfect border for the ellipsis.
 void drawEllipseBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth);
@@ -91,18 +96,13 @@ void drawColorMarkBorder(QPainter* p, QRect const& rect, const QColor& borderCol
 /// Draws a semi-transparent red rectangle.
 void drawDebugRect(const QRect& rect, QPainter* p);
 
-/// Gets the device pixel ratio for the QWidget.
-double getPixelRatio(QWidget const* w);
-
-/// Parses the text to detect the MenuItem's label and shortcut, usually separated by a tab.
-std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text);
-
+/// Function that draws and generates a QPixmap.
 using PixmapMakerFunc = std::function<QPixmap(const QSize& s, const QColor& c)>;
 
 /// Utility to add QPixmaps to all states of the QIcon. The callback in parameter will be called to draw each QPixmap.
 void updateUncheckableButtonIconPixmap(QIcon& icon, const QSize& size, Theme const& theme, const PixmapMakerFunc& func);
 
-/// Draws the menu arrow in a Button.
+/// Gets the path to draw the menu arrow in a Button.
 QPainterPath getMenuIndicatorPath(const QRect& rect);
 
 /// Draws the combobox double arrow.
@@ -148,71 +148,8 @@ void drawCloseIndicator(const QRect& rect, QPainter* p);
 /// Draws a treeview indicator.
 void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
 
-#pragma endregion
-
-#pragma region Pixmap / Icons
-
-/// Gets the QPixmap that corresponds to the state and matches the best the desired iconSize.
-/// NB: the QPixmap may not be equal to iconSize: it can be smaller, but never larger.
-QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked);
-
-/// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
-QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
-  bool colorize = false, const QColor& color = {});
-
-/// Generates a pixmap for a specific state of QLineEdit's clear button.
-QPixmap makeClearButtonPixmap(QSize const& size, QColor const& color);
-
-/// Generates an icon for QLineEdit's clear button.
-void updateClearButtonIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
-
-/// Generates a pixmap that contains a check mark.
-QPixmap makeCheckPixmap(QSize const& size, QColor const& color);
-
-/// Generates an icon that contains a check mark.
-void updateCheckIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
-
-/// Generates a pixmap that contains a double right arrow.
-QPixmap makeDoubleArrowRightPixmap(QSize const& size, QColor const& color);
-
-/// Generates a pixmap that contains a small double right arrow.
-QPixmap makeToolBarExtensionPixmap(QSize const& size, QColor const& color);
-
-/// Generates an icon that contains a double right arrow.
-void updateToolBarExtensionIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
-
-/// Generates a pixmap that contains a left arrow.
-QPixmap makeArrowLeftPixmap(QSize const& size, QColor const& color);
-
-/// Generates a pixmap that contains a right arrow.
-QPixmap makeArrowRightPixmap(QSize const& size, QColor const& color);
-
-/// Generates an icon that contains a left arrow.
-void updateArrowLeftIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
-
-/// Generates an icon that contains a right arrow.
-void updateArrowRightIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
-
-QPixmap makeMessageBoxWarningPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
-QPixmap makeMessageBoxCriticalPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
-QPixmap makeMessageBoxQuestionPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
-QPixmap makeMessageBoxInformationPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
-
-void updateMessageBoxWarningIcon(QIcon& icon, QSize const& size, Theme const& theme);
-void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& theme);
-void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& theme);
-void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const& theme);
-
-/// Draws a RadioButton indicator according to its checked state.
-void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
-  QColor const& fgColor, const qreal borderWidth, qreal progress);
-
-/// Draws a CheckButton indicator according to its checked state.
-void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor,
-  const QColor& fgColor, const qreal borderWidth, qreal progress, CheckState checkState);
-
-/// Draws a menu separator.
-void drawMenuSeparator(QPainter* p, const QRect& rect, QColor const& color, const int thickness);
+// Draws a calendar indicator (e.g. for the widgets that display a calendar popup).
+void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color);
 
 /// Gets the tick interval according to the length of steps, range and available length.
 int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int max, int sliderLength);
@@ -240,12 +177,26 @@ void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QC
 /// Draws the shadow of a rounded tab.
 void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color);
 
+/// Draws a RadioButton indicator according to its checked state.
+void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
+  QColor const& fgColor, const qreal borderWidth, qreal progress);
+
+/// Draws a CheckButton indicator according to its checked state.
+void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor,
+  const QColor& fgColor, const qreal borderWidth, qreal progress, CheckState checkState);
+
+/// Draws a menu separator.
+void drawMenuSeparator(QPainter* p, const QRect& rect, QColor const& color, const int thickness);
+
 /// Draws an elided text (with an ellipsis "…" at the end if necessary) inside a QRect.
 /// The difference with Qt's method is the ellipsis (Qt doesn't draw one and just cuts the text).
 void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text, const QPaintDevice* paintDevice);
 
 /// Removes the trailing whitespaces at the end.
 QString removeTrailingWhitespaces(const QString& str);
+
+/// Gives the text to draw when displaying a shortcut.
+QString displayedShortcutString(const QKeySequence& shortcut);
 
 /// Draws a keyboard shortcut.
 void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme, bool enabled,
@@ -254,4 +205,50 @@ void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, 
 /// Gets the necessary size to display the whole shortcut.
 QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme);
 
+/// Gets the QPixmap that corresponds to the state and matches the best the desired iconSize.
+/// NB: the QPixmap may not be equal to iconSize: it can be smaller, but never larger.
+QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked);
+
+/// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
+QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
+  bool colorize = false, const QColor& color = {});
+
+/// Updates the QIcon with the QPixmap given by the function at the right size and for all states.
+void updateUncheckableButtonIconPixmap(
+  QIcon& icon, const QSize& size, QlementineStyle const& style, const PixmapMakerFunc& func);
+
+/// Updates the QIcon that contains the check mark.
+/// NB: The unchecked version of the QIcon is empty on purpose (i.e. no check).
+void updateCheckIcon(QIcon& icon, QSize const& size, QlementineStyle const& style);
+
+/// Generates a pixmap for a specific state of QLineEdit's clear button.
+QPixmap makeClearButtonPixmap(QSize const& size, QColor const& color);
+
+/// Generates a pixmap that contains a check mark.
+QPixmap makeCheckPixmap(QSize const& size, QColor const& color);
+
+/// Generates a pixmap that contains a calendar.
+QPixmap makeCalendarPixmap(QSize const& size, QColor const& color);
+
+/// Generates a pixmap that contains a double right arrow.
+QPixmap makeDoubleArrowRightPixmap(QSize const& size, QColor const& color);
+
+/// Generates a pixmap that contains a small double right arrow.
+QPixmap makeToolBarExtensionPixmap(QSize const& size, QColor const& color);
+
+/// Generates a pixmap that contains a left arrow.
+QPixmap makeArrowLeftPixmap(QSize const& size, QColor const& color);
+
+/// Generates a pixmap that contains a right arrow.
+QPixmap makeArrowRightPixmap(QSize const& size, QColor const& color);
+
+QPixmap makeMessageBoxWarningPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
+QPixmap makeMessageBoxCriticalPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
+QPixmap makeMessageBoxQuestionPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
+QPixmap makeMessageBoxInformationPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
+
+void updateMessageBoxWarningIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& theme);
+void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const& theme);
 } // namespace oclero::qlementine

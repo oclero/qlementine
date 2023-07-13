@@ -58,6 +58,13 @@ bool RadiusesF::hasDifferentRadius() const {
   return !hasSameRadius();
 }
 
+QDebug operator<<(QDebug debug, const RadiusesF& radiuses) {
+  QDebugStateSaver saver(debug);
+  debug.nospace() << "(" << radiuses.topLeft << ", " << radiuses.topRight << ", " << radiuses.bottomRight << ", "
+                  << radiuses.bottomLeft << ")";
+  return debug;
+}
+
 RadiusesF& RadiusesF::operator=(const double rhs) {
   topLeft = rhs;
   topRight = rhs;

@@ -42,6 +42,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QDial>
+#include <QDateTimeEdit>
 
 namespace oclero::qlementine::sandbox {
 class ContextMenuEventFilter : public QObject {
@@ -592,19 +593,34 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_comboBox() {
-    auto* combobox = new QComboBox(windowContent);
-    combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    combobox->setFocusPolicy(Qt::NoFocus);
-    combobox->setIconSize(QSize(8, 8));
+    // Editable.
+    {
+      auto* combobox = new QComboBox(windowContent);
+      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      // combobox->setIconSize(QSize(8, 8));
+      combobox->setEditable(true);
 
-    for (auto i = 0; i < 4; ++i) {
-      combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
+      for (auto i = 0; i < 4; ++i) {
+        combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
+      }
+      auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
+      auto* item = model->item(2);
+      item->setEnabled(false);
+
+      windowContentLayout->addWidget(combobox);
     }
-    auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
-    auto* item = model->item(2);
-    item->setEnabled(false);
+    // Non-editable
+    {
+      auto* combobox = new QComboBox(windowContent);
+      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      combobox->setFocusPolicy(Qt::StrongFocus);
 
-    windowContentLayout->addWidget(combobox);
+      for (auto i = 0; i < 4; ++i) {
+        combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
+      }
+
+      windowContentLayout->addWidget(combobox);
+    }
   }
 
   void setupUI_listView() {
@@ -617,11 +633,56 @@ struct SandboxWindow::Impl {
         QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
       item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
       item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
-
+      item->setForeground(i % 2 ? Qt::red : Qt::blue);
       listView->addItem(item);
     }
     listView->item(0)->setSelected(true);
     windowContentLayout->addWidget(listView);
+  }
+
+  void setupUI_table() {
+    auto* tableView = new QTableWidget(windowContent);
+    tableView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    tableView->setSortingEnabled(true);
+
+    if (auto* qlementineStyle = qobject_cast<QlementineStyle*>(tableView->style())) {
+      qlementineStyle->setAutoIconColorEnabled(false);
+      qlementineStyle->setAutoIconColorEnabled(tableView, false);
+    }
+
+    constexpr auto columnCount = 3;
+    constexpr auto rowCount = 3;
+    tableView->setColumnCount(columnCount);
+    tableView->setRowCount(rowCount);
+    const QIcon icon(":/scene_object.svg");
+    QVector<Qt::Alignment> columnAlignments;
+
+    for (auto col = 0; col < columnCount; ++col) {
+      const auto alignment = col % 3 == 0 ? Qt::AlignLeft : (col % 3 == 1 ? Qt::AlignRight : Qt::AlignCenter);
+      columnAlignments.append(alignment);
+
+      auto* item = new QTableWidgetItem(QString("Column %1").arg(col + 1));
+      item->setIcon(icon);
+      item->setTextAlignment(alignment);
+      tableView->setHorizontalHeaderItem(col, item);
+    }
+
+    for (auto row = 0; row < rowCount; ++row) {
+      auto* item = new QTableWidgetItem(QString("Row %1").arg(row + 1));
+      item->setIcon(icon);
+      tableView->setVerticalHeaderItem(row, item);
+    }
+
+    for (auto row = 0; row < rowCount; ++row) {
+      for (auto col = 0; col < columnCount; ++col) {
+        auto* item = new QTableWidgetItem(QString("Item at %1, %2").arg(row + 1).arg(col + 1));
+        item->setIcon(icon);
+        item->setTextAlignment(columnAlignments.at(col));
+        tableView->setItem(row, col, item);
+      }
+    }
+
+    windowContentLayout->addWidget(tableView);
   }
 
   void setupUI_treeWidget() {
@@ -845,7 +906,7 @@ struct SandboxWindow::Impl {
 
   void setupUI_tabWidget() {
     const QStringList icons = { ":/scene_object.svg", ":/scene_light.svg", ":/scene_material.svg" };
-    auto* tabWidget =  new QTabWidget(windowContent);
+    auto* tabWidget = new QTabWidget(windowContent);
 
     tabWidget->setDocumentMode(false);
     tabWidget->setTabsClosable(true);
@@ -866,7 +927,7 @@ struct SandboxWindow::Impl {
       for (auto j = 0; j < (i + 1); ++j) {
         tabContentLayout->addWidget(new QPushButton("Button", tabContent));
       }
-      tabContentLayout->addSpacerItem(new QSpacerItem(0,0, QSizePolicy::Fixed, QSizePolicy::Expanding));
+      tabContentLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
       const auto label = QString("Tab %1 with very long text that is very long").arg(i + 1);
       const auto icon = QIcon(icons.at(i % icons.size()));
@@ -1412,6 +1473,17 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     themeEditorDialog->show();
   }
 
+  void setup_dateTimeEdit() {
+
+    auto* dateTimeEdit = new QDateTimeEdit(windowContent);
+    dateTimeEdit->setMinimumDate(QDate::currentDate().addDays(-365));
+    dateTimeEdit->setMaximumDate(QDate::currentDate().addDays(365));
+    dateTimeEdit->setDisplayFormat("yyyy.MM.dd");
+    dateTimeEdit->setCalendarPopup(true);
+
+    windowContentLayout->addWidget(dateTimeEdit);
+  }
+
   SandboxWindow& owner;
   QString lastJsonThemePath;
   QPointer<QlementineStyle> qlementineStyle;
@@ -1432,42 +1504,44 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 
   _impl->beginSetupUi();
   {
-// Uncomment the line to show the corresponding widget.
-//  _impl->setupUI_label();
-//  _impl->setupUI_button();
-//  _impl->setupUI_buttonVariants();
-//  _impl->setupUI_checkbox();
-//  _impl->setupUI_radioButton();
-//  _impl->setupUI_commandLinkButton();
-//  _impl->setupUI_sliderAndProgressBar();
-//  _impl->setupUI_sliderWithTicks();
-//  _impl->setupUI_lineEdit();
-//  _impl->setupUI_dial();
-//  _impl->setupUI_spinBox();
-//  _impl->setupUI_comboBox();
-//  _impl->setupUI_listView();
-//  _impl->setupUI_treeWidget();
-//  _impl->setupUI_menu();
-//  _impl->setupUI_toolButton();
-//  _impl->setupUI_toolButtonsVariants();
-//  _impl->setupUI_tabBar();
-//  _impl->setupUI_tabWidget();
-//  _impl->setupUI_groupBox();
-//  _impl->setupUI_fontMetricsTests();
-//  _impl->setupUI_messageBox();
-//  _impl->setupUI_messageBoxIcons();
-//  _impl->setupUi_treeView();
-//  _impl->setupUi_expander();
-//  _impl->setupUi_popover();
-//  _impl->setupUi_navigationBar();
-//  _impl->setupUi_switch();
-//  _impl->setupUi_blur();
-//  _impl->setupUi_focus();
-//  _impl->setup_badge();
-//  _impl->setup_specialProgressBar();
-//  _impl->setup_lineEditStatus();
-//  _impl->setup_colorButton();
-//  _impl->setup_themeEditor();
+    // Uncomment the line to show the corresponding widget.
+    //  _impl->setupUI_label();
+    //  _impl->setupUI_button();
+    //  _impl->setupUI_buttonVariants();
+    //  _impl->setupUI_checkbox();
+    //  _impl->setupUI_radioButton();
+    //  _impl->setupUI_commandLinkButton();
+    //  _impl->setupUI_sliderAndProgressBar();
+    //  _impl->setupUI_sliderWithTicks();
+    //  _impl->setupUI_lineEdit();
+    //  _impl->setupUI_dial();
+    //  _impl->setupUI_spinBox();
+    //  _impl->setupUI_comboBox();
+    //  _impl->setupUI_listView();
+    //  _impl->setupUI_treeWidget();
+    //  _impl->setupUI_table();
+    //  _impl->setupUI_menu();
+    //  _impl->setupUI_toolButton();
+    //  _impl->setupUI_toolButtonsVariants();
+    //  _impl->setupUI_tabBar();
+    //  _impl->setupUI_tabWidget();
+    //  _impl->setupUI_groupBox();
+    //  _impl->setupUI_fontMetricsTests();
+    //  _impl->setupUI_messageBox();
+    //  _impl->setupUI_messageBoxIcons();
+    //  _impl->setupUi_treeView();
+    //  _impl->setupUi_expander();
+    //  _impl->setupUi_popover();
+    //  _impl->setupUi_navigationBar();
+    //  _impl->setupUi_switch();
+    //  _impl->setupUi_blur();
+    //  _impl->setupUi_focus();
+    //  _impl->setup_badge();
+    //  _impl->setup_specialProgressBar();
+    //  _impl->setup_lineEditStatus();
+    //  _impl->setup_colorButton();
+    //  _impl->setup_themeEditor();
+    //  _impl->setup_dateTimeEdit();
   }
   _impl->endSetupUi();
 }

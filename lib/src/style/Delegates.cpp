@@ -31,20 +31,19 @@
 #include <QPainter>
 
 namespace oclero::qlementine {
-ComboBoxDelegate::ComboBoxDelegate(QWidget* widget)
+ComboBoxDelegate::ComboBoxDelegate(QWidget* widget, QlementineStyle& style)
   : QItemDelegate(widget)
-  , _widget(widget) {}
+  , _widget(widget)
+  , _qlementineStyle(&style) {}
 
 void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const {
-  const auto* style = _widget->style();
-  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  const auto& theme = qlementineStyle ? qlementineStyle->theme() : Theme{};
+  const auto& theme = _qlementineStyle ? _qlementineStyle->theme() : Theme{};
 
   const auto isSeparator = idx.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
   if (isSeparator) {
     const auto& rect = opt.rect;
     const auto& color =
-      qlementineStyle ? qlementineStyle->toolBarSeparatorColor() : Theme().neutralAlternativeColorDisabled;
+      _qlementineStyle ? _qlementineStyle->toolBarSeparatorColor() : Theme().neutralAlternativeColorDisabled;
     const auto lineW = theme.borderWidth;
     constexpr auto padding = 0; //_impl->theme.spacing / 2;
     const auto x = rect.x() + (rect.width() - lineW) / 2.;
@@ -60,7 +59,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto hPadding = theme.spacing;
     const auto& bgRect = opt.rect;
     const auto& bgColor =
-      qlementineStyle ? qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
+      _qlementineStyle ? _qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
     constexpr auto radius = 0;
     p->setRenderHint(QPainter::Antialiasing, true);
     p->setPen(Qt::NoPen);
@@ -78,7 +77,11 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto focus = selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
     auto availableW = fgRect.width();
     auto availableX = fgRect.x();
-    const auto& fgColor = qlementineStyle ? qlementineStyle->menuItemForegroundColor(mouse) : Theme().neutralColor;
+    const auto& fgData = idx.data(Qt::ForegroundRole);
+    auto fgColor = _qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().neutralColor;
+    if (fgData.isValid()) {
+      fgColor = fgData.value<QColor>();
+    }
 
     // Icon.
     const auto iconVariant = idx.data(Qt::DecorationRole);
@@ -136,9 +139,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
 }
 
 QSize ComboBoxDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const {
-  const auto* style = _widget->style();
-  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  const auto& theme = qlementineStyle ? qlementineStyle->theme() : Theme{};
+  const auto& theme = _qlementineStyle ? _qlementineStyle->theme() : Theme{};
 
   const auto isSeparator = idx.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
   if (isSeparator) {

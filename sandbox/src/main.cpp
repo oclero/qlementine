@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
   auto* const style = new oclero::qlementine::QlementineStyle(&qApplication);
   style->setAnimationsEnabled(true);
   style->setUseMenuForComboBoxPopup(false);
+  style->setAutoIconColorEnabled(true);
   style->setThemeJsonPath(QStringLiteral(":/light.json"));
   qApplication.setStyle(style);
 #endif

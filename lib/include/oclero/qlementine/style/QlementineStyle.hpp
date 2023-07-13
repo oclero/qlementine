@@ -41,6 +41,7 @@ public:
 
   enum StandardPixmapExt {
     SP_Check = SP_CustomBase + 1,
+    SP_Calendar,
   };
 
   enum ControlElementExt {
@@ -157,7 +158,8 @@ public:
 
   virtual QColor const& comboBoxBackgroundColor(MouseState const mouse) const;
   virtual QColor const& comboBoxForegroundColor(MouseState const mouse) const;
-  virtual QColor const& comboBoxTextColor(MouseState const mouse, Status const status) const;
+  virtual QColor const& comboBoxTextColor(
+    MouseState const mouse, Status const status, const QWidget* w = nullptr) const;
 
   virtual QColor const& spinBoxBackgroundColor(MouseState const mouse) const;
   virtual QColor const& spinBoxBorderColor(MouseState const mouse, FocusState const focus) const;
@@ -218,7 +220,7 @@ public:
   virtual QColor const& dialMarkColor(MouseState const mouse) const;
   virtual QColor const& dialBackgroundColor(MouseState const mouse) const;
 
-  virtual QColor const& labelForegroundColor(MouseState const mouse) const;
+  virtual QColor const& labelForegroundColor(MouseState const mouse, const QWidget* w = nullptr) const;
   virtual QColor const& labelCaptionForegroundColor(MouseState const mouse) const;
 
   virtual QColor const& toolBarBackgroundColor() const;
@@ -233,7 +235,7 @@ public:
   virtual QColor const& scrollBarHandleColor(MouseState const mouse) const;
   virtual int getScrollBarThickness(MouseState const mouse) const;
 
-  virtual QColor const& groupBoxTitleColor(MouseState const mouse) const;
+  virtual QColor const& groupBoxTitleColor(MouseState const mouse, const QWidget* w = nullptr) const;
   virtual QColor const& groupBoxBorderColor(MouseState const mouse) const;
   virtual QColor const& groupBoxBackgroundColor(MouseState const mouse) const;
 

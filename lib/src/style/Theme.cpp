@@ -407,10 +407,6 @@ QJsonDocument Theme::toJson() const {
   return jsonDoc;
 }
 
-#pragma endregion
-
-#pragma region Operators
-
 bool Theme::operator==(const Theme& other) const {
   // All generated values are not used in this equality test, on purpose.
   // TODO Remove this and instead use spaceship operator when C++20 is available on macOS/XCode.

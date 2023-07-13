@@ -125,6 +125,21 @@ AngleRadius getAngleRadius(const QPointF& p1, const QPointF& angularPoint, const
 }
 }; // namespace
 
+double getPixelRatio(QWidget const* w) {
+  auto* const window = w && w->window() ? w->window()->windowHandle() : nullptr;
+  const auto pixelRatio = window ? window->devicePixelRatio() : 1.;
+  return pixelRatio;
+}
+
+std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text) {
+  // TODO
+  // text format is something like this "Menu text\tShortcut".
+  const auto elements = text.split('\t', Qt::KeepEmptyParts);
+  const auto& label = elements.size() > 0 ? elements.first() : QString("");
+  const auto& shortcut = elements.size() > 1 ? elements.at(1) : QString("");
+  return { label, shortcut };
+}
+
 void drawEllipseBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth) {
   const auto halfBorderW = borderWidth / 2.;
   const auto borderRect = rect.marginsRemoved({ halfBorderW, halfBorderW, halfBorderW, halfBorderW });
@@ -381,6 +396,7 @@ void drawDebugRect(const QRect& rect, QPainter* p) {
   p->fillRect(rect, QColor(255, 0, 0, 32));
 }
 
+
 QPainterPath getMenuIndicatorPath(const QRect& rect) {
   const auto w = rect.width();
   const auto h = rect.width();
@@ -398,6 +414,7 @@ QPainterPath getMenuIndicatorPath(const QRect& rect) {
   indicatorPath.lineTo(p3);
   return indicatorPath;
 }
+
 
 void drawComboBoxIndicator(const QRect& rect, QPainter* p) {
   const auto w = rect.width();
@@ -722,58 +739,40 @@ void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open) {
   }
 }
 
-double getPixelRatio(QWidget const* w) {
-  auto* const window = w && w->window() ? w->window()->windowHandle() : nullptr;
-  const auto pixelRatio = window ? window->devicePixelRatio() : 1.;
-  return pixelRatio;
-}
+void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color) {
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultPenWidth = 1.01;
+  constexpr auto defaultRadius = 2.5;
+  constexpr auto defaultDayRadius = 0.5;
+  const auto sizeRatio = rect.size().width() / defaultSize;
+  const auto penWidth = sizeRatio * defaultPenWidth;
+  const auto radius = sizeRatio * defaultRadius;
+  p->setRenderHint(QPainter::Antialiasing, true);
 
-QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked) {
-  const auto iconMode = getIconMode(mouse);
-  const auto iconState = getIconState(checked);
-  // QIcon::pixmap will automatically get the correct pixel ratio based on the QApplication's pixel ratio.
-  return icon.pixmap(iconSize, iconMode, iconState);
-}
+  // Draw spiral-bound notebook shape.
+  p->setBrush(Qt::NoBrush);
+  p->setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+  drawRoundedRectBorder(p,
+    QRectF{ rect.x() + sizeRatio * 1., rect.y() + sizeRatio * 1., sizeRatio * 14, sizeRatio * 14 }, Qt::black, penWidth,
+    radius);
+  p->drawLine(sizeRatio * QPointF{ 1.5, 5.5 }, sizeRatio * QPointF{ 14.5, 5.5 });
+  p->drawLine(sizeRatio * QPointF{ 4.5, 0.5 }, sizeRatio * QPointF{ 4.5, 2.5 });
+  p->drawLine(sizeRatio * QPointF{ 11.5, 0.5 }, sizeRatio * QPointF{ 11.5, 2.5 });
 
-
-QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
-  bool colorize, const QColor& color) {
-  if (rect.isEmpty() || icon.isNull()) {
-    return { rect.x(), rect.y(), 0, 0 };
-  }
-
-  // Get pixmap to draw.
-  const auto iconSize = rect.size();
-  const auto& pixmap = getPixmap(icon, iconSize, mouse, checked);
-  const auto& targetPixmap = colorize ? getColorizedPixmap(pixmap, color) : pixmap;
-
-  if (targetPixmap.isNull()) {
-    return { rect.x(), rect.y(), 0, 0 };
-  }
-
-  // Get rect to draw the pixmap in.
-  // The pixmap may be smaller than the requested size, so we center it in the rect by default.
-  const auto targetPixelRatio = targetPixmap.devicePixelRatio();
-  const auto targetW = static_cast<int>((qreal) targetPixmap.width() / (targetPixelRatio));
-  const auto targetH = static_cast<int>((qreal) targetPixmap.height() / (targetPixelRatio));
-  const auto targetX = rect.x() + (rect.width() - targetW) / 2;
-  const auto targetY = rect.y() + (rect.height() - targetH) / 2;
-  const auto targetRect = QRect{ targetX, targetY, targetW, targetH };
-
-  // Draw the pixmap.
-  p->drawPixmap(targetRect, targetPixmap);
-
-  // Return the actual rect where the pixmap was drawn.
-  return targetRect;
-}
-
-std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text) {
-  // TODO
-  // text format is something like this "Menu text\tShortcut".
-  const auto elements = text.split('\t', Qt::KeepEmptyParts);
-  const auto& label = elements.size() > 0 ? elements.first() : QString("");
-  const auto& shortcut = elements.size() > 1 ? elements.at(1) : QString("");
-  return { label, shortcut };
+  // Draw days.
+  p->setPen(Qt::NoPen);
+  p->setBrush(color);
+  const auto dayBlockSize = sizeRatio * QSizeF{ 2., 2. };
+  p->drawRoundedRect(
+    QRectF{ rect.topLeft() + sizeRatio * QPointF{ 4., 7. }, dayBlockSize }, defaultDayRadius, defaultDayRadius);
+  p->drawRoundedRect(
+    QRectF{ rect.topLeft() + sizeRatio * QPointF{ 7., 7. }, dayBlockSize }, defaultDayRadius, defaultDayRadius);
+  p->drawRoundedRect(
+    QRectF{ rect.topLeft() + sizeRatio * QPointF{ 10., 7. }, dayBlockSize }, defaultDayRadius, defaultDayRadius);
+  p->drawRoundedRect(
+    QRectF{ rect.topLeft() + sizeRatio * QPointF{ 4., 10. }, dayBlockSize }, defaultDayRadius, defaultDayRadius);
+  p->drawRoundedRect(
+    QRectF{ rect.topLeft() + sizeRatio * QPointF{ 7., 10. }, dayBlockSize }, defaultDayRadius, defaultDayRadius);
 }
 
 void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
@@ -916,318 +915,6 @@ void drawMenuSeparator(QPainter* p, const QRect& rect, QColor const& color, cons
   const auto h = std::max(1, thickness);
   const auto y = rect.y() + (rect.height() - h) / 2;
   p->fillRect(QRect{ x, y, w, h }, color);
-}
-
-QPixmap makeClearButtonPixmap(QSize const& size, QColor const& fgColor) {
-  const auto w = size.width();
-  const auto h = size.width();
-  constexpr auto intendedSize = 16.;
-
-  const auto p1 = QPointF{ (4.7 / intendedSize) * w, (4.7 / intendedSize) * h };
-  const auto p2 = QPointF{ (11.3 / intendedSize) * w, (11.3 / intendedSize) * h };
-
-  const auto p3 = QPointF{ (4.7 / intendedSize) * w, (11.3 / intendedSize) * h };
-  const auto p4 = QPointF{ (11.3 / intendedSize) * w, (4.7 / intendedSize) * h };
-
-  const auto penWidth = (1.4 / intendedSize) * h;
-  QPixmap pixmap{ size };
-  pixmap.fill(Qt::transparent);
-  QPainter p{ &pixmap };
-  p.setRenderHint(QPainter::Antialiasing, true);
-
-  p.setBrush(Qt::NoBrush);
-  p.setPen(QPen{ fgColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-  p.drawLine(p1, p2);
-  p.drawLine(p3, p4);
-
-  return pixmap;
-}
-
-void updateUncheckableButtonIconPixmap(
-  QIcon& icon, const QSize& size, QlementineStyle const& style, const PixmapMakerFunc& func) {
-  if (!func)
-    return;
-
-  constexpr auto role = ColorRole::Neutral;
-
-  for (auto factor = 1; factor <= 2; ++factor) {
-    const auto scaledSize = size * factor;
-
-    const auto pixmapNormal = func(scaledSize, style.toolButtonForegroundColor(MouseState::Normal, role));
-    icon.addPixmap(pixmapNormal, QIcon::Mode::Normal);
-
-    const auto pixmapMouseOver = func(scaledSize, style.toolButtonForegroundColor(MouseState::Hovered, role));
-    icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected);
-
-    const auto pixmapPressed = func(scaledSize, style.toolButtonForegroundColor(MouseState::Pressed, role));
-    icon.addPixmap(pixmapPressed, QIcon::Mode::Active);
-
-    const auto pixmapDisabled = func(scaledSize, style.toolButtonForegroundColor(MouseState::Disabled, role));
-    icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled);
-  }
-}
-
-void updateClearButtonIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
-  updateUncheckableButtonIconPixmap(icon, size, style, makeClearButtonPixmap);
-}
-
-QPixmap makeCheckPixmap(QSize const& size, QColor const& color) {
-  const QRect checkRect{ 0, 0, size.width(), size.height() };
-
-  QPixmap pixmap{ size };
-  pixmap.fill(Qt::transparent);
-
-  constexpr auto defaultSize = 16.;
-  constexpr auto defaultPenWidth = 2.;
-  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
-
-  QPainter p{ &pixmap };
-  p.setBrush(Qt::NoBrush);
-  p.setRenderHint(QPainter::Antialiasing, true);
-  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-
-  drawCheckBoxIndicator(checkRect, &p, 1.0);
-
-  return pixmap;
-}
-
-void updateCheckIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
-  const auto role = ColorRole::Primary;
-  const auto pixmapNormal = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Normal, role));
-  const auto pixmapMouseOver = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Hovered, role));
-  const auto pixmapPressed = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Pressed, role));
-  const auto pixmapDisabled = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Disabled, role));
-
-  QPixmap uncheckedPixmap{ size };
-  uncheckedPixmap.fill(Qt::transparent);
-
-  icon.addPixmap(pixmapNormal, QIcon::Mode::Normal, QIcon::State::On);
-  icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected, QIcon::State::On);
-  icon.addPixmap(pixmapPressed, QIcon::Mode::Active, QIcon::State::On);
-  icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled, QIcon::State::On);
-
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Normal, QIcon::State::Off);
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Selected, QIcon::State::Off);
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Active, QIcon::State::Off);
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
-}
-
-QPixmap makeDoubleArrowRightPixmap(QSize const& size, QColor const& color) {
-  const QRect rect{ 0, 0, size.width(), size.height() };
-
-  QPixmap pixmap{ size };
-  pixmap.fill(Qt::transparent);
-
-  constexpr auto defaultSize = 16.;
-  constexpr auto defaultPenWidth = 1.5;
-  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
-
-  QPainter p{ &pixmap };
-  p.setBrush(Qt::NoBrush);
-  p.setRenderHint(QPainter::Antialiasing, true);
-  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-
-  drawDoubleArrowRightIndicator(rect, &p);
-
-  return pixmap;
-}
-
-QPixmap makeToolBarExtensionPixmap(QSize const& size, QColor const& color) {
-  const QRect rect{ 0, 0, size.width(), size.height() };
-
-  QPixmap pixmap{ size };
-  pixmap.fill(Qt::transparent);
-
-  constexpr auto defaultSize = 16.;
-  constexpr auto defaultPenWidth = 1.01;
-  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
-
-  QPainter p{ &pixmap };
-  p.setBrush(Qt::NoBrush);
-  p.setRenderHint(QPainter::Antialiasing, true);
-  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-
-  drawToolBarExtensionIndicator(rect, &p);
-
-  return pixmap;
-}
-
-void updateToolBarExtensionIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
-  updateUncheckableButtonIconPixmap(icon, size, style, makeToolBarExtensionPixmap);
-}
-
-QPixmap makeArrowLeftPixmap(QSize const& size, QColor const& color) {
-  const QRect rect{ 0, 0, size.width(), size.height() };
-
-  QPixmap pixmap{ size };
-  pixmap.fill(Qt::transparent);
-
-  constexpr auto defaultSize = 16.;
-  constexpr auto defaultPenWidth = 1.01;
-  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
-
-  QPainter p{ &pixmap };
-  p.setBrush(Qt::NoBrush);
-  p.setRenderHint(QPainter::Antialiasing, true);
-  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-
-  drawArrowLeft(rect, &p);
-  return pixmap;
-}
-
-QPixmap makeArrowRightPixmap(QSize const& size, QColor const& color) {
-  const QRect rect{ 0, 0, size.width(), size.height() };
-
-  QPixmap pixmap{ size };
-  pixmap.fill(Qt::transparent);
-
-  constexpr auto defaultSize = 16.;
-  constexpr auto defaultPenWidth = 1.01;
-  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
-
-  QPainter p{ &pixmap };
-  p.setBrush(Qt::NoBrush);
-  p.setRenderHint(QPainter::Antialiasing, true);
-  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-
-  drawArrowRight(rect, &p);
-  return pixmap;
-}
-
-void updateArrowLeftIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
-  updateUncheckableButtonIconPixmap(icon, size, style, makeArrowLeftPixmap);
-}
-
-void updateArrowRightIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
-  updateUncheckableButtonIconPixmap(icon, size, style, makeArrowRightPixmap);
-}
-
-QPixmap makeMessageBoxWarningPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
-  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_warning_bg.svg");
-  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_warning_fg.svg");
-  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
-  return pixmap;
-}
-
-QPixmap makeMessageBoxCriticalPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
-  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_critical_bg.svg");
-  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_critical_fg.svg");
-  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
-  return pixmap;
-}
-
-QPixmap makeMessageBoxQuestionPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
-  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_question_bg.svg");
-  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_question_fg.svg");
-  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
-  return pixmap;
-}
-
-QPixmap makeMessageBoxInformationPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
-  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_information_bg.svg");
-  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_information_fg.svg");
-  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
-  return pixmap;
-}
-
-void updateMessageBoxWarningIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  const auto& bgColor = theme.statusColorWarning;
-  const auto& fgColor = theme.statusColorForeground;
-
-  const auto& bgColorDisabled = theme.statusColorWarningDisabled;
-  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
-
-  for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxWarningPixmap(pixmapSize, bgColor, fgColor);
-    pixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
-
-    auto disbledPixmap = makeMessageBoxWarningPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
-    disbledPixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
-  }
-}
-
-void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  const auto& bgColor = theme.statusColorError;
-  const auto& fgColor = theme.statusColorForeground;
-
-  const auto& bgColorDisabled = theme.statusColorErrorDisabled;
-  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
-
-  for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxCriticalPixmap(pixmapSize, bgColor, fgColor);
-    pixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
-
-    auto disbledPixmap = makeMessageBoxCriticalPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
-    disbledPixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
-  }
-}
-
-void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  const auto& bgColor = theme.statusColorInfo;
-  const auto& fgColor = theme.statusColorForeground;
-
-  const auto& bgColorDisabled = theme.statusColorInfoDisabled;
-  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
-
-  for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxQuestionPixmap(pixmapSize, bgColor, fgColor);
-    pixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
-
-    auto disbledPixmap = makeMessageBoxQuestionPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
-    disbledPixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
-  }
-}
-
-void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const& theme) {
-  const auto& bgColor = theme.statusColorInfo;
-  const auto& fgColor = theme.statusColorForeground;
-
-  const auto& bgColorDisabled = theme.statusColorInfoDisabled;
-  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
-
-  for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxInformationPixmap(pixmapSize, bgColor, fgColor);
-    pixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
-    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
-    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
-
-    auto disbledPixmap = makeMessageBoxInformationPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
-    disbledPixmap.setDevicePixelRatio(factor);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
-    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
-  }
 }
 
 int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int max, int sliderLength) {
@@ -1617,4 +1304,346 @@ QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme) {
   return QSize{ w, h };
 }
 
+QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked) {
+  const auto iconMode = getIconMode(mouse);
+  const auto iconState = getIconState(checked);
+  // QIcon::pixmap will automatically get the correct pixel ratio based on the QApplication's pixel ratio.
+  return icon.pixmap(iconSize, iconMode, iconState);
+}
+
+QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
+  bool colorize, const QColor& color) {
+  if (rect.isEmpty() || icon.isNull()) {
+    return { rect.x(), rect.y(), 0, 0 };
+  }
+
+  // Get pixmap to draw.
+  const auto iconSize = rect.size();
+  const auto& pixmap = getPixmap(icon, iconSize, mouse, checked);
+  const auto& targetPixmap = colorize ? getColorizedPixmap(pixmap, color) : pixmap;
+
+  if (targetPixmap.isNull()) {
+    return { rect.x(), rect.y(), 0, 0 };
+  }
+
+  // Get rect to draw the pixmap in.
+  // The pixmap may be smaller than the requested size, so we center it in the rect by default.
+  const auto targetPixelRatio = targetPixmap.devicePixelRatio();
+  const auto targetW = static_cast<int>((qreal) targetPixmap.width() / (targetPixelRatio));
+  const auto targetH = static_cast<int>((qreal) targetPixmap.height() / (targetPixelRatio));
+  const auto targetX = rect.x() + (rect.width() - targetW) / 2;
+  const auto targetY = rect.y() + (rect.height() - targetH) / 2;
+  const auto targetRect = QRect{ targetX, targetY, targetW, targetH };
+
+  // Draw the pixmap.
+  p->drawPixmap(targetRect, targetPixmap);
+
+  // Return the actual rect where the pixmap was drawn.
+  return targetRect;
+}
+
+void updateUncheckableButtonIconPixmap(
+  QIcon& icon, const QSize& size, QlementineStyle const& style, const PixmapMakerFunc& func) {
+  if (!func)
+    return;
+
+  constexpr auto role = ColorRole::Neutral;
+
+  for (auto factor = 1; factor <= 2; ++factor) {
+    const auto scaledSize = size * factor;
+
+    const auto pixmapNormal = func(scaledSize, style.toolButtonForegroundColor(MouseState::Normal, role));
+    icon.addPixmap(pixmapNormal, QIcon::Mode::Normal);
+
+    const auto pixmapMouseOver = func(scaledSize, style.toolButtonForegroundColor(MouseState::Hovered, role));
+    icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected);
+
+    const auto pixmapPressed = func(scaledSize, style.toolButtonForegroundColor(MouseState::Pressed, role));
+    icon.addPixmap(pixmapPressed, QIcon::Mode::Active);
+
+    const auto pixmapDisabled = func(scaledSize, style.toolButtonForegroundColor(MouseState::Disabled, role));
+    icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled);
+  }
+}
+
+void updateCheckIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
+  const auto role = ColorRole::Primary;
+  const auto pixmapNormal = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Normal, role));
+  const auto pixmapMouseOver = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Hovered, role));
+  const auto pixmapPressed = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Pressed, role));
+  const auto pixmapDisabled = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Disabled, role));
+
+  QPixmap uncheckedPixmap{ size };
+  uncheckedPixmap.fill(Qt::transparent);
+
+  icon.addPixmap(pixmapNormal, QIcon::Mode::Normal, QIcon::State::On);
+  icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected, QIcon::State::On);
+  icon.addPixmap(pixmapPressed, QIcon::Mode::Active, QIcon::State::On);
+  icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled, QIcon::State::On);
+
+  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Normal, QIcon::State::Off);
+  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Selected, QIcon::State::Off);
+  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Active, QIcon::State::Off);
+  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
+}
+
+QPixmap makeClearButtonPixmap(QSize const& size, QColor const& fgColor) {
+  const auto w = size.width();
+  const auto h = size.width();
+  constexpr auto intendedSize = 16.;
+
+  const auto p1 = QPointF{ (4.7 / intendedSize) * w, (4.7 / intendedSize) * h };
+  const auto p2 = QPointF{ (11.3 / intendedSize) * w, (11.3 / intendedSize) * h };
+
+  const auto p3 = QPointF{ (4.7 / intendedSize) * w, (11.3 / intendedSize) * h };
+  const auto p4 = QPointF{ (11.3 / intendedSize) * w, (4.7 / intendedSize) * h };
+
+  const auto penWidth = (1.4 / intendedSize) * h;
+  QPixmap pixmap{ size };
+  pixmap.fill(Qt::transparent);
+  QPainter p{ &pixmap };
+  p.setRenderHint(QPainter::Antialiasing, true);
+
+  p.setBrush(Qt::NoBrush);
+  p.setPen(QPen{ fgColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+  p.drawLine(p1, p2);
+  p.drawLine(p3, p4);
+
+  return pixmap;
+}
+
+QPixmap makeCheckPixmap(QSize const& size, QColor const& color) {
+  const QRect checkRect{ 0, 0, size.width(), size.height() };
+
+  QPixmap pixmap{ size };
+  pixmap.fill(Qt::transparent);
+
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultPenWidth = 2.;
+  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
+
+  QPainter p{ &pixmap };
+  p.setBrush(Qt::NoBrush);
+  p.setRenderHint(QPainter::Antialiasing, true);
+  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+
+  drawCheckBoxIndicator(checkRect, &p, 1.0);
+
+  return pixmap;
+}
+
+QPixmap makeCalendarPixmap(QSize const& size, QColor const& color) {
+  QPixmap pixmap{ size };
+  pixmap.fill(Qt::transparent);
+  QPainter p{ &pixmap };
+  drawCalendarIndicator(QRect{ QPoint{ 0, 0 }, size }, &p, color);
+
+  return pixmap;
+}
+
+QPixmap makeDoubleArrowRightPixmap(QSize const& size, QColor const& color) {
+  const QRect rect{ 0, 0, size.width(), size.height() };
+
+  QPixmap pixmap{ size };
+  pixmap.fill(Qt::transparent);
+
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultPenWidth = 1.5;
+  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
+
+  QPainter p{ &pixmap };
+  p.setBrush(Qt::NoBrush);
+  p.setRenderHint(QPainter::Antialiasing, true);
+  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+
+  drawDoubleArrowRightIndicator(rect, &p);
+
+  return pixmap;
+}
+
+QPixmap makeToolBarExtensionPixmap(QSize const& size, QColor const& color) {
+  const QRect rect{ 0, 0, size.width(), size.height() };
+
+  QPixmap pixmap{ size };
+  pixmap.fill(Qt::transparent);
+
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultPenWidth = 1.01;
+  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
+
+  QPainter p{ &pixmap };
+  p.setBrush(Qt::NoBrush);
+  p.setRenderHint(QPainter::Antialiasing, true);
+  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+
+  drawToolBarExtensionIndicator(rect, &p);
+
+  return pixmap;
+}
+
+QPixmap makeArrowLeftPixmap(QSize const& size, QColor const& color) {
+  const QRect rect{ 0, 0, size.width(), size.height() };
+
+  QPixmap pixmap{ size };
+  pixmap.fill(Qt::transparent);
+
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultPenWidth = 1.01;
+  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
+
+  QPainter p{ &pixmap };
+  p.setBrush(Qt::NoBrush);
+  p.setRenderHint(QPainter::Antialiasing, true);
+  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+
+  drawArrowLeft(rect, &p);
+  return pixmap;
+}
+
+QPixmap makeArrowRightPixmap(QSize const& size, QColor const& color) {
+  const QRect rect{ 0, 0, size.width(), size.height() };
+
+  QPixmap pixmap{ size };
+  pixmap.fill(Qt::transparent);
+
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultPenWidth = 1.01;
+  const auto penWidth = (size.width() / defaultSize) * defaultPenWidth;
+
+  QPainter p{ &pixmap };
+  p.setBrush(Qt::NoBrush);
+  p.setRenderHint(QPainter::Antialiasing, true);
+  p.setPen(QPen{ color, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+
+  drawArrowRight(rect, &p);
+  return pixmap;
+}
+
+QPixmap makeMessageBoxWarningPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
+  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_warning_bg.svg");
+  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_warning_fg.svg");
+  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
+  return pixmap;
+}
+
+QPixmap makeMessageBoxCriticalPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
+  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_critical_bg.svg");
+  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_critical_fg.svg");
+  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
+  return pixmap;
+}
+
+QPixmap makeMessageBoxQuestionPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
+  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_question_bg.svg");
+  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_question_fg.svg");
+  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
+  return pixmap;
+}
+
+QPixmap makeMessageBoxInformationPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor) {
+  const auto bgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_information_bg.svg");
+  const auto fgSvgPath = QStringLiteral(":/qlementine/resources/icons/messagebox_information_fg.svg");
+  const auto pixmap = makePixmapFromSvg(bgSvgPath, bgColor, fgSvgPath, fgColor, size);
+  return pixmap;
+}
+
+void updateMessageBoxWarningIcon(QIcon& icon, QSize const& size, Theme const& theme) {
+  const auto& bgColor = theme.statusColorWarning;
+  const auto& fgColor = theme.statusColorForeground;
+
+  const auto& bgColorDisabled = theme.statusColorWarningDisabled;
+  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
+
+  for (const auto factor : { 1., 2. }) {
+    const auto pixmapSize = size * factor;
+    auto pixmap = makeMessageBoxWarningPixmap(pixmapSize, bgColor, fgColor);
+    pixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
+
+    auto disbledPixmap = makeMessageBoxWarningPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    disbledPixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
+  }
+}
+
+void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& theme) {
+  const auto& bgColor = theme.statusColorError;
+  const auto& fgColor = theme.statusColorForeground;
+
+  const auto& bgColorDisabled = theme.statusColorErrorDisabled;
+  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
+
+  for (const auto factor : { 1., 2. }) {
+    const auto pixmapSize = size * factor;
+    auto pixmap = makeMessageBoxCriticalPixmap(pixmapSize, bgColor, fgColor);
+    pixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
+
+    auto disbledPixmap = makeMessageBoxCriticalPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    disbledPixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
+  }
+}
+
+void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& theme) {
+  const auto& bgColor = theme.statusColorInfo;
+  const auto& fgColor = theme.statusColorForeground;
+
+  const auto& bgColorDisabled = theme.statusColorInfoDisabled;
+  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
+
+  for (const auto factor : { 1., 2. }) {
+    const auto pixmapSize = size * factor;
+    auto pixmap = makeMessageBoxQuestionPixmap(pixmapSize, bgColor, fgColor);
+    pixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
+
+    auto disbledPixmap = makeMessageBoxQuestionPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    disbledPixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
+  }
+}
+
+void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const& theme) {
+  const auto& bgColor = theme.statusColorInfo;
+  const auto& fgColor = theme.statusColorForeground;
+
+  const auto& bgColorDisabled = theme.statusColorInfoDisabled;
+  const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
+
+  for (const auto factor : { 1., 2. }) {
+    const auto pixmapSize = size * factor;
+    auto pixmap = makeMessageBoxInformationPixmap(pixmapSize, bgColor, fgColor);
+    pixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::Off);
+    icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
+    icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
+
+    auto disbledPixmap = makeMessageBoxInformationPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    disbledPixmap.setDevicePixelRatio(factor);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
+    icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
+  }
+}
 } // namespace oclero::qlementine

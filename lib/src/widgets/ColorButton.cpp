@@ -76,15 +76,12 @@ void ColorButton::paintEvent(QPaintEvent*) {
   QPainter p(this);
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  const auto& theme = qlementineStyle ? qlementineStyle->theme() : qlementine::Theme{};
 
   const auto opacity = isEnabled() ? 1.0 : 0.35;
   p.setOpacity(opacity);
   const auto hasFocus = this->hasFocus();
 
   // Background
-  const auto& bgColor = qlementineStyle ? qlementineStyle->theme().backgroundColorMain3
-                                        : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
   const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
   const auto borderColor = qlementineStyle ? qlementineStyle->theme().adaptativeColor5 : Qt::black;
   qlementine::drawColorMark(&p, rect(), _color, hasFocus ? Qt::transparent : borderColor, borderWidth);
