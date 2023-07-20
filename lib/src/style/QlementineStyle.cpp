@@ -4737,7 +4737,6 @@ void QlementineStyle::polish(QWidget* w) {
   }
 #endif
 
-
   // Special case for the Qt-private buttons in a QLineEdit.
   if (w->inherits("QLineEditIconButton")) {
     w->installEventFilter(new LineEditButtonEventFilter(*this, _impl->animations, qobject_cast<QToolButton*>(w)));
