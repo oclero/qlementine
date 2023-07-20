@@ -283,6 +283,7 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
   return QObject::eventFilter(watchedObject, evt);
 }
+
 MenuEventFilter::MenuEventFilter(QMenu* menu)
   : QObject(menu)
   , _menu(menu) {
