@@ -345,6 +345,14 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       TRY_SET_INT_ATTRIBUTE(jsonObj, scrollBarThicknessSmall);
       TRY_SET_INT_ATTRIBUTE(jsonObj, scrollBarPadding);
       TRY_SET_INT_ATTRIBUTE(jsonObj, tabBarPaddingTop);
+      TRY_SET_INT_ATTRIBUTE(jsonObj, tabBarTabMaxWidth);
+      TRY_SET_INT_ATTRIBUTE(jsonObj, tabBarTabMinWidth);
+
+      tabBarTabMaxWidth = std::max(0, tabBarTabMaxWidth);
+      tabBarTabMinWidth = std::max(0, tabBarTabMinWidth);
+      if (tabBarTabMinWidth > tabBarTabMaxWidth) {
+        std::swap(tabBarTabMinWidth, tabBarTabMaxWidth);
+      }
 
       // Fonts.
       const auto defaultFont = QFont(QStringLiteral("Inter"));
