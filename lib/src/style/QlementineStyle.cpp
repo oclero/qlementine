@@ -4745,6 +4745,12 @@ void QlementineStyle::polish(QWidget* w) {
     w->setFixedSize(_impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium);
   }
 
+  // Prevent the following warning:
+  // QWidget::setMinimumSize: (/QTableCornerButton) Negative sizes (0,-1) are not possible
+  if (w->inherits("QTableCornerButton")) {
+    w->setMinimumSize(0, 1);
+  }
+
   // Font.
   if (shouldHaveBoldFont(w)) {
     w->setFont(_impl->theme.fontBold);
