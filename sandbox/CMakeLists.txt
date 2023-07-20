@@ -10,8 +10,8 @@ target_sources(sandbox PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.hpp
+  #${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.cpp
+  #${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.hpp
 )
 target_link_libraries(sandbox
   PRIVATE
