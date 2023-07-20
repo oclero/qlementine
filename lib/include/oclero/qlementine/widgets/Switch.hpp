@@ -21,7 +21,11 @@ public:
 
 protected:
   void paintEvent(QPaintEvent* e) override;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   void enterEvent(QEvent* e) override;
+#else
+  void enterEvent(QEnterEvent* e) override;
+#endif
   void leaveEvent(QEvent* e) override;
   void changeEvent(QEvent* e) override;
   void focusInEvent(QFocusEvent* e) override;

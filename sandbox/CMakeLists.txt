@@ -1,4 +1,4 @@
-find_package(Qt5
+find_package(${QT_VERSION}
   REQUIRED
     Core
     Widgets
@@ -16,8 +16,8 @@ target_sources(sandbox PRIVATE
 target_link_libraries(sandbox
   PRIVATE
     oclero::qlementine
-    Qt5::Core
-    Qt5::Widgets
+    ${QT_VERSION}::Core
+    ${QT_VERSION}::Widgets
 )
 
 set_target_properties(sandbox PROPERTIES

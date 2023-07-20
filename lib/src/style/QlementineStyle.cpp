@@ -385,7 +385,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         // Draw the background of the tab bar.
         const auto tabBarHeight = _impl->theme.controlHeightLarge + _impl->theme.spacing;
         QStyleOptionTabBarBase tabBarOpt;
-        tabBarOpt.init(tabBar);
+        tabBarOpt.initFrom(tabBar);
         tabBarOpt.rect = QRect(0, 0, opt->rect.width(), tabBarHeight);
         tabBarOpt.shape = tabBar->shape();
         tabBarOpt.documentMode = documentMode;
@@ -3755,7 +3755,14 @@ QSize QlementineStyle::sizeFromContents(
 
           // Shortcut. NB: Some difficulties to understand what's going on. Qt changes the width so here's a hack.
           const auto hasShortcut = shortcut.length() > 0;
-          const auto shortcutW = hasShortcut ? 3 * spacing - optMenuItem->tabWidth : 0;
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          const auto reservedShortcutW = optMenuItem->tabWidth;
+#else
+          const auto reservedShortcutW = optMenuItem->reservedShortcutWidth;
+#endif
+
+          const auto shortcutW = hasShortcut ? 3 * spacing - reservedShortcutW : 0;
 
           // Icon.
           const auto hasIcon = !optMenuItem->icon.isNull();
@@ -3768,7 +3775,7 @@ QSize QlementineStyle::sizeFromContents(
 
           const auto w = std::max(0, hPadding + checkW + iconW + labelW + shortcutW + arrowW + hPadding);
           const auto h = std::max(_impl->theme.controlHeightMedium, iconSize.height() + vPadding);
-          return QSize{ w, h };
+          return QSize(w, h);
         }
         return QSize{};
       }

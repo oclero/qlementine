@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.17.5)
 
+# Check for Qt version in given arguments. Fallback to Qt5.
+if (NOT DEFINED QT_VERSION)
+  set(QT_VERSION Qt5)
+endif()
+message("-- Using ${QT_VERSION}")
+
+# Custom CMake modules.
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(DeployQt)
 

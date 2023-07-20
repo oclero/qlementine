@@ -133,7 +133,11 @@ void Switch::paintEvent(QPaintEvent*) {
   }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void Switch::enterEvent(QEvent* e) {
+#else
+void Switch::enterEvent(QEnterEvent* e) {
+#endif
   QAbstractButton::enterEvent(e);
   _isMouseOver = true;
   startAnimation();

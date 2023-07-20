@@ -19,6 +19,7 @@
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
 #include <oclero/qlementine/tools/ThemeEditor.hpp>
 
+#include <QActionGroup>
 #include <QFileSystemWatcher>
 #include <QContextMenuEvent>
 #include <QShortcut>
@@ -221,7 +222,12 @@ struct SandboxWindow::Impl {
 
 
   void setupShortcuts() {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     auto* enableShortcut = new QShortcut(Qt::CTRL + Qt::Key_E, &owner);
+#else
+    auto* enableShortcut = new QShortcut(Qt::CTRL | Qt::Key_E, &owner);
+#endif
+
     enableShortcut->setAutoRepeat(false);
     enableShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
     QObject::connect(enableShortcut, &QShortcut::activated, enableShortcut, [this]() {
@@ -234,7 +240,12 @@ struct SandboxWindow::Impl {
       }
     });
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     auto* themeShortcut = new QShortcut(Qt::CTRL + Qt::Key_T, &owner);
+#else
+    auto* themeShortcut = new QShortcut(Qt::CTRL | Qt::Key_T, &owner);
+#endif
+
     themeShortcut->setAutoRepeat(false);
     themeShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
     QObject::connect(themeShortcut, &QShortcut::activated, themeShortcut, [this]() {
@@ -249,7 +260,11 @@ struct SandboxWindow::Impl {
       }
     });
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     auto* focusShortcut = new QShortcut(Qt::CTRL + Qt::Key_F, &owner);
+#else
+    auto* focusShortcut = new QShortcut(Qt::CTRL | Qt::Key_F, &owner);
+#endif
     focusShortcut->setAutoRepeat(false);
     focusShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
     QObject::connect(focusShortcut, &QShortcut::activated, focusShortcut, []() {
@@ -329,6 +344,7 @@ struct SandboxWindow::Impl {
     button->setText("Button with a very long text that can be elided");
     button->setIcon(QIcon(":/refresh.svg"));
     button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    button->setDefault(true);
     windowContentLayout->addWidget(button);
   }
 
@@ -695,10 +711,21 @@ struct SandboxWindow::Impl {
           action->setChecked(true);
         } else if (j % 2 == 0) {
           const auto key_number = (Qt::Key)(Qt::Key_0 + j);
-          action->setShortcut(QKeySequence(Qt::CTRL + (Qt::Key_0 + key_number)));
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          const auto keySeq = QKeySequence(Qt::CTRL + (Qt::Key_0 + key_number));
+#else
+          const auto keySeq = QKeySequence(Qt::CTRL | (Qt::Key_0 + key_number));
+#endif
+          action->setShortcut(keySeq);
         } else if (j % 3 == 0) {
           const auto key_number = (Qt::Key)(Qt::Key_0 + j);
-          action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::ALT + (Qt::Key_0 + key_number)));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+          const auto keySeq = QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::ALT | (Qt::Key_0 + key_number));
+#else
+          const auto keySeq = QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::ALT | (Qt::Key_0 + key_number));
+#endif
+          action->setShortcut(keySeq);
         } else if (j % 5 == 0) {
           action->setEnabled(false);
         }

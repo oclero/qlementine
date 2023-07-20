@@ -73,7 +73,7 @@ int ThemeManager::currentThemeIndex() const {
 }
 
 void ThemeManager::setCurrentThemeIndex(int index) {
-  index = std::max(-1, std::min(_themes.size() - 1, index));
+  index = std::max(-1, std::min(static_cast<int>(_themes.size()) - 1, index));
   if (index != _currentIndex) {
     _currentIndex = index;
     synchronizeThemeOnStyle();

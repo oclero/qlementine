@@ -1,6 +1,6 @@
 set(LIB_TARGET_NAME ${PROJECT_NAME})
 
-find_package(Qt5
+find_package(${QT_VERSION}
   REQUIRED
     Core
     Widgets
@@ -8,7 +8,7 @@ find_package(Qt5
 )
 
 if(WIN32)
-  find_package(Qt5 REQUIRED WinExtras)
+  find_package(${QT_VERSION} REQUIRED WinExtras)
 endif()
 
 # Declare files.
@@ -132,25 +132,25 @@ target_include_directories(${LIB_TARGET_NAME}
 
 target_link_libraries(${LIB_TARGET_NAME}
   PRIVATE
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::Svg
+    ${QT_VERSION}::Core
+    ${QT_VERSION}::Widgets
+    ${QT_VERSION}::Svg
 )
 
 if(WIN32)
-	target_link_libraries(${LIB_TARGET_NAME} PRIVATE Qt5::WinExtras)
+	target_link_libraries(${LIB_TARGET_NAME} PRIVATE ${QT_VERSION}::WinExtras)
 endif()
 
 set_target_properties(${LIB_TARGET_NAME}
   PROPERTIES
-    AUTOMOC ON
-    AUTORCC ON
-    OUTPUT_NAME ${LIB_TARGET_NAME}
-    PROJECT_LABEL ${LIB_TARGET_NAME}
-    FOLDER lib
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-    VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    DEBUG_POSTFIX _debug
+    AUTOMOC         ON
+    AUTORCC         ON
+    OUTPUT_NAME     ${LIB_TARGET_NAME}
+    PROJECT_LABEL   ${LIB_TARGET_NAME}
+    FOLDER          lib
+    SOVERSION       ${PROJECT_VERSION_MAJOR}
+    VERSION         ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    DEBUG_POSTFIX   _debug
 )
 
 target_compile_features(${LIB_TARGET_NAME} PUBLIC cxx_std_17)
