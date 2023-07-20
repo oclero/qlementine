@@ -3807,9 +3807,15 @@ QSize QlementineStyle::sizeFromContents(
         //  }
         //}
 
-        const auto tabMaxWidth = _impl->theme.controlHeightLarge * 9;
-        const auto tabMinWidth = _impl->theme.controlHeightLarge * 6;
-        w = std::clamp(w, tabMinWidth, tabMaxWidth);
+        // Clamp tab size.
+        auto tabMaxWidth = _impl->theme.tabBarTabMaxWidth;
+        auto tabMinWidth = _impl->theme.tabBarTabMinWidth;
+        if (tabMinWidth > tabMaxWidth) {
+          std::swap(tabMinWidth, tabMaxWidth);
+        }
+        if (tabMaxWidth > 0 && tabMinWidth > 0) {
+          w = std::clamp(w, tabMinWidth, tabMaxWidth);
+        }
 
         // Add fake padding if the tab is first or last.
         const auto* tabBar = qobject_cast<const QTabBar*>(widget);

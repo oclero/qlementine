@@ -894,7 +894,12 @@ struct SandboxWindow::Impl {
     //windowContentLayout->setAlignment(tabBar, Qt::AlignLeft);
 
     for (auto i = 0; i < 10; ++i) {
-      auto tabText = QString(i % 2 ? "Tab with a very long text %1" : "Tab short text %1").arg(i);
+      QStringList tabTextList{ "Tab "};
+      for (auto j = 0; j < i; ++j) {
+        tabTextList.append("Tab");
+      }
+      const auto tabText = tabTextList.join(" ").append(QString(" %1").arg(i + 1));
+
       if (i % 2 == 0) {
         tabBar->addTab(icon, tabText);
       } else {
@@ -937,9 +942,13 @@ struct SandboxWindow::Impl {
       }
       tabContentLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
-      const auto label = QString("Tab %1 with very long text that is very long").arg(i + 1);
+      QStringList tabTextList{ "Tab" };
+      for (auto j = 0; j < i; ++j) {
+        tabTextList.append("Tab");
+      }
+      const auto tabText = tabTextList.join(" ").append(QString(" %1").arg(i + 1));
       const auto icon = QIcon(icons.at(i % icons.size()));
-      tabWidget->addTab(tabContent, icon, label);
+      tabWidget->addTab(tabContent, icon, tabText);
     }
   }
 
