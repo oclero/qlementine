@@ -761,12 +761,14 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto column = optItem->index.column();
 
         // Draw cell background color.
+        // Make it consistent with the text color in CE_ItemViewItem.
         const auto itemState = optItem->state;
         const auto mouse = getMouseState(itemState);
         const auto selection = getSelectionState(itemState);
+        const auto widgetHasFocus = (w && w->hasFocus());
         const auto focus =
-          getFocusState(itemState); // Has the cell focus? (Always false when the QWidget doesn't have focus.)
-        const auto active = getActiveState(itemState); // Has the QWidget focus?
+          widgetHasFocus && selection == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
+        const auto active = getActiveState(itemState);
         const auto& color = listItemBackgroundColor(mouse, selection, focus, active);
         p->fillRect(rect, color);
 
@@ -2108,6 +2110,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto active = getActiveState(optItem->state);
 
         // We show the selected color on the whole row, not only the cell.
+        // Make it consistent with the background color in PE_PanelItemViewItem.
         const auto widgetHasFocus = (w && w->hasFocus());
         const auto focus =
           widgetHasFocus && selected == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
@@ -2143,7 +2146,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         constexpr auto paletteColorRole = QPalette::ColorRole::Text;
         const auto paletteColorGroup = getPaletteColorGroup(optItem->state);
         const auto& actualFgColor =
-          selected == SelectionState::Selected ? fgColor : optItem->palette.color(paletteColorGroup, paletteColorRole);
+          focus == FocusState::Focused ? fgColor : optItem->palette.color(paletteColorGroup, paletteColorRole);
 
         const auto contentRect = fgRect.adjusted(checkBoxSpace, 0, 0, 0);
         auto availableW = contentRect.width();
@@ -5095,9 +5098,9 @@ QColor const& QlementineStyle::listItemRowBackgroundColor(
 
 QColor const& QlementineStyle::listItemBackgroundColor(
   MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
-  Q_UNUSED(focus)
+
   const auto isSelected = selected == SelectionState::Selected;
-  const auto isActive = active == ActiveState::Active;
+  const auto isActive = active == ActiveState::Active && focus == FocusState::Focused;
 
   if (isActive) {
     switch (mouse) {
