@@ -396,26 +396,26 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_FrameWindow:
       break;
     case PE_FrameButtonBevel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
-        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
-        const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
-        const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
-        const auto role = getColorRole(opt->state, isDefault);
-        const auto& bgColor = buttonBackgroundColor(mouse, role);
-        const auto& currentBgColor =
-          _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
-
+      {
         // Try to get information about rounded corners. By default, all corners are rounded.
-        auto radiuses = RadiusesF{ _impl->theme.borderRadius };
-        if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
-          if (optRoundedButton->status == QStyleOptionRoundedButton::INITIALIZED) {
-            radiuses = optRoundedButton->radiuses;
-          }
+        auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt);
+        const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
+        if (optRoundedButton) {
+            optButton = optRoundedButton;
         }
-
-        drawRoundedRect(p, optButton->rect, currentBgColor, radiuses);
+        if (optButton) {
+          const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
+          const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
+          const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
+          const auto role = getColorRole(opt->state, isDefault);
+          const auto& bgColor = buttonBackgroundColor(mouse, role);
+          const auto& currentBgColor =
+            _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
+          const auto radiuses = optRoundedButton ? optRoundedButton->radiuses : RadiusesF{ _impl->theme.borderRadius };
+          drawRoundedRect(p, optButton->rect, currentBgColor, radiuses);
+        }
+        return;
       }
-      return;
     case PE_FrameTabBarBase:
       if (const auto* optTabBar = qstyleoption_cast<const QStyleOptionTabBarBase*>(opt)) {
         if (optTabBar->documentMode) {
@@ -1032,17 +1032,14 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_PushButtonBevel:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Draw background rect.
-        // Check if we are given information about rounded corners.
-        const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
-        if (optRoundedButton && optRoundedButton->status == QStyleOptionRoundedButton::INITIALIZED) {
-          auto optButtonBg = QStyleOptionRoundedButton(*optRoundedButton);
-          optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
-          drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
-        } else {
-          auto optButtonBg = QStyleOptionButton(*optButton);
-          optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
-          drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
-        }
+        auto optButtonBg = QStyleOptionButton(*optButton);
+        optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
+        drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
+      } else if (const auto* optButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+        // Draw background rect.
+        auto optButtonBg = QStyleOptionRoundedButton(*optButton);
+        optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
+        drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
       }
       return;
     case CE_PushButtonLabel:
@@ -2641,7 +2638,6 @@ void QlementineStyle::drawComplexControl(
           buttonOpt.state.setFlag(QStyle::StateFlag::State_On, false);
           buttonOpt.features.setFlag(QStyleOptionButton::Flat, !comboBoxOpt->frame);
           buttonOpt.radiuses = isTabCellEditor ? 0. : RadiusesF{ _impl->theme.borderRadius };
-          buttonOpt.status = QStyleOptionRoundedButton::INITIALIZED;
           drawControl(CE_PushButtonBevel, &buttonOpt, p, w);
         }
       }
