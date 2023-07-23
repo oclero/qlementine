@@ -56,7 +56,6 @@ public:
 /// Allows to customize the radius of a button.
 class QStyleOptionRoundedButton : public QStyleOptionButton {
 public:
-
   enum StyleOptionType { Type = SO_CustomBase + 1 };
 
   RadiusesF radiuses;
