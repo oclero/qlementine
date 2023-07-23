@@ -395,27 +395,26 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_FrameWindow:
       break;
-    case PE_FrameButtonBevel:
-      {
-        // Try to get information about rounded corners. By default, all corners are rounded.
-        auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt);
-        const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
-        if (optRoundedButton) {
-            optButton = optRoundedButton;
-        }
-        if (optButton) {
-          const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
-          const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
-          const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
-          const auto role = getColorRole(opt->state, isDefault);
-          const auto& bgColor = buttonBackgroundColor(mouse, role);
-          const auto& currentBgColor =
-            _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
-          const auto radiuses = optRoundedButton ? optRoundedButton->radiuses : RadiusesF{ _impl->theme.borderRadius };
-          drawRoundedRect(p, optButton->rect, currentBgColor, radiuses);
-        }
-        return;
+    case PE_FrameButtonBevel: {
+      // Try to get information about rounded corners. By default, all corners are rounded.
+      auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt);
+      const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
+      if (optRoundedButton) {
+        optButton = optRoundedButton;
       }
+      if (optButton) {
+        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
+        const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
+        const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
+        const auto role = getColorRole(opt->state, isDefault);
+        const auto& bgColor = buttonBackgroundColor(mouse, role);
+        const auto& currentBgColor =
+          _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
+        const auto radiuses = optRoundedButton ? optRoundedButton->radiuses : RadiusesF{ _impl->theme.borderRadius };
+        drawRoundedRect(p, optButton->rect, currentBgColor, radiuses);
+      }
+      return;
+    }
     case PE_FrameTabBarBase:
       if (const auto* optTabBar = qstyleoption_cast<const QStyleOptionTabBarBase*>(opt)) {
         if (optTabBar->documentMode) {
@@ -5100,7 +5099,6 @@ QColor const& QlementineStyle::listItemRowBackgroundColor(
 
 QColor const& QlementineStyle::listItemBackgroundColor(
   MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
-
   const auto isSelected = selected == SelectionState::Selected;
   const auto isActive = active == ActiveState::Active && focus == FocusState::Focused;
 

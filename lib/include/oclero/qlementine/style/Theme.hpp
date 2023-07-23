@@ -181,8 +181,8 @@ public: // Values.
   int scrollBarThicknessSmall{ 4 };
   int scrollBarPadding{ 2 };
   int tabBarPaddingTop{ 4 };
-  int tabBarTabMaxWidth { 0 };
-  int tabBarTabMinWidth { 0 };
+  int tabBarTabMaxWidth{ 0 };
+  int tabBarTabMinWidth{ 0 };
 
   QFont fontRegular;
   QFont fontBold;

@@ -299,15 +299,15 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
     // Also, make up for the menu item padding so the texts are aligned.
     const auto isMenuBarMenu = qobject_cast<QMenuBar*>(_menu->parentWidget()) != nullptr;
     const auto isSubMenu = qobject_cast<QMenu*>(_menu->parentWidget()) != nullptr;
-    if (isMenuBarMenu && !isSubMenu) {
-      if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style())) {
-        const auto menuItemHPadding = qlementineStyle->theme().spacing;
-        const auto menuDropShadowWidth = qlementineStyle->theme().spacing;
-        const auto menuRect =
-          _menu->geometry().translated(-menuDropShadowWidth - menuItemHPadding, -menuDropShadowWidth);
-        _menu->setGeometry(menuRect);
-      }
-    }
+    const auto alignForMenuBar = isMenuBarMenu && !isSubMenu;
+    const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
+    const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+    const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+    const auto menuRect = _menu->geometry();
+    const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
+    const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
+    const auto newMenuRect = menuRect.translated(menuBarTranslation + shadowTranslation);
+    _menu->setGeometry(newMenuRect);
   }
 
   return false;
