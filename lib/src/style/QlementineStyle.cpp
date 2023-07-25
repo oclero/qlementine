@@ -2660,6 +2660,7 @@ void QlementineStyle::drawComplexControl(
         const auto thickness = getScrollBarThickness(mouse);
         const auto currentThickness =
           _impl->animations.animateProgress(w, thickness, _impl->theme.animationDuration * 2);
+        const auto scrollBarMargin = _impl->theme.scrollBarMargin;
 
         // Groove.
         const auto grooveRect = subControlRect(CC_ScrollBar, scrollBarOpt, SC_ScrollBarGroove, w);
@@ -2672,7 +2673,9 @@ void QlementineStyle::drawComplexControl(
         const auto& grooveColor = scrollBarGrooveColor(mouse);
         const auto& currentGrooveColor =
           _impl->animations.animateBackgroundColor(w, grooveColor, _impl->theme.animationDuration * 2);
-        const auto grooveRadius = horizontal ? currentGrooveRect.height() / 2. : currentGrooveRect.width() / 2.;
+        const auto grooveRadius = scrollBarMargin <= 0 ? 0.
+                                  : horizontal         ? currentGrooveRect.height() / 2.
+                                                       : currentGrooveRect.width() / 2.;
         p->setRenderHint(QPainter::Antialiasing, true);
         p->setPen(Qt::NoPen);
         p->setBrush(currentGrooveColor);
@@ -3306,32 +3309,30 @@ QRect QlementineStyle::subControlRect(
                               : QRect(rect.x(), rect.y() + handleCenter, rect.width(), rect.height() - handleCenter);
           } break;
           case SC_ScrollBarSlider: {
-            // calculate slider length
+            // Compute slider length.
             if (scrollBarOpt->maximum != scrollBarOpt->minimum) {
               const auto range = scrollBarOpt->maximum - scrollBarOpt->minimum;
-              const auto padding = _impl->theme.scrollBarPadding;
-              auto maxLength = horizontal ? rect.width() - 2 * padding : rect.height() - 2 * padding;
+              const auto margin = _impl->theme.scrollBarMargin;
+              auto maxLength = horizontal ? rect.width() - 2 * margin : rect.height() - 2 * margin;
               auto minLength = pixelMetric(PM_ScrollBarSliderMin, scrollBarOpt, w);
-              const auto length = std::max(
-                0., static_cast<double>((scrollBarOpt->pageStep * maxLength)) / (range + scrollBarOpt->pageStep));
               if (minLength > maxLength) {
                 std::swap(maxLength, minLength);
               }
+              const auto length = std::max(
+                0., static_cast<double>((scrollBarOpt->pageStep * maxLength)) / (range + scrollBarOpt->pageStep));
               const auto handleLength = std::clamp(static_cast<int>(length), minLength, maxLength);
               const auto handleStart = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum,
                 scrollBarOpt->sliderPosition, maxLength - handleLength, scrollBarOpt->upsideDown);
-              return horizontal
-                       ? QRect(rect.x() + padding + handleStart, rect.y(), handleLength, rect.height() - padding)
-                       : QRect(rect.x(), rect.y() + padding + handleStart, rect.width() - padding, handleLength);
+              return horizontal ? QRect(rect.x() + margin + handleStart, rect.y(), handleLength, rect.height() - margin)
+                                : QRect(rect.x(), rect.y() + margin + handleStart, rect.width() - margin, handleLength);
             } else {
               return rect;
             }
           } break;
           case SC_ScrollBarGroove: {
-            const auto padding = _impl->theme.scrollBarPadding;
-            return horizontal
-                     ? QRect(rect.x() + padding, rect.y(), rect.width() - 2 * padding, rect.height() - padding)
-                     : QRect(rect.x(), rect.y() + padding, rect.width() - padding, rect.height() - 2 * padding);
+            const auto margin = _impl->theme.scrollBarMargin;
+            return horizontal ? QRect(rect.x() + margin, rect.y(), rect.width() - 2 * margin, rect.height() - margin)
+                              : QRect(rect.x(), rect.y() + margin, rect.width() - margin, rect.height() - 2 * margin);
           } break;
           case SC_ScrollBarAddLine:
           case SC_ScrollBarSubLine:
@@ -4183,7 +4184,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // ScrollView.
     case PM_ScrollBarExtent:
-      return _impl->theme.scrollBarThicknessFull + _impl->theme.scrollBarPadding;
+      return _impl->theme.scrollBarThicknessFull + _impl->theme.scrollBarMargin;
     case PM_ScrollBarSliderMin:
       return _impl->theme.controlHeightLarge;
     case PM_ScrollView_ScrollBarSpacing:

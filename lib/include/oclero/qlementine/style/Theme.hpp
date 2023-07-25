@@ -189,9 +189,9 @@ public: // Values.
   int sliderGrooveHeight{ 4 };
   int progressBarGrooveHeight{ 6 };
   int spacing{ 8 };
-  int scrollBarThicknessFull{ 10 };
-  int scrollBarThicknessSmall{ 4 };
-  int scrollBarPadding{ 2 };
+  int scrollBarThicknessFull{ 12 };
+  int scrollBarThicknessSmall{ 6 };
+  int scrollBarMargin{ 0 };
   int tabBarPaddingTop{ 4 };
   int tabBarTabMaxWidth{ 0 };
   int tabBarTabMinWidth{ 0 };
