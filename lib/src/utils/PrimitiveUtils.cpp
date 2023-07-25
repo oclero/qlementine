@@ -320,9 +320,9 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius) {
   const auto p3 = QPointF(x, y + h);
 
   /* The angles correspond to the following points:
-     P1
-    /  \
-     /  \
+       P1
+      /  \
+     /    \
     P3----P2
   */
   const auto angle1 = getAngleRadius(p3, p1, p2, radius);
@@ -354,6 +354,26 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius) {
   p->translate(-tr_x, -tr_y);
 }
 
+void drawCheckerboard(
+  QPainter* p, const QRectF& rect, const QColor& darkColor, const QColor& lightColor, const qreal cellWidth) {
+  const auto hCellCount = rect.width() / cellWidth;
+  const auto vCellCount = rect.height() / cellWidth;
+
+  p->setPen(Qt::NoPen);
+  for (auto i = 0; i < hCellCount; ++i) {
+    for (auto j = 0; j < vCellCount; ++j) {
+      const auto& cellColor = (i + j) % 2 == 0 ? darkColor : lightColor;
+      const auto cellX = rect.x() + i * cellWidth;
+      const auto cellY = rect.y() + j * cellWidth;
+      const auto cellW = std::max(1., hCellCount - i) * cellWidth;
+      const auto cellH = std::max(1., vCellCount - j) * cellWidth;
+      const auto squareRect = QRectF(cellX, cellY, cellW, cellH);
+      p->setBrush(cellColor);
+      p->drawRect(squareRect);
+    }
+  }
+}
+
 void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value,
   qreal const radius, bool inverted) {
   const auto ratio = (max != min) ? (value - min) / (max - min) : 0;
@@ -372,11 +392,28 @@ void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& colo
 }
 
 void drawColorMark(QPainter* p, QRect const& rect, const QColor& color, const QColor& borderColor, int borderWidth) {
-  // Draw background.
   const auto circleDiameter = rect.height();
   const auto markRect = QRect((rect.width() - circleDiameter) / 2, 0, circleDiameter, circleDiameter);
 
   p->setRenderHint(QPainter::Antialiasing, true);
+
+  // Draw checkerboard if the color has semi-transparency.
+  if (color.alphaF() < 1.) {
+    static const auto darkCellColor = QColor(220, 220, 220);
+    static const auto lightCellColor = QColor(255, 255, 255);
+    constexpr auto cellWidth = 8;
+
+    QPainterPath clipPath;
+    clipPath.addEllipse(markRect);
+    p->save();
+    {
+      p->setClipPath(clipPath);
+      drawCheckerboard(p, markRect, darkCellColor, lightCellColor, cellWidth);
+    }
+    p->restore();
+  }
+
+  // Draw background.
   p->setPen(Qt::NoPen);
   p->setBrush(color);
   p->drawEllipse(markRect);
@@ -1033,11 +1070,6 @@ void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value
   const auto dialFrontRect =
     dialRect.marginsRemoved({ grooveThickness, grooveThickness, grooveThickness, grooveThickness });
   p->setPen(Qt::NoPen);
-
-  // TMP : fix transparent color.
-  p->setBrush(Qt::white);
-  p->drawEllipse(dialFrontRect);
-
   p->setBrush(handleColor);
   p->drawEllipse(dialFrontRect);
 
@@ -1251,7 +1283,7 @@ void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, 
     }
 
     // Background.
-    p.setBrush(enabled ? theme.neutralAlternativeColor : theme.neutralAlternativeColorDisabled);
+    p.setBrush(enabled ? theme.secondaryAlternativeColor : theme.secondaryAlternativeColorDisabled);
     p.setPen(Qt::NoPen);
     p.drawRoundedRect(bgRect.translated(translation), radius + borderW, radius + borderW);
 
@@ -1263,7 +1295,7 @@ void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, 
     // Text.
     constexpr auto textFlags = Qt::AlignCenter | Qt::TextSingleLine | Qt::TextHideMnemonic;
     p.setBrush(Qt::NoBrush);
-    p.setPen(enabled ? theme.neutralColor : theme.neutralColorDisabled);
+    p.setPen(enabled ? theme.secondaryColor : theme.secondaryColorDisabled);
     p.drawText(textRect.translated(translation), textFlags, part);
 
     x += bgRect.width() + spacing;
@@ -1347,44 +1379,61 @@ void updateUncheckableButtonIconPixmap(
   if (!func)
     return;
 
-  constexpr auto role = ColorRole::Neutral;
+  constexpr auto role = ColorRole::Secondary;
 
-  for (auto factor = 1; factor <= 2; ++factor) {
+  for (const auto factor : { 1.0, 2.0 }) {
     const auto scaledSize = size * factor;
 
-    const auto pixmapNormal = func(scaledSize, style.toolButtonForegroundColor(MouseState::Normal, role));
+    auto pixmapNormal = func(scaledSize, style.toolButtonForegroundColor(MouseState::Normal, role));
+    pixmapNormal.setDevicePixelRatio(factor);
     icon.addPixmap(pixmapNormal, QIcon::Mode::Normal);
 
-    const auto pixmapMouseOver = func(scaledSize, style.toolButtonForegroundColor(MouseState::Hovered, role));
+    auto pixmapMouseOver = func(scaledSize, style.toolButtonForegroundColor(MouseState::Hovered, role));
+    pixmapMouseOver.setDevicePixelRatio(factor);
     icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected);
 
-    const auto pixmapPressed = func(scaledSize, style.toolButtonForegroundColor(MouseState::Pressed, role));
+    auto pixmapPressed = func(scaledSize, style.toolButtonForegroundColor(MouseState::Pressed, role));
+    pixmapPressed.setDevicePixelRatio(factor);
     icon.addPixmap(pixmapPressed, QIcon::Mode::Active);
 
-    const auto pixmapDisabled = func(scaledSize, style.toolButtonForegroundColor(MouseState::Disabled, role));
+    auto pixmapDisabled = func(scaledSize, style.toolButtonForegroundColor(MouseState::Disabled, role));
+    pixmapDisabled.setDevicePixelRatio(factor);
     icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled);
   }
 }
 
 void updateCheckIcon(QIcon& icon, QSize const& size, QlementineStyle const& style) {
   const auto role = ColorRole::Primary;
-  const auto pixmapNormal = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Normal, role));
-  const auto pixmapMouseOver = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Hovered, role));
-  const auto pixmapPressed = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Pressed, role));
-  const auto pixmapDisabled = makeCheckPixmap(size, style.buttonForegroundColor(MouseState::Disabled, role));
 
-  QPixmap uncheckedPixmap{ size };
-  uncheckedPixmap.fill(Qt::transparent);
+  for (const auto factor : { 1.0, 2.0 }) {
+    const auto scaledSize = size * factor;
 
-  icon.addPixmap(pixmapNormal, QIcon::Mode::Normal, QIcon::State::On);
-  icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected, QIcon::State::On);
-  icon.addPixmap(pixmapPressed, QIcon::Mode::Active, QIcon::State::On);
-  icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled, QIcon::State::On);
+    auto pixmapNormal = makeCheckPixmap(scaledSize, style.buttonForegroundColor(MouseState::Normal, role));
+    pixmapNormal.setDevicePixelRatio(factor);
 
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Normal, QIcon::State::Off);
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Selected, QIcon::State::Off);
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Active, QIcon::State::Off);
-  icon.addPixmap(uncheckedPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
+    auto pixmapMouseOver = makeCheckPixmap(scaledSize, style.buttonForegroundColor(MouseState::Hovered, role));
+    pixmapMouseOver.setDevicePixelRatio(factor);
+
+    auto pixmapPressed = makeCheckPixmap(scaledSize, style.buttonForegroundColor(MouseState::Pressed, role));
+    pixmapPressed.setDevicePixelRatio(factor);
+
+    auto pixmapDisabled = makeCheckPixmap(scaledSize, style.buttonForegroundColor(MouseState::Disabled, role));
+    pixmapDisabled.setDevicePixelRatio(factor);
+
+    QPixmap uncheckedPixmap{ scaledSize };
+    uncheckedPixmap.fill(Qt::transparent);
+    uncheckedPixmap.setDevicePixelRatio(factor);
+
+    icon.addPixmap(pixmapNormal, QIcon::Mode::Normal, QIcon::State::On);
+    icon.addPixmap(pixmapMouseOver, QIcon::Mode::Selected, QIcon::State::On);
+    icon.addPixmap(pixmapPressed, QIcon::Mode::Active, QIcon::State::On);
+    icon.addPixmap(pixmapDisabled, QIcon::Mode::Disabled, QIcon::State::On);
+
+    icon.addPixmap(uncheckedPixmap, QIcon::Mode::Normal, QIcon::State::Off);
+    icon.addPixmap(uncheckedPixmap, QIcon::Mode::Selected, QIcon::State::Off);
+    icon.addPixmap(uncheckedPixmap, QIcon::Mode::Active, QIcon::State::Off);
+    icon.addPixmap(uncheckedPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
+  }
 }
 
 QPixmap makeClearButtonPixmap(QSize const& size, QColor const& fgColor) {
@@ -1555,8 +1604,8 @@ void updateMessageBoxWarningIcon(QIcon& icon, QSize const& size, Theme const& th
   const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
 
   for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxWarningPixmap(pixmapSize, bgColor, fgColor);
+    const auto scaledSize = size * factor;
+    auto pixmap = makeMessageBoxWarningPixmap(scaledSize, bgColor, fgColor);
     pixmap.setDevicePixelRatio(factor);
     icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
@@ -1565,7 +1614,7 @@ void updateMessageBoxWarningIcon(QIcon& icon, QSize const& size, Theme const& th
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
     icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
 
-    auto disbledPixmap = makeMessageBoxWarningPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    auto disbledPixmap = makeMessageBoxWarningPixmap(scaledSize, bgColorDisabled, fgColorDisabled);
     disbledPixmap.setDevicePixelRatio(factor);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
@@ -1580,8 +1629,8 @@ void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& t
   const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
 
   for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxCriticalPixmap(pixmapSize, bgColor, fgColor);
+    const auto scaledSize = size * factor;
+    auto pixmap = makeMessageBoxCriticalPixmap(scaledSize, bgColor, fgColor);
     pixmap.setDevicePixelRatio(factor);
     icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
@@ -1590,7 +1639,7 @@ void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& t
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
     icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
 
-    auto disbledPixmap = makeMessageBoxCriticalPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    auto disbledPixmap = makeMessageBoxCriticalPixmap(scaledSize, bgColorDisabled, fgColorDisabled);
     disbledPixmap.setDevicePixelRatio(factor);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
@@ -1605,8 +1654,8 @@ void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& t
   const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
 
   for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxQuestionPixmap(pixmapSize, bgColor, fgColor);
+    const auto scaledSize = size * factor;
+    auto pixmap = makeMessageBoxQuestionPixmap(scaledSize, bgColor, fgColor);
     pixmap.setDevicePixelRatio(factor);
     icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
@@ -1615,7 +1664,7 @@ void updateMessageBoxQuestionIcon(QIcon& icon, QSize const& size, Theme const& t
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
     icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
 
-    auto disbledPixmap = makeMessageBoxQuestionPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    auto disbledPixmap = makeMessageBoxQuestionPixmap(scaledSize, bgColorDisabled, fgColorDisabled);
     disbledPixmap.setDevicePixelRatio(factor);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);
@@ -1630,8 +1679,8 @@ void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const
   const auto& fgColorDisabled = theme.statusColorForegroundDisabled;
 
   for (const auto factor : { 1., 2. }) {
-    const auto pixmapSize = size * factor;
-    auto pixmap = makeMessageBoxInformationPixmap(pixmapSize, bgColor, fgColor);
+    const auto scaledSize = size * factor;
+    auto pixmap = makeMessageBoxInformationPixmap(scaledSize, bgColor, fgColor);
     pixmap.setDevicePixelRatio(factor);
     icon.addPixmap(pixmap, QIcon::Mode::Normal, QIcon::State::Off);
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::Off);
@@ -1640,7 +1689,7 @@ void updateMessageBoxInformationIcon(QIcon& icon, QSize const& size, Theme const
     icon.addPixmap(pixmap, QIcon::Mode::Active, QIcon::State::On);
     icon.addPixmap(pixmap, QIcon::Mode::Selected, QIcon::State::On);
 
-    auto disbledPixmap = makeMessageBoxInformationPixmap(pixmapSize, bgColorDisabled, fgColorDisabled);
+    auto disbledPixmap = makeMessageBoxInformationPixmap(scaledSize, bgColorDisabled, fgColorDisabled);
     disbledPixmap.setDevicePixelRatio(factor);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::Off);
     icon.addPixmap(disbledPixmap, QIcon::Mode::Disabled, QIcon::State::On);

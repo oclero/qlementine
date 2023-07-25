@@ -198,24 +198,6 @@ protected:
 struct SandboxWindow::Impl {
   Impl(SandboxWindow& o)
     : owner(o) {
-#if 0
-    {
-      QSettings qSettings;
-      lastJsonThemePath = qSettings.value(QStringLiteral("lastJsonThemePath"), QString{}).toString();
-      if (lastJsonThemePath.isEmpty()) {
-        showFileDialog();
-      }
-
-      QObject::connect(&fileWatcher, &QFileSystemWatcher::fileChanged, &owner, [this](const QString& path) {
-        if (qlementineStyle && path == lastJsonThemePath) {
-          qlementineStyle->setThemeJsonPath(lastJsonThemePath);
-        }
-      });
-      if (!lastJsonThemePath.isEmpty()) {
-        fileWatcher.addPath(lastJsonThemePath);
-      }
-    }
-#endif
   }
 
   void beginSetupUi() {
@@ -226,7 +208,6 @@ struct SandboxWindow::Impl {
     windowContentLayout = new QVBoxLayout(windowContent);
 
     setupShortcuts();
-    //setupMenuBar();
   }
 
   void endSetupUi() {
@@ -239,62 +220,6 @@ struct SandboxWindow::Impl {
     owner.setCentralWidget(globalScrollArea);
   }
 
-#if 0
-  void showFileDialog() {
-    auto const& dir = lastJsonThemePath.isEmpty()
-                        ? QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DesktopLocation)
-                        : lastJsonThemePath;
-    auto const filename = QFileDialog::getOpenFileName(nullptr, tr("Open"), dir, QStringLiteral("*.json"));
-    if (!filename.isEmpty()) {
-      fileWatcher.removePath(lastJsonThemePath);
-      lastJsonThemePath = filename;
-      // Save path to settings.
-      {
-        QSettings qSettings;
-        qSettings.setValue(QStringLiteral("lastJsonThemePath"), filename);
-      }
-      // Watch for changes.
-      fileWatcher.addPath(lastJsonThemePath);
-
-      if (reloadJsonAction) {
-        reloadJsonAction->setEnabled(!lastJsonThemePath.isEmpty());
-        reloadJsonAction->setToolTip(lastJsonThemePath);
-      }
-    }
-  }
-#endif
-
-  void setupMenuBar() {
-    //auto* menuBar = owner.menuBar();
-
-    //// Load JSON file.
-    //auto* const loadJsonAction = new QAction("Load &JSON theme", menuBar);
-    //loadJsonAction->setShortcut(QKeySequence::Open);
-    //QObject::connect(loadJsonAction, &QAction::triggered, &owner, [this]() { showFileDialog(); });
-
-    //// Reload JSON file.
-    //reloadJsonAction = new QAction("&Reload last JSON theme", menuBar);
-    //reloadJsonAction->setShortcut(QKeySequence::Refresh);
-    //QObject::connect(reloadJsonAction, &QAction::triggered, &owner, [this]() {
-    //  if (qlementineStyle) {
-    //    qlementineStyle->setThemeJsonPath(lastJsonThemePath);
-    //  }
-    //});
-    //reloadJsonAction->setEnabled(!lastJsonThemePath.isEmpty());
-    //reloadJsonAction->setToolTip(lastJsonThemePath);
-
-    //// Quit.
-    //auto* const closeAction = new QAction("&Quit", menuBar);
-    //closeAction->setShortcuts({ QKeySequence::Close, QKeySequence{ Qt::Key_Escape } });
-    //closeAction->setMenuRole(QAction::QuitRole);
-    //QObject::connect(closeAction, &QAction::triggered, &owner, []() { QApplication::quit(); });
-
-    //// File menu
-    //auto* const fileMenu = menuBar->addMenu("&File");
-    //fileMenu->addAction(loadJsonAction);
-    //fileMenu->addAction(reloadJsonAction);
-    //fileMenu->addAction(closeAction);
-  }
 
   void setupShortcuts() {
     auto* enableShortcut = new QShortcut(Qt::CTRL + Qt::Key_E, &owner);
@@ -414,6 +339,7 @@ struct SandboxWindow::Impl {
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      button->setDefault(true); // Only one can be the default button, so we choose the first.
       windowContentLayout->addWidget(button);
     }
     {
@@ -508,13 +434,26 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_commandLinkButton() {
-    const QIcon icon(":/plus_24.svg");
-    auto* button = new CommandLinkButton(windowContent);
-    button->setText("First Line with a very long text that should be cropped");
-    button->setDescription("Second Line that could be very long and should be cropped");
-    button->setIcon(icon);
-    button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    windowContentLayout->addWidget(button);
+    {
+      const QIcon icon(":/plus_24.svg");
+      auto* button = new CommandLinkButton(windowContent);
+      button->setText("First Line with a very long text that should be cropped");
+      button->setDescription("Second Line that could be very long and should be cropped");
+      button->setIcon(icon);
+      button->setDefault(true);
+      button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      windowContentLayout->addWidget(button);
+    }
+    {
+      const QIcon icon(":/plus_24.svg");
+      auto* button = new CommandLinkButton(windowContent);
+      button->setText("First Line with a very long text that should be cropped");
+      button->setDescription("Second Line that could be very long and should be cropped");
+      button->setIcon(icon);
+      button->setDefault(false);
+      button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      windowContentLayout->addWidget(button);
+    }
   }
 
   void setupUI_sliderAndProgressBar() {
@@ -634,7 +573,7 @@ struct SandboxWindow::Impl {
         QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
       item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
       item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
-      item->setForeground(i % 2 ? Qt::red : Qt::blue);
+      //item->setForeground(i % 2 ? Qt::red : Qt::blue);
       listView->addItem(item);
     }
     listView->item(0)->setSelected(true);
@@ -1027,31 +966,21 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_messageBoxIcons() {
-    const auto iconSize = QSize(128, 128);
+    const auto* qStyle = QApplication::style();
+    const auto iconExtent = qStyle->pixelMetric(QStyle::PM_LargeIconSize) * 2;
+    const auto iconSize = QSize(iconExtent, iconExtent);
 
-    auto* label1 = new QLabel(windowContent);
-    label1->setFixedSize(iconSize);
-    const auto icon1 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
-    label1->setPixmap(icon1.pixmap(iconSize.width()));
-    windowContentLayout->addWidget(label1);
-
-    auto* label2 = new QLabel(windowContent);
-    label2->setFixedSize(iconSize);
-    const auto icon2 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
-    label2->setPixmap(icon2.pixmap(iconSize.width()));
-    windowContentLayout->addWidget(label2);
-
-    auto* label3 = new QLabel(windowContent);
-    label3->setFixedSize(iconSize);
-    const auto icon3 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation);
-    label3->setPixmap(icon3.pixmap(iconSize.width()));
-    windowContentLayout->addWidget(label3);
-
-    auto* label4 = new QLabel(windowContent);
-    label4->setFixedSize(iconSize);
-    const auto icon4 = QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion);
-    label4->setPixmap(icon4.pixmap(iconSize.width()));
-    windowContentLayout->addWidget(label4);
+    for (const auto stdIcon : {
+         QStyle::SP_MessageBoxCritical,
+         QStyle::SP_MessageBoxWarning,
+         QStyle::SP_MessageBoxInformation,
+         QStyle::SP_MessageBoxQuestion}) {
+      auto* label = new QLabel(windowContent);
+      label->setFixedSize(iconSize);
+      const auto icon1 = qStyle->standardIcon(stdIcon);
+      label->setPixmap(icon1.pixmap(iconSize.width()));
+      windowContentLayout->addWidget(label);
+    }
   }
 
   void setupUi_treeView() {
@@ -1322,13 +1251,12 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     for (auto i = 0; i < 3; ++i) {
       navBar->addItem(QString("Item %1").arg(i), dummyIcon, QString("%1").arg((i + 1) * 10));
     }
+    windowContentLayout->addWidget(navBar);
 
     auto* segmCtrl = new SegmentedControl(windowContent);
     for (auto i = 0; i < 3; ++i) {
       segmCtrl->addItem(QString("Item %1").arg(i), dummyIcon, QString("%1").arg((i + 1) * 10));
     }
-
-    windowContentLayout->addWidget(navBar);
     windowContentLayout->addWidget(segmCtrl);
   }
 
@@ -1509,9 +1437,6 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   QBoxLayout* windowContentLayout{ nullptr };
   QScrollArea* globalScrollArea{ nullptr };
   QToolBar* toolbar{ nullptr };
-
-  QAction* reloadJsonAction{ nullptr };
-  QFileSystemWatcher fileWatcher;
 };
 
 SandboxWindow::SandboxWindow(QWidget* parent)
@@ -1522,43 +1447,45 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   _impl->beginSetupUi();
   {
     // Uncomment the line to show the corresponding widget.
-    //  _impl->setupUI_label();
-    //  _impl->setupUI_button();
-    //  _impl->setupUI_buttonVariants();
-    //  _impl->setupUI_checkbox();
-    //  _impl->setupUI_radioButton();
-    //  _impl->setupUI_commandLinkButton();
-    //  _impl->setupUI_sliderAndProgressBar();
-    //  _impl->setupUI_sliderWithTicks();
-    //  _impl->setupUI_lineEdit();
-    //  _impl->setupUI_dial();
-    //  _impl->setupUI_spinBox();
-    //  _impl->setupUI_comboBox();
-    //  _impl->setupUI_listView();
-    //  _impl->setupUI_treeWidget();
-    //  _impl->setupUI_table();
-    //  _impl->setupUI_menu();
-    //  _impl->setupUI_toolButton();
-    //  _impl->setupUI_toolButtonsVariants();
-    //  _impl->setupUI_tabBar();
-    //  _impl->setupUI_tabWidget();
-    //  _impl->setupUI_groupBox();
-    //  _impl->setupUI_fontMetricsTests();
-    //  _impl->setupUI_messageBox();
-    //  _impl->setupUI_messageBoxIcons();
-    //  _impl->setupUi_treeView();
-    //  _impl->setupUi_expander();
-    //  _impl->setupUi_popover();
-    //  _impl->setupUi_navigationBar();
-    //  _impl->setupUi_switch();
-    //  _impl->setupUi_blur();
-    //  _impl->setupUi_focus();
-    //  _impl->setup_badge();
-    //  _impl->setup_specialProgressBar();
-    //  _impl->setup_lineEditStatus();
-    //  _impl->setup_colorButton();
-    //  _impl->setup_themeEditor();
-    //  _impl->setup_dateTimeEdit();
+//      _impl->setupUI_label();
+//      _impl->setupUI_button();
+//      _impl->setupUI_buttonVariants();
+//      _impl->setupUI_checkbox();
+//      _impl->setupUI_radioButton();
+//      _impl->setupUI_commandLinkButton();
+//      _impl->setupUI_sliderAndProgressBar();
+//      _impl->setupUI_sliderWithTicks();
+//      _impl->setupUI_lineEdit();
+//      _impl->setupUI_dial();
+//      _impl->setupUI_spinBox();
+//      _impl->setupUI_comboBox();
+//      _impl->setupUI_listView();
+//      _impl->setupUI_treeWidget();
+//      _impl->setupUI_table();
+//      _impl->setupUI_menu();
+//      _impl->setupUI_toolButton();
+//      _impl->setupUI_toolButtonsVariants();
+//      _impl->setupUI_tabBar();
+//      _impl->setupUI_tabWidget();
+//      _impl->setupUI_groupBox();
+//      _impl->setupUi_treeView();
+//      _impl->setupUi_focus();
+//      _impl->setup_specialProgressBar();
+//      _impl->setup_lineEditStatus();
+//      _impl->setup_dateTimeEdit();
+
+//      _impl->setupUi_switch();
+//      _impl->setupUi_expander();
+//      _impl->setupUi_popover();
+//      _impl->setupUi_navigationBar();
+//      _impl->setup_badge();
+//      _impl->setup_colorButton();
+
+//      _impl->setupUI_messageBoxIcons();
+//      _impl->setupUI_fontMetricsTests();
+//      _impl->setupUi_blur();
+//      _impl->setup_themeEditor();
+//      _impl->setupUI_messageBox();
   }
   _impl->endSetupUi();
 }

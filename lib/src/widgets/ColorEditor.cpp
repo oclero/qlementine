@@ -66,6 +66,12 @@ void ColorEditor::setup(const QColor& initialColor) {
     emit colorChanged();
   });
 
+  QObject::connect(_colorButton, &ColorButton::colorModeChanged, this, [this]() {
+    syncLineEditFromButton();
+    emit colorModeChanged();
+  });
+
+
   QObject::connect(_lineEdit, &QLineEdit::editingFinished, this, [this]() {
     const auto colorOptional = qlementine::tryGetColorFromHexaString(_lineEdit->text());
     const auto validString = colorOptional.has_value();
@@ -73,6 +79,9 @@ void ColorEditor::setup(const QColor& initialColor) {
     if (validString) {
       QSignalBlocker blocker(_colorButton);
       _colorButton->setColor(colorOptional.value());
+
+      // Ensure the lineEdit's text is correctly formatted (lowercase, etc.).
+      syncLineEditFromButton();
     }
   });
 }
@@ -87,8 +96,26 @@ void ColorEditor::setColor(const QColor& color) {
   syncLineEditFromButton();
 }
 
+
+ColorMode ColorEditor::colorMode() const {
+  return _colorButton->colorMode();
+}
+
+void ColorEditor::setColorMode(ColorMode mode) {
+  _colorButton->setColorMode(mode);
+}
+
 void ColorEditor::syncLineEditFromButton() {
   QSignalBlocker blocker(_lineEdit);
-  _lineEdit->setText(qlementine::toHexRGBA(_colorButton->color()));
+  switch (_colorButton->colorMode()) {
+    case ColorMode::RGB:
+      _lineEdit->setText(qlementine::toHexRGB(_colorButton->color()));
+      break;
+    case ColorMode::RGBA:
+      _lineEdit->setText(qlementine::toHexRGBA(_colorButton->color()));
+      break;
+    default:
+      break;
+  }
 }
 } // namespace oclero::qlementine

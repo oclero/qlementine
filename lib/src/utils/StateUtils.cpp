@@ -92,7 +92,7 @@ ColorRole getColorRole(QStyle::State const& state, bool const isDefault) {
 }
 
 ColorRole getColorRole(bool checked, bool const isDefault) {
-  return checked || isDefault ? ColorRole::Primary : ColorRole::Neutral;
+  return checked || isDefault ? ColorRole::Primary : ColorRole::Secondary;
 }
 
 ColorRole getColorRole(CheckState const checked) {

@@ -146,6 +146,7 @@ QJsonDocument readJsonDoc(QString const& jsonPath) {
 } // namespace
 
 Theme::Theme() {
+  initializeFonts();
   initializePalette();
 }
 
@@ -157,9 +158,51 @@ Theme::Theme(QJsonDocument const& jsonDoc) {
 Theme::Theme(QString const& jsonPath)
   : Theme(readJsonDoc(jsonPath)) {}
 
+void Theme::initializeFonts() {
+  // Fonts.
+  const auto defaultFont = QFont(QStringLiteral("Inter"));
+  const auto fixedFont = QFont(QStringLiteral("Roboto Mono"));
+  const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
+  fontRegular = defaultFont;
+  fontRegular.setWeight(QFont::Weight::Normal);
+  fontRegular.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
+
+  fontBold = defaultFont;
+  fontBold.setWeight(QFont::Weight::Bold);
+  fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
+
+  fontH1 = defaultFont;
+  fontH1.setWeight(QFont::Weight::Bold);
+  fontH1.setPointSizeF(pixelSizeToPointSize(fontSizeH1, dpi));
+
+  fontH2 = defaultFont;
+  fontH2.setWeight(QFont::Weight::Bold);
+  fontH2.setPointSizeF(pixelSizeToPointSize(fontSizeH2, dpi));
+
+  fontH3 = defaultFont;
+  fontH3.setWeight(QFont::Weight::Bold);
+  fontH3.setPointSizeF(pixelSizeToPointSize(fontSizeH3, dpi));
+
+  fontH4 = defaultFont;
+  fontH4.setWeight(QFont::Weight::Bold);
+  fontH4.setPointSizeF(pixelSizeToPointSize(fontSizeH4, dpi));
+
+  fontH5 = defaultFont;
+  fontH5.setWeight(QFont::Weight::Bold);
+  fontH5.setPointSizeF(pixelSizeToPointSize(fontSizeH5, dpi));
+
+  fontCaption = defaultFont;
+  fontCaption.setWeight(QFont::Weight::Normal);
+  fontCaption.setPointSizeF(pixelSizeToPointSize(fontSizeS1, dpi));
+
+  fontMonospace = fixedFont;
+  fontMonospace.setWeight(QFont::Weight::Normal);
+  fontMonospace.setPointSizeF(pixelSizeToPointSize(fontSizeMonospace, dpi));
+}
+
 void Theme::initializePalette() {
   // Shades.
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Window, backgroundColorMain1);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Window, backgroundColorMain2);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Dark, backgroundColorMain3);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Mid, backgroundColorMain3);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Midlight, backgroundColorMain2);
@@ -167,10 +210,10 @@ void Theme::initializePalette() {
 
   // ItemViews.
   // Compute color without alpha, to avoid color blending when the QTreeView is animating.
-  const auto itemViewBase = getColorSourceOver(backgroundColorMain1, adaptativeColor2);
+  const auto itemViewBase = backgroundColorMain1;
   const auto itemViewAlternate =
-    getColorSourceOver(itemViewBase, colorWithAlpha(adaptativeColor1, adaptativeColor1.alpha() / 2));
-  const auto itemViewDisabled = getColorSourceOver(backgroundColorMain1, adaptativeColor1);
+    getColorSourceOver(itemViewBase, colorWithAlpha(neutralColorDisabled, neutralColorDisabled.alpha() / 2));
+  const auto itemViewDisabled = getColorSourceOver(backgroundColorMain1, neutralColorDisabled);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Base, itemViewBase);
   palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Base, itemViewDisabled);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::AlternateBase, itemViewAlternate);
@@ -179,8 +222,8 @@ void Theme::initializePalette() {
   palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::NoRole, backgroundColorMainTransparent);
 
   // Tooltips.
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipBase, neutralColor);
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipText, neutralColorForeground);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipBase, secondaryColor);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipText, secondaryColorForeground);
 
   // Highlight.
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Highlight, primaryColor);
@@ -189,27 +232,27 @@ void Theme::initializePalette() {
   palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::HighlightedText, primaryColorDisabled);
 
   // Text.
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Text, neutralColor);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Text, neutralColorDisabled);
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::WindowText, neutralColor);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::WindowText, neutralColorDisabled);
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::PlaceholderText, neutralColorDisabled);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::PlaceholderText, adaptativeColor1);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Text, secondaryColor);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Text, secondaryColorDisabled);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::WindowText, secondaryColor);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::WindowText, secondaryColorDisabled);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::PlaceholderText, secondaryColorDisabled);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::PlaceholderText, neutralColorDisabled);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Link, primaryColor);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Link, neutralColorDisabled);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Link, secondaryColorDisabled);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::LinkVisited, primaryColor);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::LinkVisited, neutralColorDisabled);
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::BrightText, neutralAlternativeColor);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::BrightText, neutralAlternativeColorDisabled);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::LinkVisited, secondaryColorDisabled);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::BrightText, secondaryAlternativeColor);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::BrightText, secondaryAlternativeColorDisabled);
 
   // Buttons.
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ButtonText, neutralColorForeground);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::ButtonText, neutralColorForegroundDisabled);
-  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Button, adaptativeColor3);
-  palette.setColor(QPalette::ColorGroup::Normal, QPalette::ColorRole::Button, adaptativeColor3);
-  palette.setColor(QPalette::ColorGroup::Current, QPalette::ColorRole::Button, adaptativeColor4);
-  palette.setColor(QPalette::ColorGroup::Active, QPalette::ColorRole::Button, adaptativeColor5);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Button, adaptativeColor1);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ButtonText, secondaryColorForeground);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::ButtonText, secondaryColorForegroundDisabled);
+  palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Button, neutralColor);
+  palette.setColor(QPalette::ColorGroup::Normal, QPalette::ColorRole::Button, neutralColor);
+  palette.setColor(QPalette::ColorGroup::Current, QPalette::ColorRole::Button, neutralColorHovered);
+  palette.setColor(QPalette::ColorGroup::Active, QPalette::ColorRole::Button, neutralColorPressed);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Button, neutralColorDisabled);
 
   //palette.setColor(QPalette::ColorGroup::, QPalette::ColorRole::Background, backgroundColor);
 }
@@ -230,14 +273,14 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain1);
       TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain2);
       TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain3);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain4);
       backgroundColorMainTransparent = colorWithAlpha(backgroundColorMain1, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, adaptativeColor1);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, adaptativeColor2);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, adaptativeColor3);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, adaptativeColor4);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, adaptativeColor5);
-      adaptativeColorTransparent = colorWithAlpha(adaptativeColor1, 0);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorDisabled);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColor);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorHovered);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorPressed);
+      neutralColorTransparent = colorWithAlpha(neutralColorDisabled, 0);
 
       TRY_SET_COLOR_ATTRIBUTE(jsonObj, focusColor);
 
@@ -253,23 +296,23 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundDisabled);
       primaryColorForegroundTransparent = colorWithAlpha(primaryColorForeground, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColor);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorDisabled);
-      neutralColorTransparent = colorWithAlpha(neutralColor, 0);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColor);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorHovered);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorPressed);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorDisabled);
+      secondaryColorTransparent = colorWithAlpha(secondaryColor, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralAlternativeColor);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralAlternativeColorHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralAlternativeColorPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralAlternativeColorDisabled);
-      neutralAlternativeColorTransparent = colorWithAlpha(neutralAlternativeColor, 0);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColor);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorHovered);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorPressed);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorDisabled);
+      secondaryAlternativeColorTransparent = colorWithAlpha(secondaryAlternativeColor, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorForeground);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorForegroundHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorForegroundPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorForegroundDisabled);
-      neutralColorForegroundTransparent = colorWithAlpha(neutralColorForeground, 0);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForeground);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundHovered);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundPressed);
+      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundDisabled);
+      secondaryColorForegroundTransparent = colorWithAlpha(secondaryColorForeground, 0);
 
       TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccess);
       TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessHovered);
@@ -355,44 +398,7 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       }
 
       // Fonts.
-      const auto defaultFont = QFont(QStringLiteral("Inter"));
-      const auto fixedFont = QFont(QStringLiteral("Roboto Mono"));
-      const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
-      fontRegular = defaultFont;
-      fontRegular.setWeight(QFont::Weight::Normal);
-      fontRegular.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
-
-      fontBold = defaultFont;
-      fontBold.setWeight(QFont::Weight::Bold);
-      fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
-
-      fontH1 = defaultFont;
-      fontH1.setWeight(QFont::Weight::Bold);
-      fontH1.setPointSizeF(pixelSizeToPointSize(fontSizeH1, dpi));
-
-      fontH2 = defaultFont;
-      fontH2.setWeight(QFont::Weight::Bold);
-      fontH2.setPointSizeF(pixelSizeToPointSize(fontSizeH2, dpi));
-
-      fontH3 = defaultFont;
-      fontH3.setWeight(QFont::Weight::Bold);
-      fontH3.setPointSizeF(pixelSizeToPointSize(fontSizeH3, dpi));
-
-      fontH4 = defaultFont;
-      fontH4.setWeight(QFont::Weight::Bold);
-      fontH4.setPointSizeF(pixelSizeToPointSize(fontSizeH4, dpi));
-
-      fontH5 = defaultFont;
-      fontH5.setWeight(QFont::Weight::Bold);
-      fontH5.setPointSizeF(pixelSizeToPointSize(fontSizeH5, dpi));
-
-      fontCaption = defaultFont;
-      fontCaption.setWeight(QFont::Weight::Normal);
-      fontCaption.setPointSizeF(pixelSizeToPointSize(fontSizeS1, dpi));
-
-      fontMonospace = fixedFont;
-      fontMonospace.setWeight(QFont::Weight::Normal);
-      fontMonospace.setPointSizeF(pixelSizeToPointSize(fontSizeMonospace, dpi));
+      initializeFonts();
     }
   }
 }
@@ -400,8 +406,8 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
 QJsonDocument Theme::toJson() const {
   QJsonObject jsonObj;
 
-  jsonObj.insert("adaptativeColor1", toHexRGBA(adaptativeColor1));
-  jsonObj.insert("adaptativeColor2", toHexRGBA(adaptativeColor2));
+  jsonObj.insert("neutralColorDisabled", toHexRGBA(neutralColorDisabled));
+  jsonObj.insert("neutralColor", toHexRGBA(neutralColor));
 
   // Metadata.
   QJsonObject metadataObj;
@@ -423,12 +429,12 @@ bool Theme::operator==(const Theme& other) const {
     && backgroundColorMain1 == other.backgroundColorMain1
     && backgroundColorMain2 == other.backgroundColorMain2
     && backgroundColorMain3 == other.backgroundColorMain3
+    && backgroundColorMain4 == other.backgroundColorMain4
 
-    && adaptativeColor1 == other.adaptativeColor1
-    && adaptativeColor2 == other.adaptativeColor2
-    && adaptativeColor3 == other.adaptativeColor3
-    && adaptativeColor4 == other.adaptativeColor4
-    && adaptativeColor5 == other.adaptativeColor5
+    && neutralColorDisabled == other.neutralColorDisabled
+    && neutralColor == other.neutralColor
+    && neutralColorHovered == other.neutralColorHovered
+    && neutralColorPressed == other.neutralColorPressed
 
     && focusColor == other.focusColor
 
@@ -442,20 +448,20 @@ bool Theme::operator==(const Theme& other) const {
     && primaryColorForegroundPressed == other.primaryColorForegroundPressed
     && primaryColorForegroundDisabled == other.primaryColorForegroundDisabled
 
-    && neutralColor == other.neutralColor
-    && neutralColorHovered == other.neutralColorHovered
-    && neutralColorPressed == other.neutralColorPressed
-    && neutralColorDisabled == other.neutralColorDisabled
+    && secondaryColor == other.secondaryColor
+    && secondaryColorHovered == other.secondaryColorHovered
+    && secondaryColorPressed == other.secondaryColorPressed
+    && secondaryColorDisabled == other.secondaryColorDisabled
 
-    && neutralAlternativeColor == other.neutralAlternativeColor
-    && neutralAlternativeColorHovered == other.neutralAlternativeColorHovered
-    && neutralAlternativeColorPressed == other.neutralAlternativeColorPressed
-    && neutralAlternativeColorDisabled == other.neutralAlternativeColorDisabled
+    && secondaryAlternativeColor == other.secondaryAlternativeColor
+    && secondaryAlternativeColorHovered == other.secondaryAlternativeColorHovered
+    && secondaryAlternativeColorPressed == other.secondaryAlternativeColorPressed
+    && secondaryAlternativeColorDisabled == other.secondaryAlternativeColorDisabled
 
-    && neutralColorForeground == other.neutralColorForeground
-    && neutralColorForegroundHovered == other.neutralColorForegroundHovered
-    && neutralColorForegroundPressed == other.neutralColorForegroundPressed
-    && neutralColorForegroundDisabled == other.neutralColorForegroundDisabled
+    && secondaryColorForeground == other.secondaryColorForeground
+    && secondaryColorForegroundHovered == other.secondaryColorForegroundHovered
+    && secondaryColorForegroundPressed == other.secondaryColorForegroundPressed
+    && secondaryColorForegroundDisabled == other.secondaryColorForegroundDisabled
 
     && statusColorSuccess == other.statusColorSuccess
     && statusColorSuccessHovered == other.statusColorSuccessHovered

@@ -27,8 +27,8 @@
 namespace oclero::qlementine {
 /// Color family to highlght or not the widget.
 enum class ColorRole {
-  Neutral,
   Primary,
+  Secondary,
 };
 
 /// Mouse interaction state.
@@ -86,6 +86,7 @@ enum class Status {
   Error,
 };
 
+/// Role given to the text or QLabel.
 enum class TextRole : int {
   Caption = -1,
   Default = 0,
@@ -96,6 +97,13 @@ enum class TextRole : int {
   H5,
 };
 
+/// Color mode.
+enum class ColorMode {
+  RGB,
+  RGBA,
+};
+
 } // namespace oclero::qlementine
 
 Q_DECLARE_METATYPE(oclero::qlementine::Status);
+Q_DECLARE_METATYPE(oclero::qlementine::ColorMode);
