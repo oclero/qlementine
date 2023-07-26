@@ -35,11 +35,15 @@
 
 namespace oclero::qlementine {
 namespace {
-#define TRY_SET_COLOR_ATTRIBUTE(JSON_OBJ, NAME) trySetColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
-#define TRY_SET_INT_ATTRIBUTE(JSON_OBJ, NAME) trySetInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
-#define TRY_SET_DOUBLE_ATTRIBUTE(JSON_OBJ, NAME) trySetDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define TRY_GET_COLOR_ATTRIBUTE(JSON_OBJ, NAME) tryGetColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define TRY_GET_INT_ATTRIBUTE(JSON_OBJ, NAME) tryGetInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define TRY_GET_DOUBLE_ATTRIBUTE(JSON_OBJ, NAME) tryGetDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
 
-std::optional<QColor> tryGetColor(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
+#define SET_COLOR(JSON_OBJ, NAME) setColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define SET_INT(JSON_OBJ, NAME) setInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define SET_DOUBLE(JSON_OBJ, NAME) setDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
+
+std::optional<QColor> tryGetColorRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
   if (jsonObj.contains(key)) {
     const auto variant = jsonObj.value(key).toVariant();
 
@@ -53,7 +57,7 @@ std::optional<QColor> tryGetColor(QJsonObject const& jsonObj, QString const& key
     if (variant.type() == QVariant::String && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetColor(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetColorRecursive(jsonObj, variantString, --maxRecursiveCalls);
       }
     }
   }
@@ -61,8 +65,8 @@ std::optional<QColor> tryGetColor(QJsonObject const& jsonObj, QString const& key
   return {};
 }
 
-void trySetColor(QJsonObject const& jsonObj, QString const& key, QColor& target) {
-  if (const auto opt = tryGetColor(jsonObj, key)) {
+void tryGetColor(QJsonObject const& jsonObj, QString const& key, QColor& target) {
+  if (const auto opt = tryGetColorRecursive(jsonObj, key)) {
     target = opt.value();
   }
 }
@@ -77,7 +81,7 @@ QString tryGetString(QJsonObject const& jsonObj, QString const& key, QString con
   return defaultValue;
 }
 
-std::optional<int> tryGetInt(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
+std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
   if (jsonObj.contains(key)) {
     const auto variant = jsonObj.value(key).toVariant();
 
@@ -85,7 +89,7 @@ std::optional<int> tryGetInt(QJsonObject const& jsonObj, QString const& key, int
     if (variant.type() == QVariant::String && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetInt(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetIntRecursive(jsonObj, variantString, --maxRecursiveCalls);
       }
     }
 
@@ -97,7 +101,13 @@ std::optional<int> tryGetInt(QJsonObject const& jsonObj, QString const& key, int
   return {};
 }
 
-std::optional<double> tryGetDouble(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
+void tryGetInt(QJsonObject const& jsonObj, QString const& key, int& target) {
+  if (const auto opt = tryGetIntRecursive(jsonObj, key)) {
+    target = opt.value();
+  }
+}
+
+std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
   if (jsonObj.contains(key)) {
     const auto variant = jsonObj.value(key).toVariant();
 
@@ -105,7 +115,7 @@ std::optional<double> tryGetDouble(QJsonObject const& jsonObj, QString const& ke
     if (variant.type() == QVariant::String && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetDouble(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetDoubleRecursive(jsonObj, variantString, --maxRecursiveCalls);
       }
     }
 
@@ -117,14 +127,8 @@ std::optional<double> tryGetDouble(QJsonObject const& jsonObj, QString const& ke
   return {};
 }
 
-void trySetInt(QJsonObject const& jsonObj, QString const& key, int& target) {
-  if (const auto opt = tryGetInt(jsonObj, key)) {
-    target = opt.value();
-  }
-}
-
-void trySetDouble(QJsonObject const& jsonObj, QString const& key, double& target) {
-  if (const auto opt = tryGetDouble(jsonObj, key)) {
+void tryGetDouble(QJsonObject const& jsonObj, QString const& key, double& target) {
+  if (const auto opt = tryGetDoubleRecursive(jsonObj, key)) {
     target = opt.value();
   }
 }
@@ -143,6 +147,17 @@ QJsonDocument readJsonDoc(QString const& jsonPath) {
   return {};
 }
 
+void setColor(QJsonObject& jsonObj, const QString& key, const QColor& value) {
+  jsonObj.insert(key, toHexRGBA(value));
+}
+
+void setInt(QJsonObject& jsonObj, const QString& key, int value) {
+  jsonObj.insert(key, value);
+}
+
+void setDouble(QJsonObject& jsonObj, const QString& key, double value) {
+  jsonObj.insert(key, value);
+}
 } // namespace
 
 Theme::Theme() {
@@ -270,126 +285,126 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       };
 
       // Parse all values.
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain1);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain2);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain3);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain4);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain1);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain2);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain3);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain4);
       backgroundColorMainTransparent = colorWithAlpha(backgroundColorMain1, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorDisabled);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColor);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, neutralColorPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, neutralColorDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, neutralColor);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, neutralColorHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, neutralColorPressed);
       neutralColorTransparent = colorWithAlpha(neutralColorDisabled, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, focusColor);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, focusColor);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColor);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColor);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorDisabled);
       primaryColorTransparent = colorWithAlpha(primaryColor, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorForeground);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorForeground);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundDisabled);
       primaryColorForegroundTransparent = colorWithAlpha(primaryColorForeground, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColor);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColor);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorDisabled);
       secondaryColorTransparent = colorWithAlpha(secondaryColor, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColor);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColor);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryAlternativeColorDisabled);
       secondaryAlternativeColorTransparent = colorWithAlpha(secondaryAlternativeColor, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForeground);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForeground);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundDisabled);
       secondaryColorForegroundTransparent = colorWithAlpha(secondaryColorForeground, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccess);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessDisabled);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorInfo);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorInfoHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorInfoPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorInfoDisabled);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorWarning);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorWarningHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorWarningPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorWarningDisabled);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorError);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorErrorHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorErrorPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorErrorDisabled);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorForeground);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundHovered);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundPressed);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccess);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorInfo);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorInfoHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorInfoPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorInfoDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorWarning);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorWarningHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorWarningPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorWarningDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorError);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorErrorHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorErrorPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorErrorDisabled);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorForeground);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundDisabled);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, borderColor1);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, borderColor2);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, borderColor3);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColor1);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColor2);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColor3);
       borderColorTransparent = colorWithAlpha(borderColor1, 0);
 
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, shadowColor1);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, shadowColor2);
-      TRY_SET_COLOR_ATTRIBUTE(jsonObj, shadowColor3);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor1);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor2);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor3);
       shadowColorTransparent = colorWithAlpha(shadowColor1, 0);
 
-      TRY_SET_INT_ATTRIBUTE(jsonObj, fontSize);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, fontSizeH3);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, fontSizeH4);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, fontSizeH5);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, fontSizeS1);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, animationDuration);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, focusAnimationDuration);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, sliderAnimationDuration);
-      TRY_SET_DOUBLE_ATTRIBUTE(jsonObj, borderRadius);
-      TRY_SET_DOUBLE_ATTRIBUTE(jsonObj, checkBoxBorderRadius);
-      TRY_SET_DOUBLE_ATTRIBUTE(jsonObj, menuItemBorderRadius);
-      TRY_SET_DOUBLE_ATTRIBUTE(jsonObj, menuBarItemBorderRadius);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, borderWidth);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, controlHeightLarge);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, controlHeightMedium);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, controlHeightSmall);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, controlDefaultWidth);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, dialMarkLength);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, dialMarkThickness);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, dialTickLength);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, dialTickSpacing);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, dialGrooveThickness);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, focusBorderWidth);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH3);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH4);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH5);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeS1);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, animationDuration);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, focusAnimationDuration);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, sliderAnimationDuration);
+      TRY_GET_DOUBLE_ATTRIBUTE(jsonObj, borderRadius);
+      TRY_GET_DOUBLE_ATTRIBUTE(jsonObj, checkBoxBorderRadius);
+      TRY_GET_DOUBLE_ATTRIBUTE(jsonObj, menuItemBorderRadius);
+      TRY_GET_DOUBLE_ATTRIBUTE(jsonObj, menuBarItemBorderRadius);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, borderWidth);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, controlHeightLarge);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, controlHeightMedium);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, controlHeightSmall);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, controlDefaultWidth);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, dialMarkLength);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, dialMarkThickness);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, dialTickLength);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, dialTickSpacing);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, dialGrooveThickness);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, focusBorderWidth);
 
       auto iconExtent = 16;
-      TRY_SET_INT_ATTRIBUTE(jsonObj, iconExtent);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, iconExtent);
       iconSize = QSize{ iconExtent, iconExtent };
       iconSizeMedium = iconSize * 1.5;
       iconSizeLarge = iconSize * 2;
       iconSizeExtraSmall = iconSize * 0.75;
 
-      TRY_SET_INT_ATTRIBUTE(jsonObj, sliderTickSize);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, sliderTickSpacing);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, sliderTickThickness);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, sliderGrooveHeight);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, progressBarGrooveHeight);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, spacing);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, scrollBarThicknessFull);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, scrollBarThicknessSmall);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, scrollBarMargin);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, tabBarPaddingTop);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, tabBarTabMaxWidth);
-      TRY_SET_INT_ATTRIBUTE(jsonObj, tabBarTabMinWidth);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, sliderTickSize);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, sliderTickSpacing);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, sliderTickThickness);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, sliderGrooveHeight);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, progressBarGrooveHeight);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, spacing);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, scrollBarThicknessFull);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, scrollBarThicknessSmall);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, scrollBarMargin);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarPaddingTop);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMaxWidth);
+      TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMinWidth);
 
       tabBarTabMaxWidth = std::max(0, tabBarTabMaxWidth);
       tabBarTabMinWidth = std::max(0, tabBarTabMinWidth);
@@ -406,15 +421,130 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
 QJsonDocument Theme::toJson() const {
   QJsonObject jsonObj;
 
-  jsonObj.insert("neutralColorDisabled", toHexRGBA(neutralColorDisabled));
-  jsonObj.insert("neutralColor", toHexRGBA(neutralColor));
-
   // Metadata.
   QJsonObject metadataObj;
   metadataObj.insert("name", meta.name);
   metadataObj.insert("version", meta.version);
   metadataObj.insert("author", meta.author);
   jsonObj.insert("meta", metadataObj);
+
+  // Colors.
+  SET_COLOR(jsonObj, backgroundColorMain1);
+  SET_COLOR(jsonObj, backgroundColorMain2);
+  SET_COLOR(jsonObj, backgroundColorMain3);
+  SET_COLOR(jsonObj, backgroundColorMain4);
+
+  SET_COLOR(jsonObj, neutralColor);
+  SET_COLOR(jsonObj, neutralColorHovered);
+  SET_COLOR(jsonObj, neutralColorPressed);
+  SET_COLOR(jsonObj, neutralColorDisabled);
+
+  SET_COLOR(jsonObj, focusColor);
+
+  SET_COLOR(jsonObj, primaryColor);
+  SET_COLOR(jsonObj, primaryColorHovered);
+  SET_COLOR(jsonObj, primaryColorPressed);
+  SET_COLOR(jsonObj, primaryColorDisabled);
+
+  SET_COLOR(jsonObj, primaryColorForeground);
+  SET_COLOR(jsonObj, primaryColorForegroundHovered);
+  SET_COLOR(jsonObj, primaryColorForegroundPressed);
+  SET_COLOR(jsonObj, primaryColorForegroundDisabled);
+
+  SET_COLOR(jsonObj, primaryAlternativeColor);
+  SET_COLOR(jsonObj, primaryAlternativeColorHovered);
+  SET_COLOR(jsonObj, primaryAlternativeColorPressed);
+  SET_COLOR(jsonObj, primaryAlternativeColorDisabled);
+
+  SET_COLOR(jsonObj, secondaryColor);
+  SET_COLOR(jsonObj, secondaryColorHovered);
+  SET_COLOR(jsonObj, secondaryColorPressed);
+  SET_COLOR(jsonObj, secondaryColorDisabled);
+
+  SET_COLOR(jsonObj, secondaryColorForeground);
+  SET_COLOR(jsonObj, secondaryColorForegroundHovered);
+  SET_COLOR(jsonObj, secondaryColorForegroundPressed);
+  SET_COLOR(jsonObj, secondaryColorForegroundDisabled);
+
+  SET_COLOR(jsonObj, secondaryAlternativeColor);
+  SET_COLOR(jsonObj, secondaryAlternativeColorHovered);
+  SET_COLOR(jsonObj, secondaryAlternativeColorPressed);
+  SET_COLOR(jsonObj, secondaryAlternativeColorDisabled);
+
+  SET_COLOR(jsonObj, statusColorSuccess);
+  SET_COLOR(jsonObj, statusColorSuccessHovered);
+  SET_COLOR(jsonObj, statusColorSuccessPressed);
+  SET_COLOR(jsonObj, statusColorSuccessDisabled);
+
+  SET_COLOR(jsonObj, statusColorInfo);
+  SET_COLOR(jsonObj, statusColorInfoHovered);
+  SET_COLOR(jsonObj, statusColorInfoPressed);
+  SET_COLOR(jsonObj, statusColorInfoDisabled);
+
+  SET_COLOR(jsonObj, statusColorWarning);
+  SET_COLOR(jsonObj, statusColorWarningHovered);
+  SET_COLOR(jsonObj, statusColorWarningPressed);
+  SET_COLOR(jsonObj, statusColorWarningDisabled);
+
+  SET_COLOR(jsonObj, statusColorError);
+  SET_COLOR(jsonObj, statusColorErrorHovered);
+  SET_COLOR(jsonObj, statusColorErrorPressed);
+  SET_COLOR(jsonObj, statusColorErrorDisabled);
+
+  SET_COLOR(jsonObj, shadowColor1);
+  SET_COLOR(jsonObj, shadowColor2);
+  SET_COLOR(jsonObj, shadowColor3);
+
+  SET_COLOR(jsonObj, borderColor1);
+  SET_COLOR(jsonObj, borderColor2);
+  SET_COLOR(jsonObj, borderColor3);
+
+  SET_COLOR(jsonObj, semiTransparentColor1);
+  SET_COLOR(jsonObj, semiTransparentColor2);
+  SET_COLOR(jsonObj, semiTransparentColor3);
+  SET_COLOR(jsonObj, semiTransparentColor4);
+
+  SET_INT(jsonObj, fontSize);
+  SET_INT(jsonObj, fontSizeMonospace);
+  SET_INT(jsonObj, fontSizeH1);
+  SET_INT(jsonObj, fontSizeH2);
+  SET_INT(jsonObj, fontSizeH3);
+  SET_INT(jsonObj, fontSizeH4);
+  SET_INT(jsonObj, fontSizeH5);
+  SET_INT(jsonObj, fontSizeS1);
+  SET_INT(jsonObj, animationDuration);
+  SET_INT(jsonObj, focusAnimationDuration);
+  SET_INT(jsonObj, sliderAnimationDuration);
+  SET_DOUBLE(jsonObj, borderRadius);
+  SET_DOUBLE(jsonObj, checkBoxBorderRadius);
+  SET_DOUBLE(jsonObj, menuBarItemBorderRadius);
+  SET_INT(jsonObj, borderWidth);
+  SET_INT(jsonObj, controlHeightLarge);
+  SET_INT(jsonObj, controlHeightMedium);
+  SET_INT(jsonObj, controlHeightSmall);
+  SET_INT(jsonObj, controlDefaultWidth);
+  SET_INT(jsonObj, dialMarkLength);
+  SET_INT(jsonObj, dialMarkThickness);
+  SET_INT(jsonObj, dialTickLength);
+  SET_INT(jsonObj, dialTickSpacing);
+  SET_INT(jsonObj, dialGrooveThickness);
+  SET_INT(jsonObj, focusBorderWidth);
+  setInt(jsonObj, "iconSize", iconSize.width());
+  setInt(jsonObj, "iconSizeMedium", iconSizeMedium.width());
+  setInt(jsonObj, "iconSizeLarge", iconSizeLarge.width());
+  setInt(jsonObj, "iconSizeExtraSmall", iconSizeExtraSmall.width());
+  SET_INT(jsonObj, sliderTickSize);
+  SET_INT(jsonObj, sliderTickSpacing);
+  SET_INT(jsonObj, sliderTickThickness);
+  SET_INT(jsonObj, sliderGrooveHeight);
+  SET_INT(jsonObj, progressBarGrooveHeight);
+  SET_INT(jsonObj, spacing);
+  SET_INT(jsonObj, scrollBarThicknessFull);
+  SET_INT(jsonObj, scrollBarThicknessSmall);
+  SET_INT(jsonObj, scrollBarMargin);
+  SET_INT(jsonObj, tabBarPaddingTop);
+  SET_INT(jsonObj, tabBarTabMaxWidth);
+  SET_INT(jsonObj, tabBarTabMinWidth);
 
   QJsonDocument jsonDoc;
   jsonDoc.setObject(jsonObj);
