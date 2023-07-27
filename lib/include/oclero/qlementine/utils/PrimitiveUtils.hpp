@@ -82,6 +82,10 @@ void drawRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal 
 /// Draws an antialiased triangle.
 void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius = 0.);
 
+/// Draws a checkerboard texture.
+void drawCheckerboard(
+  QPainter* p, const QRectF& rect, const QColor& darkColor, const QColor& lightColor, const qreal cellWidth);
+
 /// Draws the value of a progress bar. A clipping mask is used to ensure the rectangle radiuses are respected
 /// even for values close to min or max.
 void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value,

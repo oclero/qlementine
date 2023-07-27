@@ -43,7 +43,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
   if (isSeparator) {
     const auto& rect = opt.rect;
     const auto& color =
-      _qlementineStyle ? _qlementineStyle->toolBarSeparatorColor() : Theme().neutralAlternativeColorDisabled;
+      _qlementineStyle ? _qlementineStyle->toolBarSeparatorColor() : Theme().secondaryAlternativeColorDisabled;
     const auto lineW = theme.borderWidth;
     constexpr auto padding = 0; //_impl->theme.spacing / 2;
     const auto x = rect.x() + (rect.width() - lineW) / 2.;
@@ -78,7 +78,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     auto availableW = fgRect.width();
     auto availableX = fgRect.x();
     const auto& fgData = idx.data(Qt::ForegroundRole);
-    auto fgColor = _qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().neutralColor;
+    auto fgColor = _qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().secondaryColor;
     if (fgData.isValid()) {
       fgColor = fgData.value<QColor>();
     }
@@ -106,7 +106,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
         // Change only the icon's tint and opacity, so it looks disabled.
         const auto& bgColor = qlementineStyle
                                 ? qlementineStyle->listItemBackgroundColor(MouseState::Normal, selected, focus, active)
-                                : Theme().adaptativeColorTransparent;
+                                : Theme().neutralColorTransparent;
         const auto premultipiedColor = getColorSourceOver(bgColor, fgColor);
         const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
         const auto opacity = selected == SelectionState::Selected ? 1. : 0.25;

@@ -200,6 +200,7 @@ public:
   virtual QColor const& tabForegroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabCloseButtonBackgroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabCloseButtonForegroundColor(MouseState const mouse, SelectionState const selected) const;
+  virtual QColor const& tabBarScrollButtonBackgroundColor(MouseState const mouse) const;
 
   virtual QColor const& progressBarGrooveColor(MouseState const mouse) const;
   virtual QColor const& progressBarValueColor(MouseState const mouse) const;

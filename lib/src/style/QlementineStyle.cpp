@@ -457,7 +457,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto role = getColorRole(buttonState, false);
 
         // Draw background.
-        const auto& bgColor = toolButtonBackgroundColor(mouse, role);
+        const auto& bgColor =
+          isTabBarScrollButton ? tabBarScrollButtonBackgroundColor(mouse) : toolButtonBackgroundColor(mouse, role);
         const auto& currentColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         drawRoundedRect(p, rect, currentColor, buttonRadiuses);
       }
@@ -721,6 +722,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_IndicatorTabTearRight: {
       // TODO Handle vertical TabBar.
+      const auto* tabBar = qobject_cast<const QTabBar*>(w);
+      const auto documentMode = tabBar && tabBar->documentMode();
       const auto& rect = opt->rect;
 
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
@@ -736,13 +739,15 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       gradient.setColorAt(1., endColor);
       const auto compModeBackup = p->compositionMode();
       p->setCompositionMode(QPainter::CompositionMode_Multiply);
-      p->fillRect(rect, gradient);
+      const auto radius = _impl->theme.borderRadius * 1.5;
+      drawRoundedRect(p, rect, gradient, documentMode ? 0. : RadiusesF(0., radius, 0., 0.));
       p->setCompositionMode(compModeBackup);
 
       // Filled rectangle below scroll buttons.
       // We need to fill the whole surface to ensure tabs are not visible below.
+      const auto& tabBarBgColor = tabBarBackgroundColor();
       const auto filledRect = QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
-      p->fillRect(filledRect, _impl->theme.backgroundColorMain1);
+      drawRoundedRect(p, filledRect, tabBarBgColor, documentMode ? 0. : RadiusesF(0., radius, 0., 0.));
     }
       return;
     case PE_PanelScrollAreaCorner:
@@ -914,7 +919,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
         const auto radius = _impl->theme.borderRadius;
         const auto mouse = getMouseState(optButton->state);
-        const auto role = getColorRole(optButton->state, false);
+        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
+        const auto role = getColorRole(optButton->state, isDefault);
         const auto& bgColor = commandButtonBackgroundColor(mouse, role);
         const auto& currentColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         p->setPen(Qt::NoPen);
@@ -932,7 +938,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto spacing = _impl->theme.spacing;
         const auto mouse = getMouseState(optButton->state);
         const auto checked = getCheckState(optButton->state);
-        const auto role = getColorRole(checked);
+        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
+        const auto role = getColorRole(optButton->state, isDefault);
 
         auto availableX = rect.x();
         auto availableW = rect.width();
@@ -1883,6 +1890,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // ColorButton: circle around the button.
           optFocus.rect = subElementRect(SE_PushButtonFocusRect, &optColorButton, colorButton);
           optFocus.radiuses = optFocus.rect.height() / 2;
+        } else if (const auto* switchWidget = qobject_cast<const Switch*>(monitoredWidget)) {
+          switchWidget->initStyleOptionFocus(optFocus);
         } else if (const auto* abstractButton = qobject_cast<const QAbstractButton*>(monitoredWidget)) {
           // Prepare monitored widget QStyleOption.
           QStyleOptionButton optAbstractButton;
@@ -1990,8 +1999,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           optFocus.radiuses = isTabCellEditor ? 0. : _impl->theme.borderRadius;
         } else if (const auto* abstractItemListWidget = qobject_cast<const AbstractItemListWidget*>(monitoredWidget)) {
           abstractItemListWidget->initStyleOptionFocus(optFocus);
-        } else if (const auto* switchWidget = qobject_cast<const Switch*>(monitoredWidget)) {
-          switchWidget->initStyleOptionFocus(optFocus);
         } else {
           auto customRadius = RadiusesF{ -1 };
           if (const auto* roundedFocusFrame = qobject_cast<const RoundedFocusFrame*>(focusFrame)) {
@@ -2012,6 +2019,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_ComboBoxLabel:
       if (const auto* optComboBox = qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
+        if (optComboBox->editable) {
+          return;
+        }
         const auto& totalRect = optComboBox->rect;
         // Draw text and icon.
         const auto mouse = getMouseState(optComboBox->state);
@@ -2650,6 +2660,7 @@ void QlementineStyle::drawComplexControl(
         const auto thickness = getScrollBarThickness(mouse);
         const auto currentThickness =
           _impl->animations.animateProgress(w, thickness, _impl->theme.animationDuration * 2);
+        const auto scrollBarMargin = _impl->theme.scrollBarMargin;
 
         // Groove.
         const auto grooveRect = subControlRect(CC_ScrollBar, scrollBarOpt, SC_ScrollBarGroove, w);
@@ -2662,7 +2673,9 @@ void QlementineStyle::drawComplexControl(
         const auto& grooveColor = scrollBarGrooveColor(mouse);
         const auto& currentGrooveColor =
           _impl->animations.animateBackgroundColor(w, grooveColor, _impl->theme.animationDuration * 2);
-        const auto grooveRadius = horizontal ? currentGrooveRect.height() / 2. : currentGrooveRect.width() / 2.;
+        const auto grooveRadius = scrollBarMargin <= 0 ? 0.
+                                  : horizontal         ? currentGrooveRect.height() / 2.
+                                                       : currentGrooveRect.width() / 2.;
         p->setRenderHint(QPainter::Antialiasing, true);
         p->setPen(Qt::NoPen);
         p->setBrush(currentGrooveColor);
@@ -2775,15 +2788,15 @@ void QlementineStyle::drawComplexControl(
             }
             constexpr auto dropShadowBlurRadius = 1.;
             dropShadowPixmap =
-              qlementine::getDropShadowPixmap(inputPixmap, dropShadowBlurRadius, _impl->theme.shadowColor2);
+              qlementine::getDropShadowPixmap(inputPixmap, dropShadowBlurRadius, _impl->theme.shadowColor3);
           }
 
           // Draw drop shadow centered below handle.
           {
-            constexpr auto dropShadowOffsetY = 1;
+            constexpr auto dropShadowOffsetY = 0.5;
             const auto dropShadowX = handleRect.x() + (handleRect.width() - dropShadowPixmap.width()) / 2;
             const auto dropShadowY =
-              handleRect.y() + (handleRect.height() - dropShadowPixmap.height()) / 2 + dropShadowOffsetY;
+              handleRect.y() + (handleRect.height() - dropShadowPixmap.height()) / 2. + dropShadowOffsetY;
             const auto compModebackup = p->compositionMode();
             p->setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
             p->drawPixmap(dropShadowX, dropShadowY, dropShadowPixmap);
@@ -2793,12 +2806,6 @@ void QlementineStyle::drawComplexControl(
           p->setPen(Qt::NoPen);
           p->setBrush(currentColor);
           p->drawEllipse(handleRect);
-
-          if (mouse != MouseState::Disabled) {
-            const auto& handleBorderColor = _impl->theme.borderColor3;
-            const auto handleBorderW = _impl->theme.borderWidth;
-            drawEllipseBorder(p, handleRect, handleBorderColor, handleBorderW);
-          }
         }
       }
       return;
@@ -3302,32 +3309,30 @@ QRect QlementineStyle::subControlRect(
                               : QRect(rect.x(), rect.y() + handleCenter, rect.width(), rect.height() - handleCenter);
           } break;
           case SC_ScrollBarSlider: {
-            // calculate slider length
+            // Compute slider length.
             if (scrollBarOpt->maximum != scrollBarOpt->minimum) {
               const auto range = scrollBarOpt->maximum - scrollBarOpt->minimum;
-              const auto padding = _impl->theme.scrollBarPadding;
-              auto maxLength = horizontal ? rect.width() - 2 * padding : rect.height() - 2 * padding;
+              const auto margin = _impl->theme.scrollBarMargin;
+              auto maxLength = horizontal ? rect.width() - 2 * margin : rect.height() - 2 * margin;
               auto minLength = pixelMetric(PM_ScrollBarSliderMin, scrollBarOpt, w);
-              const auto length = std::max(
-                0., static_cast<double>((scrollBarOpt->pageStep * maxLength)) / (range + scrollBarOpt->pageStep));
               if (minLength > maxLength) {
                 std::swap(maxLength, minLength);
               }
+              const auto length = std::max(
+                0., static_cast<double>((scrollBarOpt->pageStep * maxLength)) / (range + scrollBarOpt->pageStep));
               const auto handleLength = std::clamp(static_cast<int>(length), minLength, maxLength);
               const auto handleStart = sliderPositionFromValue(scrollBarOpt->minimum, scrollBarOpt->maximum,
                 scrollBarOpt->sliderPosition, maxLength - handleLength, scrollBarOpt->upsideDown);
-              return horizontal
-                       ? QRect(rect.x() + padding + handleStart, rect.y(), handleLength, rect.height() - padding)
-                       : QRect(rect.x(), rect.y() + padding + handleStart, rect.width() - padding, handleLength);
+              return horizontal ? QRect(rect.x() + margin + handleStart, rect.y(), handleLength, rect.height() - margin)
+                                : QRect(rect.x(), rect.y() + margin + handleStart, rect.width() - margin, handleLength);
             } else {
               return rect;
             }
           } break;
           case SC_ScrollBarGroove: {
-            const auto padding = _impl->theme.scrollBarPadding;
-            return horizontal
-                     ? QRect(rect.x() + padding, rect.y(), rect.width() - 2 * padding, rect.height() - padding)
-                     : QRect(rect.x(), rect.y() + padding, rect.width() - padding, rect.height() - 2 * padding);
+            const auto margin = _impl->theme.scrollBarMargin;
+            return horizontal ? QRect(rect.x() + margin, rect.y(), rect.width() - 2 * margin, rect.height() - margin)
+                              : QRect(rect.x(), rect.y() + margin, rect.width() - margin, rect.height() - 2 * margin);
           } break;
           case SC_ScrollBarAddLine:
           case SC_ScrollBarSubLine:
@@ -3966,6 +3971,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
       return _impl->theme.iconSizeLarge.height();
     case PM_MediumIconSize:
       return _impl->theme.iconSizeMedium.height();
+
     // Button.
     case PM_ButtonMargin:
       return _impl->theme.spacing;
@@ -4178,7 +4184,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // ScrollView.
     case PM_ScrollBarExtent:
-      return _impl->theme.scrollBarThicknessFull + _impl->theme.scrollBarPadding;
+      return _impl->theme.scrollBarThicknessFull + _impl->theme.scrollBarMargin;
     case PM_ScrollBarSliderMin:
       return _impl->theme.controlHeightLarge;
     case PM_ScrollView_ScrollBarSpacing:
@@ -4384,7 +4390,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_GroupBox_TextLabelVerticalAlignment:
       return Qt::AlignVCenter;
     case SH_GroupBox_TextLabelColor:
-      return _impl->theme.neutralColor.rgba();
+      return _impl->theme.secondaryColor.rgba();
 
     // Table
     case SH_Table_GridLineColor:
@@ -4551,7 +4557,7 @@ QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, 
     case SP_MessageBoxInformation:
     case SP_MessageBoxCritical:
     case SP_MessageBoxWarning: {
-      const auto extent = pixelMetric(PM_LargeIconSize) * 2;
+      const auto extent = pixelMetric(PM_LargeIconSize) * 4;
       return _impl->getStandardIcon(sp, QSize(extent, extent));
     }
     case SP_DesktopIcon:
@@ -4904,16 +4910,16 @@ QColor const& QlementineStyle::color(MouseState const mouse, ColorRole const rol
 
   switch (mouse) {
     case MouseState::Pressed:
-      return primary ? _impl->theme.primaryColorPressed : _impl->theme.neutralColorPressed;
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.secondaryColorPressed;
     case MouseState::Hovered:
-      return primary ? _impl->theme.primaryColorHovered : _impl->theme.neutralColorHovered;
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.secondaryColorHovered;
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColorDisabled;
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.secondaryColorDisabled;
     case MouseState::Transparent:
-      return primary ? _impl->theme.primaryColorTransparent : _impl->theme.neutralColorTransparent;
+      return primary ? _impl->theme.primaryColorTransparent : _impl->theme.secondaryColorTransparent;
     case MouseState::Normal:
     default:
-      return primary ? _impl->theme.primaryColor : _impl->theme.neutralColor;
+      return primary ? _impl->theme.primaryColor : _impl->theme.secondaryColor;
   }
 }
 
@@ -4929,16 +4935,16 @@ QColor const& QlementineStyle::buttonBackgroundColor(MouseState const mouse, Col
 
   switch (mouse) {
     case MouseState::Pressed:
-      return primary ? _impl->theme.primaryColorPressed : _impl->theme.adaptativeColor5;
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.neutralColorPressed;
     case MouseState::Hovered:
-      return primary ? _impl->theme.primaryColorHovered : _impl->theme.adaptativeColor4;
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.neutralColorHovered;
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColor1;
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColorDisabled;
     case MouseState::Transparent:
-      return primary ? _impl->theme.primaryColorTransparent : _impl->theme.adaptativeColorTransparent;
+      return primary ? _impl->theme.primaryColorTransparent : _impl->theme.neutralColorTransparent;
     case MouseState::Normal:
     default:
-      return primary ? _impl->theme.primaryColor : _impl->theme.adaptativeColor3;
+      return primary ? _impl->theme.primaryColor : _impl->theme.neutralColor;
   }
 }
 
@@ -4947,15 +4953,15 @@ QColor const& QlementineStyle::buttonForegroundColor(MouseState const mouse, Col
 
   switch (mouse) {
     case MouseState::Pressed:
-      return primary ? _impl->theme.primaryColorForegroundPressed : _impl->theme.neutralColor;
+      return primary ? _impl->theme.primaryColorForegroundPressed : _impl->theme.secondaryColor;
     case MouseState::Hovered:
-      return primary ? _impl->theme.primaryColorForegroundHovered : _impl->theme.neutralColor;
+      return primary ? _impl->theme.primaryColorForegroundHovered : _impl->theme.secondaryColor;
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralColorDisabled;
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.secondaryColorDisabled;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.secondaryColor;
   }
 }
 
@@ -4964,15 +4970,15 @@ QColor const& QlementineStyle::toolButtonBackgroundColor(MouseState const mouse,
 
   switch (mouse) {
     case MouseState::Pressed:
-      return primary ? _impl->theme.primaryColorPressed : _impl->theme.adaptativeColor3;
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.neutralColorHovered;
     case MouseState::Hovered:
-      return primary ? _impl->theme.primaryColorHovered : _impl->theme.adaptativeColor2;
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.neutralColor;
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColorTransparent;
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColorTransparent;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return primary ? _impl->theme.primaryColor : _impl->theme.adaptativeColorTransparent;
+      return primary ? _impl->theme.primaryColor : _impl->theme.neutralColorTransparent;
   }
 }
 
@@ -4981,9 +4987,9 @@ QColor const& QlementineStyle::toolButtonForegroundColor(MouseState const mouse,
 
   switch (mouse) {
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralColorDisabled;
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.secondaryColorDisabled;
     default:
-      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.secondaryColor;
   }
 }
 
@@ -4991,19 +4997,19 @@ QColor const& QlementineStyle::toolButtonSeparatorColor(MouseState const mouse, 
   Q_UNUSED(role)
   switch (mouse) {
     case MouseState::Pressed:
-      return _impl->theme.adaptativeColor5;
+      return _impl->theme.neutralColorPressed;
     case MouseState::Hovered:
-      return _impl->theme.adaptativeColor3;
+      return _impl->theme.neutralColorHovered;
     case MouseState::Normal:
-      return _impl->theme.adaptativeColor2;
+      return _impl->theme.neutralColor;
     case MouseState::Disabled:
     default:
-      return _impl->theme.adaptativeColor1;
+      return _impl->theme.neutralColorDisabled;
   }
 }
 
 QColor const& QlementineStyle::commandButtonBackgroundColor(MouseState const mouse, ColorRole const role) const {
-  return toolButtonBackgroundColor(mouse, role);
+  return buttonBackgroundColor(mouse, role);
 }
 
 QColor const& QlementineStyle::commandButtonTextColor(MouseState const mouse, ColorRole const role) const {
@@ -5015,14 +5021,14 @@ QColor const& QlementineStyle::commandButtonDescriptionColor(MouseState const mo
 
   switch (mouse) {
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralAlternativeColorDisabled;
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.secondaryAlternativeColorDisabled;
     default:
-      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralAlternativeColor;
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.secondaryAlternativeColor;
   }
 }
 
 QColor const& QlementineStyle::commandButtonIconColor(MouseState const mouse, ColorRole const role) const {
-  return commandButtonDescriptionColor(mouse, role);
+  return commandButtonTextColor(mouse, role);
 }
 
 QColor const& QlementineStyle::checkButtonBackgroundColor(MouseState const mouse, CheckState const checked) const {
@@ -5032,7 +5038,7 @@ QColor const& QlementineStyle::checkButtonBackgroundColor(MouseState const mouse
       return buttonBackgroundColor(mouse, ColorRole::Primary);
     case CheckState::NotChecked:
     default:
-      return buttonBackgroundColor(mouse, ColorRole::Neutral);
+      return buttonBackgroundColor(mouse, ColorRole::Secondary);
   }
 }
 
@@ -5050,11 +5056,11 @@ QColor const& QlementineStyle::radioButtonForegroundColor(MouseState const mouse
 }
 
 QColor const& QlementineStyle::comboBoxBackgroundColor(MouseState const mouse) const {
-  return buttonBackgroundColor(mouse, ColorRole::Neutral);
+  return buttonBackgroundColor(mouse, ColorRole::Secondary);
 }
 
 QColor const& QlementineStyle::comboBoxForegroundColor(MouseState const mouse) const {
-  return buttonForegroundColor(mouse, ColorRole::Neutral);
+  return buttonForegroundColor(mouse, ColorRole::Secondary);
 }
 
 QColor const& QlementineStyle::comboBoxTextColor(MouseState const mouse, Status const status, const QWidget* w) const {
@@ -5082,11 +5088,11 @@ QColor const& QlementineStyle::spinBoxBorderColor(MouseState const mouse, FocusS
 }
 
 QColor const& QlementineStyle::spinBoxButtonBackgroundColor(MouseState const mouse) const {
-  return buttonBackgroundColor(mouse, ColorRole::Neutral);
+  return buttonBackgroundColor(mouse, ColorRole::Secondary);
 }
 
 QColor const& QlementineStyle::spinBoxButtonForegroundColor(MouseState const mouse) const {
-  return buttonForegroundColor(mouse, ColorRole::Neutral);
+  return buttonForegroundColor(mouse, ColorRole::Secondary);
 }
 
 QColor const& QlementineStyle::listItemRowBackgroundColor(
@@ -5105,28 +5111,28 @@ QColor const& QlementineStyle::listItemBackgroundColor(
   if (isActive) {
     switch (mouse) {
       case MouseState::Pressed:
-        return isSelected ? _impl->theme.primaryColor : _impl->theme.adaptativeColor3;
+        return isSelected ? _impl->theme.primaryColor : _impl->theme.neutralColor;
       case MouseState::Hovered:
-        return isSelected ? _impl->theme.primaryColor : _impl->theme.adaptativeColor1;
+        return isSelected ? _impl->theme.primaryColor : _impl->theme.neutralColorDisabled;
       case MouseState::Disabled:
-        return isSelected ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColorTransparent;
+        return isSelected ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColorTransparent;
       case MouseState::Transparent:
       case MouseState::Normal:
       default:
-        return isSelected ? _impl->theme.primaryColor : _impl->theme.adaptativeColorTransparent;
+        return isSelected ? _impl->theme.primaryColor : _impl->theme.neutralColorTransparent;
     }
   } else {
     switch (mouse) {
       case MouseState::Pressed:
-        return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.adaptativeColor3;
+        return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColor;
       case MouseState::Hovered:
-        return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.adaptativeColor1;
+        return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColorDisabled;
       case MouseState::Disabled:
-        return isSelected ? _impl->theme.adaptativeColor1 : _impl->theme.adaptativeColorTransparent;
+        return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColorTransparent;
       case MouseState::Transparent:
       case MouseState::Normal:
       default:
-        return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.adaptativeColorTransparent;
+        return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColorTransparent;
     }
   }
 }
@@ -5140,24 +5146,24 @@ QColor const& QlementineStyle::listItemForegroundColor(
   if (isActive) {
     switch (mouse) {
       case MouseState::Disabled:
-        return isSelected ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralColorDisabled;
+        return isSelected ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.secondaryColorDisabled;
       case MouseState::Hovered:
       case MouseState::Pressed:
       case MouseState::Transparent:
       case MouseState::Normal:
       default:
-        return isSelected ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
+        return isSelected ? _impl->theme.primaryColorForeground : _impl->theme.secondaryColor;
     }
   } else {
     switch (mouse) {
       case MouseState::Disabled:
-        return _impl->theme.neutralColorDisabled;
+        return _impl->theme.secondaryColorDisabled;
       case MouseState::Hovered:
       case MouseState::Pressed:
       case MouseState::Transparent:
       case MouseState::Normal:
       default:
-        return _impl->theme.neutralColor;
+        return _impl->theme.secondaryColor;
     }
   }
 }
@@ -5171,24 +5177,25 @@ QColor const& QlementineStyle::listItemCaptionForegroundColor(
   if (isActive) {
     switch (mouse) {
       case MouseState::Disabled:
-        return isSelected ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralAlternativeColorDisabled;
+        return isSelected ? _impl->theme.primaryColorForegroundDisabled
+                          : _impl->theme.secondaryAlternativeColorDisabled;
       case MouseState::Hovered:
       case MouseState::Pressed:
       case MouseState::Transparent:
       case MouseState::Normal:
       default:
-        return isSelected ? _impl->theme.primaryColorForeground : _impl->theme.neutralAlternativeColor;
+        return isSelected ? _impl->theme.primaryColorForeground : _impl->theme.secondaryAlternativeColor;
     }
   } else {
     switch (mouse) {
       case MouseState::Disabled:
-        return _impl->theme.neutralAlternativeColorDisabled;
+        return _impl->theme.secondaryAlternativeColorDisabled;
       case MouseState::Hovered:
       case MouseState::Pressed:
       case MouseState::Transparent:
       case MouseState::Normal:
       default:
-        return _impl->theme.neutralAlternativeColor;
+        return _impl->theme.secondaryAlternativeColor;
     }
   }
 }
@@ -5201,15 +5208,15 @@ QColor const& QlementineStyle::listItemCheckButtonBackgroundColor(
   switch (selected) {
     case SelectionState::Selected:
       if (isEnabled)
-        return isChecked ? _impl->theme.adaptativeColor5 : _impl->theme.adaptativeColor4;
+        return isChecked ? _impl->theme.primaryAlternativeColor : _impl->theme.neutralColor;
       else
-        return isChecked ? _impl->theme.adaptativeColor2 : _impl->theme.adaptativeColor1;
+        return isChecked ? _impl->theme.primaryAlternativeColorDisabled : _impl->theme.neutralColorDisabled;
     case SelectionState::NotSelected:
     default:
       if (isEnabled)
-        return isChecked ? _impl->theme.primaryColor : _impl->theme.adaptativeColor4;
+        return isChecked ? _impl->theme.primaryColor : _impl->theme.neutralColor;
       else
-        return isChecked ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColor1;
+        return isChecked ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColor;
   }
 }
 
@@ -5224,7 +5231,7 @@ QColor const& QlementineStyle::cellItemFocusBorderColor(
   FocusState const focus, SelectionState const selected, ActiveState const active) const {
   Q_UNUSED(active)
   if (selected == SelectionState::Selected)
-    return focus == FocusState::Focused ? _impl->theme.adaptativeColor5 : _impl->theme.adaptativeColorTransparent;
+    return focus == FocusState::Focused ? _impl->theme.neutralColorPressed : _impl->theme.neutralColorTransparent;
   else
     return focus == FocusState::Focused ? _impl->theme.primaryColor : _impl->theme.primaryColorTransparent;
 }
@@ -5262,11 +5269,11 @@ QColor const& QlementineStyle::menuItemForegroundColor(MouseState const mouse) c
     case MouseState::Pressed:
       return _impl->theme.primaryColorForegroundPressed;
     case MouseState::Disabled:
-      return _impl->theme.neutralColorDisabled;
+      return _impl->theme.secondaryColorDisabled;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return _impl->theme.neutralColor;
+      return _impl->theme.secondaryColor;
   }
 }
 
@@ -5277,11 +5284,11 @@ QColor const& QlementineStyle::menuItemSecondaryForegroundColor(MouseState const
     case MouseState::Pressed:
       return _impl->theme.primaryColorForegroundPressed;
     case MouseState::Disabled:
-      return _impl->theme.neutralAlternativeColorDisabled;
+      return _impl->theme.secondaryAlternativeColorDisabled;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return _impl->theme.neutralAlternativeColor;
+      return _impl->theme.secondaryAlternativeColor;
   }
 }
 
@@ -5297,14 +5304,14 @@ QColor const& QlementineStyle::menuBarItemBackgroundColor(MouseState const mouse
   Q_UNUSED(selected)
   switch (mouse) {
     case MouseState::Hovered:
-      return _impl->theme.adaptativeColor1;
+      return _impl->theme.neutralColorDisabled;
     case MouseState::Pressed:
-      return _impl->theme.adaptativeColor3;
+      return _impl->theme.neutralColor;
     case MouseState::Disabled:
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return _impl->theme.adaptativeColorTransparent;
+      return _impl->theme.neutralColorTransparent;
   }
 }
 
@@ -5312,15 +5319,15 @@ QColor const& QlementineStyle::menuBarItemForegroundColor(MouseState const mouse
   Q_UNUSED(selected)
   switch (mouse) {
     case MouseState::Hovered:
-      return _impl->theme.neutralColor;
+      return _impl->theme.secondaryColor;
     case MouseState::Pressed:
-      return _impl->theme.neutralColor;
+      return _impl->theme.secondaryColor;
     case MouseState::Disabled:
-      return _impl->theme.neutralColorDisabled;
+      return _impl->theme.secondaryColorDisabled;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return _impl->theme.neutralColor;
+      return _impl->theme.secondaryColor;
   }
 }
 
@@ -5329,7 +5336,7 @@ QColor const& QlementineStyle::tabBarBackgroundColor() const {
 }
 
 QColor const& QlementineStyle::tabBarShadowColor() const {
-  return _impl->theme.shadowColor2;
+  return _impl->theme.shadowColor1;
 }
 
 QColor const& QlementineStyle::tabBarBottomShadowColor() const {
@@ -5341,21 +5348,21 @@ QColor const& QlementineStyle::tabBackgroundColor(MouseState const mouse, Select
 
   switch (mouse) {
     case MouseState::Hovered:
-      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColor5;
+      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.neutralColorPressed;
     case MouseState::Pressed:
-      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.neutralColorPressed;
+      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.secondaryColorPressed;
     case MouseState::Normal:
-      return isSelected ? _impl->theme.backgroundColorMain1 : _impl->theme.adaptativeColorTransparent;
+      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.neutralColorTransparent;
     case MouseState::Disabled:
     case MouseState::Transparent:
     default:
-      return _impl->theme.adaptativeColorTransparent;
+      return _impl->theme.neutralColorTransparent;
   }
 }
 
 QColor const& QlementineStyle::tabForegroundColor(MouseState const mouse, SelectionState const selected) const {
   Q_UNUSED(selected)
-  return buttonForegroundColor(mouse, ColorRole::Neutral);
+  return buttonForegroundColor(mouse, ColorRole::Secondary);
 }
 
 QColor const& QlementineStyle::tabCloseButtonBackgroundColor(
@@ -5363,14 +5370,14 @@ QColor const& QlementineStyle::tabCloseButtonBackgroundColor(
   const auto isSelected = selected == SelectionState::Selected;
   switch (mouse) {
     case MouseState::Pressed:
-      return isSelected ? _impl->theme.adaptativeColor5 : _impl->theme.neutralAlternativeColorPressed;
+      return isSelected ? _impl->theme.neutralColorPressed : _impl->theme.semiTransparentColor4;
     case MouseState::Hovered:
-      return isSelected ? _impl->theme.adaptativeColor3 : _impl->theme.neutralAlternativeColorHovered;
+      return isSelected ? _impl->theme.neutralColor : _impl->theme.semiTransparentColor2;
     case MouseState::Normal:
     case MouseState::Disabled:
     case MouseState::Transparent:
     default:
-      return isSelected ? _impl->theme.adaptativeColorTransparent : _impl->theme.neutralAlternativeColorTransparent;
+      return isSelected ? _impl->theme.neutralColorTransparent : _impl->theme.semiTransparentColorTransparent;
   }
 }
 
@@ -5380,41 +5387,49 @@ QColor const& QlementineStyle::tabCloseButtonForegroundColor(
     case MouseState::Pressed:
     case MouseState::Hovered:
     case MouseState::Normal:
-      return _impl->theme.neutralColor;
+      return _impl->theme.secondaryColor;
     case MouseState::Disabled:
     case MouseState::Transparent:
-      return _impl->theme.neutralColorTransparent;
+      return _impl->theme.secondaryColorTransparent;
     default:
-      return selected == SelectionState::Selected ? _impl->theme.neutralColor : _impl->theme.neutralColorTransparent;
+      return selected == SelectionState::Selected ? _impl->theme.secondaryColor
+                                                  : _impl->theme.secondaryColorTransparent;
+  }
+}
+
+QColor const& QlementineStyle::tabBarScrollButtonBackgroundColor(MouseState const mouse) const {
+  switch (mouse) {
+    case MouseState::Pressed:
+      return _impl->theme.semiTransparentColor4;
+    case MouseState::Hovered:
+      return _impl->theme.semiTransparentColor2;
+    case MouseState::Normal:
+    case MouseState::Disabled:
+    case MouseState::Transparent:
+      return _impl->theme.semiTransparentColorTransparent;
   }
 }
 
 QColor const& QlementineStyle::progressBarGrooveColor(MouseState const mouse) const {
-  if (mouse == MouseState::Disabled)
-    return _impl->theme.adaptativeColor1;
-  else
-    return _impl->theme.adaptativeColor2;
+  return mouse == MouseState::Disabled ? _impl->theme.neutralColorDisabled : _impl->theme.neutralColor;
 }
 
 QColor const& QlementineStyle::progressBarValueColor(MouseState const mouse) const {
-  if (mouse == MouseState::Disabled)
-    return _impl->theme.primaryColorDisabled;
-  else
-    return _impl->theme.primaryColor;
+  return mouse == MouseState::Disabled ? _impl->theme.primaryColorDisabled : _impl->theme.primaryColor;
 }
 
 QColor const& QlementineStyle::textFieldBackgroundColor(MouseState const mouse, Status const status) const {
   Q_UNUSED(status);
   if (mouse == MouseState::Disabled)
-    return _impl->theme.adaptativeColorTransparent;
+    return _impl->theme.neutralColorTransparent;
   else
-    return _impl->theme.adaptativeColor1;
+    return _impl->theme.backgroundColorMain1;
 }
 
 QColor const& QlementineStyle::textFieldBorderColor(
   MouseState const mouse, FocusState const focus, Status const status) const {
   if (mouse == MouseState::Disabled) {
-    return _impl->theme.borderColor1;
+    return _impl->theme.borderColor2;
   } else {
     switch (status) {
       case Status::Error:
@@ -5445,16 +5460,16 @@ QColor const& QlementineStyle::textFieldBorderColor(
 
 QColor const& QlementineStyle::textFieldForegroundColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.neutralColorDisabled;
+    return _impl->theme.secondaryColorDisabled;
   else
-    return _impl->theme.neutralColor;
+    return _impl->theme.secondaryColor;
 }
 
 QColor const& QlementineStyle::sliderGrooveColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.adaptativeColor1;
+    return _impl->theme.neutralColorDisabled;
   else
-    return _impl->theme.adaptativeColor2;
+    return _impl->theme.neutralColor;
 }
 
 QColor const& QlementineStyle::sliderValueColor(MouseState const mouse) const {
@@ -5466,13 +5481,13 @@ QColor const& QlementineStyle::sliderValueColor(MouseState const mouse) const {
 
 QColor const& QlementineStyle::sliderHandleColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.primaryColorDisabled;
+    return _impl->theme.neutralColorDisabled;
   else if (mouse == MouseState::Pressed)
-    return _impl->theme.primaryColorPressed;
+    return _impl->theme.primaryColorForegroundPressed;
   else if (mouse == MouseState::Hovered)
-    return _impl->theme.primaryColorHovered;
+    return _impl->theme.primaryColorForegroundHovered;
   else
-    return _impl->theme.primaryColor;
+    return _impl->theme.primaryColorForeground;
 }
 
 QColor const& QlementineStyle::sliderTickColor(MouseState const mouse) const {
@@ -5484,16 +5499,16 @@ QColor const& QlementineStyle::sliderTickColor(MouseState const mouse) const {
 
 QColor const& QlementineStyle::dialHandleColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.adaptativeColor1;
+    return _impl->theme.neutralColorDisabled;
   else
-    return _impl->theme.adaptativeColor2;
+    return _impl->theme.neutralColor;
 }
 
 QColor const& QlementineStyle::dialGrooveColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.adaptativeColor1;
+    return _impl->theme.neutralColorDisabled;
   else
-    return _impl->theme.adaptativeColor5;
+    return _impl->theme.neutralColorPressed;
 }
 
 QColor const& QlementineStyle::dialValueColor(MouseState const mouse) const {
@@ -5505,38 +5520,38 @@ QColor const& QlementineStyle::dialValueColor(MouseState const mouse) const {
 
 QColor const& QlementineStyle::dialTickColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.adaptativeColor1;
+    return _impl->theme.neutralColorDisabled;
   else
-    return _impl->theme.adaptativeColor5;
+    return _impl->theme.neutralColorPressed;
 }
 
 QColor const& QlementineStyle::dialMarkColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.neutralColorDisabled;
+    return _impl->theme.secondaryColorDisabled;
   else
-    return _impl->theme.neutralColor;
+    return _impl->theme.secondaryColor;
 }
 
 QColor const& QlementineStyle::dialBackgroundColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.adaptativeColor1;
+    return _impl->theme.neutralColorDisabled;
   else
-    return _impl->theme.adaptativeColor5;
+    return _impl->theme.neutralColorPressed;
 }
 
 QColor const& QlementineStyle::labelForegroundColor(MouseState const mouse, const QWidget* w) const {
   Q_UNUSED(w);
   if (mouse == MouseState::Disabled)
-    return _impl->theme.neutralColorDisabled;
+    return _impl->theme.secondaryColorDisabled;
   else
-    return _impl->theme.neutralColor;
+    return _impl->theme.secondaryColor;
 }
 
 QColor const& QlementineStyle::labelCaptionForegroundColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.neutralAlternativeColorDisabled;
+    return _impl->theme.secondaryAlternativeColorDisabled;
   else
-    return _impl->theme.neutralAlternativeColor;
+    return _impl->theme.secondaryAlternativeColor;
 }
 
 QColor const& QlementineStyle::toolBarBackgroundColor() const {
@@ -5548,44 +5563,43 @@ QColor const& QlementineStyle::toolBarBorderColor() const {
 }
 
 QColor const& QlementineStyle::toolBarSeparatorColor() const {
-  return _impl->theme.neutralColorDisabled;
+  return _impl->theme.secondaryColorDisabled;
 }
 
 QColor const& QlementineStyle::toolTipBackgroundColor() const {
-  return _impl->theme.neutralColor;
+  return _impl->theme.secondaryColor;
 }
 
 QColor const& QlementineStyle::toolTipBorderColor() const {
-  return _impl->theme.neutralColorPressed;
+  return _impl->theme.secondaryColorPressed;
 }
 
 QColor const& QlementineStyle::toolTipForegroundColor() const {
-  return _impl->theme.neutralColorForeground;
+  return _impl->theme.secondaryColorForeground;
 }
 
 QColor const& QlementineStyle::scrollBarGrooveColor(MouseState const mouse) const {
   switch (mouse) {
     case MouseState::Hovered:
     case MouseState::Pressed:
-      return _impl->theme.adaptativeColor4;
+      return _impl->theme.semiTransparentColor4;
     default:
-      return _impl->theme.adaptativeColorTransparent;
+      return _impl->theme.semiTransparentColorTransparent;
   }
 }
 
 QColor const& QlementineStyle::scrollBarHandleColor(MouseState const mouse) const {
   switch (mouse) {
     case MouseState::Hovered:
-      return _impl->theme.neutralColorHovered;
+      return _impl->theme.secondaryAlternativeColorHovered;
     case MouseState::Pressed:
-      return _impl->theme.neutralColorPressed;
+      return _impl->theme.secondaryAlternativeColorPressed;
     case MouseState::Disabled:
-      return _impl->theme.adaptativeColorTransparent;
+      return _impl->theme.secondaryAlternativeColorDisabled;
     case MouseState::Normal:
-      return _impl->theme.adaptativeColor5;
     case MouseState::Transparent:
     default:
-      return _impl->theme.adaptativeColor4;
+      return _impl->theme.semiTransparentColor4;
   }
 }
 
@@ -5604,7 +5618,7 @@ QColor const& QlementineStyle::groupBoxTitleColor(MouseState const mouse, const 
 }
 
 QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
-  return mouse == MouseState::Disabled ? _impl->theme.adaptativeColorTransparent : _impl->theme.adaptativeColor1;
+  return mouse == MouseState::Disabled ? _impl->theme.neutralColorTransparent : _impl->theme.neutralColorDisabled;
 }
 
 QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
@@ -5660,14 +5674,14 @@ QColor const& QlementineStyle::switchGrooveColor(MouseState const mouse, CheckSt
 
   switch (mouse) {
     case MouseState::Pressed:
-      return primary ? _impl->theme.primaryColorPressed : _impl->theme.adaptativeColor5;
+      return primary ? _impl->theme.primaryColorPressed : _impl->theme.neutralColorPressed;
     case MouseState::Hovered:
-      return primary ? _impl->theme.primaryColorHovered : _impl->theme.adaptativeColor4;
+      return primary ? _impl->theme.primaryColorHovered : _impl->theme.neutralColorHovered;
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.adaptativeColor1;
+      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColorDisabled;
     case MouseState::Normal:
     default:
-      return primary ? _impl->theme.primaryColor : _impl->theme.adaptativeColor3;
+      return primary ? _impl->theme.primaryColor : _impl->theme.neutralColor;
   }
 }
 
@@ -5676,15 +5690,15 @@ QColor const& QlementineStyle::switchHandleColor(MouseState const mouse, CheckSt
 
   switch (mouse) {
     case MouseState::Pressed:
-      return primary ? _impl->theme.primaryColorForegroundPressed : _impl->theme.neutralAlternativeColorPressed;
+      return primary ? _impl->theme.primaryColorForegroundPressed : _impl->theme.secondaryColorPressed;
     case MouseState::Hovered:
-      return primary ? _impl->theme.primaryColorForegroundHovered : _impl->theme.neutralAlternativeColorHovered;
+      return primary ? _impl->theme.primaryColorForegroundHovered : _impl->theme.secondaryColorHovered;
     case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.neutralAlternativeColorDisabled;
+      return primary ? _impl->theme.primaryColorForegroundDisabled : _impl->theme.secondaryColorDisabled;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return primary ? _impl->theme.primaryColorForeground : _impl->theme.neutralColor;
+      return primary ? _impl->theme.primaryColorForeground : _impl->theme.secondaryColor;
   }
 }
 
@@ -5693,36 +5707,36 @@ QColor const& QlementineStyle::tableHeaderBgColor(MouseState const mouse, CheckS
 
   switch (mouse) {
     case MouseState::Pressed:
-      return _impl->theme.adaptativeColor5;
+      return _impl->theme.neutralColorPressed;
     case MouseState::Hovered:
-      return _impl->theme.adaptativeColor2;
+      return _impl->theme.neutralColorHovered;
     case MouseState::Disabled:
-      return _impl->theme.adaptativeColor3;
+      return _impl->theme.neutralColor;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return _impl->theme.adaptativeColor3;
+      return _impl->theme.neutralColor;
   }
 }
 
 QColor const& QlementineStyle::tableHeaderFgColor(MouseState const mouse, CheckState const) const {
   switch (mouse) {
     case MouseState::Disabled:
-      return _impl->theme.neutralColorDisabled;
+      return _impl->theme.secondaryColorDisabled;
     default:
-      return _impl->theme.neutralColor;
+      return _impl->theme.secondaryColor;
   }
 }
 
 QColor const& QlementineStyle::tableLineColor() const {
-  return _impl->theme.neutralAlternativeColor;
+  return _impl->theme.secondaryAlternativeColor;
 }
 
 QColor const& QlementineStyle::colorForTextRole(TextRole role, MouseState const mouse) const {
   switch (role) {
     case TextRole::Caption:
-      return mouse == MouseState::Disabled ? _impl->theme.neutralAlternativeColorDisabled
-                                           : _impl->theme.neutralAlternativeColor;
+      return mouse == MouseState::Disabled ? _impl->theme.secondaryAlternativeColorDisabled
+                                           : _impl->theme.secondaryAlternativeColor;
     case TextRole::H1:
     case TextRole::H2:
     case TextRole::H3:
@@ -5730,7 +5744,7 @@ QColor const& QlementineStyle::colorForTextRole(TextRole role, MouseState const 
     case TextRole::H5:
     case TextRole::Default:
     default:
-      return mouse == MouseState::Disabled ? _impl->theme.neutralColorDisabled : _impl->theme.neutralColor;
+      return mouse == MouseState::Disabled ? _impl->theme.secondaryColorDisabled : _impl->theme.secondaryColor;
   }
 }
 

@@ -220,6 +220,12 @@ std::optional<QColor> tryGetColorFromVariant(QVariant const& variant) {
   return {};
 }
 
+QString toHexRGB(const QColor& color) {
+  return QString("#%1%2%3")
+    .arg(QString::number(color.red(), HEX_BASE), 2, '0')
+    .arg(QString::number(color.green(), HEX_BASE), 2, '0')
+    .arg(QString::number(color.blue(), HEX_BASE), 2, '0');
+}
 
 QString toHexRGBA(const QColor& color) {
   return QString("#%1%2%3%4")
