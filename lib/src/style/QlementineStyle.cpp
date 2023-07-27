@@ -5406,6 +5406,7 @@ QColor const& QlementineStyle::tabBarScrollButtonBackgroundColor(MouseState cons
     case MouseState::Normal:
     case MouseState::Disabled:
     case MouseState::Transparent:
+    default:
       return _impl->theme.semiTransparentColorTransparent;
   }
 }
