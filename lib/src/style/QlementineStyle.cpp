@@ -2163,7 +2163,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto iconW = iconSize.width();
           const auto iconSpacing = iconW > 0 ? spacing : 0;
           const auto pixmap = getPixmap(optItem->icon, iconSize, itemMouse, checked);
-          const auto colorize = isAutoIconColorEnabled(w);
+          const auto colorize = listItemIsAutoIconColorEnabled(itemMouse, selected, focus, active, optItem->index, w);
           const auto pixmapPixelRatio = pixmap.devicePixelRatio();
           const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) pixmap.width() / pixmapPixelRatio) : 0;
           const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) pixmap.height() / pixmapPixelRatio) : 0;
@@ -5166,6 +5166,19 @@ QColor const& QlementineStyle::listItemForegroundColor(
         return _impl->theme.secondaryColor;
     }
   }
+}
+
+// Returns whether an icon in an item view should be colorized with the foreground color.
+// Subclasses can override this to customize the behavior depending on the index or state.
+bool QlementineStyle::listItemIsAutoIconColorEnabled(
+  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
+  const QModelIndex& index, const QWidget* widget) const {
+  Q_UNUSED(mouse)
+  Q_UNUSED(selected)
+  Q_UNUSED(focus)
+  Q_UNUSED(active)
+  Q_UNUSED(index)
+  return isAutoIconColorEnabled(widget);
 }
 
 QColor const& QlementineStyle::listItemCaptionForegroundColor(
