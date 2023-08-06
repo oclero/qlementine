@@ -66,6 +66,7 @@
 #include <QTextEdit>
 #include <QTimer>
 #include <QDateTimeEdit>
+#include <QWindow>
 
 #include <cmath>
 #include <mutex>
@@ -1784,7 +1785,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto colorize =
               QlementineStyle::isAutoIconColorEnabled() && QlementineStyle::isAutoIconColorEnabled(w);
             const auto iconMode = (optHeader->state & State_Enabled || colorize) ? QIcon::Normal : QIcon::Disabled;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             const auto iconPixmap = icon.pixmap(qlementine::getWindow(w), { iconExtent, iconExtent }, iconMode);
+#else
+            const auto iconPixmap = icon.pixmap({ iconExtent, iconExtent }, qlementine::getWindow(w)->devicePixelRatio(), iconMode);
+#endif
             const auto& colorizedPixmap = colorize ? qlementine::colorizePixmap(iconPixmap, fgColor) : iconPixmap;
             p->drawPixmap(iconRect, colorizedPixmap);
           }

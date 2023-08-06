@@ -54,7 +54,7 @@ std::optional<QColor> tryGetColorRecursive(QJsonObject const& jsonObj, QString c
     }
 
     // Check if the value is a reference to another value.
-    if (variant.type() == QVariant::String && maxRecursiveCalls > 0) {
+    if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
         return tryGetColorRecursive(jsonObj, variantString, --maxRecursiveCalls);
@@ -86,7 +86,7 @@ std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const&
     const auto variant = jsonObj.value(key).toVariant();
 
     // Check if the value is a reference to another value.
-    if (variant.type() == QVariant::String && maxRecursiveCalls > 0) {
+    if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
         return tryGetIntRecursive(jsonObj, variantString, --maxRecursiveCalls);
@@ -112,7 +112,7 @@ std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString 
     const auto variant = jsonObj.value(key).toVariant();
 
     // Check if the value is a reference to another value.
-    if (variant.type() == QVariant::String && maxRecursiveCalls > 0) {
+    if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
         return tryGetDoubleRecursive(jsonObj, variantString, --maxRecursiveCalls);
