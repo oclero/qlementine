@@ -350,10 +350,11 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundPressed);
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorForegroundDisabled);
 
-      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColor1);
-      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColor2);
-      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColor3);
-      borderColorTransparent = colorWithAlpha(borderColor1, 0);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColor);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColorHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColorPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, borderColorDisabled);
+      borderColorTransparent = colorWithAlpha(borderColor, 0);
 
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor1);
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor2);
@@ -495,9 +496,10 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, shadowColor2);
   SET_COLOR(jsonObj, shadowColor3);
 
-  SET_COLOR(jsonObj, borderColor1);
-  SET_COLOR(jsonObj, borderColor2);
-  SET_COLOR(jsonObj, borderColor3);
+  SET_COLOR(jsonObj, borderColor);
+  SET_COLOR(jsonObj, borderColorHovered);
+  SET_COLOR(jsonObj, borderColorPressed);
+  SET_COLOR(jsonObj, borderColorDisabled);
 
   SET_COLOR(jsonObj, semiTransparentColor1);
   SET_COLOR(jsonObj, semiTransparentColor2);
@@ -618,9 +620,10 @@ bool Theme::operator==(const Theme& other) const {
     && shadowColor2 == other.shadowColor2
     && shadowColor3 == other.shadowColor3
 
-    && borderColor1 == other.borderColor1
-    && borderColor2 == other.borderColor2
-    && borderColor3 == other.borderColor3
+    && borderColor == other.borderColor
+    && borderColorHovered == other.borderColorHovered
+    && borderColorPressed == other.borderColorPressed
+    && borderColorDisabled == other.borderColorDisabled
 
     && animationDuration == other.animationDuration
     && focusAnimationDuration == other.focusAnimationDuration

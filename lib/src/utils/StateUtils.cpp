@@ -123,6 +123,10 @@ FocusState getFocusState(QStyle::State const& state) {
   return state.testFlag(QStyle::State_HasFocus) ? FocusState::Focused : FocusState::NotFocused;
 }
 
+FocusState getFocusState(bool focused) {
+  return focused ? FocusState::Focused : FocusState::NotFocused;
+}
+
 CheckState getCheckState(QStyle::State const& state) {
   if (state.testFlag(QStyle::State_On)) {
     return CheckState::Checked;

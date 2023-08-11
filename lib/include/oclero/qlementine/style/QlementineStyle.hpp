@@ -152,9 +152,13 @@ public:
 
   virtual QColor const& checkButtonBackgroundColor(MouseState const mouse, CheckState const checked) const;
   virtual QColor const& checkButtonForegroundColor(MouseState const mouse, CheckState const checked) const;
+  virtual QColor const& checkButtonBorderColor(
+    MouseState const mouse, FocusState const focus, CheckState const checked) const;
 
   virtual QColor const& radioButtonBackgroundColor(MouseState const mouse, CheckState const checked) const;
   virtual QColor const& radioButtonForegroundColor(MouseState const mouse, CheckState const checked) const;
+  virtual QColor const& radioButtonBorderColor(
+    MouseState const mouse, FocusState const focus, CheckState const checked) const;
 
   virtual QColor const& comboBoxBackgroundColor(MouseState const mouse) const;
   virtual QColor const& comboBoxForegroundColor(MouseState const mouse) const;
@@ -174,6 +178,8 @@ public:
   virtual QColor const& listItemCaptionForegroundColor(
     MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
   virtual QColor const& listItemCheckButtonBackgroundColor(
+    MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const;
+  virtual QColor const& listItemCheckButtonBorderColor(
     MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const;
   virtual QColor const& listItemCheckButtonForegroundColor(
     MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const;
@@ -249,6 +255,8 @@ public:
   virtual QPalette paletteForTextRole(TextRole role) const;
 
   virtual QColor const& switchGrooveColor(MouseState const mouse, CheckState const checked) const;
+  virtual QColor const& switchGrooveBorderColor(
+    MouseState const mouse, FocusState const focus, CheckState const checked) const;
   virtual QColor const& switchHandleColor(MouseState const mouse, CheckState const checked) const;
 
   virtual QColor const& tableHeaderBgColor(MouseState const mouse, CheckState const checked) const;

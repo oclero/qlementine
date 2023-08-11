@@ -3,6 +3,7 @@
 #include <QMessageBox>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 
 #include "SandboxWindow.hpp"
 //#include "CsdWindow.hpp"
@@ -42,6 +43,7 @@ int main(int argc, char* argv[]) {
   window->setCustomStyle(style);
 #endif
 
+  oclero::qlementine::centerWidget(window.get());
   window->show();
 
   return qApplication.exec();

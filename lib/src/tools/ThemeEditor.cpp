@@ -150,9 +150,10 @@ struct ThemeEditor::Impl {
   ColorEditor* backgroundColorMain3Editor;
   ColorEditor* backgroundColorMain4Editor;
 
-  ColorEditor* borderColor1Editor;
-  ColorEditor* borderColor2Editor;
-  ColorEditor* borderColor3Editor;
+  ColorEditor* borderColorEditor;
+  ColorEditor* borderColorHoveredEditor;
+  ColorEditor* borderColorPressedEditor;
+  ColorEditor* borderColorDisabledEditor;
 
   ColorEditor* focusColorEditor;
 
@@ -335,10 +336,11 @@ struct ThemeEditor::Impl {
 
     // Border Color.
     ADD_TITLE("Border Color");
-    ADD_DESCRIPTION("Used to draw the borders.");
-    ADD_COLOR_EDITOR(borderColor1, "");
-    ADD_COLOR_EDITOR(borderColor2, "");
-    ADD_COLOR_EDITOR(borderColor3, "");
+    ADD_DESCRIPTION("Used to draw the borders: ComboBox, GroupBox's border, etc.");
+    ADD_COLOR_EDITOR(borderColor, "");
+    ADD_COLOR_EDITOR(borderColorHovered, "");
+    ADD_COLOR_EDITOR(borderColorPressed, "");
+    ADD_COLOR_EDITOR(borderColorDisabled, "");
 
     // Focus Color.
     ADD_TITLE("Focus Color");
@@ -446,9 +448,10 @@ struct ThemeEditor::Impl {
     UPDATE_COLOR_EDITOR(backgroundColorMain3);
     UPDATE_COLOR_EDITOR(backgroundColorMain4);
 
-    UPDATE_COLOR_EDITOR(borderColor1);
-    UPDATE_COLOR_EDITOR(borderColor2);
-    UPDATE_COLOR_EDITOR(borderColor3);
+    UPDATE_COLOR_EDITOR(borderColor);
+    UPDATE_COLOR_EDITOR(borderColorHovered);
+    UPDATE_COLOR_EDITOR(borderColorPressed);
+    UPDATE_COLOR_EDITOR(borderColorDisabled);
 
     UPDATE_COLOR_EDITOR(focusColor);
 

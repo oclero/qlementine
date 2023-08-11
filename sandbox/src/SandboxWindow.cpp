@@ -407,11 +407,13 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_checkbox() {
-    for (auto i = 0; i < 2; ++i) {
+    for (auto i = 0; i < 4; ++i) {
       auto* checkbox = new QCheckBox(windowContent);
-      checkbox->setChecked(true);
+      const auto checked = i % 2 == 0;
+      const auto tristate = i > 1;
+
+      checkbox->setChecked(checked);
       checkbox->setIcon(QIcon(":/refresh.svg"));
-      const auto tristate = i % 2 == 0;
       checkbox->setText(QString("%1 checkbox %2 with a very long text").arg(tristate ? "Tristate" : "Normal").arg(i));
       checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       checkbox->setTristate(tristate);
@@ -665,7 +667,7 @@ struct SandboxWindow::Impl {
     treeWidget->topLevelItem(0)->setSelected(true), windowContentLayout->addWidget(treeWidget);
   }
 
-  void setupUI_menu() {
+  void setupUI_menuBar() {
     auto* menuBar = owner.menuBar();
     // NB: it looks like MacOS' native menu bar has an issue with QIcon, so we have to force
     // it to generate icons for High-DPI screens.
@@ -1462,7 +1464,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_listView();
 //      _impl->setupUI_treeWidget();
 //      _impl->setupUI_table();
-//      _impl->setupUI_menu();
+//      _impl->setupUI_menuBar();
 //      _impl->setupUI_toolButton();
 //      _impl->setupUI_toolButtonsVariants();
 //      _impl->setupUI_tabBar();

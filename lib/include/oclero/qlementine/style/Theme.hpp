@@ -12,7 +12,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, ExPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -66,10 +66,10 @@ public: // Operators.
 public: // Values.
   ThemeMeta meta;
 
-  QColor backgroundColorMain1{ 0xFAFAFA };
-  QColor backgroundColorMain2{ 0xF3F3F5 };
-  QColor backgroundColorMain3{ 0xE3E5E7 };
-  QColor backgroundColorMain4{ 0xDADCDE };
+  QColor backgroundColorMain1{ 0xFFFFFF };
+  QColor backgroundColorMain2{ 0xF3F3F3 };
+  QColor backgroundColorMain3{ 0xE3E3E3 };
+  QColor backgroundColorMain4{ 0xDCDCDC };
   QColor backgroundColorMainTransparent{ QRgba64::fromArgb32(0x00FAFAFA) };
 
   QColor neutralColor{ 0xE1E1E1 };
@@ -81,9 +81,9 @@ public: // Values.
   QColor focusColor{ QRgba64::fromArgb32(0x66349886) };
 
   QColor primaryColor{ 0x349886 };
-  QColor primaryColorHovered{ 0X2A7A6B };
-  QColor primaryColorPressed{ 0X2F8979 };
-  QColor primaryColorDisabled{ 0XC9E1DD };
+  QColor primaryColorHovered{ 0x2A7A6B };
+  QColor primaryColorPressed{ 0x2F8979 };
+  QColor primaryColorDisabled{ 0xC9E1DD };
   QColor primaryColorTransparent{ QRgba64::fromArgb32(0x00349886) };
 
   QColor primaryColorForeground{ 0xFFFFFF };
@@ -93,9 +93,9 @@ public: // Values.
   QColor primaryColorForegroundTransparent{ QRgba64::fromArgb32(0x00FFFFFF) };
 
   QColor primaryAlternativeColor{ 0x126D5D };
-  QColor primaryAlternativeColorHovered{ 0X0D6354 };
-  QColor primaryAlternativeColorPressed{ 0X177665 };
-  QColor primaryAlternativeColorDisabled{ 0X9EC8C0 };
+  QColor primaryAlternativeColorHovered{ 0x0D6354 };
+  QColor primaryAlternativeColorPressed{ 0x177665 };
+  QColor primaryAlternativeColorDisabled{ 0x9EC8C0 };
   QColor primaryAlternativeColorTransparent{ QRgba64::fromArgb32(0x00126D5D) };
 
   QColor secondaryColor{ 0x404040 };
@@ -122,7 +122,7 @@ public: // Values.
   QColor statusColorSuccessDisabled{ 0xC4E7D8 };
   QColor statusColorInfo{ 0x1BA8D5 };
   QColor statusColorInfoHovered{ 0x1686AA };
-  QColor statusColorInfoPressed{ 0X1897C0 };
+  QColor statusColorInfoPressed{ 0x1897C0 };
   QColor statusColorInfoDisabled{ 0xcde9f2 };
   QColor statusColorWarning{ 0xF1C861 };
   QColor statusColorWarningHovered{ 0xD9B457 };
@@ -137,21 +137,22 @@ public: // Values.
   QColor statusColorForegroundPressed{ 0xFFFFFF };
   QColor statusColorForegroundDisabled{ QRgba64::fromArgb32(0x99FFFFFF) };
 
-  QColor shadowColor1{ QRgba64::fromArgb32(0X20000000) };
-  QColor shadowColor2{ QRgba64::fromArgb32(0X40000000) };
-  QColor shadowColor3{ QRgba64::fromArgb32(0X60000000) };
+  QColor shadowColor1{ QRgba64::fromArgb32(0x20000000) };
+  QColor shadowColor2{ QRgba64::fromArgb32(0x40000000) };
+  QColor shadowColor3{ QRgba64::fromArgb32(0x60000000) };
   QColor shadowColorTransparent{ QRgba64::fromArgb32(0x00000000) };
 
-  QColor borderColor1{ 0xf3f3f3 };
-  QColor borderColor2{ 0xebebeb };
-  QColor borderColor3{ 0xdcdcdc };
-  QColor borderColorTransparent{ QRgba64::fromArgb32(0x00F3F3F3) };
+  QColor borderColor{ 0xD3D3D3 };
+  QColor borderColorHovered{ 0xB3B3B3 };
+  QColor borderColorPressed{ 0XA3A3A3 };
+  QColor borderColorDisabled{ 0xE9E9E9 };
+  QColor borderColorTransparent{ QRgba64::fromArgb32(0x00D3D3D3) };
 
-  QColor semiTransparentColor1{ QRgba64::fromArgb32(0X0A000000) };
-  QColor semiTransparentColor2{ QRgba64::fromArgb32(0X19000000) };
-  QColor semiTransparentColor3{ QRgba64::fromArgb32(0X21000000) };
-  QColor semiTransparentColor4{ QRgba64::fromArgb32(0X28000000) };
-  QColor semiTransparentColorTransparent{ QRgba64::fromArgb32(0X00000000) };
+  QColor semiTransparentColor1{ QRgba64::fromArgb32(0x0A000000) };
+  QColor semiTransparentColor2{ QRgba64::fromArgb32(0x19000000) };
+  QColor semiTransparentColor3{ QRgba64::fromArgb32(0x21000000) };
+  QColor semiTransparentColor4{ QRgba64::fromArgb32(0x28000000) };
+  QColor semiTransparentColorTransparent{ QRgba64::fromArgb32(0x00000000) };
 
   int fontSize{ 12 };
   int fontSizeMonospace{ 13 };
