@@ -1,14 +1,19 @@
 set(LIB_TARGET_NAME ${PROJECT_NAME})
 
-find_package(${QT_VERSION}
-  REQUIRED
+find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
+  COMPONENTS
     Core
     Widgets
     Svg
+  REQUIRED
 )
 
 if(WIN32)
-  find_package(${QT_VERSION} REQUIRED WinExtras)
+  find_package(Qt
+    COMPONENTS
+      WinExtras
+    REQUIRED
+  )
 endif()
 
 # Declare files.
@@ -132,13 +137,16 @@ target_include_directories(${LIB_TARGET_NAME}
 
 target_link_libraries(${LIB_TARGET_NAME}
   PRIVATE
-    ${QT_VERSION}::Core
-    ${QT_VERSION}::Widgets
-    ${QT_VERSION}::Svg
+    Qt::Core
+    Qt::Widgets
+    Qt::Svg
 )
 
 if(WIN32)
-	target_link_libraries(${LIB_TARGET_NAME} PRIVATE ${QT_VERSION}::WinExtras)
+	target_link_libraries(${LIB_TARGET_NAME}
+    PRIVATE
+      Qt::WinExtras
+  )
 endif()
 
 set_target_properties(${LIB_TARGET_NAME}

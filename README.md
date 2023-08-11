@@ -69,13 +69,13 @@ This library contains:
     1. When calling `cmake`:
 
         ```bash
-        cmake -B ./build -DQT_VERSION=Qt6
+        cmake -B ./build -DQT_DEFAULT_MAJOR_VERSION=6
         ```
 
     2. Directly in a top-level CMake file:
 
         ```cmake
-        set(QT_VERSION Qt6)
+        set(QT_DEFAULT_MAJOR_VERSION 6)
         ```
 
 6. Define the `QStyle` on your `QApplication`.

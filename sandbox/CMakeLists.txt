@@ -1,7 +1,8 @@
-find_package(${QT_VERSION}
-  REQUIRED
+find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
+  COMPONENTS
     Core
     Widgets
+  REQUIRED
 )
 
 add_executable(sandbox WIN32 MACOSX_BUNDLE)
@@ -16,8 +17,8 @@ target_sources(sandbox PRIVATE
 target_link_libraries(sandbox
   PRIVATE
     oclero::qlementine
-    ${QT_VERSION}::Core
-    ${QT_VERSION}::Widgets
+    Qt::Core
+    Qt::Widgets
 )
 
 set_target_properties(sandbox PROPERTIES
