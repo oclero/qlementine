@@ -9,7 +9,7 @@ find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
 )
 
 if(WIN32)
-  find_package(Qt
+  find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
     COMPONENTS
       WinExtras
     REQUIRED
