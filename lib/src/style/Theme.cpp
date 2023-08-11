@@ -311,6 +311,12 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryColorForegroundDisabled);
       primaryColorForegroundTransparent = colorWithAlpha(primaryColorForeground, 0);
 
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryAlternativeColor);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryAlternativeColorHovered);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryAlternativeColorPressed);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, primaryAlternativeColorDisabled);
+      primaryAlternativeColorTransparent = colorWithAlpha(primaryAlternativeColor, 0);
+
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColor);
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorHovered);
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorPressed);
@@ -579,6 +585,11 @@ bool Theme::operator==(const Theme& other) const {
     && primaryColorForegroundHovered == other.primaryColorForegroundHovered
     && primaryColorForegroundPressed == other.primaryColorForegroundPressed
     && primaryColorForegroundDisabled == other.primaryColorForegroundDisabled
+
+    && primaryAlternativeColor == other.primaryAlternativeColor
+    && primaryAlternativeColorHovered == other.primaryAlternativeColorHovered
+    && primaryAlternativeColorPressed == other.primaryAlternativeColorPressed
+    && primaryAlternativeColorDisabled == other.primaryAlternativeColorDisabled
 
     && secondaryColor == other.secondaryColor
     && secondaryColorHovered == other.secondaryColorHovered

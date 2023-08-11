@@ -5622,7 +5622,7 @@ QColor const& QlementineStyle::labelCaptionForegroundColor(MouseState const mous
 }
 
 QColor const& QlementineStyle::toolBarBackgroundColor() const {
-  return _impl->theme.backgroundColorMain1;
+  return _impl->theme.backgroundColorMain2;
 }
 
 QColor const& QlementineStyle::toolBarBorderColor() const {

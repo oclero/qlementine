@@ -44,25 +44,17 @@ const QColor& NavigationBar::getItemBgColor(MouseState mouse, const Theme& theme
 }
 
 const QColor& NavigationBar::getItemFgColor(MouseState mouse, bool /*selected*/, const Theme& theme) const {
-  switch (mouse) {
-    case MouseState::Disabled:
-      return theme.secondaryColorDisabled;
-    default:
-      return theme.secondaryColor;
-  }
+  if (mouse == MouseState::Disabled)
+    return theme.secondaryColorDisabled;
+  else
+    return theme.secondaryColor;
 }
 
 const QColor& NavigationBar::getItemBadgeBgColor(MouseState mouse, bool /*selected*/, const Theme& theme) const {
-  switch (mouse) {
-    case MouseState::Hovered:
-      return theme.secondaryAlternativeColorHovered;
-    case MouseState::Pressed:
-      return theme.secondaryAlternativeColorPressed;
-    case MouseState::Disabled:
-      return theme.neutralColorDisabled;
-    default:
-      return theme.secondaryAlternativeColor;
-  }
+  if (mouse == MouseState::Disabled)
+    return theme.secondaryAlternativeColorDisabled;
+  else
+    return theme.secondaryAlternativeColor;
 }
 
 const QColor& NavigationBar::getItemBadgeFgColor(MouseState mouse, bool /*selected*/, const Theme& theme) const {

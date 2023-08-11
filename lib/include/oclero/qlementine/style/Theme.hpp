@@ -78,25 +78,25 @@ public: // Values.
   QColor neutralColorDisabled{ 0xEEEEEE };
   QColor neutralColorTransparent{ QRgba64::fromArgb32(0x00E1E1E1) };
 
-  QColor focusColor{ QRgba64::fromArgb32(0x66349886) };
+  QColor focusColor{ QRgba64::fromArgb32(0xa9ff6640) };
 
-  QColor primaryColor{ 0x349886 };
-  QColor primaryColorHovered{ 0x2A7A6B };
-  QColor primaryColorPressed{ 0x2F8979 };
-  QColor primaryColorDisabled{ 0xC9E1DD };
-  QColor primaryColorTransparent{ QRgba64::fromArgb32(0x00349886) };
+  QColor primaryColor{ 0x1890FF };
+  QColor primaryColorHovered{ 0x2C9DFF };
+  QColor primaryColorPressed{ 0x40A9FF };
+  QColor primaryColorDisabled{ 0xD1E9FF };
+  QColor primaryColorTransparent{ QRgba64::fromArgb32(0x001890FF) };
 
   QColor primaryColorForeground{ 0xFFFFFF };
   QColor primaryColorForegroundHovered{ 0xFFFFFF };
   QColor primaryColorForegroundPressed{ 0xFFFFFF };
-  QColor primaryColorForegroundDisabled{ 0xDEF0EC };
+  QColor primaryColorForegroundDisabled{ 0xECF6FF };
   QColor primaryColorForegroundTransparent{ QRgba64::fromArgb32(0x00FFFFFF) };
 
-  QColor primaryAlternativeColor{ 0x126D5D };
-  QColor primaryAlternativeColorHovered{ 0x0D6354 };
-  QColor primaryAlternativeColorPressed{ 0x177665 };
-  QColor primaryAlternativeColorDisabled{ 0x9EC8C0 };
-  QColor primaryAlternativeColorTransparent{ QRgba64::fromArgb32(0x00126D5D) };
+  QColor primaryAlternativeColor{ 0x106EF9 };
+  QColor primaryAlternativeColorHovered{ 0x0F7BFD };
+  QColor primaryAlternativeColorPressed{ 0x0F8BFD };
+  QColor primaryAlternativeColorDisabled{ 0xa9d6ff };
+  QColor primaryAlternativeColorTransparent{ QRgba64::fromArgb32(0x001875ff) };
 
   QColor secondaryColor{ 0x404040 };
   QColor secondaryColorHovered{ 0x333333 };
@@ -107,7 +107,7 @@ public: // Values.
   QColor secondaryColorForeground{ 0xFFFFFF };
   QColor secondaryColorForegroundHovered{ 0xFFFFFF };
   QColor secondaryColorForegroundPressed{ 0xFFFFFF };
-  QColor secondaryColorForegroundDisabled{ 0x99FFFFFF };
+  QColor secondaryColorForegroundDisabled{ 0xEDEDED };
   QColor secondaryColorForegroundTransparent{ QRgba64::fromArgb32(0x00FFFFFF) };
 
   QColor secondaryAlternativeColor{ 0x909090 };
