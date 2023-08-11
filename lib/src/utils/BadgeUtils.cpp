@@ -329,7 +329,6 @@ void drawStatusBadge(
   QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize size, const Theme& theme) {
   const auto [bgColor, fgColor] = getStatusBadgeColors(statusBadge, theme);
   const auto [badgeSize, iconSize] = getStatusBadgeSizes(size, theme);
-  const auto radius = badgeRect.height() / 4.;
 
   const auto badgeRect = QRect{
     QPoint{ rect.x() + (rect.width() - badgeSize.width()) / 2, rect.y() + (rect.height() - badgeSize.height()) / 2 },
@@ -339,6 +338,7 @@ void drawStatusBadge(
     QPoint{ rect.x() + (rect.width() - iconSize.width()) / 2, rect.y() + (rect.height() - iconSize.height()) / 2 },
     iconSize,
   };
+  const auto radius = badgeRect.height() / 4.;
 
   // Background.
   p->setRenderHint(QPainter::Antialiasing, true);
