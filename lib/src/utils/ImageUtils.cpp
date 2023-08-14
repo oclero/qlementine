@@ -278,7 +278,7 @@ QPixmap makeFitPixmap(QPixmap const& input, const QSize& size) {
   const auto y = (result.height() - scaledInput.height()) / 2.;
 
   p.setRenderHint(QPainter::Antialiasing, true);
-  p.drawPixmap(x, y, scaledInput);
+  p.drawPixmap(int(x), int(y), scaledInput);
 
   return result;
 }

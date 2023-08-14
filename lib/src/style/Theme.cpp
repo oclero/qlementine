@@ -137,8 +137,8 @@ QJsonDocument readJsonDoc(QString const& jsonPath) {
   QFile jsonFile(jsonPath);
   if (jsonFile.open(QIODevice::ReadOnly)) {
     const auto fileContents = jsonFile.readAll();
-    QJsonParseError jsonParseError;
-    const auto jsonDoc = QJsonDocument::fromJson(fileContents, &jsonParseError);
+    QJsonParseError jsonParseError{};
+    auto jsonDoc = QJsonDocument::fromJson(fileContents, &jsonParseError);
     if (jsonParseError.error == QJsonParseError::ParseError::NoError && !jsonDoc.isEmpty()) {
       return jsonDoc;
     }

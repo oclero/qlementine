@@ -178,9 +178,7 @@ void Popover::setContentWidget(QWidget* widget) {
 
       // Empty layout.
       if (auto* layoutItem = _frameLayout->takeAt(0)) {
-        if (auto* widget = layoutItem->widget()) {
-          delete widget;
-        }
+        delete layoutItem->widget();
         delete layoutItem;
       }
     }
@@ -444,8 +442,7 @@ void Popover::updatePopoverGeometry() {
   // Check if the preferred position fits entirely on screen, or try another position until it works.
   const auto& priority = positionPriority(_preferredPosition);
   const auto screenGeometry = screen()->availableGeometry();
-  for (auto i = 0; i < static_cast<int>(priority.size()); ++i) {
-    const auto position = priority.at(i);
+  for (const auto position : priority) {
     auto geometry = getGeometryForPosition(position, _preferredAlignment);
 
     // Success: the popup fits on screen.

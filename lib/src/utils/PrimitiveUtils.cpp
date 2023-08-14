@@ -48,7 +48,7 @@ double getLength(const double x, const double y) {
 QPointF getColinearVector(const QPointF& point, double partLength, double vectorX, double vectorY) {
   const auto vectorLength = getLength(vectorX, vectorY);
   const auto factor = vectorLength == 0 ? 0 : partLength / vectorLength;
-  return QPointF(point.x() - vectorX * factor, point.y() - vectorY * factor);
+  return {point.x() - vectorX * factor, point.y() - vectorY * factor};
 }
 
 struct AngleRadius {
@@ -109,7 +109,7 @@ AngleRadius getAngleRadius(const QPointF& p1, const QPointF& angularPoint, const
   // Translation need to center in the rect.
   const auto pointOnCircle =
     getColinearVector(circleCenter, radius, circleCenter.x() - angularPoint.x(), circleCenter.y() - angularPoint.y());
-  const auto translation = 2 * QPoint(angularPoint.x() - pointOnCircle.x(), angularPoint.y() - pointOnCircle.y());
+  const auto translation = 2 * QPoint(int(angularPoint.x() - pointOnCircle.x()), int(angularPoint.y() - pointOnCircle.y()));
 
   constexpr auto radiansToDegrees = 180. / QLEMENTINE_PI;
 
@@ -135,7 +135,7 @@ std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text) {
   // TODO
   // text format is something like this "Menu text\tShortcut".
   const auto elements = text.split('\t', Qt::KeepEmptyParts);
-  const auto& label = elements.size() > 0 ? elements.first() : QString("");
+  const auto& label = !elements.empty() ? elements.first() : QString("");
   const auto& shortcut = elements.size() > 1 ? elements.at(1) : QString("");
   return { label, shortcut };
 }
@@ -425,7 +425,7 @@ void drawColorMark(QPainter* p, QRect const& rect, const QColor& color, const QC
 
 void drawColorMarkBorder(QPainter* p, QRect const& rect, const QColor& borderColor, int borderWidth) {
   const auto circleDiameter = rect.height();
-  const auto markRect = QRect((rect.width() - circleDiameter) * 0.5, 0, circleDiameter, circleDiameter);
+  const auto markRect = QRect(int((rect.width() - circleDiameter) * 0.5), 0, circleDiameter, circleDiameter);
   drawEllipseBorder(p, markRect, borderColor, borderWidth * 1.5); // get better readability.
 }
 
@@ -566,16 +566,16 @@ void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p, QAbstractSpinBox:
 
   if (buttonSymbol == QAbstractSpinBox::PlusMinus) {
     if (subControl == QStyle::SC_SpinBoxUp) {
-      const auto p1 = QPointF(x + w / 2, y);
-      const auto p2 = QPointF(x + w / 2, y + h);
+      const auto p1 = QPointF(x + w / 2, y); //NOLINT (we do want integer division here)
+      const auto p2 = QPointF(x + w / 2, y + h);  //NOLINT (we do want integer division here)
       p->drawLine(p1, p2);
 
-      const auto p3 = QPointF(x, y + h / 2);
-      const auto p4 = QPointF(x + w, y + h / 2);
+      const auto p3 = QPointF(x, y + h / 2);  //NOLINT (we do want integer division here)
+      const auto p4 = QPointF(x + w, y + h / 2);  //NOLINT (we do want integer division here)
       p->drawLine(p3, p4);
     } else if (subControl == QStyle::SC_SpinBoxDown) {
-      const auto p1 = QPointF(x, y + h / 2);
-      const auto p2 = QPointF(x + w, y + h / 2);
+      const auto p1 = QPointF(x, y + h / 2);  //NOLINT (we do want integer division here)
+      const auto p2 = QPointF(x + w, y + h / 2);  //NOLINT (we do want integer division here)
       p->drawLine(p1, p2);
     }
   } else if (buttonSymbol == QAbstractSpinBox::UpDownArrows) {
@@ -950,7 +950,7 @@ void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixma
     }
 
     p->setPen(textColor);
-    p->drawText(textRect, textFlags, elidedText, nullptr);
+    p->drawText(textRect, int(textFlags), elidedText, nullptr);
   }
 }
 
@@ -1057,7 +1057,7 @@ void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value
   p->setBrush(Qt::NoBrush);
   p->setPen(QPen(grooveColor, grooveThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   p->setPen(QPen(valueColor, grooveThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-  p->drawArc(arcRect, startAngle, angleLength);
+  p->drawArc(arcRect, startAngle, int(angleLength));
 
   // Cheat a bit: draw a pie below to avoid that nasty imprecise antialiasing: it soften the colors.
   if (value > min) {
@@ -1066,7 +1066,7 @@ void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value
     const auto circlePerimeter = QLEMENTINE_PI * dialRect.width();
     const auto cropLength = (halfGrooveThickness / circlePerimeter) * deadAngleDegrees;
     const auto shiftAngle = cropLength * qtAnglePrecision;
-    p->drawPie(dialRect, startAngle, angleLength + shiftAngle);
+    p->drawPie(dialRect, startAngle, int(angleLength + shiftAngle));
   }
 
   // Rounded triangle to delimit the run of the line.
@@ -1217,7 +1217,7 @@ void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text
   for (auto i = 0; i <= lastLine; ++i) {
     const auto& line = textLayout.lineAt(i);
 
-    const auto lineRect = QRect(rect.topLeft() + line.position().toPoint(), QSize(maxWidth, line.height()));
+    const auto lineRect = QRect(rect.topLeft() + line.position().toPoint(), QSize(maxWidth, int(line.height())));
     if ((i < lastLine || lastLine == lineCount - 1) && line.naturalTextWidth() < maxWidth) {
       line.draw(&p, rect.topLeft());
     } else {

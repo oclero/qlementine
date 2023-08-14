@@ -192,14 +192,13 @@ struct QlementineStyleImpl {
   Theme theme;
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
   WidgetAnimationManager animations;
-  std::unordered_map<int, QIcon> standardIconCache;
+  std::unordered_map<uint32_t, QIcon> standardIconCache;
   bool useMenuForComboBoxPopup{ false };
   bool autoIconColorEnabled{ false };
 };
 
 QlementineStyle::QlementineStyle(QObject* parent)
-  : QCommonStyle()
-  , _impl(new QlementineStyleImpl{ *this }) {
+  : _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
 }
@@ -398,7 +397,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameButtonBevel: {
       // Try to get information about rounded corners. By default, all corners are rounded.
-      auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt);
+      const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt);
       const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
       if (optRoundedButton) {
         optButton = optRoundedButton;
@@ -991,7 +990,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto hasText = !text.isEmpty();
         const auto hasDescription = !description.isEmpty();
         const auto& fm = optButton->fontMetrics;
-        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold.get() : fm;
+        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
         const auto vSpacing = hasText && hasDescription ? spacing / 4 : 0;
         const auto textH = hasText ? boldFm.height() : 0;
         const auto descriptionH = hasDescription ? fm.height() : 0;
@@ -1108,7 +1107,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             optButton->fontMetrics.elidedText(optButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto elidedTextW = optButton->fontMetrics.boundingRect(optButton->rect, fmFlags, elidedText).width();
           const auto textRect = QRect{ availableX, contentRect.y(), elidedTextW, contentRect.height() };
-          auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
+          int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
           if (iconW == 0) {
             textFlags |= Qt::AlignHCenter;
           } else {
@@ -1311,7 +1310,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         // Text.
         if (availableW > 0 && hasText) {
           const auto textRect = QRect{ availableX, rect.y(), availableW, rect.height() };
-          auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
+          int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
           // TODO handle expanding QTabBar.
           // if (expandingTabBar) {
           //   textFlags |= Qt::AlignHCenter;
@@ -1430,7 +1429,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto fgRect = bgRect.marginsRemoved(QMargins{ hPadding, 0, hPadding, 0 });
           const auto [label, shortcut] = getMenuLabelAndShortcut(optMenuItem->text);
           const auto useMnemonic = styleHint(SH_UnderlineShortcut, opt, w);
-          const auto parent = w ? w->parentWidget() : nullptr;
+          const auto *parent = w ? w->parentWidget() : nullptr;
           const auto hasFocus = (w && w->hasFocus()) || (parent && parent->hasFocus());
           const auto hasSubMenu = optMenuItem->menuItemType == QStyleOptionMenuItem::SubMenu;
           const auto showMnemonic = hasFocus;
@@ -1512,7 +1511,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto elidedText = fm.elidedText(label, Qt::ElideRight, textW, Qt::TextSingleLine);
             const auto textX = availableX;
             const auto textRect = QRect{ textX, fgRect.y(), availableW, fgRect.height() };
-            auto textFlags =
+            int textFlags =
               Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextShowMnemonic | Qt::AlignLeft;
             if (useMnemonic) {
               textFlags |= Qt::TextShowMnemonic;
@@ -1560,7 +1559,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto selected = getSelectionState(optMenuItem->state);
         const auto& bgColor = menuBarItemBackgroundColor(mouse, selected);
         const auto& fgColor = menuBarItemForegroundColor(mouse, selected);
-        auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignHCenter;
+        int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignHCenter;
         if (styleHint(SH_UnderlineShortcut, opt, w)) {
           textFlags |= Qt::TextShowMnemonic;
         }
@@ -1644,7 +1643,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto elidedText = fm.elidedText(optToolButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto elidedTextW = fm.boundingRect(optToolButton->rect, Qt::AlignCenter, elidedText).width();
           const auto textRect = QRect{ availableX, fgRect.y(), elidedTextW, fgRect.height() };
-          auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
+          int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
           if (iconSize.isEmpty() || !showIcon) {
             textFlags |= Qt::AlignHCenter;
           } else {
@@ -1809,7 +1808,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
                                                                                                        : Qt::AlignLeft;
           auto textFlags = Qt::Alignment{ Qt::AlignVCenter | Qt::TextSingleLine | Qt::TextHideMnemonic };
           textFlags.setFlag(textHAlignment, true);
-          p->drawText(textRect, textFlags, elidedText);
+          p->drawText(textRect, int(textFlags), elidedText);
         }
       }
       return;
@@ -1904,7 +1903,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           // ColorButton: circle around the button.
           optFocus.rect = subElementRect(SE_PushButtonFocusRect, &optColorButton, colorButton);
-          optFocus.radiuses = optFocus.rect.height() / 2;
+          optFocus.radiuses = optFocus.rect.height() / 2;  // NOLINT (we do want an integer division here)
         } else if (const auto* switchWidget = qobject_cast<const Switch*>(monitoredWidget)) {
           switchWidget->initStyleOptionFocus(optFocus);
         } else if (const auto* abstractButton = qobject_cast<const QAbstractButton*>(monitoredWidget)) {
@@ -2217,7 +2216,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           p->setFont(optItem->font);
           p->setBrush(Qt::NoBrush);
           p->setPen(actualFgColor);
-          p->drawText(textRect, textFlags, elidedText, nullptr);
+          p->drawText(textRect, int(textFlags), elidedText, nullptr);
         }
       }
       return;
@@ -2333,7 +2332,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_SliderFocusRect:
       // Also used for Dial.
       if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
-        const auto isDial = qobject_cast<const QDial*>(w);
+        const auto *isDial = qobject_cast<const QDial*>(w);
         const auto complexControl = isDial ? CC_Dial : CC_Slider;
         const auto subControl = isDial ? SC_DialHandle : SC_SliderHandle;
         const auto handleRect = subControlRect(complexControl, optSlider, subControl, w);
@@ -2458,14 +2457,13 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_TabBarTearIndicatorLeft: {
       const auto& rect = opt->rect;
       const auto shadowW = _impl->theme.spacing * 3;
-      return QRect(rect.x(), rect.y(), shadowW, rect.height());
+      return {rect.x(), rect.y(), shadowW, rect.height()};
     }
     case SE_TabBarTearIndicatorRight: {
       const auto& rect = opt->rect;
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
       const auto shadowW = _impl->theme.spacing * 3;
-      return QRect(
-        rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height());
+      return {rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height()};
     }
     case SE_TabBarTabLeftButton:
       // Button on the left of a tab.
@@ -2477,7 +2475,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto spacing = _impl->theme.spacing;
         const auto x = rect.x() + spacing;
         const auto y = rect.y() + paddingTop + (rect.height() - paddingTop - h) / 2;
-        return QRect{ x, y, w, h };
+        return { x, y, w, h };
       }
       return {};
     case SE_TabBarTabRightButton:
@@ -2494,7 +2492,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto isLast = optTab->position == QStyleOptionTab::TabPosition::End
                             || optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
         const auto paddingRight = isLast ? _impl->theme.spacing : 0;
-        return QRect{ x - paddingRight, y, w, h };
+        return { x - paddingRight, y, w, h };
       }
       return {};
     case SE_TabBarTabText:
@@ -2507,7 +2505,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       const auto h = _impl->theme.controlHeightLarge + spacing;
       const auto x = rect.x() + rect.width() - 2 * w;
       const auto y = rect.y();
-      return QRect{ x, y, w, h };
+      return { x, y, w, h };
     }
     case SE_TabBarScrollRightButton: {
       const auto& rect = opt->rect;
@@ -2516,7 +2514,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       const auto h = _impl->theme.controlHeightLarge + spacing;
       const auto x = rect.x() + rect.width() - w + spacing / 2;
       const auto y = rect.y();
-      return QRect{ x, y, w, h };
+      return { x, y, w, h };
     }
       return {};
     case SE_ToolBarHandle:
@@ -2814,7 +2812,7 @@ void QlementineStyle::drawComplexControl(
               handleRect.y() + (handleRect.height() - dropShadowPixmap.height()) / 2. + dropShadowOffsetY;
             const auto compModebackup = p->compositionMode();
             p->setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
-            p->drawPixmap(dropShadowX, dropShadowY, dropShadowPixmap);
+            p->drawPixmap(dropShadowX, int(dropShadowY), dropShadowPixmap);
             p->setCompositionMode(compModebackup);
           }
 
@@ -2944,7 +2942,7 @@ void QlementineStyle::drawComplexControl(
           const auto tickLength = _impl->theme.dialTickLength;
           const auto minArcLength = dialOpt->notchTarget * 2;
           drawDialTickMarks(p, tickmarksRect, tickColor, min, max, tickThickness, tickLength, dialOpt->singleStep,
-            dialOpt->pageStep, minArcLength);
+            dialOpt->pageStep, int(minArcLength));
         }
 
         const auto progress = dialOpt->sliderPosition;
@@ -3780,7 +3778,7 @@ QSize QlementineStyle::sizeFromContents(
 
           const auto w = std::max(0, hPadding + checkW + iconW + labelW + shortcutW + arrowW + hPadding);
           const auto h = std::max(_impl->theme.controlHeightMedium, iconSize.height() + vPadding);
-          return QSize(w, h);
+          return {w, h};
         }
         return QSize{};
       }
@@ -3849,7 +3847,7 @@ QSize QlementineStyle::sizeFromContents(
 
         w += (isFirst ? spacing : 0) + (isLast ? spacing : 0);
 
-        return QSize(w, h);
+        return {w, h};
       }
       break;
     case CT_Slider:
@@ -3970,7 +3968,7 @@ QSize QlementineStyle::sizeFromContents(
         const auto vSpacing = spacing / 4;
         const auto iconW = icon.isNull() ? 0 : iconSize.width() + spacing * 2;
         const auto& fm = optButton->fontMetrics;
-        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold.get() : fm;
+        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
         const auto textW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
         const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->description).width();
         const auto w = hPadding * 2 + iconW + std::max(textW, descriptionW);
@@ -4047,7 +4045,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // TabBar.
     case PM_TabBarTabOverlap:
-      return _impl->theme.borderRadius;
+      return int(_impl->theme.borderRadius);
     case PM_TabBarTabHSpace:
       return 0;
     case PM_TabBarTabVSpace:
@@ -4216,7 +4214,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // TreeView/TableView.
     case PM_TreeViewIndentation:
-      return _impl->theme.spacing * 2.5;
+      return int(_impl->theme.spacing * 2.5);
     case PM_HeaderMargin:
       return _impl->theme.spacing; // Header horizontal padding.
     case PM_HeaderMarkSize:
@@ -4412,11 +4410,11 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_GroupBox_TextLabelVerticalAlignment:
       return Qt::AlignVCenter;
     case SH_GroupBox_TextLabelColor:
-      return _impl->theme.secondaryColor.rgba();
+      return int(_impl->theme.secondaryColor.rgba());
 
     // Table
     case SH_Table_GridLineColor:
-      return tableLineColor().rgba();
+      return int(tableLineColor().rgba());
     case SH_Header_ArrowAlignment:
       return Qt::AlignRight | Qt::AlignVCenter;
 

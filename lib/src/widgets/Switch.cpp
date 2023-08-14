@@ -25,7 +25,6 @@
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 #include <oclero/qlementine/style/Theme.hpp>
-#include <oclero/qlementine/style/QlementineStyleOption.hpp>
 
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>

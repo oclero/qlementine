@@ -25,7 +25,7 @@ class AbstractItemListWidget : public QWidget {
 
 public:
   explicit AbstractItemListWidget(QWidget* parent = nullptr);
-  virtual ~AbstractItemListWidget();
+  ~AbstractItemListWidget() override;
 
   QSize sizeHint() const override;
 

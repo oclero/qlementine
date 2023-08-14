@@ -91,8 +91,8 @@ QColor getColorSourceOver(const QColor& bg, const QColor& fg) {
   const auto finalGreen = fgGreen + bgGreen * fgAlphaInv;
   const auto finalBlue = fgBlue + bgBlue * fgAlphaInv;
 
-  const auto finalRGBA = qRgba(finalRed * 255, finalGreen * 255, finalBlue * 255, finalAlpha * 255);
-  const auto finalColor = QColor::fromRgba(finalRGBA);
+  const auto finalRGBA = qRgba(int(finalRed * 255), int(finalGreen * 255), int(finalBlue * 255), int(finalAlpha * 255));
+  auto finalColor = QColor::fromRgba(finalRGBA);
 
   return finalColor;
 }

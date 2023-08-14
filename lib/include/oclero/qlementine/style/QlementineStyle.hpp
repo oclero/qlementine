@@ -66,7 +66,7 @@ public:
 
 public:
   explicit QlementineStyle(QObject* parent = nullptr);
-  ~QlementineStyle();
+  ~QlementineStyle() override;
 
   Theme const& theme() const;
   void setTheme(Theme const& theme);
@@ -92,49 +92,49 @@ public:
   static QIcon makeIcon(const QString& svgPath);
 
 public:
-  virtual void drawPrimitive(
+  void drawPrimitive(
     PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const override;
 
-  virtual void drawControl(
+  void drawControl(
     ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const override;
 
-  virtual QRect subElementRect(SubElement se, const QStyleOption* opt, const QWidget* w = nullptr) const override;
+  QRect subElementRect(SubElement se, const QStyleOption* opt, const QWidget* w = nullptr) const override;
 
-  virtual void drawComplexControl(
+  void drawComplexControl(
     ComplexControl cc, const QStyleOptionComplex* opt, QPainter* p, const QWidget* w = nullptr) const override;
 
-  virtual SubControl hitTestComplexControl(
+  SubControl hitTestComplexControl(
     ComplexControl cc, const QStyleOptionComplex* opt, const QPoint& pos, const QWidget* w = nullptr) const override;
 
-  virtual QRect subControlRect(
+  QRect subControlRect(
     ComplexControl cc, const QStyleOptionComplex* opt, SubControl sc, const QWidget* w = nullptr) const override;
 
-  virtual QSize sizeFromContents(
+  QSize sizeFromContents(
     ContentsType ct, const QStyleOption* opt, const QSize& s, const QWidget* w = nullptr) const override;
 
-  virtual int pixelMetric(PixelMetric m, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;
+  int pixelMetric(PixelMetric m, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;
 
-  virtual int styleHint(StyleHint sh, const QStyleOption* opt = nullptr, const QWidget* w = nullptr,
+  int styleHint(StyleHint sh, const QStyleOption* opt = nullptr, const QWidget* w = nullptr,
     QStyleHintReturn* shret = nullptr) const override;
 
-  virtual QPalette standardPalette() const override;
+  QPalette standardPalette() const override;
 
-  virtual QIcon standardIcon(
+  QIcon standardIcon(
     StandardPixmap sp, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;
 
-  virtual QPixmap standardPixmap(
+  QPixmap standardPixmap(
     StandardPixmap sp, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;
 
-  virtual QPixmap generatedIconPixmap(QIcon::Mode im, const QPixmap& pixmap, const QStyleOption* opt) const override;
+  QPixmap generatedIconPixmap(QIcon::Mode im, const QPixmap& pixmap, const QStyleOption* opt) const override;
 
-  virtual int layoutSpacing(QSizePolicy::ControlType c1, QSizePolicy::ControlType c2, Qt::Orientation o,
+  int layoutSpacing(QSizePolicy::ControlType c1, QSizePolicy::ControlType c2, Qt::Orientation o,
     const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;
 
-  virtual void polish(QPalette& palette) override;
-  virtual void polish(QApplication* app) override;
-  virtual void polish(QWidget* w) override;
-  virtual void unpolish(QWidget* w) override;
-  virtual void unpolish(QApplication* app) override;
+  void polish(QPalette& palette) override;
+  void polish(QApplication* app) override;
+  void polish(QWidget* w) override;
+  void unpolish(QWidget* w) override;
+  void unpolish(QApplication* app) override;
 
   virtual QColor const& color(MouseState const mouse, ColorRole const role) const;
 
