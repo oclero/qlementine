@@ -104,7 +104,7 @@ void ThemeManager::setPreviousTheme() {
 }
 
 int ThemeManager::themeIndex(const QString& key) const {
-  const auto* const it = std::find_if(_themes.begin(), _themes.end(), [&key](auto& theme) {
+  const auto it = std::find_if(_themes.begin(), _themes.end(), [&key](const auto& theme) {
     return theme.meta.name == key;
   });
   if (it != _themes.end())
