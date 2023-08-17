@@ -99,7 +99,7 @@ void horizontal_blur(const T* in, T* out, const int w, const int h, const int ch
       horizontal_blur<T, 4>(in, out, w, h, r);
       break;
     default:
-      assert(((void) "Number of channels not supported", false));  // NOLINT
+      assert(((void) "Number of channels not supported", false)); // NOLINT
       break;
   }
 }
@@ -145,12 +145,12 @@ void flip_block(const T* in, T* out, const int w, const int h, const int channel
       flip_block<T, 4>(in, out, w, h);
       break;
     default:
-      assert(((void) "Number of channels not supported", false));  // NOLINT
+      assert(((void) "Number of channels not supported", false)); // NOLINT
       break;
   }
 }
 
-inline void sigma_to_box_radius(int *boxes, const double sigma, const int passCount) {
+inline void sigma_to_box_radius(int* boxes, const double sigma, const int passCount) {
   // ideal filter width
   double wi = std::sqrt((12 * sigma * sigma / passCount) + 1);
   int wl = int(wi); // no need std::floor
@@ -254,7 +254,7 @@ void fast_gaussian_blur(
       fast_gaussian_blur<T, 10>(in, out, w, h, channelCount, sigma);
       break;
     default:
-      assert(((void) "Number of passes not supported", false));  // NOLINT
+      assert(((void) "Number of passes not supported", false)); // NOLINT
       break;
   }
 }

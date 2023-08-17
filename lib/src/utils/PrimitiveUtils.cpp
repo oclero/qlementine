@@ -48,7 +48,7 @@ double getLength(const double x, const double y) {
 QPointF getColinearVector(const QPointF& point, double partLength, double vectorX, double vectorY) {
   const auto vectorLength = getLength(vectorX, vectorY);
   const auto factor = vectorLength == 0 ? 0 : partLength / vectorLength;
-  return {point.x() - vectorX * factor, point.y() - vectorY * factor};
+  return { point.x() - vectorX * factor, point.y() - vectorY * factor };
 }
 
 struct AngleRadius {
@@ -109,7 +109,9 @@ AngleRadius getAngleRadius(const QPointF& p1, const QPointF& angularPoint, const
   // Translation need to center in the rect.
   const auto pointOnCircle =
     getColinearVector(circleCenter, radius, circleCenter.x() - angularPoint.x(), circleCenter.y() - angularPoint.y());
-  const auto translation = 2 * QPoint(int(angularPoint.x() - pointOnCircle.x()), int(angularPoint.y() - pointOnCircle.y()));
+  const auto translationX = 2 * static_cast<int>(angularPoint.x() - pointOnCircle.x());
+  const auto translationY = 2 * static_cast<int>(angularPoint.y() - pointOnCircle.y());
+  const auto translation = QPoint(translationX, translationY);
 
   constexpr auto radiansToDegrees = 180. / QLEMENTINE_PI;
 
@@ -567,15 +569,15 @@ void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p, QAbstractSpinBox:
   if (buttonSymbol == QAbstractSpinBox::PlusMinus) {
     if (subControl == QStyle::SC_SpinBoxUp) {
       const auto p1 = QPointF(x + w / 2, y); //NOLINT (we do want integer division here)
-      const auto p2 = QPointF(x + w / 2, y + h);  //NOLINT (we do want integer division here)
+      const auto p2 = QPointF(x + w / 2, y + h); //NOLINT (we do want integer division here)
       p->drawLine(p1, p2);
 
-      const auto p3 = QPointF(x, y + h / 2);  //NOLINT (we do want integer division here)
-      const auto p4 = QPointF(x + w, y + h / 2);  //NOLINT (we do want integer division here)
+      const auto p3 = QPointF(x, y + h / 2); //NOLINT (we do want integer division here)
+      const auto p4 = QPointF(x + w, y + h / 2); //NOLINT (we do want integer division here)
       p->drawLine(p3, p4);
     } else if (subControl == QStyle::SC_SpinBoxDown) {
-      const auto p1 = QPointF(x, y + h / 2);  //NOLINT (we do want integer division here)
-      const auto p2 = QPointF(x + w, y + h / 2);  //NOLINT (we do want integer division here)
+      const auto p1 = QPointF(x, y + h / 2); //NOLINT (we do want integer division here)
+      const auto p2 = QPointF(x + w, y + h / 2); //NOLINT (we do want integer division here)
       p->drawLine(p1, p2);
     }
   } else if (buttonSymbol == QAbstractSpinBox::UpDownArrows) {

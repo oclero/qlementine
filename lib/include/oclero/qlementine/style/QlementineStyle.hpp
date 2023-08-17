@@ -95,8 +95,7 @@ public:
   void drawPrimitive(
     PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const override;
 
-  void drawControl(
-    ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const override;
+  void drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const override;
 
   QRect subElementRect(SubElement se, const QStyleOption* opt, const QWidget* w = nullptr) const override;
 
@@ -119,8 +118,7 @@ public:
 
   QPalette standardPalette() const override;
 
-  QIcon standardIcon(
-    StandardPixmap sp, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;
+  QIcon standardIcon(StandardPixmap sp, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;
 
   QPixmap standardPixmap(
     StandardPixmap sp, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const override;

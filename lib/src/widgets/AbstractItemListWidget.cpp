@@ -192,7 +192,7 @@ int AbstractItemListWidget::findItemIndex(const QVariant& data) const {
   if (!data.isValid())
     return -1;
 
-  const auto * const it = std::find_if(_items.constBegin(), _items.constEnd(), [&data](const auto& item) {
+  const auto* const it = std::find_if(_items.constBegin(), _items.constEnd(), [&data](const auto& item) {
     return item.data == data;
   });
   return it != _items.constEnd() ? static_cast<int>(std::distance(_items.constBegin(), it)) : -1;

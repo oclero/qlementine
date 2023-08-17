@@ -1429,7 +1429,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto fgRect = bgRect.marginsRemoved(QMargins{ hPadding, 0, hPadding, 0 });
           const auto [label, shortcut] = getMenuLabelAndShortcut(optMenuItem->text);
           const auto useMnemonic = styleHint(SH_UnderlineShortcut, opt, w);
-          const auto *parent = w ? w->parentWidget() : nullptr;
+          const auto* parent = w ? w->parentWidget() : nullptr;
           const auto hasFocus = (w && w->hasFocus()) || (parent && parent->hasFocus());
           const auto hasSubMenu = optMenuItem->menuItemType == QStyleOptionMenuItem::SubMenu;
           const auto showMnemonic = hasFocus;
@@ -1787,7 +1787,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             const auto iconPixmap = icon.pixmap(qlementine::getWindow(w), { iconExtent, iconExtent }, iconMode);
 #else
-            const auto iconPixmap = icon.pixmap({ iconExtent, iconExtent }, qlementine::getWindow(w)->devicePixelRatio(), iconMode);
+            const auto iconPixmap =
+              icon.pixmap({ iconExtent, iconExtent }, qlementine::getWindow(w)->devicePixelRatio(), iconMode);
 #endif
             const auto& colorizedPixmap = colorize ? qlementine::colorizePixmap(iconPixmap, fgColor) : iconPixmap;
             p->drawPixmap(iconRect, colorizedPixmap);
@@ -1903,7 +1904,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           // ColorButton: circle around the button.
           optFocus.rect = subElementRect(SE_PushButtonFocusRect, &optColorButton, colorButton);
-          optFocus.radiuses = optFocus.rect.height() / 2;  // NOLINT (we do want an integer division here)
+          optFocus.radiuses = optFocus.rect.height() / 2; // NOLINT (we do want an integer division here)
         } else if (const auto* switchWidget = qobject_cast<const Switch*>(monitoredWidget)) {
           switchWidget->initStyleOptionFocus(optFocus);
         } else if (const auto* abstractButton = qobject_cast<const QAbstractButton*>(monitoredWidget)) {
@@ -2332,7 +2333,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_SliderFocusRect:
       // Also used for Dial.
       if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
-        const auto *isDial = qobject_cast<const QDial*>(w);
+        const auto* isDial = qobject_cast<const QDial*>(w);
         const auto complexControl = isDial ? CC_Dial : CC_Slider;
         const auto subControl = isDial ? SC_DialHandle : SC_SliderHandle;
         const auto handleRect = subControlRect(complexControl, optSlider, subControl, w);
@@ -2457,13 +2458,13 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_TabBarTearIndicatorLeft: {
       const auto& rect = opt->rect;
       const auto shadowW = _impl->theme.spacing * 3;
-      return {rect.x(), rect.y(), shadowW, rect.height()};
+      return { rect.x(), rect.y(), shadowW, rect.height() };
     }
     case SE_TabBarTearIndicatorRight: {
       const auto& rect = opt->rect;
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
       const auto shadowW = _impl->theme.spacing * 3;
-      return {rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height()};
+      return { rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height() };
     }
     case SE_TabBarTabLeftButton:
       // Button on the left of a tab.
@@ -3778,7 +3779,7 @@ QSize QlementineStyle::sizeFromContents(
 
           const auto w = std::max(0, hPadding + checkW + iconW + labelW + shortcutW + arrowW + hPadding);
           const auto h = std::max(_impl->theme.controlHeightMedium, iconSize.height() + vPadding);
-          return {w, h};
+          return { w, h };
         }
         return QSize{};
       }
@@ -3847,7 +3848,7 @@ QSize QlementineStyle::sizeFromContents(
 
         w += (isFirst ? spacing : 0) + (isLast ? spacing : 0);
 
-        return {w, h};
+        return { w, h };
       }
       break;
     case CT_Slider:
