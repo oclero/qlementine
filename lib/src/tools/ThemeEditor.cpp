@@ -105,79 +105,90 @@ std::pair<QWidget*, LineEdit*> makeTextEditorAndLabel(const QString& label, cons
 }
 
 struct ThemeEditor::Impl {
-  ColorEditor* primaryColorEditor;
-  ColorEditor* primaryColorHoveredEditor;
-  ColorEditor* primaryColorPressedEditor;
-  ColorEditor* primaryColorDisabledEditor;
+  ColorEditor* primaryColorEditor{};
+  ColorEditor* primaryColorHoveredEditor{};
+  ColorEditor* primaryColorPressedEditor{};
+  ColorEditor* primaryColorDisabledEditor{};
 
-  ColorEditor* primaryColorForegroundEditor;
-  ColorEditor* primaryColorForegroundHoveredEditor;
-  ColorEditor* primaryColorForegroundPressedEditor;
-  ColorEditor* primaryColorForegroundDisabledEditor;
+  ColorEditor* primaryColorForegroundEditor{};
+  ColorEditor* primaryColorForegroundHoveredEditor{};
+  ColorEditor* primaryColorForegroundPressedEditor{};
+  ColorEditor* primaryColorForegroundDisabledEditor{};
 
-  ColorEditor* neutralColorEditor;
-  ColorEditor* neutralColorHoveredEditor;
-  ColorEditor* neutralColorPressedEditor;
-  ColorEditor* neutralColorDisabledEditor;
+  ColorEditor* primaryAlternativeColorEditor{};
+  ColorEditor* primaryAlternativeColorHoveredEditor{};
+  ColorEditor* primaryAlternativeColorPressedEditor{};
+  ColorEditor* primaryAlternativeColorDisabledEditor{};
 
-  ColorEditor* neutralColorForegroundEditor;
-  ColorEditor* neutralColorForegroundHoveredEditor;
-  ColorEditor* neutralColorForegroundPressedEditor;
-  ColorEditor* neutralColorForegroundDisabledEditor;
+  ColorEditor* secondaryColorEditor{};
+  ColorEditor* secondaryColorHoveredEditor{};
+  ColorEditor* secondaryColorPressedEditor{};
+  ColorEditor* secondaryColorDisabledEditor{};
 
-  ColorEditor* neutralAlternativeColorEditor;
-  ColorEditor* neutralAlternativeColorHoveredEditor;
-  ColorEditor* neutralAlternativeColorPressedEditor;
-  ColorEditor* neutralAlternativeColorDisabledEditor;
+  ColorEditor* secondaryColorForegroundEditor{};
+  ColorEditor* secondaryColorForegroundHoveredEditor{};
+  ColorEditor* secondaryColorForegroundPressedEditor{};
+  ColorEditor* secondaryColorForegroundDisabledEditor{};
 
-  ColorEditor* adaptativeColor1Editor;
-  ColorEditor* adaptativeColor2Editor;
-  ColorEditor* adaptativeColor3Editor;
-  ColorEditor* adaptativeColor4Editor;
-  ColorEditor* adaptativeColor5Editor;
+  ColorEditor* secondaryAlternativeColorEditor{};
+  ColorEditor* secondaryAlternativeColorHoveredEditor{};
+  ColorEditor* secondaryAlternativeColorPressedEditor{};
+  ColorEditor* secondaryAlternativeColorDisabledEditor{};
 
-  ColorEditor* backgroundColorMain1Editor;
-  ColorEditor* backgroundColorMain2Editor;
-  ColorEditor* backgroundColorMain3Editor;
+  ColorEditor* neutralColorEditor{};
+  ColorEditor* neutralColorHoveredEditor{};
+  ColorEditor* neutralColorPressedEditor{};
+  ColorEditor* neutralColorDisabledEditor{};
 
-  ColorEditor* borderColor1Editor;
-  ColorEditor* borderColor2Editor;
-  ColorEditor* borderColor3Editor;
+  ColorEditor* semiTransparentColor1Editor{};
+  ColorEditor* semiTransparentColor2Editor{};
+  ColorEditor* semiTransparentColor3Editor{};
+  ColorEditor* semiTransparentColor4Editor{};
 
-  ColorEditor* focusColorEditor;
+  ColorEditor* backgroundColorMain1Editor{};
+  ColorEditor* backgroundColorMain2Editor{};
+  ColorEditor* backgroundColorMain3Editor{};
+  ColorEditor* backgroundColorMain4Editor{};
 
-  ColorEditor* shadowColor1Editor;
-  ColorEditor* shadowColor2Editor;
-  ColorEditor* shadowColor3Editor;
+  ColorEditor* borderColorEditor{};
+  ColorEditor* borderColorHoveredEditor{};
+  ColorEditor* borderColorPressedEditor{};
+  ColorEditor* borderColorDisabledEditor{};
 
-  ColorEditor* statusColorErrorEditor;
-  ColorEditor* statusColorErrorHoveredEditor;
-  ColorEditor* statusColorErrorPressedEditor;
-  ColorEditor* statusColorErrorDisabledEditor;
+  ColorEditor* focusColorEditor{};
 
-  ColorEditor* statusColorWarningEditor;
-  ColorEditor* statusColorWarningHoveredEditor;
-  ColorEditor* statusColorWarningPressedEditor;
-  ColorEditor* statusColorWarningDisabledEditor;
+  ColorEditor* shadowColor1Editor{};
+  ColorEditor* shadowColor2Editor{};
+  ColorEditor* shadowColor3Editor{};
 
-  ColorEditor* statusColorSuccessEditor;
-  ColorEditor* statusColorSuccessHoveredEditor;
-  ColorEditor* statusColorSuccessPressedEditor;
-  ColorEditor* statusColorSuccessDisabledEditor;
+  ColorEditor* statusColorErrorEditor{};
+  ColorEditor* statusColorErrorHoveredEditor{};
+  ColorEditor* statusColorErrorPressedEditor{};
+  ColorEditor* statusColorErrorDisabledEditor{};
 
-  ColorEditor* statusColorInfoEditor;
-  ColorEditor* statusColorInfoHoveredEditor;
-  ColorEditor* statusColorInfoPressedEditor;
-  ColorEditor* statusColorInfoDisabledEditor;
+  ColorEditor* statusColorWarningEditor{};
+  ColorEditor* statusColorWarningHoveredEditor{};
+  ColorEditor* statusColorWarningPressedEditor{};
+  ColorEditor* statusColorWarningDisabledEditor{};
 
-  ColorEditor* statusColorForegroundEditor;
-  ColorEditor* statusColorForegroundHoveredEditor;
-  ColorEditor* statusColorForegroundPressedEditor;
-  ColorEditor* statusColorForegroundDisabledEditor;
+  ColorEditor* statusColorSuccessEditor{};
+  ColorEditor* statusColorSuccessHoveredEditor{};
+  ColorEditor* statusColorSuccessPressedEditor{};
+  ColorEditor* statusColorSuccessDisabledEditor{};
 
-  LineEdit* nameEditor;
-  LineEdit* authorEditor;
-  LineEdit* versionEditor;
+  ColorEditor* statusColorInfoEditor{};
+  ColorEditor* statusColorInfoHoveredEditor{};
+  ColorEditor* statusColorInfoPressedEditor{};
+  ColorEditor* statusColorInfoDisabledEditor{};
+
+  ColorEditor* statusColorForegroundEditor{};
+  ColorEditor* statusColorForegroundHoveredEditor{};
+  ColorEditor* statusColorForegroundPressedEditor{};
+  ColorEditor* statusColorForegroundDisabledEditor{};
+
+  LineEdit* nameEditor{};
+  LineEdit* authorEditor{};
+  LineEdit* versionEditor{};
 
   Impl(ThemeEditor& o)
     : owner(o) {}
@@ -259,63 +270,77 @@ struct ThemeEditor::Impl {
   void setupColorEditors(QFormLayout* formLayout, int vSpacing) {
     // Primary Color.
     ADD_TITLE("Primary Color");
-
-    //ADD_SUBTITLE("Background");
-    //ADD_DESCRIPTION("Highlighting selected elements, checked elements, default buttons, etc.");
+    ADD_SUBTITLE("Background")
+    ADD_DESCRIPTION("Used to highlight elements.")
     ADD_COLOR_EDITOR(primaryColor, "");
     ADD_COLOR_EDITOR(primaryColorHovered, "");
     ADD_COLOR_EDITOR(primaryColorPressed, "");
     ADD_COLOR_EDITOR(primaryColorDisabled, "");
     ADD_SUBTITLE("Foreground")
-    ADD_DESCRIPTION("Text drawn over selected elements, default buttons, etc.");
+    ADD_DESCRIPTION("Text drawn over highlighted elements.");
     ADD_COLOR_EDITOR(primaryColorForeground, "");
     ADD_COLOR_EDITOR(primaryColorForegroundHovered, "");
     ADD_COLOR_EDITOR(primaryColorForegroundPressed, "");
     ADD_COLOR_EDITOR(primaryColorForegroundDisabled, "");
+    ADD_SUBTITLE("Alternative")
+    ADD_DESCRIPTION("Used to highlight elements over already highlighted elements.")
+    ADD_COLOR_EDITOR(primaryAlternativeColor, "");
+    ADD_COLOR_EDITOR(primaryAlternativeColorHovered, "");
+    ADD_COLOR_EDITOR(primaryAlternativeColorPressed, "");
+    ADD_COLOR_EDITOR(primaryAlternativeColorDisabled, "");
 
-    // Neutral Color.
-    ADD_TITLE("Neutral Color");
-    ADD_DESCRIPTION("Used for texts.");
+    // Secondary Color.
+    ADD_TITLE("Secondary Color");
     ADD_SUBTITLE("Background");
+    ADD_DESCRIPTION("A more neutral color, used for text and non-highlighted elements.");
+    ADD_COLOR_EDITOR(secondaryColor, "");
+    ADD_COLOR_EDITOR(secondaryColorHovered, "");
+    ADD_COLOR_EDITOR(secondaryColorPressed, "");
+    ADD_COLOR_EDITOR(secondaryColorDisabled, "");
+    ADD_SUBTITLE("Foreground")
+    ADD_DESCRIPTION("Text drawn over elements in secondary color.")
+    ADD_COLOR_EDITOR(secondaryColorForeground, "");
+    ADD_COLOR_EDITOR(secondaryColorForegroundHovered, "");
+    ADD_COLOR_EDITOR(secondaryColorForegroundPressed, "");
+    ADD_COLOR_EDITOR(secondaryColorForegroundDisabled, "");
+    ADD_TITLE("Secondary Alternative Color");
+    ADD_DESCRIPTION("A lighter version of the secondary color.");
+    ADD_COLOR_EDITOR(secondaryAlternativeColor, "");
+    ADD_COLOR_EDITOR(secondaryAlternativeColorHovered, "");
+    ADD_COLOR_EDITOR(secondaryAlternativeColorPressed, "");
+    ADD_COLOR_EDITOR(secondaryAlternativeColorDisabled, "");
+
+    // Neutral color.
+    ADD_TITLE("Neutral Color");
+    ADD_DESCRIPTION("Used for ??");
     ADD_COLOR_EDITOR(neutralColor, "");
     ADD_COLOR_EDITOR(neutralColorHovered, "");
     ADD_COLOR_EDITOR(neutralColorPressed, "");
     ADD_COLOR_EDITOR(neutralColorDisabled, "");
-    ADD_SUBTITLE("Foreground")
-    ADD_COLOR_EDITOR(neutralColorForeground, "");
-    ADD_COLOR_EDITOR(neutralColorForegroundHovered, "");
-    ADD_COLOR_EDITOR(neutralColorForegroundPressed, "");
-    ADD_COLOR_EDITOR(neutralColorForegroundDisabled, "");
 
-    // Neutral Alternative Color.
-    ADD_TITLE("Neutral Alternative Color");
-    ADD_DESCRIPTION("Used for buttons.");
-    ADD_COLOR_EDITOR(neutralAlternativeColor, "");
-    ADD_COLOR_EDITOR(neutralAlternativeColorHovered, "");
-    ADD_COLOR_EDITOR(neutralAlternativeColorPressed, "");
-    ADD_COLOR_EDITOR(neutralAlternativeColorDisabled, "");
-
-    // Neutral Alternative Color.
-    ADD_TITLE("Adaptative Color");
-    ADD_DESCRIPTION("Used for ???");
-    ADD_COLOR_EDITOR(adaptativeColor1, "");
-    ADD_COLOR_EDITOR(adaptativeColor2, "");
-    ADD_COLOR_EDITOR(adaptativeColor3, "");
-    ADD_COLOR_EDITOR(adaptativeColor4, "");
-    ADD_COLOR_EDITOR(adaptativeColor5, "");
+    // Semi-transparent color.
+    ADD_TITLE("Semi-transparent Color");
+    ADD_DESCRIPTION("Used for semi-transparent elements such as scrollbars.");
+    ADD_COLOR_EDITOR(semiTransparentColor1, "");
+    ADD_COLOR_EDITOR(semiTransparentColor2, "");
+    ADD_COLOR_EDITOR(semiTransparentColor3, "");
+    ADD_COLOR_EDITOR(semiTransparentColor4, "");
 
     // Background Color.
     ADD_TITLE("Background Color");
+    ADD_DESCRIPTION("Used for containers: windows, GroupBoxes, etc.")
     ADD_COLOR_EDITOR(backgroundColorMain1, "Main background color (window, etc).");
     ADD_COLOR_EDITOR(backgroundColorMain2, "");
     ADD_COLOR_EDITOR(backgroundColorMain3, "");
+    ADD_COLOR_EDITOR(backgroundColorMain4, "");
 
     // Border Color.
     ADD_TITLE("Border Color");
-    ADD_DESCRIPTION("Used to draw the borders.");
-    ADD_COLOR_EDITOR(borderColor1, "");
-    ADD_COLOR_EDITOR(borderColor2, "");
-    ADD_COLOR_EDITOR(borderColor3, "");
+    ADD_DESCRIPTION("Used to draw the borders: ComboBox, GroupBox's border, etc.");
+    ADD_COLOR_EDITOR(borderColor, "");
+    ADD_COLOR_EDITOR(borderColorHovered, "");
+    ADD_COLOR_EDITOR(borderColorPressed, "");
+    ADD_COLOR_EDITOR(borderColorDisabled, "");
 
     // Focus Color.
     ADD_TITLE("Focus Color");
@@ -393,34 +418,40 @@ struct ThemeEditor::Impl {
     UPDATE_COLOR_EDITOR(primaryColorForegroundPressed);
     UPDATE_COLOR_EDITOR(primaryColorForegroundDisabled);
 
+    UPDATE_COLOR_EDITOR(secondaryColor);
+    UPDATE_COLOR_EDITOR(secondaryColorHovered);
+    UPDATE_COLOR_EDITOR(secondaryColorPressed);
+    UPDATE_COLOR_EDITOR(secondaryColorDisabled);
+
+    UPDATE_COLOR_EDITOR(secondaryColorForeground);
+    UPDATE_COLOR_EDITOR(secondaryColorForegroundHovered);
+    UPDATE_COLOR_EDITOR(secondaryColorForegroundPressed);
+    UPDATE_COLOR_EDITOR(secondaryColorForegroundDisabled);
+
+    UPDATE_COLOR_EDITOR(secondaryAlternativeColor);
+    UPDATE_COLOR_EDITOR(secondaryAlternativeColorHovered);
+    UPDATE_COLOR_EDITOR(secondaryAlternativeColorPressed);
+    UPDATE_COLOR_EDITOR(secondaryAlternativeColorDisabled);
+
     UPDATE_COLOR_EDITOR(neutralColor);
     UPDATE_COLOR_EDITOR(neutralColorHovered);
     UPDATE_COLOR_EDITOR(neutralColorPressed);
     UPDATE_COLOR_EDITOR(neutralColorDisabled);
 
-    UPDATE_COLOR_EDITOR(neutralColorForeground);
-    UPDATE_COLOR_EDITOR(neutralColorForegroundHovered);
-    UPDATE_COLOR_EDITOR(neutralColorForegroundPressed);
-    UPDATE_COLOR_EDITOR(neutralColorForegroundDisabled);
-
-    UPDATE_COLOR_EDITOR(neutralAlternativeColor);
-    UPDATE_COLOR_EDITOR(neutralAlternativeColorHovered);
-    UPDATE_COLOR_EDITOR(neutralAlternativeColorPressed);
-    UPDATE_COLOR_EDITOR(neutralAlternativeColorDisabled);
-
-    UPDATE_COLOR_EDITOR(adaptativeColor1);
-    UPDATE_COLOR_EDITOR(adaptativeColor2);
-    UPDATE_COLOR_EDITOR(adaptativeColor3);
-    UPDATE_COLOR_EDITOR(adaptativeColor4);
-    UPDATE_COLOR_EDITOR(adaptativeColor5);
+    UPDATE_COLOR_EDITOR(semiTransparentColor1);
+    UPDATE_COLOR_EDITOR(semiTransparentColor2);
+    UPDATE_COLOR_EDITOR(semiTransparentColor3);
+    UPDATE_COLOR_EDITOR(semiTransparentColor4);
 
     UPDATE_COLOR_EDITOR(backgroundColorMain1);
     UPDATE_COLOR_EDITOR(backgroundColorMain2);
     UPDATE_COLOR_EDITOR(backgroundColorMain3);
+    UPDATE_COLOR_EDITOR(backgroundColorMain4);
 
-    UPDATE_COLOR_EDITOR(borderColor1);
-    UPDATE_COLOR_EDITOR(borderColor2);
-    UPDATE_COLOR_EDITOR(borderColor3);
+    UPDATE_COLOR_EDITOR(borderColor);
+    UPDATE_COLOR_EDITOR(borderColorHovered);
+    UPDATE_COLOR_EDITOR(borderColorPressed);
+    UPDATE_COLOR_EDITOR(borderColorDisabled);
 
     UPDATE_COLOR_EDITOR(focusColor);
 
@@ -432,7 +463,6 @@ struct ThemeEditor::Impl {
     UPDATE_COLOR_EDITOR(statusColorErrorHovered);
     UPDATE_COLOR_EDITOR(statusColorErrorPressed);
     UPDATE_COLOR_EDITOR(statusColorErrorDisabled);
-
 
     UPDATE_COLOR_EDITOR(statusColorWarning);
     UPDATE_COLOR_EDITOR(statusColorWarningHovered);
@@ -469,7 +499,7 @@ ThemeEditor::ThemeEditor(QWidget* parent)
   _impl->setupUi();
 }
 
-ThemeEditor::~ThemeEditor() {}
+ThemeEditor::~ThemeEditor() = default;
 
 const Theme& ThemeEditor::theme() const {
   return _impl->theme;

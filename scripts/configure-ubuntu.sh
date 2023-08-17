@@ -1,4 +1,5 @@
 #!/bin/bash
 
 declare build_dir="./build"
-cmake -B $build_dir
+declare qt_version="5"
+cmake -B $build_dir -DQT_DEFAULT_MAJOR_VERSION="$qt_version"

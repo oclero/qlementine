@@ -272,7 +272,7 @@ bool AbstractItemListWidget::isItemEnabled(int index) const {
 }
 
 void AbstractItemListWidget::moveToNextItem() {
-  setCurrentIndex(std::min(_currentIndex + 1, _items.size() - 1));
+  setCurrentIndex(std::min(_currentIndex + 1, static_cast<int>(_items.size()) - 1));
 }
 
 void AbstractItemListWidget::moveToPreviousItem() {
@@ -335,7 +335,7 @@ void AbstractItemListWidget::keyPressEvent(QKeyEvent* e) {
   QWidget::keyPressEvent(e);
   const auto key = e->key();
   if (key == Qt::Key_Right) {
-    const auto next = std::min(_items.size() - 1, _focusedIndex + 1);
+    const auto next = std::min(static_cast<int>(_items.size()) - 1, _focusedIndex + 1);
     setFocusedIndex(next);
     e->accept();
   } else if (key == Qt::Key_Left) {
@@ -359,7 +359,11 @@ void AbstractItemListWidget::keyReleaseEvent(QKeyEvent* e) {
   }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void AbstractItemListWidget::enterEvent(QEvent* e) {
+#else
+void AbstractItemListWidget::enterEvent(QEnterEvent* e) {
+#endif
   QWidget::enterEvent(e);
   update();
 }
@@ -489,7 +493,7 @@ void AbstractItemListWidget::updateItemRects() {
   for (const auto& item : _items) {
     itemsNecessaryW += item.sizeHint.width();
   }
-  const auto itemCount = _items.size();
+  const auto itemCount = static_cast<int>(_items.size());
   const auto spacings = itemCount > 1 ? (itemCount - 1) * spacing : 0;
   itemsNecessaryW += spacings;
 

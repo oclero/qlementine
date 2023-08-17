@@ -28,43 +28,45 @@
 
 namespace oclero::qlementine {
 const QColor& SegmentedControl::getBgColor(const Theme& theme) const {
-  return isEnabled() ? theme.backgroundColorMain3 : theme.backgroundColorMain1;
+  return isEnabled() ? theme.backgroundColorMain4 : theme.backgroundColorMain2;
 }
 
 const QColor& SegmentedControl::getItemBgColor(MouseState mouse, const Theme& theme) const {
   switch (mouse) {
     case MouseState::Hovered:
-      return theme.adaptativeColor4;
+      return theme.semiTransparentColor2;
     case MouseState::Pressed:
-      return theme.adaptativeColor5;
+      return theme.semiTransparentColor4;
     default:
-      return theme.adaptativeColorTransparent;
+      return theme.semiTransparentColorTransparent;
   }
 }
 
 const QColor& SegmentedControl::getItemFgColor(MouseState mouse, bool selected, const Theme& theme) const {
   switch (mouse) {
     case MouseState::Hovered:
-      return selected ? theme.primaryColorForegroundHovered : theme.neutralColor;
+      return selected ? theme.primaryColorForegroundHovered : theme.secondaryColor;
     case MouseState::Pressed:
-      return selected ? theme.primaryColorForegroundPressed : theme.neutralColor;
+      return selected ? theme.primaryColorForegroundPressed : theme.secondaryColor;
     case MouseState::Disabled:
-      return selected ? theme.primaryColorForegroundDisabled : theme.neutralColorDisabled;
+      return selected ? theme.primaryColorForegroundDisabled : theme.secondaryColorDisabled;
     default:
-      return selected ? theme.primaryColorForeground : theme.neutralColor;
+      return selected ? theme.primaryColorForeground : theme.secondaryColor;
   }
 }
 
 const QColor& SegmentedControl::getItemBadgeBgColor(MouseState mouse, bool selected, const Theme& theme) const {
-  return mouse == MouseState::Disabled ? theme.adaptativeColor1
-                                       : (selected ? theme.primaryColorForeground : theme.adaptativeColor2);
+  if (mouse == MouseState::Disabled)
+    return selected ? theme.primaryAlternativeColorDisabled : theme.secondaryAlternativeColorDisabled;
+  else
+    return selected ? theme.primaryAlternativeColor : theme.secondaryAlternativeColor;
 }
 
 const QColor& SegmentedControl::getItemBadgeFgColor(MouseState mouse, bool selected, const Theme& theme) const {
   if (mouse == MouseState::Disabled)
-    return selected ? theme.primaryColorDisabled : theme.neutralColorDisabled;
+    return selected ? theme.primaryColorForegroundDisabled : theme.secondaryColorForegroundDisabled;
   else
-    return selected ? theme.primaryColor : theme.neutralColor;
+    return selected ? theme.primaryColorForeground : theme.secondaryColorForeground;
 }
 
 void SegmentedControl::initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const {

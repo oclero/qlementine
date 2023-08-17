@@ -78,7 +78,12 @@ public:
 
   void updateMask() {
     const auto mask = getMask();
-    setMask(QBitmap(mask));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    const auto maskPixmap = QBitmap(mask);
+#else
+    const auto maskPixmap = QBitmap::fromPixmap(mask);
+#endif
+    setMask(maskPixmap);
   }
 };
 
@@ -173,9 +178,7 @@ void Popover::setContentWidget(QWidget* widget) {
 
       // Empty layout.
       if (auto* layoutItem = _frameLayout->takeAt(0)) {
-        if (auto* widget = layoutItem->widget()) {
-          delete widget;
-        }
+        delete layoutItem->widget();
         delete layoutItem;
       }
     }
@@ -335,7 +338,7 @@ void Popover::paintEvent(QPaintEvent*) {
   {
     const auto radius = qlementineStyle ? qlementineStyle->theme().borderRadius : 0;
     const auto bgColor = palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
-    const auto borderColor = qlementineStyle ? qlementineStyle->theme().borderColor2
+    const auto borderColor = qlementineStyle ? qlementineStyle->frameBorderColor()
                                              : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Mid);
     const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
     const auto bgRect = _frame->rect().translated(_frame->mapTo(this, QPoint(0, 0)));
@@ -439,8 +442,7 @@ void Popover::updatePopoverGeometry() {
   // Check if the preferred position fits entirely on screen, or try another position until it works.
   const auto& priority = positionPriority(_preferredPosition);
   const auto screenGeometry = screen()->availableGeometry();
-  for (auto i = 0; i < static_cast<int>(priority.size()); ++i) {
-    const auto position = priority.at(i);
+  for (const auto position : priority) {
     auto geometry = getGeometryForPosition(position, _preferredAlignment);
 
     // Success: the popup fits on screen.

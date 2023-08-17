@@ -66,80 +66,93 @@ public: // Operators.
 public: // Values.
   ThemeMeta meta;
 
+  QColor backgroundColorMain1{ 0xFFFFFF };
+  QColor backgroundColorMain2{ 0xF3F3F3 };
+  QColor backgroundColorMain3{ 0xE3E3E3 };
+  QColor backgroundColorMain4{ 0xDCDCDC };
   QColor backgroundColorMainTransparent{ QRgba64::fromArgb32(0x00FAFAFA) };
-  QColor backgroundColorMain1{ 0xFAFAFA };
-  QColor backgroundColorMain2{ 0xF3F3F5 };
-  QColor backgroundColorMain3{ 0xE3E5E7 };
 
-  QColor adaptativeColorTransparent{ QRgba64::fromArgb32(0x00000000) };
-  QColor adaptativeColor1{ QRgba64::fromArgb32(0x0A000000) };
-  QColor adaptativeColor2{ QRgba64::fromArgb32(0x11000000) };
-  QColor adaptativeColor3{ QRgba64::fromArgb32(0x19000000) };
-  QColor adaptativeColor4{ QRgba64::fromArgb32(0x21000000) };
-  QColor adaptativeColor5{ QRgba64::fromArgb32(0x28000000) };
+  QColor neutralColor{ 0xE1E1E1 };
+  QColor neutralColorHovered{ 0xDADADA };
+  QColor neutralColorPressed{ 0xD2D2D2 };
+  QColor neutralColorDisabled{ 0xEEEEEE };
+  QColor neutralColorTransparent{ QRgba64::fromArgb32(0x00E1E1E1) };
 
-  QColor focusColor{ QRgba64::fromArgb32(0x66349886) };
+  QColor focusColor{ QRgba64::fromArgb32(0xa9ff6640) };
 
-  QColor primaryColor{ 0x349886 };
-  QColor primaryColorHovered{ 0X2A7A6B };
-  QColor primaryColorPressed{ 0X2F8979 };
-  QColor primaryColorDisabled{ QRgba64::fromArgb32(0x3F349886) };
-  QColor primaryColorTransparent{ QRgba64::fromArgb32(0x00349886) };
+  QColor primaryColor{ 0x1890FF };
+  QColor primaryColorHovered{ 0x2C9DFF };
+  QColor primaryColorPressed{ 0x40A9FF };
+  QColor primaryColorDisabled{ 0xD1E9FF };
+  QColor primaryColorTransparent{ QRgba64::fromArgb32(0x001890FF) };
 
   QColor primaryColorForeground{ 0xFFFFFF };
   QColor primaryColorForegroundHovered{ 0xFFFFFF };
   QColor primaryColorForegroundPressed{ 0xFFFFFF };
-  QColor primaryColorForegroundDisabled{ QRgba64::fromArgb32(0x99FFFFFF) };
+  QColor primaryColorForegroundDisabled{ 0xECF6FF };
   QColor primaryColorForegroundTransparent{ QRgba64::fromArgb32(0x00FFFFFF) };
 
-  QColor neutralColor{ 0x404040 };
-  QColor neutralColorHovered{ 0x333333 };
-  QColor neutralColorPressed{ 0x262626 };
-  QColor neutralColorDisabled{ QRgba64::fromArgb32(0x33404040) };
-  QColor neutralColorTransparent{ QRgba64::fromArgb32(0x00404040) };
+  QColor primaryAlternativeColor{ 0x106EF9 };
+  QColor primaryAlternativeColorHovered{ 0x0F7BFD };
+  QColor primaryAlternativeColorPressed{ 0x0F8BFD };
+  QColor primaryAlternativeColorDisabled{ 0xa9d6ff };
+  QColor primaryAlternativeColorTransparent{ QRgba64::fromArgb32(0x001875ff) };
 
-  QColor neutralAlternativeColor{ 0x909090 };
-  QColor neutralAlternativeColorHovered{ 0x747474 };
-  QColor neutralAlternativeColorPressed{ 0x828282 };
-  QColor neutralAlternativeColorDisabled{ QRgba64::fromArgb32(0x3F909090) };
-  QColor neutralAlternativeColorTransparent{ QRgba64::fromArgb32(0x00909090) };
+  QColor secondaryColor{ 0x404040 };
+  QColor secondaryColorHovered{ 0x333333 };
+  QColor secondaryColorPressed{ 0x262626 };
+  QColor secondaryColorDisabled{ 0xD4D4D4 };
+  QColor secondaryColorTransparent{ QRgba64::fromArgb32(0x00404040) };
 
-  QColor neutralColorForeground{ 0xFFFFFF };
-  QColor neutralColorForegroundHovered{ 0xFFFFFF };
-  QColor neutralColorForegroundPressed{ 0xFFFFFF };
-  QColor neutralColorForegroundDisabled{ 0x99FFFFFF };
-  QColor neutralColorForegroundTransparent{ QRgba64::fromArgb32(0x00FFFFFF) };
+  QColor secondaryColorForeground{ 0xFFFFFF };
+  QColor secondaryColorForegroundHovered{ 0xFFFFFF };
+  QColor secondaryColorForegroundPressed{ 0xFFFFFF };
+  QColor secondaryColorForegroundDisabled{ 0xEDEDED };
+  QColor secondaryColorForegroundTransparent{ QRgba64::fromArgb32(0x00FFFFFF) };
+
+  QColor secondaryAlternativeColor{ 0x909090 };
+  QColor secondaryAlternativeColorHovered{ 0x747474 };
+  QColor secondaryAlternativeColorPressed{ 0x828282 };
+  QColor secondaryAlternativeColorDisabled{ 0xC3C3C3 };
+  QColor secondaryAlternativeColorTransparent{ QRgba64::fromArgb32(0x00909090) };
 
   QColor statusColorSuccess{ 0x21AF73 };
   QColor statusColorSuccessHovered{ 0x1A8D5D };
   QColor statusColorSuccessPressed{ 0x1E9E68 };
-  QColor statusColorSuccessDisabled{ QRgba64::fromArgb32(0x3F21b074) };
+  QColor statusColorSuccessDisabled{ 0xC4E7D8 };
   QColor statusColorInfo{ 0x1BA8D5 };
   QColor statusColorInfoHovered{ 0x1686AA };
-  QColor statusColorInfoPressed{ 0X1897C0 };
-  QColor statusColorInfoDisabled{ QRgba64::fromArgb32(0x331BA8D5) };
+  QColor statusColorInfoPressed{ 0x1897C0 };
+  QColor statusColorInfoDisabled{ 0xcde9f2 };
   QColor statusColorWarning{ 0xF1C861 };
   QColor statusColorWarningHovered{ 0xD9B457 };
   QColor statusColorWarningPressed{ 0xE5BE5C };
-  QColor statusColorWarningDisabled{ QRgba64::fromArgb32(0x4CF1C861) };
+  QColor statusColorWarningDisabled{ 0xF7EBCC };
   QColor statusColorError{ 0xDF535B };
   QColor statusColorErrorHovered{ 0xB24249 };
   QColor statusColorErrorPressed{ 0xC94B52 };
-  QColor statusColorErrorDisabled{ QRgba64::fromArgb32(0x33DF535B) };
+  QColor statusColorErrorDisabled{ 0xF4D8DA };
   QColor statusColorForeground{ 0xFFFFFF };
   QColor statusColorForegroundHovered{ 0xFFFFFF };
   QColor statusColorForegroundPressed{ 0xFFFFFF };
   QColor statusColorForegroundDisabled{ QRgba64::fromArgb32(0x99FFFFFF) };
 
-  QColor shadowColor1{ QRgba64::fromArgb32(0X20000000) };
-  QColor shadowColor2{ QRgba64::fromArgb32(0X40000000) };
-  QColor shadowColor3{ QRgba64::fromArgb32(0X60000000) };
+  QColor shadowColor1{ QRgba64::fromArgb32(0x20000000) };
+  QColor shadowColor2{ QRgba64::fromArgb32(0x40000000) };
+  QColor shadowColor3{ QRgba64::fromArgb32(0x60000000) };
   QColor shadowColorTransparent{ QRgba64::fromArgb32(0x00000000) };
 
-  QColor borderColor1{ QRgba64::fromArgb32(0x07000000) };
-  QColor borderColor2{ QRgba64::fromArgb32(0x0F000000) };
-  QColor borderColor3{ QRgba64::fromArgb32(0x1E000000) };
-  QColor borderColorTransparent{ QRgba64::fromArgb32(0x00000000) };
+  QColor borderColor{ 0xD3D3D3 };
+  QColor borderColorHovered{ 0xB3B3B3 };
+  QColor borderColorPressed{ 0XA3A3A3 };
+  QColor borderColorDisabled{ 0xE9E9E9 };
+  QColor borderColorTransparent{ QRgba64::fromArgb32(0x00D3D3D3) };
+
+  QColor semiTransparentColor1{ QRgba64::fromArgb32(0x0A000000) };
+  QColor semiTransparentColor2{ QRgba64::fromArgb32(0x19000000) };
+  QColor semiTransparentColor3{ QRgba64::fromArgb32(0x21000000) };
+  QColor semiTransparentColor4{ QRgba64::fromArgb32(0x28000000) };
+  QColor semiTransparentColorTransparent{ QRgba64::fromArgb32(0x00000000) };
 
   int fontSize{ 12 };
   int fontSizeMonospace{ 13 };
@@ -177,10 +190,12 @@ public: // Values.
   int sliderGrooveHeight{ 4 };
   int progressBarGrooveHeight{ 6 };
   int spacing{ 8 };
-  int scrollBarThicknessFull{ 10 };
-  int scrollBarThicknessSmall{ 4 };
-  int scrollBarPadding{ 2 };
+  int scrollBarThicknessFull{ 12 };
+  int scrollBarThicknessSmall{ 6 };
+  int scrollBarMargin{ 0 };
   int tabBarPaddingTop{ 4 };
+  int tabBarTabMaxWidth{ 0 };
+  int tabBarTabMinWidth{ 0 };
 
   QFont fontRegular;
   QFont fontBold;
@@ -199,7 +214,8 @@ public:
   QJsonDocument toJson() const;
 
 private:
-  virtual void initializePalette();
+  void initializeFonts();
+  void initializePalette();
   void initializeFromJson(QJsonDocument const& jsonDoc);
 };
 } // namespace oclero::qlementine

@@ -24,6 +24,8 @@
 #include <QWidget>
 #include <QColor>
 
+#include <oclero/qlementine/Common.hpp>
+
 namespace oclero::qlementine {
 class ColorButton;
 class LineEdit;
@@ -32,6 +34,7 @@ class ColorEditor : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+  Q_PROPERTY(ColorMode colorMode READ colorMode WRITE setColorMode NOTIFY colorModeChanged)
 
 public:
   ColorEditor(QWidget* parent = nullptr);
@@ -40,14 +43,18 @@ public:
   const QColor& color() const;
   void setColor(const QColor& color);
 
+  ColorMode colorMode() const;
+  void setColorMode(ColorMode mode);
+
 signals:
   void colorChanged();
+  void colorModeChanged();
 
 private:
   void setup(const QColor& initialColor);
   void syncLineEditFromButton();
 
-  ColorButton* _colorButton;
-  LineEdit* _lineEdit;
+  ColorButton* _colorButton{};
+  LineEdit* _lineEdit{};
 };
 } // namespace oclero::qlementine

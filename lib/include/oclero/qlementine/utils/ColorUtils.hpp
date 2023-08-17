@@ -53,6 +53,9 @@ std::optional<QColor> tryGetColorFromHexaString(QString const& str);
 /// Attempts to parse the QVariant to get a QColor.
 std::optional<QColor> tryGetColorFromVariant(QVariant const& variant);
 
+/// Gives the color's hexadecimal RGB string.
+QString toHexRGB(const QColor& color);
+
 /// Gives the color's hexadecimal RGBA string.
 QString toHexRGBA(const QColor& color);
 } // namespace oclero::qlementine

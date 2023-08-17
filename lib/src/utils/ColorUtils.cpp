@@ -91,8 +91,8 @@ QColor getColorSourceOver(const QColor& bg, const QColor& fg) {
   const auto finalGreen = fgGreen + bgGreen * fgAlphaInv;
   const auto finalBlue = fgBlue + bgBlue * fgAlphaInv;
 
-  const auto finalRGBA = qRgba(finalRed * 255, finalGreen * 255, finalBlue * 255, finalAlpha * 255);
-  const auto finalColor = QColor::fromRgba(finalRGBA);
+  const auto finalRGBA = qRgba(int(finalRed * 255), int(finalGreen * 255), int(finalBlue * 255), int(finalAlpha * 255));
+  auto finalColor = QColor::fromRgba(finalRGBA);
 
   return finalColor;
 }
@@ -163,18 +163,26 @@ std::optional<QColor> tryGetColorFromHexaString(QString const& str) {
   if (str.startsWith('#') && (length == RGB_LENGTH || length == RGBA_LENGTH)) {
     auto success{ false };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const auto r_str = str.midRef(1, 2);
+    const auto g_str = str.midRef(3, 2);
+    const auto b_str = str.midRef(5, 2);
+    const auto a_str = str.midRef(7, 2);
+#else
+    const auto r_str = str.mid(1, 2);
+    const auto g_str = str.mid(3, 2);
+    const auto b_str = str.mid(5, 2);
+    const auto a_str = str.mid(7, 2);
+#endif
+
     const auto r = r_str.toInt(&success, HEX_BASE);
     if (success) {
-      const auto g_str = str.midRef(3, 2);
       const auto g = g_str.toInt(&success, HEX_BASE);
       if (success) {
-        const auto b_str = str.midRef(5, 2);
         const auto b = b_str.toInt(&success, HEX_BASE);
         if (success) {
-          QColor result{ r, g, b };
+          QColor result(r, g, b);
 
-          const auto a_str = str.midRef(7, 2);
           const auto a = a_str.toInt(&success, HEX_BASE);
           if (success) {
             result.setAlpha(a);
@@ -190,36 +198,45 @@ std::optional<QColor> tryGetColorFromHexaString(QString const& str) {
 }
 
 std::optional<QColor> tryGetColorFromVariant(QVariant const& variant) {
-  if (variant.isValid()) {
-    // Channel list ([RRR, GGG, BBB, AAA]).
-    if (variant.type() == QVariant::Type::List) {
-      const auto color = tryGetColorFromVariantList(variant.toList());
-      if (color.has_value()) {
-        return color.value();
-      }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  const auto variantType = static_cast<QMetaType::Type>(variant.type());
+#else
+  const auto variantType = variant.typeId();
+#endif
+
+  // Channel list ([RRR, GGG, BBB, AAA]).
+  if (variantType == QMetaType::Type::QVariantList) {
+    const auto color = tryGetColorFromVariantList(variant.toList());
+    if (color.has_value()) {
+      return color.value();
+    }
+  }
+  // Various ways to write color as a string.
+  else if (variantType == QMetaType::Type::QString) {
+    const auto variantString = variant.toString();
+
+    // Check if color is written as hexadecimal.
+    const auto hexaColor = tryGetColorFromHexaString(variantString);
+    if (hexaColor.has_value()) {
+      return hexaColor.value();
     }
 
-    // Various ways to write color as a string.
-    else if (variant.type() == QVariant::Type::String) {
-      const auto variantString = variant.toString();
-
-      // Check if color is written as hexadecimal.
-      const auto hexaColor = tryGetColorFromHexaString(variantString);
-      if (hexaColor.has_value()) {
-        return hexaColor.value();
-      }
-
-      // Check if color is written as RGB(A).
-      const auto rgbaColor = tryGetColorFromRGBAString(variantString);
-      if (rgbaColor.has_value()) {
-        return rgbaColor.value();
-      }
+    // Check if color is written as RGB(A).
+    const auto rgbaColor = tryGetColorFromRGBAString(variantString);
+    if (rgbaColor.has_value()) {
+      return rgbaColor.value();
     }
   }
 
   return {};
 }
 
+QString toHexRGB(const QColor& color) {
+  return QString("#%1%2%3")
+    .arg(QString::number(color.red(), HEX_BASE), 2, '0')
+    .arg(QString::number(color.green(), HEX_BASE), 2, '0')
+    .arg(QString::number(color.blue(), HEX_BASE), 2, '0');
+}
 
 QString toHexRGBA(const QColor& color) {
   return QString("#%1%2%3%4")

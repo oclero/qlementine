@@ -29,38 +29,39 @@
 
 namespace oclero::qlementine {
 const QColor& NavigationBar::getBgColor(const Theme& theme) const {
-  return theme.backgroundColorMain1;
+  return theme.backgroundColorMain2;
 }
 
 const QColor& NavigationBar::getItemBgColor(MouseState mouse, const Theme& theme) const {
   switch (mouse) {
     case MouseState::Hovered:
-      return theme.adaptativeColor4;
+      return theme.neutralColorHovered;
     case MouseState::Pressed:
-      return theme.adaptativeColor5;
+      return theme.neutralColorPressed;
     default:
-      return theme.adaptativeColorTransparent;
+      return theme.neutralColorTransparent;
   }
 }
 
 const QColor& NavigationBar::getItemFgColor(MouseState mouse, bool /*selected*/, const Theme& theme) const {
-  switch (mouse) {
-    case MouseState::Disabled:
-      return theme.neutralColorDisabled;
-    default:
-      return theme.neutralColor;
-  }
+  if (mouse == MouseState::Disabled)
+    return theme.secondaryColorDisabled;
+  else
+    return theme.secondaryColor;
 }
 
 const QColor& NavigationBar::getItemBadgeBgColor(MouseState mouse, bool /*selected*/, const Theme& theme) const {
-  return mouse == MouseState::Disabled ? theme.adaptativeColor1 : theme.adaptativeColor2;
+  if (mouse == MouseState::Disabled)
+    return theme.secondaryAlternativeColorDisabled;
+  else
+    return theme.secondaryAlternativeColor;
 }
 
 const QColor& NavigationBar::getItemBadgeFgColor(MouseState mouse, bool /*selected*/, const Theme& theme) const {
   if (mouse == MouseState::Disabled)
-    return theme.neutralColorDisabled;
+    return theme.secondaryColorForegroundDisabled;
   else
-    return theme.neutralColor;
+    return theme.secondaryColorForeground;
 }
 
 QMargins NavigationBar::getItemPadding() const {

@@ -92,7 +92,7 @@ ColorRole getColorRole(QStyle::State const& state, bool const isDefault) {
 }
 
 ColorRole getColorRole(bool checked, bool const isDefault) {
-  return checked || isDefault ? ColorRole::Primary : ColorRole::Neutral;
+  return checked || isDefault ? ColorRole::Primary : ColorRole::Secondary;
 }
 
 ColorRole getColorRole(CheckState const checked) {
@@ -121,6 +121,10 @@ MouseState getScrollBarHandleState(QStyle::State const& state, QStyle::SubContro
 
 FocusState getFocusState(QStyle::State const& state) {
   return state.testFlag(QStyle::State_HasFocus) ? FocusState::Focused : FocusState::NotFocused;
+}
+
+FocusState getFocusState(bool focused) {
+  return focused ? FocusState::Focused : FocusState::NotFocused;
 }
 
 CheckState getCheckState(QStyle::State const& state) {

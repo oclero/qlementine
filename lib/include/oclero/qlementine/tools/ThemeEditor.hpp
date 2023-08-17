@@ -11,7 +11,7 @@ class ThemeEditor : public QWidget {
 
 public:
   ThemeEditor(QWidget* parent = nullptr);
-  ~ThemeEditor();
+  ~ThemeEditor() override;
 
 public:
   const Theme& theme() const;

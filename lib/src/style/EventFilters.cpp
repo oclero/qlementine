@@ -82,7 +82,7 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
     const auto mouse = getMouseState(pressed, hovered, enabled);
     const auto& theme = _style.theme();
     const auto rect = _button->rect();
-    const auto& bgColor = _style.toolButtonBackgroundColor(mouse, ColorRole::Neutral);
+    const auto& bgColor = _style.toolButtonBackgroundColor(mouse, ColorRole::Secondary);
     const auto circleH = theme.controlHeightMedium;
     const auto circleW = circleH;
     const auto circleX = rect.x() + (rect.width() - circleW) / 2;
@@ -131,7 +131,7 @@ bool CommandLinkButtonPaintEventFilter::eventFilter(QObject* watchedObject, QEve
     const auto spacing = theme.spacing;
     const auto hPadding = spacing * 2;
     const auto fgRect = rect.marginsRemoved(QMargins(hPadding, 0, hPadding, 0));
-    const auto& bgColor = _style.toolButtonBackgroundColor(mouse, ColorRole::Neutral);
+    const auto& bgColor = _style.toolButtonBackgroundColor(mouse, ColorRole::Secondary);
     const auto& currentBgColor = _animManager.animateBackgroundColor(_button, bgColor, theme.animationDuration);
     const auto radius = theme.borderRadius;
 
@@ -283,6 +283,7 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
   return QObject::eventFilter(watchedObject, evt);
 }
+
 MenuEventFilter::MenuEventFilter(QMenu* menu)
   : QObject(menu)
   , _menu(menu) {
@@ -298,15 +299,15 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
     // Also, make up for the menu item padding so the texts are aligned.
     const auto isMenuBarMenu = qobject_cast<QMenuBar*>(_menu->parentWidget()) != nullptr;
     const auto isSubMenu = qobject_cast<QMenu*>(_menu->parentWidget()) != nullptr;
-    if (isMenuBarMenu && !isSubMenu) {
-      if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style())) {
-        const auto menuItemHPadding = qlementineStyle->theme().spacing;
-        const auto menuDropShadowWidth = qlementineStyle->theme().spacing;
-        const auto menuRect =
-          _menu->geometry().translated(-menuDropShadowWidth - menuItemHPadding, -menuDropShadowWidth);
-        _menu->setGeometry(menuRect);
-      }
-    }
+    const auto alignForMenuBar = isMenuBarMenu && !isSubMenu;
+    const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
+    const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+    const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+    const auto menuRect = _menu->geometry();
+    const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
+    const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
+    const auto newMenuRect = menuRect.translated(menuBarTranslation + shadowTranslation);
+    _menu->setGeometry(newMenuRect);
   }
 
   return false;

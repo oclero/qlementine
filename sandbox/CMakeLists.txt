@@ -1,7 +1,8 @@
-find_package(Qt5
-  REQUIRED
+find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
+  COMPONENTS
     Core
     Widgets
+  REQUIRED
 )
 
 add_executable(sandbox WIN32 MACOSX_BUNDLE)
@@ -10,14 +11,14 @@ target_sources(sandbox PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.hpp
+  #${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.cpp
+  #${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.hpp
 )
 target_link_libraries(sandbox
   PRIVATE
     oclero::qlementine
-    Qt5::Core
-    Qt5::Widgets
+    Qt::Core
+    Qt::Widgets
 )
 
 set_target_properties(sandbox PROPERTIES

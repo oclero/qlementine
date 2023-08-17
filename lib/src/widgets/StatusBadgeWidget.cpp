@@ -83,7 +83,7 @@ QSize StatusBadgeWidget::sizeHint() const {
       break;
   }
 
-  return QSize(extent, extent);
+  return { extent, extent };
 }
 
 void StatusBadgeWidget::paintEvent(QPaintEvent* /*e*/) {

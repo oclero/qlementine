@@ -56,19 +56,19 @@ public:
 /// Allows to customize the radius of a button.
 class QStyleOptionRoundedButton : public QStyleOptionButton {
 public:
-  static constexpr auto INITIALIZED = 2;
-  RadiusesF radiuses;
-  int status{ 0 }; // Needed to track that it was created by us.
+  enum StyleOptionType { Type = SO_CustomBase + 1 };
 
-  QStyleOptionRoundedButton()
-    : QStyleOptionButton() {
+  RadiusesF radiuses;
+
+  QStyleOptionRoundedButton() {
+    type = Type;
     radiuses = 0.;
-    status = INITIALIZED;
   }
 
   QStyleOptionRoundedButton(const QStyleOptionRoundedButton& other)
     : QStyleOptionButton(other) {
-    *this = other;
+    type = Type;
+    radiuses = other.radiuses;
   }
 
   QStyleOptionRoundedButton& operator=(const QStyleOptionRoundedButton&) = default;

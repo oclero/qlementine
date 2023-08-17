@@ -78,7 +78,7 @@ QString getColorizedPixmapKey(QPixmap const& pixmap, QColor const& color);
 QString getTintedPixmapKey(QPixmap const& pixmap, QColor const& color);
 
 /// Type of effect applied to colorize the image.
-enum class ColorMode {
+enum class ColorizeMode {
   // Replaces all {R,G,B} values with another, thus loosing luminance, but preserve alpha.
   // Useful for flat symbolic icons.
   Colorize,
@@ -88,7 +88,7 @@ enum class ColorMode {
 };
 
 /// Gets the pixmap in the cache, or creates it if not yet there.
-QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorMode mode);
+QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorizeMode mode);
 
 /// Makes an icon from the file located at the path in parameter. Fixes the standard Qt behavior.
 QIcon makeIconFromSvg(const QString& svgPath, const QSize& size);

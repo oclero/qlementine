@@ -147,11 +147,11 @@ QPixmap tintPixmap(QPixmap const& input, QColor const& color) {
 }
 
 QPixmap getColorizedPixmap(const QPixmap& input, const QColor& color) {
-  return getCachedPixmap(input, color, ColorMode::Colorize);
+  return getCachedPixmap(input, color, ColorizeMode::Colorize);
 }
 
 QPixmap getTintedPixmap(const QPixmap& input, const QColor& color) {
-  return getCachedPixmap(input, color, ColorMode::Tint);
+  return getCachedPixmap(input, color, ColorizeMode::Tint);
 }
 
 QString getColorizedPixmapKey(QPixmap const& pixmap, QColor const& color) {
@@ -162,11 +162,11 @@ QString getTintedPixmapKey(QPixmap const& pixmap, QColor const& color) {
   return QString("qlementine_tint_") + toHex(pixmap.cacheKey()) % QLatin1Char('_') % toHex(color.rgba());
 }
 
-QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorMode mode) {
+QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorizeMode mode) {
   if (input.isNull())
     return input;
 
-  const auto tint = mode == ColorMode::Tint;
+  const auto tint = mode == ColorizeMode::Tint;
   // Look if pixmap already exists in cache.
   const auto& pixmapKey = tint ? getTintedPixmapKey(input, color) : getColorizedPixmapKey(input, color);
   QPixmap pixmapInCache;
@@ -278,7 +278,7 @@ QPixmap makeFitPixmap(QPixmap const& input, const QSize& size) {
   const auto y = (result.height() - scaledInput.height()) / 2.;
 
   p.setRenderHint(QPainter::Antialiasing, true);
-  p.drawPixmap(x, y, scaledInput);
+  p.drawPixmap(int(x), int(y), scaledInput);
 
   return result;
 }

@@ -3,6 +3,7 @@
 #include <QMessageBox>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 
 #include "SandboxWindow.hpp"
 //#include "CsdWindow.hpp"
@@ -12,8 +13,10 @@
 
 int main(int argc, char* argv[]) {
   // Must be set before creating a QApplication.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+#endif
 
   QApplication qApplication(argc, argv);
 
@@ -42,6 +45,7 @@ int main(int argc, char* argv[]) {
   window->setCustomStyle(style);
 #endif
 
+  oclero::qlementine::centerWidget(window.get());
   window->show();
 
   return qApplication.exec();

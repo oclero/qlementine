@@ -25,11 +25,11 @@
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 #include <oclero/qlementine/style/Theme.hpp>
-#include <oclero/qlementine/style/QlementineStyleOption.hpp>
 
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/FontUtils.hpp>
+#include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 
 #include <QPainter>
 #include <QEvent>
@@ -83,11 +83,12 @@ void Switch::paintEvent(QPaintEvent*) {
   const auto switchRadius = switchRect.height() / 2.;
   const auto& bgColor = _bgAnimation.currentValue().value<QColor>();
   const auto& fgColor = _fgAnimation.currentValue().value<QColor>();
+  const auto& borderColor = _borderAnimation.currentValue().value<QColor>();
   const auto textColor = getTextColor();
   p.setPen(Qt::NoPen);
   p.setBrush(bgColor);
   p.drawRoundedRect(switchRect, switchRadius, switchRadius);
-
+  drawRoundedRectBorder(&p, switchRect, borderColor, 1., switchRadius);
 
   // Draw handle.
   const auto handleXRatio = _handleAnimation.currentValue().toDouble();
@@ -96,6 +97,7 @@ void Switch::paintEvent(QPaintEvent*) {
   const auto handleX = switchRect.x() + _handlePadding + handleGrooveWidth * handleXRatio;
   const auto handleY = static_cast<double>(switchRect.y() + _handlePadding);
   const auto handleRect = QRectF{ handleX, handleY, handleDiameter, handleDiameter };
+  p.setPen(Qt::NoPen);
   p.setBrush(fgColor);
   p.drawEllipse(handleRect);
   auto availableX = switchRect.x() + switchRect.width() + spacing;
@@ -130,7 +132,11 @@ void Switch::paintEvent(QPaintEvent*) {
   }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void Switch::enterEvent(QEvent* e) {
+#else
+void Switch::enterEvent(QEnterEvent* e) {
+#endif
   QAbstractButton::enterEvent(e);
   _isMouseOver = true;
   startAnimation();
@@ -141,6 +147,16 @@ void Switch::changeEvent(QEvent* e) {
   if (e->type() == QEvent::Type::EnabledChange) {
     startAnimation();
   }
+}
+
+void Switch::focusInEvent(QFocusEvent* e) {
+  QAbstractButton::focusInEvent(e);
+  startAnimation();
+}
+
+void Switch::focusOutEvent(QFocusEvent* e) {
+  QAbstractButton::focusOutEvent(e);
+  startAnimation();
 }
 
 void Switch::checkStateSet() {
@@ -157,6 +173,13 @@ void Switch::startAnimation() {
   _bgAnimation.setStartValue(currentBg);
   _bgAnimation.setEndValue(getBgColor());
   _bgAnimation.start();
+
+  const auto currentBorder = _borderAnimation.currentValue();
+  _borderAnimation.stop();
+  _borderAnimation.setDuration(animationDuration);
+  _borderAnimation.setStartValue(currentBorder);
+  _borderAnimation.setEndValue(getBorderColor());
+  _borderAnimation.start();
 
   const auto currentFg = _fgAnimation.currentValue();
   _fgAnimation.stop();
@@ -175,18 +198,30 @@ void Switch::startAnimation() {
 
 void Switch::setupAnimation() {
   constexpr auto animationDuration = 0; // Don't animate before it is shown.
+
+  const auto& startBgColor = getBgColor();
   _bgAnimation.setDuration(animationDuration);
   _bgAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
-  _bgAnimation.setStartValue(getBgColor());
-  _bgAnimation.setEndValue(getBgColor());
+  _bgAnimation.setStartValue(startBgColor);
+  _bgAnimation.setEndValue(startBgColor);
   QObject::connect(&_bgAnimation, &QVariantAnimation::valueChanged, this, [this]() {
     update();
   });
 
+  const auto& startBorderColor = getBorderColor();
+  _borderAnimation.setDuration(animationDuration);
+  _borderAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
+  _borderAnimation.setStartValue(startBorderColor);
+  _borderAnimation.setEndValue(startBorderColor);
+  QObject::connect(&_borderAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+    update();
+  });
+
+  const auto& startFgColor = getFgColor();
   _fgAnimation.setDuration(animationDuration);
   _fgAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
-  _fgAnimation.setStartValue(getFgColor());
-  _fgAnimation.setEndValue(getFgColor());
+  _fgAnimation.setStartValue(startFgColor);
+  _fgAnimation.setEndValue(startFgColor);
   QObject::connect(&_fgAnimation, &QVariantAnimation::valueChanged, this, [this]() {
     update();
   });
@@ -219,6 +254,18 @@ const QColor& Switch::getBgColor() const {
                                           isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
                                           QPalette::ColorRole::Button);
   return bgColor;
+}
+
+const QColor& Switch::getBorderColor() const {
+  const auto* style = this->style();
+  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
+  const auto& borderColor =
+    qlementineStyle
+      ? qlementineStyle->switchGrooveBorderColor(
+        getMouseState(isDown(), _isMouseOver, isEnabled()), getFocusState(hasFocus()), getCheckState(isChecked()))
+      : style->standardPalette().color(
+        isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled, QPalette::ColorRole::ButtonText);
+  return borderColor;
 }
 
 const QColor& Switch::getFgColor() const {
