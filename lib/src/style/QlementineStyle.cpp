@@ -920,7 +920,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       p->setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
       p->drawPixmap(dropShadowX, dropShadowY, dropShadowPixmap);
       p->setCompositionMode(compMode);
-      drawRoundedRect(p, frameRect, bgColor, radius);
+      // Avoid ugly antialiasing artefacts in the corners.
+      const auto halfBorderW = borderW / 2.;
+      const auto bgFrameRect =
+        QRectF(frameRect).marginsRemoved(QMarginsF(halfBorderW, halfBorderW, halfBorderW, halfBorderW));
+      drawRoundedRect(p, bgFrameRect, bgColor, radius);
       drawRoundedRectBorder(p, frameRect, borderColor, borderW, radius);
     }
       return;
@@ -5227,9 +5231,8 @@ QColor const& QlementineStyle::listItemForegroundColor(
 
 // Returns whether an icon in an item view should be colorized with the foreground color.
 // Subclasses can override this to customize the behavior depending on the index or state.
-bool QlementineStyle::listItemIsAutoIconColorEnabled(
-  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
-  const QModelIndex& index, const QWidget* widget) const {
+bool QlementineStyle::listItemIsAutoIconColorEnabled(MouseState const mouse, SelectionState const selected,
+  FocusState const focus, ActiveState const active, const QModelIndex& index, const QWidget* widget) const {
   Q_UNUSED(mouse)
   Q_UNUSED(selected)
   Q_UNUSED(focus)
