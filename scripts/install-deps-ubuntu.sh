@@ -32,8 +32,7 @@ elif [[ $qt_version -eq 6 ]]; then
     qmake6 \
     libqt6svg6 \
     libqt6svg6-dev \
-
-# qt6-qmltooling-plugins
+    # qt6-qmltooling-plugins
 
 else
   echo "Qt$qt_version is not supported."
