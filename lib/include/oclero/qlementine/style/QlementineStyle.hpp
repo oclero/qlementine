@@ -175,9 +175,8 @@ public:
     MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
   virtual QColor const& listItemForegroundColor(
     MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
-  virtual bool listItemIsAutoIconColorEnabled(
-    MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
-    const QModelIndex& index, const QWidget* widget = nullptr) const;
+  virtual bool listItemIsAutoIconColorEnabled(MouseState const mouse, SelectionState const selected,
+    FocusState const focus, ActiveState const active, const QModelIndex& index, const QWidget* widget = nullptr) const;
   virtual QColor const& listItemCaptionForegroundColor(
     MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
   virtual QColor const& listItemCheckButtonBackgroundColor(
