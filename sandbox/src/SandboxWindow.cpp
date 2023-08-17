@@ -197,8 +197,7 @@ protected:
 
 struct SandboxWindow::Impl {
   Impl(SandboxWindow& o)
-    : owner(o) {
-  }
+    : owner(o) {}
 
   void beginSetupUi() {
     // Create a scrollarea to wrap everything §the window can be quite huge).
@@ -407,11 +406,13 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_checkbox() {
-    for (auto i = 0; i < 2; ++i) {
+    for (auto i = 0; i < 4; ++i) {
       auto* checkbox = new QCheckBox(windowContent);
-      checkbox->setChecked(true);
+      const auto checked = i % 2 == 0;
+      const auto tristate = i > 1;
+
+      checkbox->setChecked(checked);
       checkbox->setIcon(QIcon(":/refresh.svg"));
-      const auto tristate = i % 2 == 0;
       checkbox->setText(QString("%1 checkbox %2 with a very long text").arg(tristate ? "Tristate" : "Normal").arg(i));
       checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       checkbox->setTristate(tristate);
@@ -532,22 +533,22 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_comboBox() {
-   // Editable.
-   {
-     auto* combobox = new QComboBox(windowContent);
-     combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-     // combobox->setIconSize(QSize(8, 8));
-     combobox->setEditable(true);
+    // Editable.
+    {
+      auto* combobox = new QComboBox(windowContent);
+      combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      // combobox->setIconSize(QSize(8, 8));
+      combobox->setEditable(true);
 
-     for (auto i = 0; i < 4; ++i) {
-       combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
-     }
-     auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
-     auto* item = model->item(2);
-     item->setEnabled(false);
+      for (auto i = 0; i < 4; ++i) {
+        combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
+      }
+      auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
+      auto* item = model->item(2);
+      item->setEnabled(false);
 
-     windowContentLayout->addWidget(combobox);
-   }
+      windowContentLayout->addWidget(combobox);
+    }
     // Non-editable
     {
       auto* combobox = new QComboBox(windowContent);
@@ -620,10 +621,7 @@ struct SandboxWindow::Impl {
         auto* item = new QTableWidgetItem(QString("Item at %1, %2").arg(row + 1).arg(col + 1));
         item->setIcon(icon);
         item->setTextAlignment(columnAlignments.at(col));
-        item->setFlags(
-              Qt::ItemFlag::ItemIsEditable |
-              Qt::ItemFlag::ItemIsSelectable |
-              Qt::ItemFlag::ItemIsEnabled);
+        item->setFlags(Qt::ItemFlag::ItemIsEditable | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
         item->setData(Qt::DisplayRole, QVariant::fromValue(true));
         tableView->setItem(row, col, item);
       }
@@ -665,7 +663,7 @@ struct SandboxWindow::Impl {
     treeWidget->topLevelItem(0)->setSelected(true), windowContentLayout->addWidget(treeWidget);
   }
 
-  void setupUI_menu() {
+  void setupUI_menuBar() {
     auto* menuBar = owner.menuBar();
     // NB: it looks like MacOS' native menu bar has an issue with QIcon, so we have to force
     // it to generate icons for High-DPI screens.
@@ -833,7 +831,7 @@ struct SandboxWindow::Impl {
     //windowContentLayout->setAlignment(tabBar, Qt::AlignLeft);
 
     for (auto i = 0; i < 10; ++i) {
-      QStringList tabTextList{ "Tab "};
+      QStringList tabTextList{ "Tab " };
       for (auto j = 0; j < i; ++j) {
         tabTextList.append("Tab");
       }
@@ -970,11 +968,8 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     const auto iconExtent = qStyle->pixelMetric(QStyle::PM_LargeIconSize) * 2;
     const auto iconSize = QSize(iconExtent, iconExtent);
 
-    for (const auto stdIcon : {
-         QStyle::SP_MessageBoxCritical,
-         QStyle::SP_MessageBoxWarning,
-         QStyle::SP_MessageBoxInformation,
-         QStyle::SP_MessageBoxQuestion}) {
+    for (const auto stdIcon : { QStyle::SP_MessageBoxCritical, QStyle::SP_MessageBoxWarning,
+           QStyle::SP_MessageBoxInformation, QStyle::SP_MessageBoxQuestion }) {
       auto* label = new QLabel(windowContent);
       label->setFixedSize(iconSize);
       const auto icon1 = qStyle->standardIcon(stdIcon);
@@ -1419,7 +1414,6 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setup_dateTimeEdit() {
-
     auto* dateTimeEdit = new QDateTimeEdit(windowContent);
     dateTimeEdit->setMinimumDate(QDate::currentDate().addDays(-365));
     dateTimeEdit->setMaximumDate(QDate::currentDate().addDays(365));
@@ -1462,7 +1456,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_listView();
 //      _impl->setupUI_treeWidget();
 //      _impl->setupUI_table();
-//      _impl->setupUI_menu();
+//      _impl->setupUI_menuBar();
 //      _impl->setupUI_toolButton();
 //      _impl->setupUI_toolButtonsVariants();
 //      _impl->setupUI_tabBar();

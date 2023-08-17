@@ -56,16 +56,10 @@ const QColor& SegmentedControl::getItemFgColor(MouseState mouse, bool selected, 
 }
 
 const QColor& SegmentedControl::getItemBadgeBgColor(MouseState mouse, bool selected, const Theme& theme) const {
-  switch (mouse) {
-    case MouseState::Hovered:
-      return selected ? theme.primaryAlternativeColorHovered : theme.secondaryAlternativeColorHovered;
-    case MouseState::Pressed:
-      return selected ? theme.primaryAlternativeColorPressed : theme.secondaryAlternativeColorPressed;
-    case MouseState::Disabled:
-      return selected ? theme.primaryAlternativeColorDisabled : theme.secondaryAlternativeColorDisabled;
-    default:
-      return selected ? theme.primaryAlternativeColor : theme.secondaryAlternativeColor;
-  }
+  if (mouse == MouseState::Disabled)
+    return selected ? theme.primaryAlternativeColorDisabled : theme.secondaryAlternativeColorDisabled;
+  else
+    return selected ? theme.primaryAlternativeColor : theme.secondaryAlternativeColor;
 }
 
 const QColor& SegmentedControl::getItemBadgeFgColor(MouseState mouse, bool selected, const Theme& theme) const {

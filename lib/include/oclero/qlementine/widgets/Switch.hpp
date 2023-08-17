@@ -24,6 +24,8 @@ protected:
   void enterEvent(QEvent* e) override;
   void leaveEvent(QEvent* e) override;
   void changeEvent(QEvent* e) override;
+  void focusInEvent(QFocusEvent* e) override;
+  void focusOutEvent(QFocusEvent* e) override;
   void checkStateSet() override;
 
 private:
@@ -32,6 +34,7 @@ private:
   QRect getSwitchRect() const;
 
   const QColor& getBgColor() const;
+  const QColor& getBorderColor() const;
   const QColor& getFgColor() const;
   const QColor& getTextColor() const;
 
@@ -40,6 +43,7 @@ private:
   bool _isMouseOver{ false };
   QVariantAnimation _handleAnimation;
   QVariantAnimation _bgAnimation;
+  QVariantAnimation _borderAnimation;
   QVariantAnimation _fgAnimation;
   RoundedFocusFrame* _focusFrame{ nullptr };
 };

@@ -818,17 +818,21 @@ void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, cons
   p->setRenderHint(QPainter::RenderHint::Antialiasing);
   p->setPen(Qt::NoPen);
   p->setBrush(bgColor);
-  p->setRenderHint(QPainter::RenderHint::Antialiasing);
-  p->drawEllipse(rect);
+  // To avoid ugly visual artifacts in the rounded corners, we cheat by reducing a bit the size
+  const auto& ellipseRect = borderWidth > 0.1 ? QRectF(rect).marginsRemoved(
+                              QMarginsF(borderWidth / 2., borderWidth / 2., borderWidth / 2., borderWidth / 2.))
+                                              : rect;
+  p->drawEllipse(ellipseRect);
 
   // Border.
   if (borderWidth > 0.1) {
-    drawRoundedRectBorder(p, rect, borderColor, borderWidth, rect.height() / 2.);
+    drawEllipseBorder(p, rect, borderColor, borderWidth);
   }
 
   // Foreground.
   if (progress > 0.01) {
     p->setBrush(fgColor);
+    p->setPen(Qt::NoPen);
     drawRadioButtonIndicator(rect, p, progress);
   }
 }
@@ -843,7 +847,11 @@ void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor&
     p->setPen(Qt::NoPen);
     p->setBrush(bgColor);
     p->setRenderHint(QPainter::RenderHint::Antialiasing);
-    p->drawRoundedRect(rect, radius, radius);
+    // To avoid ugly visual artifacts in the rounded corners, we cheat by reducing a bit the size
+    const auto& buttonRect = borderWidth > 0.1 ? QRectF(rect).marginsRemoved(
+                               QMarginsF(borderWidth / 2., borderWidth / 2., borderWidth / 2., borderWidth / 2.))
+                                               : rect;
+    p->drawRoundedRect(buttonRect, radius, radius);
   }
 
   // Border.
@@ -853,8 +861,8 @@ void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor&
 
   // Foreground.
   if (progress > 0.01) {
-    p->setBrush(Qt::NoBrush);
     constexpr auto checkThickness = 2.;
+    p->setBrush(Qt::NoBrush);
     p->setPen(QPen{ fgColor, checkThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
     if (checkState == CheckState::Checked) {
       drawCheckBoxIndicator(rect, p, progress);

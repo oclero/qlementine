@@ -79,6 +79,7 @@ void centerWidget(QWidget* widget, QWidget* host) {
     widget->move(x, y);
   }
 }
+
 QMargins getDefaultMargins(const QStyle* style) {
   if (!style)
     return { 0, 0, 0, 0 };
@@ -90,6 +91,7 @@ QMargins getDefaultMargins(const QStyle* style) {
   const auto contentsMargins = QMargins{ paddingLeft, paddingTop, paddingRight, paddingBottom };
   return contentsMargins;
 }
+
 qreal getDpi(const QWidget* widget) {
   if (widget) {
     if (const auto* screen = widget->screen()) {

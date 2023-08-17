@@ -582,14 +582,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto active = getActiveState(optItem->state);
         const auto& checkBoxFgColor = listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
         const auto& checkBoxBgColor = listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
+        const auto& checkBoxBorderColor = listItemCheckButtonBorderColor(mouse, checkState, selected, active);
         const auto radius = _impl->theme.checkBoxBorderRadius;
+        const auto borderWidth = _impl->theme.borderWidth;
         // Ensure the rect is a perfect square, centered in optButton->rect;.
         const auto indicatorSize = std::max(optItem->rect.width(), optItem->rect.height());
         const auto indicatorX = optItem->rect.x() + (optItem->rect.width() - indicatorSize);
         const auto indicatorY = optItem->rect.y() + (optItem->rect.height() - indicatorSize);
         const auto indicatorRect = QRect{ indicatorX, indicatorY, indicatorSize, indicatorSize };
-        drawCheckButton(
-          p, indicatorRect, radius, checkBoxBgColor, {}, checkBoxFgColor, 0, checkBoxProgress, checkState);
+        drawCheckButton(p, indicatorRect, radius, checkBoxBgColor, checkBoxBorderColor, checkBoxFgColor, borderWidth,
+          checkBoxProgress, checkState);
       }
       return;
     case PE_IndicatorCheckBox:
@@ -597,26 +599,33 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         const auto checkState = getCheckState(optButton->state);
         const auto mouse = getMouseState(optButton->state);
+        const auto focus = getFocusState(optButton->state);
         const auto& bgColor = checkButtonBackgroundColor(mouse, checkState);
         const auto& fgColor = checkButtonForegroundColor(mouse, checkState);
+        const auto& borderColor = checkButtonBorderColor(mouse, focus, checkState);
+        const auto borderW = _impl->theme.borderWidth;
+
         // Ensure the rect is a perfect square, centered in optButton->rect.
         const auto indicatorSize = std::max(optButton->rect.width(), optButton->rect.height());
         const auto indicatorX = optButton->rect.x() + (optButton->rect.width() - indicatorSize);
         const auto indicatorY = optButton->rect.y() + (optButton->rect.height() - indicatorSize);
         const auto indicatorRect = QRect{ indicatorX, indicatorY, indicatorSize, indicatorSize };
-        const auto isRadio = pe == PE_IndicatorRadioButton;
+
+        // Animations.
         const auto progress = checkState == CheckState::NotChecked ? 0. : 1.;
-        constexpr auto borderW = 0.;
         const auto& currentBgColor =
           _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
+        const auto& currentBorderColor =
+          _impl->animations.animateBorderColor(w, borderColor, _impl->theme.animationDuration);
         const auto currentProgress = _impl->animations.animateProgress(w, progress, _impl->theme.animationDuration);
 
+        const auto isRadio = pe == PE_IndicatorRadioButton;
         if (isRadio) {
-          drawRadioButton(p, indicatorRect, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress);
+          drawRadioButton(p, indicatorRect, currentBgColor, currentBorderColor, fgColor, borderW, currentProgress);
         } else {
           const auto radius = _impl->theme.checkBoxBorderRadius;
-          drawCheckButton(
-            p, indicatorRect, radius, currentBgColor, Qt::transparent, fgColor, borderW, currentProgress, checkState);
+          drawCheckButton(p, indicatorRect, radius, currentBgColor, currentBorderColor, fgColor, borderW,
+            currentProgress, checkState);
         }
       }
       return;
@@ -1437,19 +1446,20 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
               const auto checkboxRect = QRect{ QPoint{ checkBoxX, checkBoxY }, checkBoxSize };
               const auto isRadio = optMenuItem->checkType == QStyleOptionMenuItem::Exclusive;
               const auto progress = checkState == CheckState::Checked ? 1. : 0.;
-              constexpr auto borderW = 0.;
+              const auto borderW = _impl->theme.borderWidth;
               const auto selected = getSelectionState(optMenuItem->state);
               const auto active = getActiveState(optMenuItem->state);
               const auto& boxFgColor = listItemCheckButtonForegroundColor(mouse, checkState, selected, active);
               const auto& boxBgColor = listItemCheckButtonBackgroundColor(mouse, checkState, selected, active);
+              const auto& boxBorderColor = listItemCheckButtonBorderColor(mouse, checkState, selected, active);
 
               // TODO draw smaller checks.
               if (isRadio) {
-                drawRadioButton(p, checkboxRect, boxBgColor, Qt::transparent, boxFgColor, borderW, progress);
+                drawRadioButton(p, checkboxRect, boxBgColor, boxBorderColor, boxFgColor, borderW, progress);
               } else {
                 const auto radius = _impl->theme.checkBoxBorderRadius;
                 drawCheckButton(
-                  p, checkboxRect, radius, boxBgColor, Qt::transparent, boxFgColor, borderW, progress, checkState);
+                  p, checkboxRect, radius, boxBgColor, boxBorderColor, boxFgColor, borderW, progress, checkState);
               }
             }
 
@@ -2769,9 +2779,9 @@ void QlementineStyle::drawComplexControl(
         if (sliderOpt->subControls.testFlag(SC_SliderHandle) && handleRect.isValid()) {
           static QPixmap dropShadowPixmap;
           const auto handleMouse = sliderOpt->activeSubControls == QStyle::SC_SliderHandle ? widgetMouse : mouse;
-          const auto& handleColor = sliderHandleColor(handleMouse);
-          const auto& currentColor =
-            _impl->animations.animateForegroundColor(w, handleColor, _impl->theme.animationDuration);
+          const auto& handleBgColor = sliderHandleColor(handleMouse);
+          const auto& currentHandleBgColor =
+            _impl->animations.animateForegroundColor(w, handleBgColor, _impl->theme.animationDuration);
 
           p->setRenderHint(QPainter::Antialiasing, true);
 
@@ -2804,7 +2814,7 @@ void QlementineStyle::drawComplexControl(
           }
 
           p->setPen(Qt::NoPen);
-          p->setBrush(currentColor);
+          p->setBrush(currentHandleBgColor);
           p->drawEllipse(handleRect);
         }
       }
@@ -5038,7 +5048,14 @@ QColor const& QlementineStyle::checkButtonBackgroundColor(MouseState const mouse
       return buttonBackgroundColor(mouse, ColorRole::Primary);
     case CheckState::NotChecked:
     default:
-      return buttonBackgroundColor(mouse, ColorRole::Secondary);
+      switch (mouse) {
+        case MouseState::Pressed:
+          return _impl->theme.backgroundColorMain3;
+        case MouseState::Disabled:
+          return _impl->theme.backgroundColorMain2;
+        default:
+          return _impl->theme.backgroundColorMain1;
+      }
   }
 }
 
@@ -5047,12 +5064,41 @@ QColor const& QlementineStyle::checkButtonForegroundColor(MouseState const mouse
   return buttonForegroundColor(mouse, ColorRole::Primary);
 }
 
+QColor const& QlementineStyle::checkButtonBorderColor(
+  MouseState const mouse, FocusState const focus, CheckState const checked) const {
+  switch (checked) {
+    case CheckState::Checked:
+    case CheckState::Indeterminate:
+      return checkButtonBackgroundColor(mouse, checked);
+    case CheckState::NotChecked:
+    default:
+      if (focus == FocusState::Focused)
+        return _impl->theme.primaryColor;
+
+      switch (mouse) {
+        case MouseState::Hovered:
+          return _impl->theme.borderColorHovered;
+        case MouseState::Pressed:
+          return _impl->theme.borderColorPressed;
+        case MouseState::Disabled:
+          return _impl->theme.borderColorDisabled;
+        default:
+          return _impl->theme.borderColor;
+      }
+  }
+}
+
 QColor const& QlementineStyle::radioButtonBackgroundColor(MouseState const mouse, CheckState const checked) const {
   return checkButtonBackgroundColor(mouse, checked);
 }
 
 QColor const& QlementineStyle::radioButtonForegroundColor(MouseState const mouse, CheckState const checked) const {
   return checkButtonForegroundColor(mouse, checked);
+}
+
+QColor const& QlementineStyle::radioButtonBorderColor(
+  MouseState const mouse, FocusState const focus, CheckState const checked) const {
+  return checkButtonBorderColor(mouse, focus, checked);
 }
 
 QColor const& QlementineStyle::comboBoxBackgroundColor(MouseState const mouse) const {
@@ -5221,15 +5267,35 @@ QColor const& QlementineStyle::listItemCheckButtonBackgroundColor(
   switch (selected) {
     case SelectionState::Selected:
       if (isEnabled)
-        return isChecked ? _impl->theme.primaryAlternativeColor : _impl->theme.neutralColor;
+        return isChecked ? _impl->theme.primaryAlternativeColor : _impl->theme.backgroundColorMain1;
       else
         return isChecked ? _impl->theme.primaryAlternativeColorDisabled : _impl->theme.neutralColorDisabled;
     case SelectionState::NotSelected:
     default:
       if (isEnabled)
-        return isChecked ? _impl->theme.primaryColor : _impl->theme.neutralColor;
+        return isChecked ? _impl->theme.primaryColor : _impl->theme.backgroundColorMain1;
       else
-        return isChecked ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColor;
+        return isChecked ? _impl->theme.primaryColorDisabled : _impl->theme.backgroundColorMain2;
+  }
+}
+
+QColor const& QlementineStyle::listItemCheckButtonBorderColor(
+  MouseState const mouse, CheckState const checked, SelectionState const selected, ActiveState const active) const {
+  Q_UNUSED(active)
+  const auto isChecked = checked != CheckState::NotChecked;
+  const auto isEnabled = mouse != MouseState::Disabled;
+  switch (selected) {
+    case SelectionState::Selected:
+      if (isEnabled)
+        return isChecked ? _impl->theme.primaryAlternativeColorTransparent : _impl->theme.primaryColor;
+      else
+        return isChecked ? _impl->theme.primaryAlternativeColorTransparent : _impl->theme.borderColorTransparent;
+    case SelectionState::NotSelected:
+    default:
+      if (isEnabled)
+        return isChecked ? _impl->theme.primaryColor : _impl->theme.borderColor;
+      else
+        return isChecked ? _impl->theme.primaryColorDisabled : _impl->theme.borderColorDisabled;
   }
 }
 
@@ -5254,11 +5320,11 @@ QColor const& QlementineStyle::menuBackgroundColor() const {
 }
 
 QColor const& QlementineStyle::menuBorderColor() const {
-  return _impl->theme.borderColor3;
+  return _impl->theme.borderColor;
 }
 
 QColor const& QlementineStyle::menuSeparatorColor() const {
-  return _impl->theme.borderColor3;
+  return _impl->theme.borderColorDisabled;
 }
 
 QColor const& QlementineStyle::menuItemBackgroundColor(MouseState const mouse) const {
@@ -5306,11 +5372,11 @@ QColor const& QlementineStyle::menuItemSecondaryForegroundColor(MouseState const
 }
 
 QColor const& QlementineStyle::menuBarBackgroundColor() const {
-  return _impl->theme.backgroundColorMain1;
+  return _impl->theme.backgroundColorMain2;
 }
 
 QColor const& QlementineStyle::menuBarBorderColor() const {
-  return _impl->theme.borderColor3;
+  return _impl->theme.borderColor;
 }
 
 QColor const& QlementineStyle::menuBarItemBackgroundColor(MouseState const mouse, SelectionState const selected) const {
@@ -5435,7 +5501,7 @@ QColor const& QlementineStyle::progressBarValueColor(MouseState const mouse) con
 QColor const& QlementineStyle::textFieldBackgroundColor(MouseState const mouse, Status const status) const {
   Q_UNUSED(status);
   if (mouse == MouseState::Disabled)
-    return _impl->theme.neutralColorTransparent;
+    return _impl->theme.backgroundColorMain3;
   else
     return _impl->theme.backgroundColorMain1;
 }
@@ -5443,7 +5509,7 @@ QColor const& QlementineStyle::textFieldBackgroundColor(MouseState const mouse, 
 QColor const& QlementineStyle::textFieldBorderColor(
   MouseState const mouse, FocusState const focus, Status const status) const {
   if (mouse == MouseState::Disabled) {
-    return _impl->theme.borderColor2;
+    return _impl->theme.borderColorDisabled;
   } else {
     switch (status) {
       case Status::Error:
@@ -5467,7 +5533,7 @@ QColor const& QlementineStyle::textFieldBorderColor(
         if (focus == FocusState::Focused || mouse == MouseState::Hovered || mouse == MouseState::Pressed)
           return _impl->theme.primaryColor;
         else
-          return _impl->theme.borderColor3;
+          return _impl->theme.borderColor;
     }
   }
 }
@@ -5506,9 +5572,9 @@ QColor const& QlementineStyle::sliderHandleColor(MouseState const mouse) const {
 
 QColor const& QlementineStyle::sliderTickColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled)
-    return _impl->theme.borderColor1;
+    return _impl->theme.borderColorDisabled;
   else
-    return _impl->theme.borderColor3;
+    return _impl->theme.borderColor;
 }
 
 QColor const& QlementineStyle::dialHandleColor(MouseState const mouse) const {
@@ -5569,11 +5635,11 @@ QColor const& QlementineStyle::labelCaptionForegroundColor(MouseState const mous
 }
 
 QColor const& QlementineStyle::toolBarBackgroundColor() const {
-  return _impl->theme.backgroundColorMain1;
+  return _impl->theme.backgroundColorMain2;
 }
 
 QColor const& QlementineStyle::toolBarBorderColor() const {
-  return _impl->theme.borderColor3;
+  return _impl->theme.borderColor;
 }
 
 QColor const& QlementineStyle::toolBarSeparatorColor() const {
@@ -5609,7 +5675,7 @@ QColor const& QlementineStyle::scrollBarHandleColor(MouseState const mouse) cons
     case MouseState::Pressed:
       return _impl->theme.secondaryAlternativeColorPressed;
     case MouseState::Disabled:
-      return _impl->theme.secondaryAlternativeColorDisabled;
+      return _impl->theme.semiTransparentColor1;
     case MouseState::Normal:
     case MouseState::Transparent:
     default:
@@ -5636,7 +5702,7 @@ QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) c
 }
 
 QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
-  return mouse == MouseState::Disabled ? _impl->theme.borderColor2 : _impl->theme.borderColor3;
+  return mouse == MouseState::Disabled ? _impl->theme.borderColorDisabled : _impl->theme.borderColor;
 }
 
 QColor const& QlementineStyle::focusBorderColor() const {
@@ -5644,7 +5710,7 @@ QColor const& QlementineStyle::focusBorderColor() const {
 }
 
 QColor const& QlementineStyle::frameBorderColor() const {
-  return _impl->theme.borderColor3;
+  return _impl->theme.borderColorDisabled;
 }
 
 const QFont& QlementineStyle::fontForTextRole(TextRole role) const {
@@ -5684,19 +5750,12 @@ QPalette QlementineStyle::paletteForTextRole(TextRole role) const {
 }
 
 QColor const& QlementineStyle::switchGrooveColor(MouseState const mouse, CheckState const checked) const {
-  const auto primary = checked == CheckState::Checked;
+  return checkButtonBackgroundColor(mouse, checked);
+}
 
-  switch (mouse) {
-    case MouseState::Pressed:
-      return primary ? _impl->theme.primaryColorPressed : _impl->theme.neutralColorPressed;
-    case MouseState::Hovered:
-      return primary ? _impl->theme.primaryColorHovered : _impl->theme.neutralColorHovered;
-    case MouseState::Disabled:
-      return primary ? _impl->theme.primaryColorDisabled : _impl->theme.neutralColorDisabled;
-    case MouseState::Normal:
-    default:
-      return primary ? _impl->theme.primaryColor : _impl->theme.neutralColor;
-  }
+QColor const& QlementineStyle::switchGrooveBorderColor(
+  MouseState const mouse, FocusState const focus, CheckState const checked) const {
+  return checkButtonBorderColor(mouse, focus, checked);
 }
 
 QColor const& QlementineStyle::switchHandleColor(MouseState const mouse, CheckState const checked) const {

@@ -31,14 +31,14 @@ namespace oclero::qlementine {
 std::pair<const QColor, const QColor> getStatusBadgeColors(StatusBadge statusBadge, const Theme& theme) {
   switch (statusBadge) {
     case StatusBadge::Error:
-      return std::make_pair(theme.statusColorErrorDisabled, theme.statusColorError);
+      return std::make_pair(theme.statusColorError, theme.statusColorForeground);
     case StatusBadge::Success:
-      return std::make_pair(theme.statusColorSuccessDisabled, theme.statusColorSuccess);
+      return std::make_pair(theme.statusColorSuccess, theme.statusColorForeground);
     case StatusBadge::Warning:
-      return std::make_pair(theme.statusColorWarningDisabled, theme.statusColorWarning);
+      return std::make_pair(theme.statusColorWarning, theme.statusColorForeground);
     case StatusBadge::Info:
     default:
-      return std::make_pair(theme.statusColorInfoDisabled, theme.statusColorInfo);
+      return std::make_pair(theme.statusColorInfo, theme.statusColorForeground);
   }
 }
 
@@ -329,7 +329,6 @@ void drawStatusBadge(
   QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize size, const Theme& theme) {
   const auto [bgColor, fgColor] = getStatusBadgeColors(statusBadge, theme);
   const auto [badgeSize, iconSize] = getStatusBadgeSizes(size, theme);
-  const auto radius = theme.borderRadius * (2. / 3.);
 
   const auto badgeRect = QRect{
     QPoint{ rect.x() + (rect.width() - badgeSize.width()) / 2, rect.y() + (rect.height() - badgeSize.height()) / 2 },
@@ -339,6 +338,7 @@ void drawStatusBadge(
     QPoint{ rect.x() + (rect.width() - iconSize.width()) / 2, rect.y() + (rect.height() - iconSize.height()) / 2 },
     iconSize,
   };
+  const auto radius = badgeRect.height() / 4.;
 
   // Background.
   p->setRenderHint(QPainter::Antialiasing, true);

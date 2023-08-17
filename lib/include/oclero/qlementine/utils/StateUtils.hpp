@@ -39,6 +39,7 @@ ColorRole getColorRole(CheckState const checked);
 MouseState getSliderHandleState(QStyle::State const& state, QStyle::SubControls const activeSubControls);
 MouseState getScrollBarHandleState(QStyle::State const& state, QStyle::SubControls const activeSubControls);
 FocusState getFocusState(QStyle::State const& state);
+FocusState getFocusState(bool focused);
 CheckState getCheckState(QStyle::State const& state);
 CheckState getCheckState(Qt::CheckState const& state);
 CheckState getCheckState(bool checked);
