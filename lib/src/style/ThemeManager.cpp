@@ -73,7 +73,7 @@ int ThemeManager::currentThemeIndex() const {
 }
 
 void ThemeManager::setCurrentThemeIndex(int index) {
-  index = std::max(-1, std::min(_themes.size() - 1, index));
+  index = std::max(-1, std::min(static_cast<int>(_themes.size()) - 1, index));
   if (index != _currentIndex) {
     _currentIndex = index;
     synchronizeThemeOnStyle();
@@ -104,7 +104,7 @@ void ThemeManager::setPreviousTheme() {
 }
 
 int ThemeManager::themeIndex(const QString& key) const {
-  const auto it = std::find_if(_themes.begin(), _themes.end(), [&key](auto& theme) {
+  const auto it = std::find_if(_themes.begin(), _themes.end(), [&key](const auto& theme) {
     return theme.meta.name == key;
   });
   if (it != _themes.end())
@@ -122,7 +122,7 @@ QString ThemeManager::getLocalizedThemeName(const QString& baseThemeName) const 
 }
 
 void ThemeManager::synchronizeThemeOnStyle() {
-  if (_style && _currentIndex != -1 && _themes.size() > 0 && _currentIndex < _themes.size()) {
+  if (_style && _currentIndex != -1 && !_themes.empty() && _currentIndex < _themes.size()) {
     _style->setTheme(_themes.at(_currentIndex));
   }
 }

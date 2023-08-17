@@ -105,90 +105,90 @@ std::pair<QWidget*, LineEdit*> makeTextEditorAndLabel(const QString& label, cons
 }
 
 struct ThemeEditor::Impl {
-  ColorEditor* primaryColorEditor;
-  ColorEditor* primaryColorHoveredEditor;
-  ColorEditor* primaryColorPressedEditor;
-  ColorEditor* primaryColorDisabledEditor;
+  ColorEditor* primaryColorEditor{};
+  ColorEditor* primaryColorHoveredEditor{};
+  ColorEditor* primaryColorPressedEditor{};
+  ColorEditor* primaryColorDisabledEditor{};
 
-  ColorEditor* primaryColorForegroundEditor;
-  ColorEditor* primaryColorForegroundHoveredEditor;
-  ColorEditor* primaryColorForegroundPressedEditor;
-  ColorEditor* primaryColorForegroundDisabledEditor;
+  ColorEditor* primaryColorForegroundEditor{};
+  ColorEditor* primaryColorForegroundHoveredEditor{};
+  ColorEditor* primaryColorForegroundPressedEditor{};
+  ColorEditor* primaryColorForegroundDisabledEditor{};
 
-  ColorEditor* primaryAlternativeColorEditor;
-  ColorEditor* primaryAlternativeColorHoveredEditor;
-  ColorEditor* primaryAlternativeColorPressedEditor;
-  ColorEditor* primaryAlternativeColorDisabledEditor;
+  ColorEditor* primaryAlternativeColorEditor{};
+  ColorEditor* primaryAlternativeColorHoveredEditor{};
+  ColorEditor* primaryAlternativeColorPressedEditor{};
+  ColorEditor* primaryAlternativeColorDisabledEditor{};
 
-  ColorEditor* secondaryColorEditor;
-  ColorEditor* secondaryColorHoveredEditor;
-  ColorEditor* secondaryColorPressedEditor;
-  ColorEditor* secondaryColorDisabledEditor;
+  ColorEditor* secondaryColorEditor{};
+  ColorEditor* secondaryColorHoveredEditor{};
+  ColorEditor* secondaryColorPressedEditor{};
+  ColorEditor* secondaryColorDisabledEditor{};
 
-  ColorEditor* secondaryColorForegroundEditor;
-  ColorEditor* secondaryColorForegroundHoveredEditor;
-  ColorEditor* secondaryColorForegroundPressedEditor;
-  ColorEditor* secondaryColorForegroundDisabledEditor;
+  ColorEditor* secondaryColorForegroundEditor{};
+  ColorEditor* secondaryColorForegroundHoveredEditor{};
+  ColorEditor* secondaryColorForegroundPressedEditor{};
+  ColorEditor* secondaryColorForegroundDisabledEditor{};
 
-  ColorEditor* secondaryAlternativeColorEditor;
-  ColorEditor* secondaryAlternativeColorHoveredEditor;
-  ColorEditor* secondaryAlternativeColorPressedEditor;
-  ColorEditor* secondaryAlternativeColorDisabledEditor;
+  ColorEditor* secondaryAlternativeColorEditor{};
+  ColorEditor* secondaryAlternativeColorHoveredEditor{};
+  ColorEditor* secondaryAlternativeColorPressedEditor{};
+  ColorEditor* secondaryAlternativeColorDisabledEditor{};
 
-  ColorEditor* neutralColorEditor;
-  ColorEditor* neutralColorHoveredEditor;
-  ColorEditor* neutralColorPressedEditor;
-  ColorEditor* neutralColorDisabledEditor;
+  ColorEditor* neutralColorEditor{};
+  ColorEditor* neutralColorHoveredEditor{};
+  ColorEditor* neutralColorPressedEditor{};
+  ColorEditor* neutralColorDisabledEditor{};
 
-  ColorEditor* semiTransparentColor1Editor;
-  ColorEditor* semiTransparentColor2Editor;
-  ColorEditor* semiTransparentColor3Editor;
-  ColorEditor* semiTransparentColor4Editor;
+  ColorEditor* semiTransparentColor1Editor{};
+  ColorEditor* semiTransparentColor2Editor{};
+  ColorEditor* semiTransparentColor3Editor{};
+  ColorEditor* semiTransparentColor4Editor{};
 
-  ColorEditor* backgroundColorMain1Editor;
-  ColorEditor* backgroundColorMain2Editor;
-  ColorEditor* backgroundColorMain3Editor;
-  ColorEditor* backgroundColorMain4Editor;
+  ColorEditor* backgroundColorMain1Editor{};
+  ColorEditor* backgroundColorMain2Editor{};
+  ColorEditor* backgroundColorMain3Editor{};
+  ColorEditor* backgroundColorMain4Editor{};
 
-  ColorEditor* borderColorEditor;
-  ColorEditor* borderColorHoveredEditor;
-  ColorEditor* borderColorPressedEditor;
-  ColorEditor* borderColorDisabledEditor;
+  ColorEditor* borderColorEditor{};
+  ColorEditor* borderColorHoveredEditor{};
+  ColorEditor* borderColorPressedEditor{};
+  ColorEditor* borderColorDisabledEditor{};
 
-  ColorEditor* focusColorEditor;
+  ColorEditor* focusColorEditor{};
 
-  ColorEditor* shadowColor1Editor;
-  ColorEditor* shadowColor2Editor;
-  ColorEditor* shadowColor3Editor;
+  ColorEditor* shadowColor1Editor{};
+  ColorEditor* shadowColor2Editor{};
+  ColorEditor* shadowColor3Editor{};
 
-  ColorEditor* statusColorErrorEditor;
-  ColorEditor* statusColorErrorHoveredEditor;
-  ColorEditor* statusColorErrorPressedEditor;
-  ColorEditor* statusColorErrorDisabledEditor;
+  ColorEditor* statusColorErrorEditor{};
+  ColorEditor* statusColorErrorHoveredEditor{};
+  ColorEditor* statusColorErrorPressedEditor{};
+  ColorEditor* statusColorErrorDisabledEditor{};
 
-  ColorEditor* statusColorWarningEditor;
-  ColorEditor* statusColorWarningHoveredEditor;
-  ColorEditor* statusColorWarningPressedEditor;
-  ColorEditor* statusColorWarningDisabledEditor;
+  ColorEditor* statusColorWarningEditor{};
+  ColorEditor* statusColorWarningHoveredEditor{};
+  ColorEditor* statusColorWarningPressedEditor{};
+  ColorEditor* statusColorWarningDisabledEditor{};
 
-  ColorEditor* statusColorSuccessEditor;
-  ColorEditor* statusColorSuccessHoveredEditor;
-  ColorEditor* statusColorSuccessPressedEditor;
-  ColorEditor* statusColorSuccessDisabledEditor;
+  ColorEditor* statusColorSuccessEditor{};
+  ColorEditor* statusColorSuccessHoveredEditor{};
+  ColorEditor* statusColorSuccessPressedEditor{};
+  ColorEditor* statusColorSuccessDisabledEditor{};
 
-  ColorEditor* statusColorInfoEditor;
-  ColorEditor* statusColorInfoHoveredEditor;
-  ColorEditor* statusColorInfoPressedEditor;
-  ColorEditor* statusColorInfoDisabledEditor;
+  ColorEditor* statusColorInfoEditor{};
+  ColorEditor* statusColorInfoHoveredEditor{};
+  ColorEditor* statusColorInfoPressedEditor{};
+  ColorEditor* statusColorInfoDisabledEditor{};
 
-  ColorEditor* statusColorForegroundEditor;
-  ColorEditor* statusColorForegroundHoveredEditor;
-  ColorEditor* statusColorForegroundPressedEditor;
-  ColorEditor* statusColorForegroundDisabledEditor;
+  ColorEditor* statusColorForegroundEditor{};
+  ColorEditor* statusColorForegroundHoveredEditor{};
+  ColorEditor* statusColorForegroundPressedEditor{};
+  ColorEditor* statusColorForegroundDisabledEditor{};
 
-  LineEdit* nameEditor;
-  LineEdit* authorEditor;
-  LineEdit* versionEditor;
+  LineEdit* nameEditor{};
+  LineEdit* authorEditor{};
+  LineEdit* versionEditor{};
 
   Impl(ThemeEditor& o)
     : owner(o) {}
@@ -499,7 +499,7 @@ ThemeEditor::ThemeEditor(QWidget* parent)
   _impl->setupUi();
 }
 
-ThemeEditor::~ThemeEditor() {}
+ThemeEditor::~ThemeEditor() = default;
 
 const Theme& ThemeEditor::theme() const {
   return _impl->theme;

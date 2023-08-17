@@ -60,8 +60,7 @@ public:
 
   RadiusesF radiuses;
 
-  QStyleOptionRoundedButton()
-    : QStyleOptionButton() {
+  QStyleOptionRoundedButton() {
     type = Type;
     radiuses = 0.;
   }

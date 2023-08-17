@@ -25,7 +25,6 @@
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 #include <oclero/qlementine/style/Theme.hpp>
-#include <oclero/qlementine/style/QlementineStyleOption.hpp>
 
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
@@ -133,7 +132,11 @@ void Switch::paintEvent(QPaintEvent*) {
   }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void Switch::enterEvent(QEvent* e) {
+#else
+void Switch::enterEvent(QEnterEvent* e) {
+#endif
   QAbstractButton::enterEvent(e);
   _isMouseOver = true;
   startAnimation();

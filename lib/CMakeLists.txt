@@ -1,24 +1,30 @@
 set(LIB_TARGET_NAME ${PROJECT_NAME})
 
-find_package(Qt5
-  REQUIRED
+find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
+  COMPONENTS
     Core
     Widgets
     Svg
+  REQUIRED
 )
 
 if(WIN32)
-  find_package(Qt5 REQUIRED WinExtras)
+  find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
+    COMPONENTS
+      WinExtras
+    REQUIRED
+  )
 endif()
 
 # Declare files.
 set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimationManager.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/FramelessWindowBehavior.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleBar.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleBarButton.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleMenuBarProxyStyle.cpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/FramelessWindow.cpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/FramelessWindowBehavior.cpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleBar.cpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleBarButton.cpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleMenuBarProxyStyle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/ResourceInitialization.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/Delegates.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/EventFilters.cpp
@@ -43,7 +49,6 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ColorEditor.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/CommandLinkButton.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Expander.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/FramelessWindow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/IconWidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Label.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LineEdit.cpp
@@ -62,11 +67,12 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/animation/WidgetAnimation.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/animation/WidgetAnimator.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/animation/WidgetAnimationManager.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/FramelessWindowBehavior.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBar.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBarButton.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBarCommon.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleMenuBarProxyStyle.hpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/FramelessWindow.hpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/FramelessWindowBehavior.hpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBar.hpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBarButton.hpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBarCommon.hpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleMenuBarProxyStyle.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/resources/ResourceInitialization.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/style/Delegates.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/style/QlementineStyle.hpp
@@ -91,7 +97,6 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/ColorEditor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/CommandLinkButton.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Expander.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/FramelessWindow.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/IconWidget.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Label.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LineEdit.hpp
@@ -132,25 +137,28 @@ target_include_directories(${LIB_TARGET_NAME}
 
 target_link_libraries(${LIB_TARGET_NAME}
   PRIVATE
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::Svg
+    Qt::Core
+    Qt::Widgets
+    Qt::Svg
 )
 
 if(WIN32)
-	target_link_libraries(${LIB_TARGET_NAME} PRIVATE Qt5::WinExtras)
+	target_link_libraries(${LIB_TARGET_NAME}
+    PRIVATE
+      Qt::WinExtras
+  )
 endif()
 
 set_target_properties(${LIB_TARGET_NAME}
   PROPERTIES
-    AUTOMOC ON
-    AUTORCC ON
-    OUTPUT_NAME ${LIB_TARGET_NAME}
-    PROJECT_LABEL ${LIB_TARGET_NAME}
-    FOLDER lib
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-    VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    DEBUG_POSTFIX _debug
+    AUTOMOC         ON
+    AUTORCC         ON
+    OUTPUT_NAME     ${LIB_TARGET_NAME}
+    PROJECT_LABEL   ${LIB_TARGET_NAME}
+    FOLDER          lib
+    SOVERSION       ${PROJECT_VERSION_MAJOR}
+    VERSION         ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    DEBUG_POSTFIX   _debug
 )
 
 target_compile_features(${LIB_TARGET_NAME} PUBLIC cxx_std_17)

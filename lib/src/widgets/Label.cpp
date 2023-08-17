@@ -46,7 +46,7 @@ Label::Label(const QString& text, TextRole role, QWidget* parent)
   qApp->installEventFilter(this);
 }
 
-Label::~Label() {}
+Label::~Label() = default;
 
 TextRole Label::role() const {
   return _role;

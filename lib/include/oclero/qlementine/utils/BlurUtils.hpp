@@ -27,6 +27,7 @@
 #include <cmath>
 #include <cassert>
 #include <algorithm>
+#include <array>
 
 namespace oclero::qlementine {
 enum class EdgePolicy {
@@ -36,12 +37,12 @@ enum class EdgePolicy {
 
 template<typename T, int C, EdgePolicy P = EdgePolicy::Extend>
 void horizontal_blur(const T* in, T* out, const int w, const int h, const int r) {
-  float iarr = 1.f / (r + r + 1);
+  double iarr = 1. / (r + r + 1);
   for (int i = 0; i < h; i++) {
     int ti = i * w;
     int li = ti;
     int ri = ti + r;
-    float fv[C], lv[C], val[C];
+    std::array<double, C> fv, lv, val;
 
     for (int ch = 0; ch < C; ++ch) {
       fv[ch] = P == EdgePolicy::Extend ? in[ti * C + ch] : 0; // unused with Crop policy
@@ -98,7 +99,7 @@ void horizontal_blur(const T* in, T* out, const int w, const int h, const int ch
       horizontal_blur<T, 4>(in, out, w, h, r);
       break;
     default:
-      assert(((void) "Number of channels not supported", false));
+      assert(((void) "Number of channels not supported", false)); // NOLINT
       break;
   }
 }
@@ -144,21 +145,21 @@ void flip_block(const T* in, T* out, const int w, const int h, const int channel
       flip_block<T, 4>(in, out, w, h);
       break;
     default:
-      assert(((void) "Number of channels not supported", false));
+      assert(((void) "Number of channels not supported", false)); // NOLINT
       break;
   }
 }
 
-void sigma_to_box_radius(int boxes[], const float sigma, const int passCount) {
+inline void sigma_to_box_radius(int* boxes, const double sigma, const int passCount) {
   // ideal filter width
-  float wi = std::sqrt((12 * sigma * sigma / passCount) + 1);
-  int wl = wi; // no need std::floor
+  double wi = std::sqrt((12 * sigma * sigma / passCount) + 1);
+  int wl = int(wi); // no need std::floor
   if (wl % 2 == 0)
     wl--;
   int wu = wl + 2;
 
-  float mi = (12 * sigma * sigma - passCount * wl * wl - 4 * passCount * wl - 3 * passCount) / (-4 * wl - 4);
-  int m = mi + 0.5f; // avoid std::round by adding 0.5f and cast to integer type
+  double mi = (12 * sigma * sigma - passCount * wl * wl - 4 * passCount * wl - 3 * passCount) / (-4 * wl - 4);
+  int m = mi + .5; // NOLINT (avoid std::round by adding 0.5f and cast to integer type)
 
   for (int i = 0; i < passCount; i++) {
     boxes[i] = ((i < m ? wl : wu) - 1) / 2;
@@ -166,10 +167,10 @@ void sigma_to_box_radius(int boxes[], const float sigma, const int passCount) {
 }
 
 template<typename T, unsigned int N>
-void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int channelCount, const float sigma) {
+void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int channelCount, const double sigma) {
   // compute box kernel sizes
-  int boxes[N];
-  sigma_to_box_radius(boxes, sigma, N);
+  std::array<int, N> boxes;
+  sigma_to_box_radius(boxes.data(), sigma, N);
 
   // perform N horizontal blur passes
   for (int i = 0; i < N; ++i) {
@@ -192,10 +193,10 @@ void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int cha
 }
 
 template<typename T>
-void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int channelCount, const float sigma) {
+void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int channelCount, const double sigma) {
   // compute box kernel sizes
-  int boxes[3];
-  sigma_to_box_radius(boxes, sigma, 3);
+  std::array<int, 3> boxes{};
+  sigma_to_box_radius(boxes.data(), sigma, 3);
 
   // perform 3 horizontal blur passes
   horizontal_blur(in, out, w, h, channelCount, boxes[0]);
@@ -219,7 +220,7 @@ void fast_gaussian_blur(T*& in, T*& out, const int w, const int h, const int cha
 
 template<typename T>
 void fast_gaussian_blur(
-  T*& in, T*& out, const int w, const int h, const int channelCount, const float sigma, const unsigned int passCount) {
+  T*& in, T*& out, const int w, const int h, const int channelCount, const double sigma, const unsigned int passCount) {
   switch (passCount) {
     case 1:
       fast_gaussian_blur<T, 1>(in, out, w, h, channelCount, sigma);
@@ -253,7 +254,7 @@ void fast_gaussian_blur(
       fast_gaussian_blur<T, 10>(in, out, w, h, channelCount, sigma);
       break;
     default:
-      assert(((void) "Number of passes not supported", false));
+      assert(((void) "Number of passes not supported", false)); // NOLINT
       break;
   }
 }

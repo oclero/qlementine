@@ -71,7 +71,7 @@ public:
     : QObject(parent)
     , _parentWidget(parent) {}
 
-  virtual ~WidgetAnimator() = default;
+  ~WidgetAnimator() override = default;
 
   // All the animatable properties should be here.
   DECLARE_ANIMATION(BackgroundColor, QColor)

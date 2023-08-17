@@ -9,7 +9,7 @@ class ActionButton : public QPushButton {
 
 public:
   ActionButton(QWidget* parent = nullptr);
-  virtual ~ActionButton();
+  ~ActionButton() override;
 
 public:
   void setAction(QAction* action);

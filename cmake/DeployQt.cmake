@@ -10,10 +10,10 @@ function(target_deploy_qt TARGET_NAME)
   endif()
 
   if (DEPLOYQT_NAME)
-    get_target_property(QMAKE_LOCATION Qt5::qmake IMPORTED_LOCATION)
+    get_target_property(QMAKE_LOCATION Qt::qmake IMPORTED_LOCATION)
     get_filename_component(QT_BINARY_DIR ${QMAKE_LOCATION} DIRECTORY)
     find_program(DEPLOYQT_EXE "${DEPLOYQT_NAME}" HINTS "${QT_BINARY_DIR}" REQUIRED)
-    set(QTDEPLOY_TARGET_NAME Qt5::deploy)
+    set(QTDEPLOY_TARGET_NAME Qt::deploy)
     add_executable(${QTDEPLOY_TARGET_NAME} IMPORTED)
     set_property(TARGET ${QTDEPLOY_TARGET_NAME} PROPERTY IMPORTED_LOCATION ${DEPLOYQT_EXE})
 

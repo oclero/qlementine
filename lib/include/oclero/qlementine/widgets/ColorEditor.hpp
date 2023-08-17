@@ -54,7 +54,7 @@ private:
   void setup(const QColor& initialColor);
   void syncLineEditFromButton();
 
-  ColorButton* _colorButton;
-  LineEdit* _lineEdit;
+  ColorButton* _colorButton{};
+  LineEdit* _lineEdit{};
 };
 } // namespace oclero::qlementine

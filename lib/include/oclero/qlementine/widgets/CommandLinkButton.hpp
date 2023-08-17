@@ -18,6 +18,7 @@ public:
 
 protected:
   void paintEvent(QPaintEvent*) override;
+  using QCommandLinkButton::initStyleOption;
   void initStyleOption(QStyleOptionCommandLinkButton* option) const;
 };
 } // namespace oclero::qlementine

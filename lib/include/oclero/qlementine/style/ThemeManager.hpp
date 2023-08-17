@@ -39,7 +39,7 @@ class ThemeManager : public QObject {
 public:
   ThemeManager(QObject* parent = nullptr);
   ThemeManager(QlementineStyle* style, QObject* parent = nullptr);
-  ~ThemeManager() = default;
+  ~ThemeManager() override = default;
 
   QlementineStyle* style() const;
   void setStyle(QlementineStyle* style);

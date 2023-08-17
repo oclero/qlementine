@@ -49,7 +49,7 @@ public:
     }
   }
 
-  ~WidgetAnimation() {
+  ~WidgetAnimation() override {
     stop();
   }
 

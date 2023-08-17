@@ -86,7 +86,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     // Icon.
     const auto iconVariant = idx.data(Qt::DecorationRole);
     const auto& icon =
-      iconVariant.isValid() && iconVariant.type() == QVariant::Type::Icon ? iconVariant.value<QIcon>() : QIcon{};
+      iconVariant.isValid() && iconVariant.userType() == QMetaType::QIcon ? iconVariant.value<QIcon>() : QIcon{};
     if (availableW > 0 && !icon.isNull()) {
       const auto spacing = theme.spacing;
       const auto& iconSize = opt.decorationSize; // Get icon size.
@@ -124,7 +124,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     // Text.
     const auto textVariant = idx.data(Qt::DisplayRole);
     const auto& text =
-      textVariant.isValid() && textVariant.type() == QVariant::Type::String ? textVariant.value<QString>() : QString{};
+      textVariant.isValid() && textVariant.userType() == QMetaType::QString ? textVariant.value<QString>() : QString{};
     if (availableW > 0 && !text.isEmpty()) {
       const auto& fm = opt.fontMetrics;
       const auto elidedText = fm.elidedText(text, Qt::ElideRight, availableW);
@@ -154,10 +154,10 @@ QSize ComboBoxDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIn
 
     const auto textVariant = idx.data(Qt::DisplayRole);
     const auto& text =
-      textVariant.isValid() && textVariant.type() == QVariant::Type::String ? textVariant.value<QString>() : QString{};
+      textVariant.isValid() && textVariant.userType() == QMetaType::QString ? textVariant.value<QString>() : QString{};
     const auto iconVariant = idx.data(Qt::DecorationRole);
     const auto& icon =
-      iconVariant.isValid() && iconVariant.type() == QVariant::Type::Icon ? iconVariant.value<QIcon>() : QIcon{};
+      iconVariant.isValid() && iconVariant.userType() == QMetaType::QIcon ? iconVariant.value<QIcon>() : QIcon{};
     const auto textW = qlementine::textWidth(fm, text);
     const auto iconW = !icon.isNull() ? iconSize.width() + spacing : 0;
     const auto w = std::max(0, hPadding + iconW + textW + hPadding);

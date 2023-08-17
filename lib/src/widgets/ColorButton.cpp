@@ -101,7 +101,7 @@ QSize ColorButton::sizeHint() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
   const auto extent = qlementineStyle ? qlementineStyle->theme().controlHeightMedium
                                       : style->pixelMetric(QStyle::PM_DialogButtonsButtonHeight);
-  return QSize(extent, extent);
+  return { extent, extent };
 }
 
 void ColorButton::paintEvent(QPaintEvent*) {

@@ -65,7 +65,7 @@ void WidgetAnimationManager::addWidget(const QWidget* widget, WidgetAnimator* wi
 void WidgetAnimationManager::removeWidget(const QWidget* widget) {
   auto it = _map.find(widget);
   if (it != _map.end()) {
-    const auto widgetAnimator = it->second;
+    auto* widgetAnimator = it->second;
     _map.erase(it);
     widgetAnimator->deleteLater();
   }
