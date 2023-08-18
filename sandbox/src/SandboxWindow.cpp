@@ -738,9 +738,20 @@ struct SandboxWindow::Impl {
     toolButton->setIcon(QIcon(":/refresh.svg"));
     toolButton->setText(QString("Button with a very long text that can be elided"));
     toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    toolButton->setCheckable(true);
-    toolButton->setChecked(true);
-    toolButton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    toolButton->setCheckable(false);
+    toolButton->setChecked(false);
+
+    {
+      const auto icon = QIcon(":/refresh.svg");
+      auto* subMenu = new QMenu("Menu title", toolButton);
+      toolButton->setMenu(subMenu);
+      subMenu->addAction(icon, "Sub Action 1");
+      subMenu->addAction(icon, "Sub Action 2");
+      toolButton->setMenu(subMenu);
+      toolButton->setPopupMode(QToolButton::ToolButtonPopupMode::MenuButtonPopup);
+    }
+
+    toolButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     windowContentLayout->addWidget(toolButton);
   }
 
@@ -755,15 +766,12 @@ struct SandboxWindow::Impl {
     toolbar->setIconSize(QSize(16, 16));
     toolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonFollowStyle);
 
-    auto count = 0;
-
     // Button 1: Icon only
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 2: Text only
@@ -772,7 +780,6 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 3: Icon and Text.
@@ -781,7 +788,6 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 4: Icon and Text, checkable.
@@ -792,7 +798,6 @@ struct SandboxWindow::Impl {
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
       toolButton->setCheckable(true);
       toolButton->setChecked(true);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 5: Icon only + menu
@@ -805,7 +810,6 @@ struct SandboxWindow::Impl {
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
       subMenu->addAction(icon, "Sub Action 2");
-      count++;
       toolbar->addWidget(toolButton);
     }
 
@@ -815,11 +819,11 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+      toolButton->setPopupMode(QToolButton::InstantPopup);
       auto* subMenu = new QMenu("Menu title", toolButton);
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
       subMenu->addAction(icon, "Sub Action 2");
-      count++;
       toolbar->addWidget(toolButton);
     }
 
@@ -829,11 +833,11 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+      toolButton->setPopupMode(QToolButton::MenuButtonPopup);
       auto* subMenu = new QMenu("Menu title", toolButton);
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
       subMenu->addAction(icon, "Sub Action 2");
-      count++;
       toolbar->addWidget(toolButton);
     }
   }
