@@ -5252,9 +5252,8 @@ QColor const& QlementineStyle::listItemForegroundColor(
 
 // Returns whether an icon in an item view should be colorized with the foreground color.
 // Subclasses can override this to customize the behavior depending on the index or state.
-bool QlementineStyle::listItemIsAutoIconColorEnabled(
-  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
-  const QModelIndex& index, const QWidget* widget) const {
+bool QlementineStyle::listItemIsAutoIconColorEnabled(MouseState const mouse, SelectionState const selected,
+  FocusState const focus, ActiveState const active, const QModelIndex& index, const QWidget* widget) const {
   Q_UNUSED(mouse)
   Q_UNUSED(selected)
   Q_UNUSED(focus)
