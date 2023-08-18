@@ -642,10 +642,10 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         p->setPen(QPen(fgColor, 1.001, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         switch (indicatorType) {
           case QStyleOptionHeader::SortIndicator::SortDown:
-            drawArrowDown(optHeader->rect, p);
+            drawArrowUp(optHeader->rect, p);
             break;
           case QStyleOptionHeader::SortIndicator::SortUp:
-            drawArrowUp(optHeader->rect, p);
+            drawArrowDown(optHeader->rect, p);
             break;
           default:
             break;
