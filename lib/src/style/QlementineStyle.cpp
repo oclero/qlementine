@@ -2826,26 +2826,35 @@ void QlementineStyle::drawComplexControl(
     case CC_ToolButton:
       if (const auto* toolbuttonOpt = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
         const auto hasMenu = toolbuttonOpt->features.testFlag(QStyleOptionToolButton::HasMenu);
+        const auto menuIsOnSeparateButton =
+          toolbuttonOpt->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
+
         const auto isMouseOver = toolbuttonOpt->state.testFlag(State_MouseOver);
         const auto isPressed = toolbuttonOpt->state.testFlag(State_Sunken);
         const auto* parentTabBar = qobject_cast<QTabBar*>(w->parentWidget());
         const auto isTabBarScrollButton = parentTabBar != nullptr && toolbuttonOpt->arrowType != Qt::NoArrow;
         const auto radius = _impl->theme.borderRadius;
         const auto buttonActive = toolbuttonOpt->activeSubControls.testFlag(SC_ToolButton);
-        const auto menuButtonActive = toolbuttonOpt->activeSubControls.testFlag(SC_ToolButtonMenu);
+        const auto menuButtonActive =
+          menuIsOnSeparateButton && toolbuttonOpt->activeSubControls.testFlag(SC_ToolButtonMenu);
         const auto mouse = getMouseState(toolbuttonOpt->state);
-        auto buttonRect = subControlRect(CC_ToolButton, opt, SC_ToolButton, w);
+
+        const auto buttonRect = subControlRect(CC_ToolButton, opt, SC_ToolButton, w);
+        const auto menuButtonRect = subControlRect(CC_ToolButton, opt, SC_ToolButtonMenu, w);
 
         // Tweak the state.
         auto buttonState = toolbuttonOpt->state;
-        buttonState.setFlag(State_MouseOver, (isMouseOver && buttonActive) || (isPressed && menuButtonActive));
-        buttonState.setFlag(State_Sunken, isPressed && buttonActive);
-        buttonState.setFlag(State_Raised, isMouseOver && menuButtonActive);
+        if (menuIsOnSeparateButton) {
+          buttonState.setFlag(State_MouseOver, (isMouseOver && buttonActive) || (isPressed && menuButtonActive));
+          buttonState.setFlag(State_Sunken, isPressed && buttonActive);
+          buttonState.setFlag(State_Raised, isMouseOver && menuButtonActive);
+        }
 
         // Main button.
         {
           auto buttonOpt = QStyleOptionToolButton(*toolbuttonOpt);
           buttonOpt.state = buttonState;
+
           // Special case for QTabBar.
           if (isTabBarScrollButton) {
             buttonOpt.state.setFlag(State_Raised, true);
@@ -2872,21 +2881,22 @@ void QlementineStyle::drawComplexControl(
             // Icon.
             const auto stdIcon = isLeftButton ? SP_ArrowLeft : SP_ArrowRight;
             buttonOpt.icon = standardIcon(stdIcon, &buttonOpt, w);
-          } else {
-            buttonOpt.rect = buttonRect;
           }
 
           // Background.
+          buttonOpt.rect = opt->rect;
+          buttonOpt.features.setFlag(QStyleOptionToolButton::ToolButtonFeature::HasMenu, false);
           drawPrimitive(PE_PanelButtonTool, &buttonOpt, p, w);
 
           // Foreground.
+          buttonOpt.rect = buttonRect;
+          buttonOpt.features.setFlag(QStyleOptionToolButton::ToolButtonFeature::HasMenu, hasMenu);
           drawControl(CE_ToolButtonLabel, &buttonOpt, p, w);
         }
 
-        // Menu button.
-        if (hasMenu) {
+        // Menu arrow.
+        if (menuIsOnSeparateButton) {
           const auto& menuButtonRadiuses = hasMenu ? RadiusesF{ 0., radius, radius, 0. } : RadiusesF{};
-          const auto menuButtonRect = subControlRect(CC_ToolButton, opt, SC_ToolButtonMenu, w);
           auto menuButtonState = toolbuttonOpt->state;
           menuButtonState.setFlag(State_MouseOver, (isMouseOver && menuButtonActive) || (isPressed && buttonActive));
           menuButtonState.setFlag(State_Sunken, isPressed && menuButtonActive);
@@ -2921,6 +2931,19 @@ void QlementineStyle::drawComplexControl(
           const auto& arrowColor = toolButtonForegroundColor(menuButtonMouse, role);
           const auto& currentArrowColor =
             _impl->animations.animateForegroundColor2(w, arrowColor, _impl->theme.animationDuration);
+          const auto path = getMenuIndicatorPath(arrowRect);
+          p->setPen(QPen(currentArrowColor, iconPenWidth, Qt::SolidLine, Qt::RoundCap));
+          p->drawPath(path);
+        } else if (hasMenu) {
+          // Arrow.
+          const auto spacing = _impl->theme.spacing;
+          const auto& arrowSize = _impl->theme.iconSize;
+          const auto arrowX = menuButtonRect.x() + (menuButtonRect.width() - arrowSize.width()) / 2 - spacing;
+          const auto arrowY = menuButtonRect.y() + (menuButtonRect.height() - arrowSize.height()) / 2;
+          const auto arrowRect = QRect{ arrowX, arrowY, arrowSize.width(), arrowSize.height() };
+          const auto& arrowColor = toolButtonForegroundColor(mouse, getColorRole(toolbuttonOpt->state, false));
+          const auto& currentArrowColor =
+            _impl->animations.animateForegroundColor(w, arrowColor, _impl->theme.animationDuration);
           const auto path = getMenuIndicatorPath(arrowRect);
           p->setPen(QPen(currentArrowColor, iconPenWidth, Qt::SolidLine, Qt::RoundCap));
           p->drawPath(path);
@@ -3413,18 +3436,22 @@ QRect QlementineStyle::subControlRect(
     case CC_ToolButton:
       if (const auto* toolButtonOpt = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
         const auto& rect = toolButtonOpt->rect;
+
         const auto hasMenu = toolButtonOpt->features.testFlag(QStyleOptionToolButton::HasMenu);
+        const auto menuIsOnSeparateButton =
+          toolButtonOpt->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
+
         const auto& iconSize = _impl->theme.iconSize;
         const auto separatorW = _impl->theme.borderWidth;
         const auto spacing = _impl->theme.spacing;
-        const auto menuButtonW = separatorW + iconSize.width() + spacing / 2;
-        const auto buttonW = hasMenu ? rect.width() - menuButtonW : rect.width();
+        const auto menuButtonW =
+          hasMenu ? (menuIsOnSeparateButton ? separatorW + iconSize.width() + spacing / 2 : iconSize.width()) : 0;
+        const auto buttonW = rect.width() - menuButtonW;
         switch (sc) {
           case SC_ToolButton:
             return QRect{ rect.x(), rect.y(), buttonW, rect.height() };
           case SC_ToolButtonMenu:
-            return hasMenu ? QRect{ rect.x() + rect.width() - menuButtonW, rect.y(), menuButtonW, rect.height() }
-                           : QRect{};
+            return QRect{ rect.x() + rect.width() - menuButtonW, rect.y(), menuButtonW, rect.height() };
           default:
             return {};
         }
@@ -3645,9 +3672,12 @@ QSize QlementineStyle::sizeFromContents(
         }
 
         const auto buttonStyle = optToolButton->toolButtonStyle;
-        const auto hasMenu = optToolButton->features.testFlag(QStyleOptionToolButton::HasMenu);
-        const auto separatorW = _impl->theme.borderWidth;
-        const auto menuSpace = hasMenu ? separatorW + iconSize.width() + spacing / 2 : 0;
+        const auto hasMenu = optToolButton->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::HasMenu);
+        const auto menuIsOnSeparateButton =
+          hasMenu && optToolButton->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
+
+        const auto separatorW = menuIsOnSeparateButton ? _impl->theme.borderWidth : 0;
+        const auto menuIndicatorW = hasMenu ? separatorW + iconSize.width() + spacing / 2 : 0;
         const auto h = _impl->theme.controlHeightLarge;
 
         switch (buttonStyle) {
@@ -3657,11 +3687,11 @@ QSize QlementineStyle::sizeFromContents(
                 .width();
             const auto leftPadding = spacing * 2;
             const auto rightPadding = hasMenu ? spacing : spacing * 2;
-            const auto w = leftPadding + textW + rightPadding + menuSpace;
+            const auto w = leftPadding + textW + rightPadding + menuIndicatorW;
             return QSize{ w, h };
           }
           case Qt::ToolButtonStyle::ToolButtonIconOnly: {
-            const auto w = iconSize.width() + spacing * 2 + menuSpace;
+            const auto w = iconSize.width() + spacing * 2 + menuIndicatorW;
             return QSize{ w, h };
           }
           case Qt::ToolButtonStyle::ToolButtonTextUnderIcon: // Not handled
@@ -3672,7 +3702,7 @@ QSize QlementineStyle::sizeFromContents(
                 .width();
             const auto leftPadding = spacing;
             const auto rightPadding = hasMenu ? spacing : spacing * 2;
-            const auto w = leftPadding + iconW + spacing + textW + rightPadding + menuSpace;
+            const auto w = leftPadding + iconW + spacing + textW + rightPadding + menuIndicatorW;
             return QSize{ w, h };
           }
           default:
@@ -4518,7 +4548,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_ToolButtonStyle:
       return Qt::ToolButtonStyle::ToolButtonIconOnly;
     case SH_ToolButton_PopupDelay:
-      return 0;
+      break;
 
     // FormLayout
     case SH_FormLayoutFieldGrowthPolicy:
@@ -4861,11 +4891,6 @@ void QlementineStyle::polish(QWidget* w) {
 
   if (auto* cmdLinkButton = qobject_cast<QCommandLinkButton*>(w)) {
     cmdLinkButton->setIconSize(_impl->theme.iconSizeMedium);
-  }
-
-  // Temporary: Force a specific kind of popup on toolbuttons.
-  if (auto* toolButton = qobject_cast<QToolButton*>(w)) {
-    toolButton->setPopupMode(QToolButton::MenuButtonPopup);
   }
 
   // Ensure widgets are not compressed vertically.
@@ -5227,9 +5252,8 @@ QColor const& QlementineStyle::listItemForegroundColor(
 
 // Returns whether an icon in an item view should be colorized with the foreground color.
 // Subclasses can override this to customize the behavior depending on the index or state.
-bool QlementineStyle::listItemIsAutoIconColorEnabled(
-  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
-  const QModelIndex& index, const QWidget* widget) const {
+bool QlementineStyle::listItemIsAutoIconColorEnabled(MouseState const mouse, SelectionState const selected,
+  FocusState const focus, ActiveState const active, const QModelIndex& index, const QWidget* widget) const {
   Q_UNUSED(mouse)
   Q_UNUSED(selected)
   Q_UNUSED(focus)
