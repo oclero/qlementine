@@ -200,7 +200,7 @@ struct SandboxWindow::Impl {
   Impl(SandboxWindow& o)
     : owner(o) {}
 
-  void beginSetupUi() {
+  void beginSetupUI() {
     // Create a scrollarea to wrap everything §the window can be quite huge).
     globalScrollArea = new QScrollArea(&owner);
     windowContent = new QWidget(globalScrollArea);
@@ -210,7 +210,7 @@ struct SandboxWindow::Impl {
     setupShortcuts();
   }
 
-  void endSetupUi() {
+  void endSetupUI() {
     // Add a spacer at the bottom.
     windowContentLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -219,7 +219,6 @@ struct SandboxWindow::Impl {
     globalScrollArea->setWidgetResizable(true);
     owner.setCentralWidget(globalScrollArea);
   }
-
 
   void setupShortcuts() {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -1009,7 +1008,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     }
   }
 
-  void setupUi_treeView() {
+  void setupUI_treeView() {
     {
       auto* treeWidget = new QTreeWidget(windowContent);
       treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
@@ -1098,7 +1097,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     owner.resize(400, 700);
   }
 
-  void setupUi_expander() {
+  void setupUI_expander() {
     windowContent->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     {
       auto* container = new CustomBgWidget(windowContent);
@@ -1131,7 +1130,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     }
   }
 
-  void setupUi_popover() {
+  void setupUI_popover() {
 #if 0
     auto* popoverButton = new PopoverButton("Open popup", windowContent);
     popoverButton->popover()->setPreferredPosition(Popover::Position::Top);
@@ -1270,7 +1269,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     });
   }
 
-  void setupUi_navigationBar() {
+  void setupUI_navigationBar() {
     const QIcon dummyIcon(":/refresh.svg");
 
     auto* navBar = new NavigationBar(windowContent);
@@ -1286,7 +1285,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(segmCtrl);
   }
 
-  void setupUi_switch() {
+  void setupUI_switch() {
     const QIcon dummyIcon(":/refresh.svg");
     auto* switchWidget = new Switch(windowContent);
     switchWidget->setText("Label of the Switch");
@@ -1319,7 +1318,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     return result;
   }
 
-  void setupUi_blur() {
+  void setupUI_blur() {
     //constexpr auto extendImage = true;
     constexpr auto initialBlur = 1;
 
@@ -1347,7 +1346,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(slider, 0, Qt::AlignLeft);
   }
 
-  void setupUi_focus() {
+  void setupUI_focus() {
     auto* button1 = new QPushButton("Button 1");
     button1->setObjectName("button1");
     windowContentLayout->addWidget(button1);
@@ -1357,7 +1356,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(button2);
   }
 
-  void setup_badge() {
+  void setupUI_badge() {
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Info, StatusBadgeSize::Medium, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Error, StatusBadgeSize::Medium, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Success, StatusBadgeSize::Medium, windowContent));
@@ -1368,7 +1367,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Warning, StatusBadgeSize::Small, windowContent));
   }
 
-  void setup_specialProgressBar() {
+  void setupUI_specialProgressBar() {
     {
       auto* progressBar = new QProgressBar(windowContent);
       progressBar->setTextVisible(false);
@@ -1385,7 +1384,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     }
   }
 
-  void setup_lineEditStatus() {
+  void setupUI_lineEditStatus() {
     const QIcon dummyIcon(":/refresh.svg");
 
     auto* lineEdit = new LineEdit(windowContent);
@@ -1408,12 +1407,12 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       });
   }
 
-  void setup_colorButton() {
+  void setupUI_colorButton() {
     auto* colorEditor = new ColorEditor(Qt::red, &owner);
     windowContentLayout->addWidget(colorEditor);
   }
 
-  void setup_themeEditor() {
+  void setupUI_themeEditor() {
     auto* themeEditorDialog = new QWidget(&owner);
     themeEditorDialog->setWindowFlag(Qt::WindowType::Tool);
     auto* themeEditorDialogLayout = new QVBoxLayout(themeEditorDialog);
@@ -1444,7 +1443,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     themeEditorDialog->show();
   }
 
-  void setup_dateTimeEdit() {
+  void setupUI_dateTimeEdit() {
     auto* dateTimeEdit = new QDateTimeEdit(windowContent);
     dateTimeEdit->setMinimumDate(QDate::currentDate().addDays(-365));
     dateTimeEdit->setMaximumDate(QDate::currentDate().addDays(365));
@@ -1469,7 +1468,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   , _impl(new Impl(*this)) {
   setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
 
-  _impl->beginSetupUi();
+  _impl->beginSetupUI();
   {
     // Uncomment the line to show the corresponding widget.
 //      _impl->setupUI_label();
@@ -1493,26 +1492,26 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_tabBar();
 //      _impl->setupUI_tabWidget();
 //      _impl->setupUI_groupBox();
-//      _impl->setupUi_treeView();
-//      _impl->setupUi_focus();
-//      _impl->setup_specialProgressBar();
-//      _impl->setup_lineEditStatus();
-//      _impl->setup_dateTimeEdit();
+//      _impl->setupUI_treeView();
+//      _impl->setupUI_focus();
+//      _impl->setupUI_specialProgressBar();
+//      _impl->setupUI_lineEditStatus();
+//      _impl->setupUI_dateTimeEdit();
 
-//      _impl->setupUi_switch();
-//      _impl->setupUi_expander();
-//      _impl->setupUi_popover();
-//      _impl->setupUi_navigationBar();
-//      _impl->setup_badge();
-//      _impl->setup_colorButton();
+//      _impl->setupUI_switch();
+//      _impl->setupUI_expander();
+//      _impl->setupUI_popover();
+//      _impl->setupUI_navigationBar();
+//      _impl->setupUI_badge();
+//      _impl->setupUI_colorButton();
 
 //      _impl->setupUI_messageBoxIcons();
 //      _impl->setupUI_fontMetricsTests();
-//      _impl->setupUi_blur();
-//      _impl->setup_themeEditor();
+//      _impl->setupUI_blur();
+//      _impl->setupUI_themeEditor();
 //      _impl->setupUI_messageBox();
   }
-  _impl->endSetupUi();
+  _impl->endSetupUI();
 }
 
 SandboxWindow::~SandboxWindow() = default;
