@@ -782,7 +782,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto focus =
           widgetHasFocus && selection == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
         const auto active = getActiveState(itemState);
-        const auto& color = listItemBackgroundColor(mouse, selection, focus, active);
+        const auto& color = listItemBackgroundColor(mouse, selection, focus, active, optItem->index, w);
         p->fillRect(rect, color);
 
         // Border on the left if necessary.
@@ -2189,7 +2189,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           availableX += iconW + iconSpacing;
 
           if (itemMouse == MouseState::Disabled && !colorize) {
-            const auto& bgColor = listItemBackgroundColor(MouseState::Normal, selected, focus, active);
+            const auto& bgColor = listItemBackgroundColor(MouseState::Normal, selected, focus, active, optItem->index, w);
             const auto premultipiedColor = getColorSourceOver(bgColor, actualFgColor);
             const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
             const auto opacity = selected == SelectionState::Selected ? 0.3 : 0.25;
@@ -5185,8 +5185,11 @@ QColor const& QlementineStyle::listItemRowBackgroundColor(
     isAlternate ? QPalette::ColorRole::AlternateBase : QPalette::ColorRole::Base);
 }
 
-QColor const& QlementineStyle::listItemBackgroundColor(
-  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const {
+QColor QlementineStyle::listItemBackgroundColor(
+  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
+  const QModelIndex& index, const QWidget* widget) const {
+  Q_UNUSED(index)
+  Q_UNUSED(widget)
   const auto isSelected = selected == SelectionState::Selected;
   const auto isActive = active == ActiveState::Active && focus == FocusState::Focused;
 
