@@ -1,4 +1,4 @@
-#include "SandboxWindow.hpp"
+﻿#include "SandboxWindow.hpp"
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
