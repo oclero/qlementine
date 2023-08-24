@@ -439,13 +439,15 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isTabBarScrollButton =
           qobject_cast<const QTabBar*>(w->parentWidget()) != nullptr && optToolButton->arrowType != Qt::NoArrow;
         const auto hasMenu = optToolButton->features.testFlag(QStyleOptionToolButton::HasMenu);
+        const auto menuIsOnSeparateButton = hasMenu && optToolButton->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
+
         const auto isMenuBarExtensionButton = qobject_cast<const QMenuBar*>(w->parentWidget()) != nullptr;
         const auto radius = isMenuBarExtensionButton ? _impl->theme.menuBarItemBorderRadius : _impl->theme.borderRadius;
 
         // Radiuses depend on the type of ToolButton.
         const auto& buttonRadiuses = isTabBarScrollButton
                                        ? RadiusesF{ rect.height() }
-                                       : (hasMenu ? RadiusesF{ radius, 0., 0., radius } : RadiusesF{ radius });
+                                       : (menuIsOnSeparateButton ? RadiusesF{ radius, 0., 0., radius } : RadiusesF{ radius });
 
         // Little hack to avoid having a checked extension button.
         auto buttonState = optToolButton->state;
@@ -2830,7 +2832,7 @@ void QlementineStyle::drawComplexControl(
     case CC_ToolButton:
       if (const auto* toolbuttonOpt = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
         const auto hasMenu = toolbuttonOpt->features.testFlag(QStyleOptionToolButton::HasMenu);
-        const auto menuIsOnSeparateButton =
+        const auto menuIsOnSeparateButton = hasMenu &&
           toolbuttonOpt->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
 
         const auto isMouseOver = toolbuttonOpt->state.testFlag(State_MouseOver);
@@ -2877,25 +2879,25 @@ void QlementineStyle::drawComplexControl(
             const auto buttonSize = QSize{ _impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium };
             const auto buttonX = isLeftButton ? buttonRect.x() + buttonRect.width() - buttonSize.width() - spacing / 2
                                               : buttonRect.x() + spacing / 2;
-            const auto topPadding = spacing / 2;
-            const auto buttonY =
-              buttonRect.y() + topPadding + (buttonRect.height() - topPadding - buttonSize.height()) / 2;
+            const auto buttonY = buttonRect.y() + (buttonRect.height() - buttonSize.height()) / 2;
             buttonOpt.rect = QRect{ QPoint{ buttonX, buttonY }, buttonSize };
 
             // Icon.
             const auto stdIcon = isLeftButton ? SP_ArrowLeft : SP_ArrowRight;
             buttonOpt.icon = standardIcon(stdIcon, &buttonOpt, w);
+
+            drawPrimitive(PE_PanelButtonTool, &buttonOpt, p, w);
+            drawControl(CE_ToolButtonLabel, &buttonOpt, p, w);
+
+          } else {
+            // Background.
+            buttonOpt.rect = menuIsOnSeparateButton ? buttonRect : opt->rect;
+            drawPrimitive(PE_PanelButtonTool, &buttonOpt, p, w);
+
+            // Foreground.
+            buttonOpt.rect = buttonRect;
+            drawControl(CE_ToolButtonLabel, &buttonOpt, p, w);
           }
-
-          // Background.
-          buttonOpt.rect = opt->rect;
-          buttonOpt.features.setFlag(QStyleOptionToolButton::ToolButtonFeature::HasMenu, false);
-          drawPrimitive(PE_PanelButtonTool, &buttonOpt, p, w);
-
-          // Foreground.
-          buttonOpt.rect = buttonRect;
-          buttonOpt.features.setFlag(QStyleOptionToolButton::ToolButtonFeature::HasMenu, hasMenu);
-          drawControl(CE_ToolButtonLabel, &buttonOpt, p, w);
         }
 
         // Menu arrow.
