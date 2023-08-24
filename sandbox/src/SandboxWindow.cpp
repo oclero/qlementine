@@ -44,6 +44,7 @@
 #include <QMessageBox>
 #include <QDial>
 #include <QDateTimeEdit>
+#include <QPlainTextEdit>
 
 namespace oclero::qlementine::sandbox {
 class ContextMenuEventFilter : public QObject {
@@ -1453,6 +1454,12 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(dateTimeEdit);
   }
 
+  void setupUI_plainTextEdit() {
+    auto* plainTextEdit = new QPlainTextEdit(windowContent);
+
+    windowContentLayout->addWidget(plainTextEdit);
+  }
+
   SandboxWindow& owner;
   QString lastJsonThemePath;
   QPointer<QlementineStyle> qlementineStyle;
@@ -1497,6 +1504,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_specialProgressBar();
 //      _impl->setupUI_lineEditStatus();
 //      _impl->setupUI_dateTimeEdit();
+//       _impl->setupUI_plainTextEdit();
 
 //      _impl->setupUI_switch();
 //      _impl->setupUI_expander();
