@@ -80,7 +80,7 @@ std::once_flag qlementineOnceFlag;
 constexpr auto hardcodedButtonSpacing = 4; // qpushbutton.cpp line 410, qcombobox.cpp line 418/437
 //constexpr auto hardcodedLineEditVMargin = 1; // qlinedit_p.cpp line 68
 constexpr auto hardcodedLineEditHMargin = 2; // qlinedit_p.cpp line 69
-constexpr auto hardcodedTabSpacing = 4; // qtabbar.cpp line 1596
+//constexpr auto hardcodedTabSpacing = 4; // qtabbar.cpp line 1596
 
 // A pen width of 1 causes visual bugs.
 constexpr auto iconPenWidth = 1.01;
@@ -3836,24 +3836,31 @@ QSize QlementineStyle::sizeFromContents(
       if (const auto* tabOpt = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
         const auto spacing = _impl->theme.spacing;
         const auto h = _impl->theme.controlHeightLarge + spacing;
-        auto w = contentSize.width();
 
-        // Override hardcoded Qt values.
+        auto w = 0;
+
+        // Button on the left.
         if (!tabOpt->leftButtonSize.isEmpty()) {
-          w += -hardcodedTabSpacing + spacing;
-        }
-        if (!tabOpt->rightButtonSize.isEmpty()) {
-          w += -hardcodedTabSpacing + spacing;
-        }
-        if (!tabOpt->icon.isNull()) {
-          w += -hardcodedTabSpacing + spacing;
+          w += tabOpt->leftButtonSize.height() + spacing;
         }
 
-        // Space for vertical separator between tabs.
-        w += _impl->theme.borderWidth;
+        // Button on the right.
+        if (!tabOpt->rightButtonSize.isEmpty()) {
+          w += tabOpt->rightButtonSize.height() + spacing;
+        }
+
+        // Icon.
+        if (!tabOpt->icon.isNull()) {
+          w += tabOpt->iconSize.width() + spacing;
+        }
+
+        // Text.
+        if (!tabOpt->text.isEmpty()) {
+          w += qlementine::textWidth(tabOpt->fontMetrics, tabOpt->text);
+        }
 
         // Add space for close button.
-        w += spacing * 2 + _impl->theme.controlHeightMedium;
+        w += _impl->theme.controlHeightMedium;
 
         // TODO Handle expanding tab bar.
         // TODO Choose min/max values according to available space and total tab count.
@@ -3873,15 +3880,17 @@ QSize QlementineStyle::sizeFromContents(
         if (tabMinWidth > tabMaxWidth) {
           std::swap(tabMinWidth, tabMaxWidth);
         }
-        if (tabMaxWidth > 0 && tabMinWidth > 0) {
-          w = std::clamp(w, tabMinWidth, tabMaxWidth);
+        if (tabMaxWidth > 0) {
+          w = std::min(w, tabMaxWidth);
+        }
+        if (tabMinWidth > 0) {
+          w = std::max(w, tabMinWidth);
         }
 
         // Add fake padding if the tab is first or last.
         const auto* tabBar = qobject_cast<const QTabBar*>(widget);
         const auto isFirst = tabBar->tabAt(tabOpt->rect.topLeft()) == 0;
         const auto isLast = tabBar->tabAt(tabOpt->rect.topLeft()) == tabBar->count() - 1;
-
         w += (isFirst ? spacing : 0) + (isLast ? spacing : 0);
 
         return { w, h };
