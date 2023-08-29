@@ -311,7 +311,9 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
 
     // When using multiple monitors, the menus' sizes sometimes are not correctly adjusted.
     // We have to wait for the event loop to be processed to be able to actually change the size.
+    _menu->setFixedSize(0, 0);
     QTimer::singleShot(0, this, [this]() {
+      _menu->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
       _menu->adjustSize();
     });
   }
