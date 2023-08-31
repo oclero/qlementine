@@ -2479,7 +2479,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto tabIsMoved = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
         const auto tabAtBeginning = optTab->position == QStyleOptionTab::TabPosition::Beginning;
         const auto absoluteFirst = optTab->rect.left() == 0;
-        const auto paddingLeft = isFirst && !tabIsMoved && tabAtBeginning || absoluteFirst ? _impl->theme.spacing : 0;
+        const auto paddingLeft = (isFirst && !tabIsMoved && tabAtBeginning) || absoluteFirst ? _impl->theme.spacing : 0;
         const auto x = rect.x() + spacing + paddingLeft;
         const auto y = rect.y() + paddingTop + (rect.height() - paddingTop - buttonSize.height()) / 2;
         return { x, y, buttonSize.width(), buttonSize.height() };
@@ -2523,7 +2523,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto tabAtEnd = optTab->position == QStyleOptionTab::TabPosition::End;
         const auto absoluteFirst = optTab->rect.left() == 0;
 
-        const auto paddingLeft = isFirst && !tabIsMoved && tabAtBeginning || absoluteFirst ? spacing : 0;
+        const auto paddingLeft = (isFirst && !tabIsMoved && tabAtBeginning) || absoluteFirst ? spacing : 0;
         const auto paddingRight = isLast && !tabIsMoved && tabAtEnd ? spacing : 0;
 
         const auto x = rect.x() + paddingLeft + spacing + leftButtonW;
