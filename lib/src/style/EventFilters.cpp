@@ -303,11 +303,19 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
     const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
     const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
     const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
-    const auto menuRect = _menu->geometry();
+    const auto menuOriginalPos = _menu->pos();
     const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
     const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
-    const auto newMenuRect = menuRect.translated(menuBarTranslation + shadowTranslation);
-    _menu->setGeometry(newMenuRect);
+    const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
+    _menu->move(menuNewPos);
+
+    // When using multiple monitors, the menus' sizes sometimes are not correctly adjusted.
+    // We have to wait for the event loop to be processed to be able to actually change the size.
+    _menu->setFixedSize(0, 0);
+    QTimer::singleShot(0, this, [this]() {
+      _menu->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+      _menu->adjustSize();
+    });
   }
 
   return false;

@@ -46,6 +46,8 @@
 #include <QDateTimeEdit>
 #include <QPlainTextEdit>
 
+#include <random>
+
 namespace oclero::qlementine::sandbox {
 class ContextMenuEventFilter : public QObject {
 private:
@@ -1454,6 +1456,52 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(dateTimeEdit);
   }
 
+  static int getRandomInt(int min, int max) {
+    static std::random_device randomDevice;
+    static std::mt19937 generator(randomDevice());
+    std::uniform_int_distribution<> distribution(min, max);
+    return distribution(generator);
+  }
+
+  void setupUI_contextMenu() {
+    auto* plainWidget = new CustomBgWidget(windowContent);
+    plainWidget->customSizeHint = QSize(200, 200);
+    plainWidget->bgColor = QColor(230, 230, 230);
+    plainWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    auto* contextMenuEvtFilter = new ContextMenuEventFilter(plainWidget, [plainWidget](QContextMenuEvent* e){
+        // Create menu.
+        QMenu menu;
+
+        const auto cb = [](){ qDebug() << "Clicked"; };
+        const auto clickPos = e->pos();
+        const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
+        menu.addAction(QString("Pos: %1").arg(clickPosStr), cb , Qt::CTRL + Qt::Key_A);
+
+        const auto randomCount = getRandomInt(1, 10);
+        for (auto i = 0; i < randomCount; ++i) {
+          const auto textLength = i * 4;
+          QStringList textList;
+          for (auto n = 0; n < textLength; ++n) {
+            textList.append("A");
+          }
+
+          menu.addAction(textList.join("") + QString(" %1").arg(i), cb, Qt::ALT + Qt::SHIFT + Qt::Key_0 + i);
+        }
+
+        // Show menu.
+        menu.exec(plainWidget->mapToGlobal(clickPos));
+
+        // Mark as handled.
+        e->setAccepted(true);
+        return true;
+    });
+
+    plainWidget->installEventFilter(contextMenuEvtFilter);
+
+    windowContentLayout->addWidget(plainWidget);
+  }
+
   void setupUI_plainTextEdit() {
     auto* plainTextEdit = new QPlainTextEdit(windowContent);
 
@@ -1504,8 +1552,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_specialProgressBar();
 //      _impl->setupUI_lineEditStatus();
 //      _impl->setupUI_dateTimeEdit();
-//       _impl->setupUI_plainTextEdit();
-
+//      _impl->setupUI_plainTextEdit();
 //      _impl->setupUI_switch();
 //      _impl->setupUI_expander();
 //      _impl->setupUI_popover();

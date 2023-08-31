@@ -920,7 +920,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       p->setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
       p->drawPixmap(dropShadowX, dropShadowY, dropShadowPixmap);
       p->setCompositionMode(compMode);
-      drawRoundedRect(p, frameRect, bgColor, radius);
+      // Avoid ugly antialiasing artefacts in the corners.
+      const auto halfBorderW = borderW / 2.;
+      const auto bgFrameRect =
+        QRectF(frameRect).marginsRemoved(QMarginsF(halfBorderW, halfBorderW, halfBorderW, halfBorderW));
+      drawRoundedRect(p, bgFrameRect, bgColor, radius);
       drawRoundedRectBorder(p, frameRect, borderColor, borderW, radius);
     }
       return;
