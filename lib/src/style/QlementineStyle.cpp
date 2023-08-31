@@ -439,15 +439,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isTabBarScrollButton =
           qobject_cast<const QTabBar*>(w->parentWidget()) != nullptr && optToolButton->arrowType != Qt::NoArrow;
         const auto hasMenu = optToolButton->features.testFlag(QStyleOptionToolButton::HasMenu);
-        const auto menuIsOnSeparateButton = hasMenu && optToolButton->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
+        const auto menuIsOnSeparateButton =
+          hasMenu && optToolButton->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
 
         const auto isMenuBarExtensionButton = qobject_cast<const QMenuBar*>(w->parentWidget()) != nullptr;
         const auto radius = isMenuBarExtensionButton ? _impl->theme.menuBarItemBorderRadius : _impl->theme.borderRadius;
 
         // Radiuses depend on the type of ToolButton.
-        const auto& buttonRadiuses = isTabBarScrollButton
-                                       ? RadiusesF{ rect.height() }
-                                       : (menuIsOnSeparateButton ? RadiusesF{ radius, 0., 0., radius } : RadiusesF{ radius });
+        const auto& buttonRadiuses =
+          isTabBarScrollButton ? RadiusesF{ rect.height() }
+                               : (menuIsOnSeparateButton ? RadiusesF{ radius, 0., 0., radius } : RadiusesF{ radius });
 
         // Little hack to avoid having a checked extension button.
         auto buttonState = optToolButton->state;
@@ -2187,7 +2188,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           availableX += iconW + iconSpacing;
 
           if (itemMouse == MouseState::Disabled && !colorize) {
-            const auto& bgColor = listItemBackgroundColor(MouseState::Normal, selected, focus, active, optItem->index, w);
+            const auto& bgColor =
+              listItemBackgroundColor(MouseState::Normal, selected, focus, active, optItem->index, w);
             const auto premultipiedColor = getColorSourceOver(bgColor, actualFgColor);
             const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
             const auto opacity = selected == SelectionState::Selected ? 0.3 : 0.25;
@@ -2858,8 +2860,8 @@ void QlementineStyle::drawComplexControl(
     case CC_ToolButton:
       if (const auto* toolbuttonOpt = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
         const auto hasMenu = toolbuttonOpt->features.testFlag(QStyleOptionToolButton::HasMenu);
-        const auto menuIsOnSeparateButton = hasMenu &&
-          toolbuttonOpt->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
+        const auto menuIsOnSeparateButton =
+          hasMenu && toolbuttonOpt->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
 
         const auto isMouseOver = toolbuttonOpt->state.testFlag(State_MouseOver);
         const auto isPressed = toolbuttonOpt->state.testFlag(State_Sunken);
@@ -5223,9 +5225,8 @@ QColor const& QlementineStyle::listItemRowBackgroundColor(
     isAlternate ? QPalette::ColorRole::AlternateBase : QPalette::ColorRole::Base);
 }
 
-QColor QlementineStyle::listItemBackgroundColor(
-  MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
-  const QModelIndex& index, const QWidget* widget) const {
+QColor QlementineStyle::listItemBackgroundColor(MouseState const mouse, SelectionState const selected,
+  FocusState const focus, ActiveState const active, const QModelIndex& index, const QWidget* widget) const {
   Q_UNUSED(index)
   Q_UNUSED(widget)
   const auto isSelected = selected == SelectionState::Selected;
