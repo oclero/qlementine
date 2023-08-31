@@ -48,9 +48,9 @@ public:
   void setItemsShouldExpand(bool expand);
   Q_SIGNAL void itemsShouldExpandChanged();
 
-  int addItem(const QString& text, const QIcon& icon = {}, const QString& badge = {}, const QVariant& data = {});
+  int addItem(const QString& text, const QIcon& icon = {}, const QString& badge = {}, const QVariant& itemData = {});
   void removeItem(int index);
-  int findItemIndex(const QVariant& data) const;
+  int findItemIndex(const QVariant& itemData) const;
 
   void setItemData(int index, const QVariant& text);
   QVariant getItemData(int index) const;

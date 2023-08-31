@@ -96,7 +96,7 @@ void AbstractItemListWidget::setCurrentData(const QVariant& currentData) {
 }
 
 int AbstractItemListWidget::addItem(
-  const QString& text, const QIcon& icon, const QString& badge, const QVariant& data) {
+  const QString& text, const QIcon& icon, const QString& badge, const QVariant& itemData) {
   const auto* style = this->style();
   const auto animDuration = style->styleHint(QStyle::SH_Widget_Animation_Duration) * animationFactor;
 
@@ -125,7 +125,7 @@ int AbstractItemListWidget::addItem(
     text,
     icon,
     badge,
-    data,
+    itemData,
     QRect{},
     QSize{ 0, 0 },
     bgColorAnimation,
@@ -188,19 +188,19 @@ void AbstractItemListWidget::removeItem(int index) {
   }
 }
 
-int AbstractItemListWidget::findItemIndex(const QVariant& data) const {
-  if (!data.isValid())
+int AbstractItemListWidget::findItemIndex(const QVariant& itemData) const {
+  if (!itemData.isValid())
     return -1;
 
-  const auto it = std::find_if(_items.constBegin(), _items.constEnd(), [&data](const auto& item) {
-    return item.data == data;
+  const auto it = std::find_if(_items.constBegin(), _items.constEnd(), [&itemData](const auto& item) {
+    return item.data == itemData;
   });
   return it != _items.constEnd() ? static_cast<int>(std::distance(_items.constBegin(), it)) : -1;
 }
 
-void AbstractItemListWidget::setItemData(int index, const QVariant& data) {
+void AbstractItemListWidget::setItemData(int index, const QVariant& itemData) {
   if (index >= 0 && index < _items.size()) {
-    _items[index].data = data;
+    _items[index].data = itemData;
   }
 }
 

@@ -2501,13 +2501,21 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_TabBarTearIndicatorLeft: {
       const auto& rect = opt->rect;
       const auto shadowW = _impl->theme.spacing * 3;
-      return { rect.x(), rect.y(), shadowW, rect.height() };
+      const auto x = rect.x();
+      const auto y = rect.y();
+      const auto width = shadowW;
+      const auto height = rect.height();
+      return { x, y, width, height };
     }
     case SE_TabBarTearIndicatorRight: {
       const auto& rect = opt->rect;
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
       const auto shadowW = _impl->theme.spacing * 3;
-      return { rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height() };
+      const auto x = rect.x() + rect.width() - shadowW - scrollButtonsW;
+      const auto y = rect.y();
+      const auto width = shadowW + scrollButtonsW;
+      const auto height = rect.height();
+      return { x, y, width, height };
     }
     case SE_TabBarTabLeftButton:
       // Button on the left of a tab.
@@ -2594,7 +2602,6 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       const auto y = rect.y();
       return { x, y, width, height };
     }
-      return {};
     case SE_ToolBarHandle:
       //qDebug() << "SE_ToolBarHandle";
       break;
@@ -3628,7 +3635,7 @@ QRect QlementineStyle::subControlRect(
               const auto height = rect.height() - titleH - titleBottomSpacing;
               return QRect{ x, y, width, height };
             }
-            return {};
+            //return {};
           case SC_GroupBoxFrame:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxFrame))*/ {
               const auto x = rect.x() + leftPadding;
@@ -3637,7 +3644,7 @@ QRect QlementineStyle::subControlRect(
               const auto height = rect.height() - titleH - titleBottomSpacing;
               return QRect{ x, y, width, height };
             }
-            return {};
+            //return {};
           default:
             break;
         }
