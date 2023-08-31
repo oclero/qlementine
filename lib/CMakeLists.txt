@@ -163,7 +163,10 @@ set_target_properties(${LIB_TARGET_NAME}
 
 target_compile_features(${LIB_TARGET_NAME} PUBLIC cxx_std_17)
 
-target_compile_options(${LIB_TARGET_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/MP>)
+target_compile_options(${LIB_TARGET_NAME} PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/MP /WX /W4>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
+)
 
 # Create source groups.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
