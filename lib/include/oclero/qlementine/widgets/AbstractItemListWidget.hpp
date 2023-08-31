@@ -37,7 +37,7 @@ public:
   Q_SIGNAL void currentIndexChanged();
 
   QVariant currentData() const;
-  void setCurrentData(const QVariant& data);
+  void setCurrentData(const QVariant& currentData);
   Q_SIGNAL void currentDataChanged();
 
   const QSize& iconSize() const;

@@ -39,8 +39,6 @@ class QlementineStyle : public QCommonStyle {
   Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled NOTIFY animationsEnabledChanged)
 
 public:
-  //static constexpr char Property_DoNotColorizeIcon[] = "DoNotColorizeIcon";
-
   enum StandardPixmapExt {
     SP_Check = SP_CustomBase + 1,
     SP_Calendar,

@@ -343,7 +343,6 @@ void Popover::paintEvent(QPaintEvent*) {
     const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
     const auto bgRect = _frame->rect().translated(_frame->mapTo(this, QPoint(0, 0)));
 
-    QPainter p(this);
     drawRoundedRect(&p, bgRect, bgColor, radius);
     drawRoundedRectBorder(&p, bgRect, borderColor, borderWidth, radius);
   }

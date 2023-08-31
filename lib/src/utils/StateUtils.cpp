@@ -175,7 +175,6 @@ QIcon::Mode getIconMode(MouseState const mouse) {
   switch (mouse) {
     case MouseState::Disabled:
       return QIcon::Mode::Disabled;
-      return QIcon::Mode::Normal;
     case MouseState::Hovered:
     case MouseState::Pressed:
       return QIcon::Mode::Active;

@@ -128,7 +128,7 @@ struct QlementineStyleImpl {
   /// TODO Il faudrait mettre à jour les pixmaps contenues dans le cache
   /// car les widgets créent les icones dans leurs constructeurs, et ne les
   /// remettent pas à jour au changement de theme.
-  QIcon& getStandardIcon(unsigned int const standardPixmap, QSize const& size) {
+  QIcon& getStandardIcon(const int standardPixmap, QSize const& size) {
     auto& icon = standardIconCache[standardPixmap];
     const auto availableSizes = icon.availableSizes();
     if (!availableSizes.contains(size)) {
@@ -1054,9 +1054,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         auto optButtonBg = QStyleOptionButton(*optButton);
         optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
         drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
-      } else if (const auto* optButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+      } else if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
         // Draw background rect.
-        auto optButtonBg = QStyleOptionRoundedButton(*optButton);
+        auto optButtonBg = QStyleOptionRoundedButton(*optRoundedButton);
         optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
         drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
       }
@@ -1411,11 +1411,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // Background.
           const auto& bgRect = optMenuItem->rect;
           const auto& bgColor = menuItemBackgroundColor(mouse);
-          const auto radius = _impl->theme.menuItemBorderRadius;
+          const auto menuItemRadius = _impl->theme.menuItemBorderRadius;
           p->setRenderHint(QPainter::Antialiasing, true);
           p->setPen(Qt::NoPen);
           p->setBrush(bgColor);
-          p->drawRoundedRect(bgRect, radius, radius);
+          p->drawRoundedRect(bgRect, menuItemRadius, menuItemRadius);
 
           // Foreground.
           const auto spacing = _impl->theme.spacing;
@@ -1456,9 +1456,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
               if (isRadio) {
                 drawRadioButton(p, checkboxRect, boxBgColor, boxBorderColor, boxFgColor, borderW, progress);
               } else {
-                const auto radius = _impl->theme.checkBoxBorderRadius;
-                drawCheckButton(
-                  p, checkboxRect, radius, boxBgColor, boxBorderColor, boxFgColor, borderW, progress, checkState);
+                const auto checkBoxRadius = _impl->theme.checkBoxBorderRadius;
+                drawCheckButton(p, checkboxRect, checkBoxRadius, boxBgColor, boxBorderColor, boxFgColor, borderW,
+                  progress, checkState);
               }
             }
 
@@ -2579,20 +2579,20 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_TabBarScrollLeftButton: {
       const auto& rect = opt->rect;
       const auto spacing = _impl->theme.spacing;
-      const auto w = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
-      const auto h = _impl->theme.controlHeightLarge + spacing;
-      const auto x = rect.x() + rect.width() - 2 * w;
+      const auto width = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
+      const auto height = _impl->theme.controlHeightLarge + spacing;
+      const auto x = rect.x() + rect.width() - 2 * width;
       const auto y = rect.y();
-      return { x, y, w, h };
+      return { x, y, width, height };
     }
     case SE_TabBarScrollRightButton: {
       const auto& rect = opt->rect;
       const auto spacing = _impl->theme.spacing;
-      const auto w = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
-      const auto h = _impl->theme.controlHeightLarge + spacing;
-      const auto x = rect.x() + rect.width() - w + spacing / 2;
+      const auto width = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
+      const auto height = _impl->theme.controlHeightLarge + spacing;
+      const auto x = rect.x() + rect.width() - width + spacing / 2;
       const auto y = rect.y();
-      return { x, y, w, h };
+      return { x, y, width, height };
     }
       return {};
     case SE_ToolBarHandle:
@@ -2714,7 +2714,8 @@ void QlementineStyle::drawComplexControl(
 
             if (qobject_cast<const QDateTimeEdit*>(w)) {
               const auto pixelRatio = getPixelRatio(w);
-              const auto& icon = _impl->getStandardIcon(SP_Calendar, indicatorSize * pixelRatio);
+              const auto& icon = _impl->getStandardIcon(
+                static_cast<std::underlying_type_t<StandardPixmapExt>>(SP_Calendar), indicatorSize * pixelRatio);
               const auto colorize =
                 QlementineStyle::isAutoIconColorEnabled() && QlementineStyle::isAutoIconColorEnabled(w);
               drawIcon(indicatorRect, p, icon, mouse, CheckState::Checked, w, colorize, currentFgColor);
@@ -3595,8 +3596,8 @@ QRect QlementineStyle::subControlRect(
         const auto hasFrame = !groupBoxOpt->features.testFlag(QStyleOptionFrame::Flat);
         const auto labelH =
           hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
-        const auto& checkBoxSize = _impl->theme.iconSize;
         const auto titleBottomSpacing = hasFrame && (hasTitle || hasCheckbox) ? _impl->theme.spacing / 2 : 0;
+        const auto& checkBoxSize = hasCheckbox ? _impl->theme.iconSize : QSize{ 0, 0 };
         const auto titleH = hasTitle || hasCheckbox ? std::max(labelH, checkBoxSize.height()) : 0;
         const auto leftPadding = hasTitle || hasCheckbox ? _impl->theme.spacing : 0;
 
@@ -3604,37 +3605,37 @@ QRect QlementineStyle::subControlRect(
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
           case SC_GroupBoxCheckBox:
             if (groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox)) {
-              const auto& checkBoxSize = _impl->theme.iconSize;
-              const auto checkBoxY = rect.y() + (titleH - checkBoxSize.height()) / 2;
-              return QRect{ QPoint{ rect.x(), checkBoxY }, checkBoxSize };
+              const auto x = rect.x();
+              const auto y = rect.y() + (titleH - checkBoxSize.height()) / 2;
+              return QRect{ QPoint{ x, y }, checkBoxSize };
             }
             return {};
           case SC_GroupBoxLabel:
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
             if (groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel)) {
-              const auto& checkBoxSize = hasCheckbox ? _impl->theme.iconSize : QSize{ 0, 0 };
               const auto spacing = hasCheckbox ? _impl->theme.spacing : 0;
-              const auto labelX = rect.x() + checkBoxSize.width() + spacing;
+              const auto x = rect.x() + checkBoxSize.width() + spacing;
+              const auto y = rect.y();
               const auto labelW = rect.width() - checkBoxSize.width() - spacing;
-              return QRect{ labelX, rect.y(), labelW, titleH };
+              return QRect{ x, y, labelW, titleH };
             }
             return {};
           case SC_GroupBoxContents:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxContents))*/ {
               const auto x = rect.x() + leftPadding;
               const auto y = rect.y() + titleH + titleBottomSpacing;
-              const auto w = rect.width() - leftPadding;
-              const auto h = rect.height() - titleH - titleBottomSpacing;
-              return QRect{ x, y, w, h };
+              const auto width = rect.width() - leftPadding;
+              const auto height = rect.height() - titleH - titleBottomSpacing;
+              return QRect{ x, y, width, height };
             }
             return {};
           case SC_GroupBoxFrame:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxFrame))*/ {
               const auto x = rect.x() + leftPadding;
               const auto y = rect.y() + titleH + titleBottomSpacing;
-              const auto w = rect.width() - leftPadding;
-              const auto h = rect.height() - titleH - titleBottomSpacing;
-              return QRect{ x, y, w, h };
+              const auto width = rect.width() - leftPadding;
+              const auto height = rect.height() - titleH - titleBottomSpacing;
+              return QRect{ x, y, width, height };
             }
             return {};
           default:

@@ -963,8 +963,8 @@ void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixma
 
   // Draw text.
   if (hasText && availableWidth > 0) {
-    const auto textW = availableWidth;
-    const auto elidedText = fontMetrics.elidedText(text, elideMode, textW);
+    const auto textActualW = availableWidth;
+    const auto elidedText = fontMetrics.elidedText(text, elideMode, textActualW);
     const auto textX = contentRect.x() + iconW + iconSpacing;
     const auto textRect = QRect{ textX, contentRect.y(), textW, contentRect.height() };
     auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextShowMnemonic;

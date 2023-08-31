@@ -85,11 +85,11 @@ QVariant AbstractItemListWidget::currentData() const {
   return {};
 }
 
-void AbstractItemListWidget::setCurrentData(const QVariant& data) {
-  if (!data.isValid())
+void AbstractItemListWidget::setCurrentData(const QVariant& currentData) {
+  if (!currentData.isValid())
     return;
 
-  const auto index = findItemIndex(data);
+  const auto index = findItemIndex(currentData);
   if (index > -1 && index < _items.size()) {
     setCurrentIndex(index);
   }
@@ -875,13 +875,13 @@ void AbstractItemListWidget::drawItemForeground(QPainter& p, const Item& item) c
     if (showBadge) {
       // Center icon and badge.
       const auto newItemContentW = iconSize.width() + itemSpacing + badgeSize.width();
-      const auto itemContentX = itemContentRect.x() + (itemContentRect.width() - newItemContentW) / 2;
-      iconRect = QRect{ QPoint{ itemContentX, iconY }, iconSize };
-      badgeRect = QRect{ QPoint{ itemContentX + iconSize.width() + itemSpacing, badgeY }, badgeSize };
+      const auto newItemContentX = itemContentRect.x() + (itemContentRect.width() - newItemContentW) / 2;
+      iconRect = QRect{ QPoint{ newItemContentX, iconY }, iconSize };
+      badgeRect = QRect{ QPoint{ newItemContentX + iconSize.width() + itemSpacing, badgeY }, badgeSize };
     } else {
       // Center icon.
-      const auto iconX = itemContentRect.x() + (itemContentRect.width() - iconSize.width()) / 2;
-      iconRect = QRect{ QPoint{ iconX, iconY }, iconSize };
+      const auto newIconX = itemContentRect.x() + (itemContentRect.width() - iconSize.width()) / 2;
+      iconRect = QRect{ QPoint{ newIconX, iconY }, iconSize };
     }
   } else if (!showIcon && showText) {
     if (showBadge) {
