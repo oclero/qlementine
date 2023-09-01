@@ -1543,14 +1543,57 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       }
       return;
     case CE_MenuScroller:
-      break;
+      if (const auto* optMenuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(opt)) {
+        // Background .
+        const auto mouse = getMenuItemMouseState(optMenuItem->state);
+        const auto& bgColor = menuItemBackgroundColor(mouse);
+        const auto radius = _impl->theme.menuItemBorderRadius;
+        drawRoundedRect(p, opt->rect, bgColor, radius);
+
+        // Foreground.
+        const auto isDownArrow = optMenuItem->state.testFlag(State_DownArrow);
+        const auto& fgColor = menuItemForegroundColor(mouse);
+        const auto iconSize = _impl->theme.iconSize;
+        const auto iconX = opt->rect.x() + (opt->rect.width() - iconSize.width()) / 2;
+        const auto iconY = opt->rect.y() + (opt->rect.height() - iconSize.height()) / 2;
+        const auto iconRect = QRect{ QPoint(iconX, iconY), iconSize };
+        p->setBrush(Qt::NoBrush);
+        p->setPen(fgColor);
+        // NB: we cheat a bit by translating the arrow so it appears vertically centered
+        // in the Scroller + MenuVMargin area.
+        const auto yTranslate = isDownArrow ? QPoint(0, iconSize.height() / 4) : QPoint(0, -iconSize.height() / 4);
+        if (isDownArrow) {
+          drawArrowDown(iconRect.translated(yTranslate), p);
+        } else {
+          drawArrowUp(iconRect.translated(yTranslate), p);
+        }
+      }
+      return;
     case CE_MenuVMargin:
-      break;
+      // Nothing to draw.
+      return;
     case CE_MenuHMargin:
-      break;
+      // Nothing to draw.
+      return;
     case CE_MenuTearoff:
-      break;
+      if (const auto* optMenuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(opt)) {
+        // Background .
+        const auto mouse = getMenuItemMouseState(optMenuItem->state);
+        const auto& bgColor = menuItemBackgroundColor(mouse);
+        const auto radius = _impl->theme.menuItemBorderRadius;
+        drawRoundedRect(p, opt->rect, bgColor, radius);
+
+        // Foreground.
+        const auto& fgColor = menuItemForegroundColor(mouse);
+        const auto iconSize = _impl->theme.iconSize;
+        const auto iconX = opt->rect.x() + (opt->rect.width() - iconSize.width()) / 2;
+        const auto iconY = opt->rect.y() + (opt->rect.height() - iconSize.height()) / 2;
+        const auto iconRect = QRect{ QPoint(iconX, iconY), iconSize };
+        drawGripIndicator(iconRect, p, fgColor, Qt::Horizontal);
+      }
+      return;
     case CE_MenuEmptyArea:
+      // Nothing to draw.
       return;
     case CE_MenuBarItem:
       if (const auto* optMenuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(opt)) {
@@ -4122,19 +4165,23 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // Menu.
     case PM_MenuScrollerHeight:
-      break;
+      // Scroller is the part where the user can click to scroll the menu when it is too big.
+      return _impl->theme.controlHeightSmall;
     case PM_MenuHMargin:
     case PM_MenuVMargin:
+      // Keep some space between the items and the frame.
       return _impl->theme.spacing;
     case PM_MenuPanelWidth:
       // Keep some space for drop shadow.
       return _impl->theme.spacing;
     case PM_MenuTearoffHeight:
-      break;
+      // Tear off is the part of the menu that is clickable to detach the menu.
+      return _impl->theme.controlHeightSmall;
     case PM_MenuDesktopFrameWidth:
+      // TODO What is it?
       break;
     case PM_SubMenuOverlap:
-      return 0; //_impl->theme.spacing;
+      return 0;
 
     // MenuBar.
     case PM_MenuBarPanelWidth:

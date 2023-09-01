@@ -597,6 +597,27 @@ struct SandboxWindow::Impl {
     }
     listView->item(0)->setSelected(true);
     windowContentLayout->addWidget(listView);
+
+    // Context menu.
+    qDebug() << listView->contextMenuPolicy();
+    listView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+    QObject::connect(listView, &QListView::customContextMenuRequested, listView, [listView](const QPoint& pos){
+      if (const auto item = listView->itemAt(pos)) {
+        QMenu contextMenu(listView);
+        //contextMenu.setTearOffEnabled(true);
+
+        for (auto i = 0; i < 10; ++i) {
+          if (i % 5 == 0) {
+            contextMenu.addSeparator();
+          } else {
+            contextMenu.addAction(QString("Distinctio voluptatum dolorum beatae %1").arg(i));
+          }
+        }
+
+        const auto globalPos = listView->mapToGlobal(pos);
+        contextMenu.exec(globalPos);
+      }
+    });
   }
 
   void setupUI_table() {
