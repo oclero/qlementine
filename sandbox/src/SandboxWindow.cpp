@@ -1574,6 +1574,8 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_lineEditStatus();
 //      _impl->setupUI_dateTimeEdit();
 //      _impl->setupUI_plainTextEdit();
+//      _impl->setupUI_contextMenu();
+
 //      _impl->setupUI_switch();
 //      _impl->setupUI_expander();
 //      _impl->setupUI_popover();
