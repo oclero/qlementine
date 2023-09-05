@@ -152,8 +152,11 @@ void drawCloseIndicator(const QRect& rect, QPainter* p);
 /// Draws a treeview indicator.
 void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
 
-// Draws a calendar indicator (e.g. for the widgets that display a calendar popup).
+/// Draws a calendar indicator (e.g. for the widgets that display a calendar popup).
 void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color);
+
+/// Draws a grip indicator (for drag n' drop).
+void drawGripIndicator(const QRect& rect, QPainter* p, const QColor& color, Qt::Orientation orientation);
 
 /// Gets the tick interval according to the length of steps, range and available length.
 int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int max, int sliderLength);

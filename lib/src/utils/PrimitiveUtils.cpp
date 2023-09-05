@@ -814,6 +814,34 @@ void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color) 
     QRectF{ rect.topLeft() + sizeRatio * QPointF{ 7., 10. }, dayBlockSize }, defaultDayRadius, defaultDayRadius);
 }
 
+void drawGripIndicator(const QRect& rect, QPainter* p, const QColor& color, Qt::Orientation orientation) {
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultBulletDiameter = 2.;
+
+  p->setPen(Qt::NoPen);
+  p->setBrush(color);
+
+  const auto wRatio = rect.width() / defaultSize;
+  const auto hRatio = rect.height() / defaultSize;
+  const auto bulletSize = QSize(defaultBulletDiameter * wRatio, defaultBulletDiameter * hRatio);
+
+  if (orientation == Qt::Vertical) {
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(5. * wRatio, 3. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(5. * wRatio, 7. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(5. * wRatio, 11. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(9. * wRatio, 3. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(9. * wRatio, 7. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(9. * wRatio, 11. * hRatio), bulletSize));
+  } else {
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(3. * wRatio, 5. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(7. * wRatio, 5. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(11. * wRatio, 5. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(3. * wRatio, 9. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(7. * wRatio, 9. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(11. * wRatio, 9. * hRatio), bulletSize));
+  }
+}
+
 void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
   QColor const& fgColor, const qreal borderWidth, qreal progress) {
   // Background.
