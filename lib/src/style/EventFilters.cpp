@@ -307,14 +307,14 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
     const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
     const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
     const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
-    _menu->move(menuNewPos);
 
-    // When using multiple monitors, the menus' sizes sometimes are not correctly adjusted.
-    // We have to wait for the event loop to be processed to be able to actually change the size.
-    _menu->setFixedSize(0, 0);
-    QTimer::singleShot(0, this, [this]() {
-      _menu->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-      _menu->adjustSize();
+    // Menus have weird sizing bugs when moving them from this event.
+    // We have to wait for the event loop to be processed before setting the final position.
+    const auto menuSize = _menu->size();
+    _menu->resize(0, 0);  // Hide the menu for now until we can set the position.
+    QTimer::singleShot(0, this, [this, menuNewPos, menuSize]() {
+      _menu->move(menuNewPos);
+      _menu->resize(menuSize);
     });
   }
 
