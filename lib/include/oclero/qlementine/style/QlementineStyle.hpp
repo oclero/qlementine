@@ -171,9 +171,8 @@ public:
   virtual QColor const& spinBoxButtonForegroundColor(MouseState const mouse) const;
 
   virtual QColor const& listItemRowBackgroundColor(MouseState const mouse, AlternateState const alternate) const;
-  virtual QColor listItemBackgroundColor(
-    MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active,
-    const QModelIndex& index, const QWidget* widget = nullptr) const;
+  virtual QColor listItemBackgroundColor(MouseState const mouse, SelectionState const selected, FocusState const focus,
+    ActiveState const active, const QModelIndex& index, const QWidget* widget = nullptr) const;
   virtual QColor const& listItemForegroundColor(
     MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
   virtual bool listItemIsAutoIconColorEnabled(MouseState const mouse, SelectionState const selected,

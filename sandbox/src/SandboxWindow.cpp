@@ -174,6 +174,7 @@ public:
   using QWidget::QWidget;
 
   QColor bgColor{ Qt::red };
+  QColor borderColor { Qt::black };
   QSize customSizeHint{ -1, -1 };
   bool showBounds{ true };
 
@@ -194,7 +195,7 @@ protected:
     p.fillRect(rect(), bgColor);
 
     if (showBounds) {
-      qlementine::drawRectBorder(&p, rect(), Qt::black, 1.0);
+      qlementine::drawRectBorder(&p, rect(), borderColor, 1.0);
     }
   }
 };
@@ -846,7 +847,6 @@ struct SandboxWindow::Impl {
 
   void setupUI_tabBar() {
     const QIcon icon(":/scene_object.svg");
-    const QIcon icon2(":/scene_light.svg");
     auto* tabBar = new QTabBar(windowContent);
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
@@ -863,19 +863,28 @@ struct SandboxWindow::Impl {
     windowContentLayout->addWidget(tabBar);
     //windowContentLayout->setAlignment(tabBar, Qt::AlignLeft);
 
-    for (auto i = 0; i < 10; ++i) {
+    for (auto i = 0; i < 5; ++i) {
       QStringList tabTextList{ "Tab " };
       for (auto j = 0; j < i; ++j) {
         tabTextList.append("Tab");
       }
       const auto tabText = tabTextList.join(" ").append(QString(" %1").arg(i + 1));
 
-      if (i % 2 == 0) {
+      if (i % 3 == 0) {
         tabBar->addTab(icon, tabText);
       } else {
-        tabBar->addTab(icon2, tabText);
+        tabBar->addTab(tabText);
       }
       tabBar->setTabToolTip(i, tabText);
+
+      if (i % 2 == 0) {
+        auto* leftWidget = new CustomBgWidget();
+        const auto extent = leftWidget->style()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth);
+        leftWidget->customSizeHint = QSize(extent, extent);
+        leftWidget->bgColor = QColor(255, 0, 0, 32);
+        leftWidget->borderColor = QColor(255, 0, 0);
+        tabBar->setTabButton(i, QTabBar::ButtonPosition::LeftSide, leftWidget);
+      }
     }
 
     tabBar->setCurrentIndex(1);

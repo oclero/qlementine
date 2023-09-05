@@ -93,4 +93,24 @@ bool shouldNotHaveWheelEvents(const QWidget* w) {
   return (!qobject_cast<const QScrollBar*>(w) && qobject_cast<const QAbstractSlider*>(w))
          || qobject_cast<const QAbstractSpinBox*>(w);
 }
+
+int getTabIndex(const QStyleOptionTab* optTab, const QWidget* parentWidget) {
+  if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTabV4*>(optTab)) {
+    return optTabV4->tabIndex;
+  }
+
+  if (const auto* tabBar = qobject_cast<const QTabBar*>(parentWidget)) {
+    return tabBar->tabAt(optTab->rect.topLeft());
+  }
+
+  return -1;
+}
+
+int getTabCount(const QWidget* parentWidget) {
+  if (const auto* tabBar = qobject_cast<const QTabBar*>(parentWidget)) {
+    return tabBar->count();
+  }
+
+  return -1;
+}
 } // namespace oclero::qlementine

@@ -239,11 +239,13 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         return true;
       }
     }
-    // Trigger a whole painting refresh because the tabs painting order and masking
-    // creates undesired visual artifacts.
-    QTimer::singleShot(0, this, [this]() {
-      _tabBar->update();
-    });
+
+    // Hack!
+    // QTabBar.cpp, line 1478
+    // We need the QTabBar to set d->layoutDirty to true. The only we I found was to
+    // call QTabBar::setIconSize() because it doesn't check if the icon size is different
+    // before forcing a whole refresh.
+    _tabBar->setIconSize(_tabBar->iconSize());
   } else if (type == QEvent::Wheel) {
     const auto* wheelEvent = static_cast<QWheelEvent*>(evt);
     auto delta = wheelEvent->pixelDelta().x();
