@@ -1379,7 +1379,12 @@ QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mou
   const auto iconMode = getIconMode(mouse);
   const auto iconState = getIconState(checked);
   // QIcon::pixmap will automatically get the correct pixel ratio based on the window's pixel ratio.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   return icon.pixmap(getWindow(widget), iconSize, iconMode, iconState);
+#else
+  return icon.pixmap(iconSize, widget ? widget->devicePixelRatio() : qApp->devicePixelRatio(), iconMode, iconState);
+#endif
+
 }
 
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
