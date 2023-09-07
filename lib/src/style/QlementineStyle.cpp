@@ -950,7 +950,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 }
 
 void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
-  switch (static_cast<std::underlying_type_t<ControlElement>>(ce)) {
+  switch (ce) {
     case CE_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Button background and border.
@@ -2476,9 +2476,9 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
 
         const auto x = rect.x() + paddingLeft + spacing + leftButtonW;
         const auto y = rect.y() + _impl->theme.tabBarPaddingTop;
-        const auto w = rect.width() - leftButtonW - paddingLeft - rightButtonW - paddingRight - spacing * 2;
-        const auto h = rect.height() - _impl->theme.tabBarPaddingTop;
-        return { x, y, w, h };
+        const auto width = rect.width() - leftButtonW - paddingLeft - rightButtonW - paddingRight - spacing * 2;
+        const auto height = rect.height() - _impl->theme.tabBarPaddingTop;
+        return { x, y, width, height };
       }
       return {};
     case SE_TabBarScrollLeftButton: {
@@ -5050,9 +5050,9 @@ QSize QlementineStyle::sizeFromContentsExt(
         const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
         const auto textW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
         const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->description).width();
-        const auto w = hPadding * 2 + iconW + std::max(textW, descriptionW);
-        const auto h = vPadding * 2 + fm.height() + boldFm.height() + vSpacing;
-        return QSize{ w, h };
+        const auto width = hPadding * 2 + iconW + std::max(textW, descriptionW);
+        const auto height = vPadding * 2 + fm.height() + boldFm.height() + vSpacing;
+        return QSize{ width, height };
       }
       break;
     default:
