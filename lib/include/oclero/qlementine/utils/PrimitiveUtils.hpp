@@ -214,7 +214,8 @@ QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme);
 
 /// Gets the QPixmap that corresponds to the state and matches the best the desired iconSize.
 /// NB: the QPixmap may not be equal to iconSize: it can be smaller, but never larger.
-QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked, const QWidget* widget);
+QPixmap getPixmap(
+  const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked, const QWidget* widget);
 
 /// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,

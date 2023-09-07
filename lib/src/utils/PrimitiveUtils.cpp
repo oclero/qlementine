@@ -1375,7 +1375,8 @@ QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme) {
   return QSize{ w, h };
 }
 
-QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked, const QWidget* widget) {
+QPixmap getPixmap(
+  QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked, const QWidget* widget) {
   const auto iconMode = getIconMode(mouse);
   const auto iconState = getIconState(checked);
   // QIcon::pixmap will automatically get the correct pixel ratio based on the window's pixel ratio.
@@ -1384,11 +1385,10 @@ QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mou
 #else
   return icon.pixmap(iconSize, widget ? widget->devicePixelRatio() : qApp->devicePixelRatio(), iconMode, iconState);
 #endif
-
 }
 
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
-   const QWidget* widget, bool colorize, const QColor& color) {
+  const QWidget* widget, bool colorize, const QColor& color) {
   if (rect.isEmpty() || icon.isNull()) {
     return { rect.x(), rect.y(), 0, 0 };
   }
