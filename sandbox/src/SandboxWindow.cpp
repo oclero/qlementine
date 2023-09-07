@@ -44,6 +44,9 @@
 #include <QMessageBox>
 #include <QDial>
 #include <QDateTimeEdit>
+#include <QPlainTextEdit>
+
+#include <random>
 
 namespace oclero::qlementine::sandbox {
 class ContextMenuEventFilter : public QObject {
@@ -171,6 +174,7 @@ public:
   using QWidget::QWidget;
 
   QColor bgColor{ Qt::red };
+  QColor borderColor { Qt::black };
   QSize customSizeHint{ -1, -1 };
   bool showBounds{ true };
 
@@ -191,7 +195,7 @@ protected:
     p.fillRect(rect(), bgColor);
 
     if (showBounds) {
-      qlementine::drawRectBorder(&p, rect(), Qt::black, 1.0);
+      qlementine::drawRectBorder(&p, rect(), borderColor, 1.0);
     }
   }
 };
@@ -200,7 +204,7 @@ struct SandboxWindow::Impl {
   Impl(SandboxWindow& o)
     : owner(o) {}
 
-  void beginSetupUi() {
+  void beginSetupUI() {
     // Create a scrollarea to wrap everything §the window can be quite huge).
     globalScrollArea = new QScrollArea(&owner);
     windowContent = new QWidget(globalScrollArea);
@@ -210,7 +214,7 @@ struct SandboxWindow::Impl {
     setupShortcuts();
   }
 
-  void endSetupUi() {
+  void endSetupUI() {
     // Add a spacer at the bottom.
     windowContentLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -219,7 +223,6 @@ struct SandboxWindow::Impl {
     globalScrollArea->setWidgetResizable(true);
     owner.setCentralWidget(globalScrollArea);
   }
-
 
   void setupShortcuts() {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -595,6 +598,27 @@ struct SandboxWindow::Impl {
     }
     listView->item(0)->setSelected(true);
     windowContentLayout->addWidget(listView);
+
+    // Context menu.
+    qDebug() << listView->contextMenuPolicy();
+    listView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+    QObject::connect(listView, &QListView::customContextMenuRequested, listView, [listView](const QPoint& pos){
+      if (const auto item = listView->itemAt(pos)) {
+        QMenu contextMenu(listView);
+        //contextMenu.setTearOffEnabled(true);
+
+        for (auto i = 0; i < 10; ++i) {
+          if (i % 5 == 0) {
+            contextMenu.addSeparator();
+          } else {
+            contextMenu.addAction(QString("Distinctio voluptatum dolorum beatae %1").arg(i));
+          }
+        }
+
+        const auto globalPos = listView->mapToGlobal(pos);
+        contextMenu.exec(globalPos);
+      }
+    });
   }
 
   void setupUI_table() {
@@ -738,9 +762,20 @@ struct SandboxWindow::Impl {
     toolButton->setIcon(QIcon(":/refresh.svg"));
     toolButton->setText(QString("Button with a very long text that can be elided"));
     toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    toolButton->setCheckable(true);
-    toolButton->setChecked(true);
-    toolButton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    toolButton->setCheckable(false);
+    toolButton->setChecked(false);
+
+    {
+      const auto icon = QIcon(":/refresh.svg");
+      auto* subMenu = new QMenu("Menu title", toolButton);
+      toolButton->setMenu(subMenu);
+      subMenu->addAction(icon, "Sub Action 1");
+      subMenu->addAction(icon, "Sub Action 2");
+      toolButton->setMenu(subMenu);
+      toolButton->setPopupMode(QToolButton::ToolButtonPopupMode::MenuButtonPopup);
+    }
+
+    toolButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     windowContentLayout->addWidget(toolButton);
   }
 
@@ -755,15 +790,12 @@ struct SandboxWindow::Impl {
     toolbar->setIconSize(QSize(16, 16));
     toolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonFollowStyle);
 
-    auto count = 0;
-
     // Button 1: Icon only
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 2: Text only
@@ -772,7 +804,6 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 3: Icon and Text.
@@ -781,7 +812,6 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 4: Icon and Text, checkable.
@@ -792,7 +822,6 @@ struct SandboxWindow::Impl {
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
       toolButton->setCheckable(true);
       toolButton->setChecked(true);
-      count++;
       toolbar->addWidget(toolButton);
     }
     // Button 5: Icon only + menu
@@ -805,7 +834,6 @@ struct SandboxWindow::Impl {
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
       subMenu->addAction(icon, "Sub Action 2");
-      count++;
       toolbar->addWidget(toolButton);
     }
 
@@ -815,11 +843,11 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+      toolButton->setPopupMode(QToolButton::InstantPopup);
       auto* subMenu = new QMenu("Menu title", toolButton);
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
       subMenu->addAction(icon, "Sub Action 2");
-      count++;
       toolbar->addWidget(toolButton);
     }
 
@@ -829,18 +857,17 @@ struct SandboxWindow::Impl {
       toolButton->setIcon(icon);
       toolButton->setText(QString("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+      toolButton->setPopupMode(QToolButton::MenuButtonPopup);
       auto* subMenu = new QMenu("Menu title", toolButton);
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
       subMenu->addAction(icon, "Sub Action 2");
-      count++;
       toolbar->addWidget(toolButton);
     }
   }
 
   void setupUI_tabBar() {
     const QIcon icon(":/scene_object.svg");
-    const QIcon icon2(":/scene_light.svg");
     auto* tabBar = new QTabBar(windowContent);
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
@@ -857,19 +884,28 @@ struct SandboxWindow::Impl {
     windowContentLayout->addWidget(tabBar);
     //windowContentLayout->setAlignment(tabBar, Qt::AlignLeft);
 
-    for (auto i = 0; i < 10; ++i) {
+    for (auto i = 0; i < 5; ++i) {
       QStringList tabTextList{ "Tab " };
       for (auto j = 0; j < i; ++j) {
         tabTextList.append("Tab");
       }
       const auto tabText = tabTextList.join(" ").append(QString(" %1").arg(i + 1));
 
-      if (i % 2 == 0) {
+      if (i % 3 == 0) {
         tabBar->addTab(icon, tabText);
       } else {
-        tabBar->addTab(icon2, tabText);
+        tabBar->addTab(tabText);
       }
       tabBar->setTabToolTip(i, tabText);
+
+      if (i % 2 == 0) {
+        auto* leftWidget = new CustomBgWidget();
+        const auto extent = leftWidget->style()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth);
+        leftWidget->customSizeHint = QSize(extent, extent);
+        leftWidget->bgColor = QColor(255, 0, 0, 32);
+        leftWidget->borderColor = QColor(255, 0, 0);
+        tabBar->setTabButton(i, QTabBar::ButtonPosition::LeftSide, leftWidget);
+      }
     }
 
     tabBar->setCurrentIndex(1);
@@ -1005,7 +1041,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     }
   }
 
-  void setupUi_treeView() {
+  void setupUI_treeView() {
     {
       auto* treeWidget = new QTreeWidget(windowContent);
       treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
@@ -1094,7 +1130,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     owner.resize(400, 700);
   }
 
-  void setupUi_expander() {
+  void setupUI_expander() {
     windowContent->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     {
       auto* container = new CustomBgWidget(windowContent);
@@ -1127,7 +1163,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     }
   }
 
-  void setupUi_popover() {
+  void setupUI_popover() {
 #if 0
     auto* popoverButton = new PopoverButton("Open popup", windowContent);
     popoverButton->popover()->setPreferredPosition(Popover::Position::Top);
@@ -1266,7 +1302,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     });
   }
 
-  void setupUi_navigationBar() {
+  void setupUI_navigationBar() {
     const QIcon dummyIcon(":/refresh.svg");
 
     auto* navBar = new NavigationBar(windowContent);
@@ -1282,7 +1318,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(segmCtrl);
   }
 
-  void setupUi_switch() {
+  void setupUI_switch() {
     const QIcon dummyIcon(":/refresh.svg");
     auto* switchWidget = new Switch(windowContent);
     switchWidget->setText("Label of the Switch");
@@ -1315,7 +1351,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     return result;
   }
 
-  void setupUi_blur() {
+  void setupUI_blur() {
     //constexpr auto extendImage = true;
     constexpr auto initialBlur = 1;
 
@@ -1343,7 +1379,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(slider, 0, Qt::AlignLeft);
   }
 
-  void setupUi_focus() {
+  void setupUI_focus() {
     auto* button1 = new QPushButton("Button 1");
     button1->setObjectName("button1");
     windowContentLayout->addWidget(button1);
@@ -1353,7 +1389,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(button2);
   }
 
-  void setup_badge() {
+  void setupUI_badge() {
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Info, StatusBadgeSize::Medium, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Error, StatusBadgeSize::Medium, windowContent));
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Success, StatusBadgeSize::Medium, windowContent));
@@ -1364,7 +1400,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(new StatusBadgeWidget(StatusBadge::Warning, StatusBadgeSize::Small, windowContent));
   }
 
-  void setup_specialProgressBar() {
+  void setupUI_specialProgressBar() {
     {
       auto* progressBar = new QProgressBar(windowContent);
       progressBar->setTextVisible(false);
@@ -1381,7 +1417,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     }
   }
 
-  void setup_lineEditStatus() {
+  void setupUI_lineEditStatus() {
     const QIcon dummyIcon(":/refresh.svg");
 
     auto* lineEdit = new LineEdit(windowContent);
@@ -1404,12 +1440,12 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       });
   }
 
-  void setup_colorButton() {
+  void setupUI_colorButton() {
     auto* colorEditor = new ColorEditor(Qt::red, &owner);
     windowContentLayout->addWidget(colorEditor);
   }
 
-  void setup_themeEditor() {
+  void setupUI_themeEditor() {
     auto* themeEditorDialog = new QWidget(&owner);
     themeEditorDialog->setWindowFlag(Qt::WindowType::Tool);
     auto* themeEditorDialogLayout = new QVBoxLayout(themeEditorDialog);
@@ -1440,7 +1476,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     themeEditorDialog->show();
   }
 
-  void setup_dateTimeEdit() {
+  void setupUI_dateTimeEdit() {
     auto* dateTimeEdit = new QDateTimeEdit(windowContent);
     dateTimeEdit->setMinimumDate(QDate::currentDate().addDays(-365));
     dateTimeEdit->setMaximumDate(QDate::currentDate().addDays(365));
@@ -1448,6 +1484,58 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     dateTimeEdit->setCalendarPopup(true);
 
     windowContentLayout->addWidget(dateTimeEdit);
+  }
+
+  static int getRandomInt(int min, int max) {
+    static std::random_device randomDevice;
+    static std::mt19937 generator(randomDevice());
+    std::uniform_int_distribution<> distribution(min, max);
+    return distribution(generator);
+  }
+
+  void setupUI_contextMenu() {
+    auto* plainWidget = new CustomBgWidget(windowContent);
+    plainWidget->customSizeHint = QSize(200, 200);
+    plainWidget->bgColor = QColor(230, 230, 230);
+    plainWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    auto* contextMenuEvtFilter = new ContextMenuEventFilter(plainWidget, [plainWidget](QContextMenuEvent* e){
+        // Create menu.
+        QMenu menu;
+
+        const auto cb = [](){ qDebug() << "Clicked"; };
+        const auto clickPos = e->pos();
+        const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
+        menu.addAction(QString("Pos: %1").arg(clickPosStr), cb , Qt::CTRL + Qt::Key_A);
+
+        const auto randomCount = getRandomInt(1, 10);
+        for (auto i = 0; i < randomCount; ++i) {
+          const auto textLength = i * 4;
+          QStringList textList;
+          for (auto n = 0; n < textLength; ++n) {
+            textList.append("A");
+          }
+
+          menu.addAction(textList.join("") + QString(" %1").arg(i), cb, Qt::ALT + Qt::SHIFT + Qt::Key_0 + i);
+        }
+
+        // Show menu.
+        menu.exec(plainWidget->mapToGlobal(clickPos));
+
+        // Mark as handled.
+        e->setAccepted(true);
+        return true;
+    });
+
+    plainWidget->installEventFilter(contextMenuEvtFilter);
+
+    windowContentLayout->addWidget(plainWidget);
+  }
+
+  void setupUI_plainTextEdit() {
+    auto* plainTextEdit = new QPlainTextEdit(windowContent);
+
+    windowContentLayout->addWidget(plainTextEdit);
   }
 
   SandboxWindow& owner;
@@ -1465,7 +1553,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   , _impl(new Impl(*this)) {
   setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
 
-  _impl->beginSetupUi();
+  _impl->beginSetupUI();
   {
     // Uncomment the line to show the corresponding widget.
 //      _impl->setupUI_label();
@@ -1489,26 +1577,28 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_tabBar();
 //      _impl->setupUI_tabWidget();
 //      _impl->setupUI_groupBox();
-//      _impl->setupUi_treeView();
-//      _impl->setupUi_focus();
-//      _impl->setup_specialProgressBar();
-//      _impl->setup_lineEditStatus();
-//      _impl->setup_dateTimeEdit();
+//      _impl->setupUI_treeView();
+//      _impl->setupUI_focus();
+//      _impl->setupUI_specialProgressBar();
+//      _impl->setupUI_lineEditStatus();
+//      _impl->setupUI_dateTimeEdit();
+//      _impl->setupUI_plainTextEdit();
+//      _impl->setupUI_contextMenu();
 
-//      _impl->setupUi_switch();
-//      _impl->setupUi_expander();
-//      _impl->setupUi_popover();
-//      _impl->setupUi_navigationBar();
-//      _impl->setup_badge();
-//      _impl->setup_colorButton();
+//      _impl->setupUI_switch();
+//      _impl->setupUI_expander();
+//      _impl->setupUI_popover();
+//      _impl->setupUI_navigationBar();
+//      _impl->setupUI_badge();
+//      _impl->setupUI_colorButton();
 
 //      _impl->setupUI_messageBoxIcons();
 //      _impl->setupUI_fontMetricsTests();
-//      _impl->setupUi_blur();
-//      _impl->setup_themeEditor();
+//      _impl->setupUI_blur();
+//      _impl->setupUI_themeEditor();
 //      _impl->setupUI_messageBox();
   }
-  _impl->endSetupUi();
+  _impl->endSetupUI();
 }
 
 SandboxWindow::~SandboxWindow() = default;

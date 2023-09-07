@@ -23,6 +23,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QStyleOption>
 
 namespace oclero::qlementine {
 /// Hover events (enter/leave events) are disabled by default on widgets.
@@ -50,4 +51,10 @@ std::tuple<int, int> getHPaddings(const bool hasIcon, const bool hasText, const 
 
 /// Should the widget not receive wheel events when not focused.
 bool shouldNotHaveWheelEvents(const QWidget* w);
+
+/// Gets the tab index from the QStyleOption (if v4 or superior), or from the tab position in the QTabBar.
+int getTabIndex(const QStyleOptionTab* optTab, const QWidget* parentWidget);
+
+/// Gets the tab count.
+int getTabCount(const QWidget* parentWidget);
 } // namespace oclero::qlementine

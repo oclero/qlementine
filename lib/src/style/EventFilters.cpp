@@ -90,7 +90,7 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
     const auto circleRect = QRect(QPoint{ circleX, circleY }, QSize{ circleW, circleH });
     // Get opacity animated in qlinedit_p.cpp:436
     const auto opacity = _button->property(QByteArrayLiteral("opacity")).toDouble();
-    const auto pixmap = getPixmap(_button->icon(), theme.iconSize, mouse, CheckState::NotChecked);
+    const auto pixmap = getPixmap(_button->icon(), theme.iconSize, mouse, CheckState::NotChecked, _button);
     const auto pixmapX = circleRect.x() + (circleRect.width() - theme.iconSize.width()) / 2;
     const auto pixmapY = circleRect.y() + (circleRect.height() - theme.iconSize.height()) / 2;
     const auto pixmapRect = QRect{ { pixmapX, pixmapY }, theme.iconSize };
@@ -136,7 +136,7 @@ bool CommandLinkButtonPaintEventFilter::eventFilter(QObject* watchedObject, QEve
     const auto radius = theme.borderRadius;
 
     const auto iconSize = theme.iconSize;
-    const auto pixmap = getPixmap(_button->icon(), iconSize, mouse, CheckState::NotChecked);
+    const auto pixmap = getPixmap(_button->icon(), iconSize, mouse, CheckState::NotChecked, _button);
     const auto pixmapX = fgRect.x();
     const auto pixmapY = fgRect.y() + (fgRect.height() - iconSize.height()) / 2;
     const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };
@@ -239,11 +239,13 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         return true;
       }
     }
-    // Trigger a whole painting refresh because the tabs painting order and masking
-    // creates undesired visual artifacts.
-    QTimer::singleShot(0, this, [this]() {
-      _tabBar->update();
-    });
+
+    // Hack!
+    // QTabBar.cpp, line 1478
+    // We need the QTabBar to set d->layoutDirty to true. The only we I found was to
+    // call QTabBar::setIconSize() because it doesn't check if the icon size is different
+    // before forcing a whole refresh.
+    _tabBar->setIconSize(_tabBar->iconSize());
   } else if (type == QEvent::Wheel) {
     const auto* wheelEvent = static_cast<QWheelEvent*>(evt);
     auto delta = wheelEvent->pixelDelta().x();
@@ -303,11 +305,21 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
     const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
     const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
     const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
-    const auto menuRect = _menu->geometry();
+    const auto menuOriginalPos = _menu->pos();
     const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
     const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
-    const auto newMenuRect = menuRect.translated(menuBarTranslation + shadowTranslation);
-    _menu->setGeometry(newMenuRect);
+    const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
+
+    // Menus have weird sizing bugs when moving them from this event.
+    // We have to wait for the event loop to be processed before setting the final position.
+    const auto menuSize = _menu->size();
+    if (menuSize != QSize(0, 0)) {
+      _menu->resize(0, 0);  // Hide the menu for now until we can set the position.
+      QTimer::singleShot(0, _menu, [this, menuNewPos, menuSize]() {
+        _menu->move(menuNewPos);
+        _menu->resize(menuSize);
+      });
+    }
   }
 
   return false;

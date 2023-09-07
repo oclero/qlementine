@@ -25,6 +25,7 @@
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/FontUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 
 #include <QTextLayout>
 #include <QTextLine>
@@ -814,6 +815,34 @@ void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color) 
     QRectF{ rect.topLeft() + sizeRatio * QPointF{ 7., 10. }, dayBlockSize }, defaultDayRadius, defaultDayRadius);
 }
 
+void drawGripIndicator(const QRect& rect, QPainter* p, const QColor& color, Qt::Orientation orientation) {
+  constexpr auto defaultSize = 16.;
+  constexpr auto defaultBulletDiameter = 2.;
+
+  p->setPen(Qt::NoPen);
+  p->setBrush(color);
+
+  const auto wRatio = rect.width() / defaultSize;
+  const auto hRatio = rect.height() / defaultSize;
+  const auto bulletSize = QSize(defaultBulletDiameter * wRatio, defaultBulletDiameter * hRatio);
+
+  if (orientation == Qt::Vertical) {
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(5. * wRatio, 3. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(5. * wRatio, 7. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(5. * wRatio, 11. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(9. * wRatio, 3. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(9. * wRatio, 7. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(9. * wRatio, 11. * hRatio), bulletSize));
+  } else {
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(3. * wRatio, 5. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(7. * wRatio, 5. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(11. * wRatio, 5. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(3. * wRatio, 9. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(7. * wRatio, 9. * hRatio), bulletSize));
+    p->drawEllipse(QRect(rect.topLeft() + QPoint(11. * wRatio, 9. * hRatio), bulletSize));
+  }
+}
+
 void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
   QColor const& fgColor, const qreal borderWidth, qreal progress) {
   // Background.
@@ -1346,22 +1375,27 @@ QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme) {
   return QSize{ w, h };
 }
 
-QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked) {
+QPixmap getPixmap(QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked, const QWidget* widget) {
   const auto iconMode = getIconMode(mouse);
   const auto iconState = getIconState(checked);
-  // QIcon::pixmap will automatically get the correct pixel ratio based on the QApplication's pixel ratio.
-  return icon.pixmap(iconSize, iconMode, iconState);
+  // QIcon::pixmap will automatically get the correct pixel ratio based on the window's pixel ratio.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  return icon.pixmap(getWindow(widget), iconSize, iconMode, iconState);
+#else
+  return icon.pixmap(iconSize, widget ? widget->devicePixelRatio() : qApp->devicePixelRatio(), iconMode, iconState);
+#endif
+
 }
 
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
-  bool colorize, const QColor& color) {
+   const QWidget* widget, bool colorize, const QColor& color) {
   if (rect.isEmpty() || icon.isNull()) {
     return { rect.x(), rect.y(), 0, 0 };
   }
 
   // Get pixmap to draw.
   const auto iconSize = rect.size();
-  const auto& pixmap = getPixmap(icon, iconSize, mouse, checked);
+  const auto& pixmap = getPixmap(icon, iconSize, mouse, checked, widget);
   const auto& targetPixmap = colorize ? getColorizedPixmap(pixmap, color) : pixmap;
 
   if (targetPixmap.isNull()) {

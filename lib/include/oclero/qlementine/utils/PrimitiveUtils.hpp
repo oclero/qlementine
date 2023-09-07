@@ -152,8 +152,11 @@ void drawCloseIndicator(const QRect& rect, QPainter* p);
 /// Draws a treeview indicator.
 void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open);
 
-// Draws a calendar indicator (e.g. for the widgets that display a calendar popup).
+/// Draws a calendar indicator (e.g. for the widgets that display a calendar popup).
 void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color);
+
+/// Draws a grip indicator (for drag n' drop).
+void drawGripIndicator(const QRect& rect, QPainter* p, const QColor& color, Qt::Orientation orientation);
 
 /// Gets the tick interval according to the length of steps, range and available length.
 int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int max, int sliderLength);
@@ -211,11 +214,11 @@ QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme);
 
 /// Gets the QPixmap that corresponds to the state and matches the best the desired iconSize.
 /// NB: the QPixmap may not be equal to iconSize: it can be smaller, but never larger.
-QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked);
+QPixmap getPixmap(const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked, const QWidget* widget);
 
 /// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
-  bool colorize = false, const QColor& color = {});
+  const QWidget* widget, bool colorize = false, const QColor& color = {});
 
 /// Updates the QIcon with the QPixmap given by the function at the right size and for all states.
 void updateUncheckableButtonIconPixmap(
