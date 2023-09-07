@@ -90,7 +90,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     if (availableW > 0 && !icon.isNull()) {
       const auto spacing = theme.spacing;
       const auto& iconSize = opt.decorationSize; // Get icon size.
-      const auto pixmap = getPixmap(icon, iconSize, mouse, CheckState::NotChecked);
+      const auto pixmap = getPixmap(icon, iconSize, mouse, CheckState::NotChecked, _widget);
       const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_widget->style());
       const auto colorize = qlementineStyle && qlementineStyle->isAutoIconColorEnabled(_widget);
       const auto pixmapPixelRatio = pixmap.devicePixelRatio();

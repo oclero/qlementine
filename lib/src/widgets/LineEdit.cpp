@@ -91,14 +91,14 @@ QPixmap LineEdit::getPixmap() const {
   const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style());
   const auto autoColorize = qlementineStyle && qlementineStyle->isAutoIconColorEnabled(this);
   if (autoColorize) {
-    const auto pixmap = qlementine::getPixmap(_icon, iconSize, MouseState::Normal, CheckState::NotChecked);
+    const auto pixmap = qlementine::getPixmap(_icon, iconSize, MouseState::Normal, CheckState::NotChecked, this);
     const auto colorGroup = isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled;
     const auto& color = palette().color(colorGroup, QPalette::ColorRole::Text);
     const auto colorizedPixmap = qlementine::colorizePixmap(pixmap, color);
     return colorizedPixmap;
   } else {
     const auto mouse = isEnabled() ? MouseState::Normal : MouseState::Disabled;
-    const auto pixmap = qlementine::getPixmap(_icon, iconSize, mouse, CheckState::NotChecked);
+    const auto pixmap = qlementine::getPixmap(_icon, iconSize, mouse, CheckState::NotChecked, this);
     return pixmap;
   }
 }
