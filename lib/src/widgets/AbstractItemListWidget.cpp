@@ -59,7 +59,7 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
 AbstractItemListWidget ::~AbstractItemListWidget() = default;
 
 int AbstractItemListWidget::itemCount() const {
-  return _items.size();
+  return static_cast<int>(_items.size());
 }
 
 int AbstractItemListWidget::currentIndex() const {
@@ -67,7 +67,7 @@ int AbstractItemListWidget::currentIndex() const {
 }
 
 void AbstractItemListWidget::setCurrentIndex(int index) {
-  index = index < 0 || index > _items.size() - 1 ? -1 : index;
+  index = index < 0 || index > itemCount() - 1 ? -1 : index;
   if (index != _currentIndex) {
     _currentIndex = index;
     _focusedIndex = index;
@@ -79,7 +79,7 @@ void AbstractItemListWidget::setCurrentIndex(int index) {
 }
 
 QVariant AbstractItemListWidget::currentData() const {
-  if (_currentIndex > -1 && _currentIndex < _items.size()) {
+  if (_currentIndex > -1 && _currentIndex < itemCount()) {
     return _items.at(_currentIndex).data;
   }
   return {};
@@ -90,7 +90,7 @@ void AbstractItemListWidget::setCurrentData(const QVariant& currentData) {
     return;
 
   const auto index = findItemIndex(currentData);
-  if (index > -1 && index < _items.size()) {
+  if (index > -1 && index < itemCount()) {
     setCurrentIndex(index);
   }
 }
@@ -120,7 +120,7 @@ int AbstractItemListWidget::addItem(
     update();
   });
 
-  _items.push_back({
+  const auto newItem = Item{
     true,
     text,
     icon,
@@ -132,7 +132,8 @@ int AbstractItemListWidget::addItem(
     fgColorAnimation,
     badgeBgColorAnimation,
     badgeFgColorAnimation,
-  });
+  };
+  _items.emplace_back(newItem);
 
   if (_currentIndex == -1) {
     _currentIndex = 0;
@@ -170,13 +171,15 @@ int AbstractItemListWidget::addItem(
 }
 
 void AbstractItemListWidget::removeItem(int index) {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     auto& item = _items[index];
     delete item.bgColorAnimation;
     delete item.fgColorAnimation;
     delete item.badgeBgAnimation;
     delete item.badgeFgAnimation;
-    _items.removeAt(index);
+
+    _items.erase(_items.begin() + index);
+
     updateGeometry();
     update();
 
@@ -192,27 +195,27 @@ int AbstractItemListWidget::findItemIndex(const QVariant& itemData) const {
   if (!itemData.isValid())
     return -1;
 
-  const auto it = std::find_if(_items.constBegin(), _items.constEnd(), [&itemData](const auto& item) {
+  const auto it = std::find_if(_items.cbegin(), _items.cend(), [&itemData](const auto& item) {
     return item.data == itemData;
   });
-  return it != _items.constEnd() ? static_cast<int>(std::distance(_items.constBegin(), it)) : -1;
+  return it != _items.cend() ? static_cast<int>(std::distance(_items.cbegin(), it)) : -1;
 }
 
 void AbstractItemListWidget::setItemData(int index, const QVariant& itemData) {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     _items[index].data = itemData;
   }
 }
 
 QVariant AbstractItemListWidget::getItemData(int index) const {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     return _items.at(index).data;
   }
   return {};
 }
 
 void AbstractItemListWidget::setItemText(int index, const QString& text) {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     _items[index].text = text;
     updateGeometry();
     update();
@@ -220,14 +223,14 @@ void AbstractItemListWidget::setItemText(int index, const QString& text) {
 }
 
 QString AbstractItemListWidget::getItemText(int index) const {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     return _items.at(index).text;
   }
   return {};
 }
 
 void AbstractItemListWidget::setItemIcon(int index, const QIcon& icon) {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     _items[index].icon = icon;
     updateGeometry();
     update();
@@ -235,14 +238,14 @@ void AbstractItemListWidget::setItemIcon(int index, const QIcon& icon) {
 }
 
 QIcon AbstractItemListWidget::getItemIcon(int index) const {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     return _items.at(index).icon;
   }
   return {};
 }
 
 void AbstractItemListWidget::setItemBadge(int index, const QString& badge) {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     _items[index].badge = badge;
     updateGeometry();
     update();
@@ -250,14 +253,14 @@ void AbstractItemListWidget::setItemBadge(int index, const QString& badge) {
 }
 
 QString AbstractItemListWidget::getItemBadge(int index) const {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     return _items.at(index).badge;
   }
   return {};
 }
 
 void AbstractItemListWidget::setItemEnabled(int index, bool enabled) {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     _items[index].enabled = enabled;
     updateItemsAnimations();
     update();
@@ -265,7 +268,7 @@ void AbstractItemListWidget::setItemEnabled(int index, bool enabled) {
 }
 
 bool AbstractItemListWidget::isItemEnabled(int index) const {
-  if (index >= 0 && index < _items.size()) {
+  if (index >= 0 && index < itemCount()) {
     return _items.at(index).enabled;
   }
   return false;
@@ -579,7 +582,7 @@ const QColor& AbstractItemListWidget::getCurrentItemIndicatorColor() const {
 }
 
 QRect AbstractItemListWidget::getCurrentItemRect() const {
-  if (_currentIndex >= 0 && _currentIndex < _items.size()) {
+  if (_currentIndex >= 0 && _currentIndex < itemCount()) {
     return _items[_currentIndex].rect;
   } else {
     const auto padding = getPadding();
@@ -588,7 +591,7 @@ QRect AbstractItemListWidget::getCurrentItemRect() const {
 }
 
 QRect qlementine::AbstractItemListWidget::getFocusedItemRect() const {
-  if (_focusedIndex >= 0 && _focusedIndex < _items.size()) {
+  if (_focusedIndex >= 0 && _focusedIndex < itemCount()) {
     return _items[_focusedIndex].rect;
   } else {
     return rect();
@@ -617,7 +620,7 @@ void AbstractItemListWidget::updateCurrentIndexAnimation(bool immediate) {
 }
 
 void AbstractItemListWidget::updateItemsAnimations() {
-  for (auto i = 0; i < _items.size(); ++i) {
+  for (auto i = 0; i < itemCount(); ++i) {
     auto& item = _items[i];
 
     const auto itemMouse = getItemMouseState(i, item);
@@ -645,7 +648,7 @@ void AbstractItemListWidget::updateItemsAnimations() {
 }
 
 void AbstractItemListWidget::setFocusedIndex(int index) {
-  index = index < 0 || index > _items.size() - 1 ? -1 : index;
+  index = index < 0 || index > itemCount() - 1 ? -1 : index;
   if (index != _focusedIndex) {
     _focusedIndex = index;
     _focusFrame->updateGeometry();
@@ -654,7 +657,7 @@ void AbstractItemListWidget::setFocusedIndex(int index) {
 }
 
 void AbstractItemListWidget::setHoveredIndex(int index, bool updateAnims) {
-  index = index < 0 || index > _items.size() - 1 ? -1 : index;
+  index = index < 0 || index > itemCount() - 1 ? -1 : index;
   if (index != _hoveredIndex) {
     _hoveredIndex = index;
     if (updateAnims)
@@ -663,7 +666,7 @@ void AbstractItemListWidget::setHoveredIndex(int index, bool updateAnims) {
 }
 
 void AbstractItemListWidget::setPressedIndex(int index, bool updateAnims) {
-  index = index < 0 || index > _items.size() - 1 ? -1 : index;
+  index = index < 0 || index > itemCount() - 1 ? -1 : index;
   if (index != _pressedIndex) {
     _pressedIndex = index;
     if (updateAnims)

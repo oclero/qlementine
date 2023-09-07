@@ -7,8 +7,9 @@
 #include <QIcon>
 #include <QVariant>
 #include <QString>
-#include <QVector>
 #include <QVariantAnimation>
+
+#include <vector>
 
 namespace oclero::qlementine {
 class RoundedFocusFrame;
@@ -163,7 +164,7 @@ private:
   int _hoveredIndex{ -1 };
   int _pressedIndex{ -1 };
   QSize _iconSize;
-  QVector<Item> _items;
+  std::vector<Item> _items;
   QVariantAnimation _currentIndexAnimation;
   RoundedFocusFrame* _focusFrame{ nullptr };
   QFont _badgeFont;

@@ -44,12 +44,12 @@ void ThemeManager::setStyle(QlementineStyle* style) {
   }
 }
 
-const QVector<Theme>& ThemeManager::themes() const {
+const std::vector<Theme>& ThemeManager::themes() const {
   return _themes;
 }
 
 void ThemeManager::addTheme(const Theme& theme) {
-  _themes.append(theme);
+  _themes.emplace_back(theme);
   emit themeCountChanged();
   if (_currentIndex == -1) {
     setCurrentThemeIndex(0);
@@ -57,7 +57,7 @@ void ThemeManager::addTheme(const Theme& theme) {
 }
 
 QString ThemeManager::currentTheme() const {
-  if (_currentIndex > -1 && _currentIndex < _themes.size()) {
+  if (_currentIndex > -1 && _currentIndex < themeCount()) {
     return _themes.at(_currentIndex).meta.name;
   }
   return {};
@@ -73,7 +73,7 @@ int ThemeManager::currentThemeIndex() const {
 }
 
 void ThemeManager::setCurrentThemeIndex(int index) {
-  index = std::max(-1, std::min(static_cast<int>(_themes.size()) - 1, index));
+  index = std::max(-1, std::min(themeCount() - 1, index));
   if (index != _currentIndex) {
     _currentIndex = index;
     synchronizeThemeOnStyle();
@@ -82,23 +82,23 @@ void ThemeManager::setCurrentThemeIndex(int index) {
 }
 
 int ThemeManager::themeCount() const {
-  return _themes.size();
+  return static_cast<int>(_themes.size());
 }
 
 void ThemeManager::setNextTheme() {
-  if (_themes.size() > 1) {
+  if (themeCount() > 1) {
     // Wrap.
-    const auto next = (_currentIndex + 1) % _themes.size();
+    const auto next = (_currentIndex + 1) % themeCount();
     setCurrentThemeIndex(next);
   }
 }
 
 void ThemeManager::setPreviousTheme() {
-  if (_themes.size() > 1) {
+  if (themeCount() > 1) {
     // Wrap.
     auto previous = _currentIndex - 1;
     if (previous < 0)
-      previous = _themes.size() - 1;
+      previous = themeCount() - 1;
     setCurrentThemeIndex(previous);
   }
 }
@@ -122,7 +122,7 @@ QString ThemeManager::getLocalizedThemeName(const QString& baseThemeName) const 
 }
 
 void ThemeManager::synchronizeThemeOnStyle() {
-  if (_style && _currentIndex != -1 && !_themes.empty() && _currentIndex < _themes.size()) {
+  if (_style && _currentIndex != -1 && !_themes.empty() && _currentIndex < themeCount()) {
     _style->setTheme(_themes.at(_currentIndex));
   }
 }

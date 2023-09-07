@@ -23,8 +23,9 @@
 #pragma once
 
 #include <QObject>
-#include <QVector>
 #include <QPointer>
+
+#include <vector>
 
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/style/QlementineStyle.hpp>
@@ -44,7 +45,7 @@ public:
   QlementineStyle* style() const;
   void setStyle(QlementineStyle* style);
 
-  const QVector<Theme>& themes() const;
+  const std::vector<Theme>& themes() const;
   void addTheme(const Theme& theme);
 
   QString currentTheme() const;
@@ -68,8 +69,8 @@ private:
   void synchronizeThemeOnStyle();
 
 private:
-  QVector<Theme> _themes;
-  int _currentIndex{ -1 };
+  std::vector<Theme> _themes;
   QPointer<QlementineStyle> _style{ nullptr };
+  int _currentIndex{ -1 };
 };
 } // namespace oclero::qlementine
