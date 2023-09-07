@@ -28,13 +28,38 @@
 #include <QStylePainter>
 
 namespace oclero::qlementine {
+CommandLinkButton::CommandLinkButton(QWidget* parent)
+  : QCommandLinkButton(parent) {
+  updateIconSize();
+}
+
+CommandLinkButton::CommandLinkButton(const QString& text, QWidget* parent)
+  : QCommandLinkButton(text, parent) {
+  updateIconSize();
+}
+
+CommandLinkButton::CommandLinkButton(const QString& text, const QString& description, QWidget* parent)
+  : QCommandLinkButton(text, description, parent) {
+  updateIconSize();
+}
+
+CommandLinkButton::CommandLinkButton(
+  const QIcon& icon, const QString& text, const QString& description, QWidget* parent)
+  : QCommandLinkButton(text, description, parent) {
+  updateIconSize();
+  setIcon(icon);
+}
+
+CommandLinkButton::~CommandLinkButton() = default;
+
+
 QSize CommandLinkButton::sizeHint() const {
-  if (qobject_cast<QlementineStyle*>(style())) {
+  if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style())) {
     ensurePolished();
     QStyleOptionCommandLinkButton opt;
     initStyleOption(&opt);
-    const auto ct = static_cast<QStyle::ContentsType>(QlementineStyle::CT_CommandButton);
-    const auto minSize = style()->sizeFromContents(ct, &opt, { 0, 0 }, this);
+    const auto minSize =
+      qlementineStyle->sizeFromContentsExt(QlementineStyle::ContentsTypeExt::CT_CommandButton, &opt, { 0, 0 }, this);
     return minSize;
   } else {
     return QCommandLinkButton::sizeHint();
@@ -50,12 +75,11 @@ bool CommandLinkButton::hasHeightForWidth() const {
 }
 
 void CommandLinkButton::paintEvent(QPaintEvent* e) {
-  if (qobject_cast<QlementineStyle*>(style())) {
-    QStylePainter p(this);
+  if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style())) {
+    QPainter p(this);
     QStyleOptionCommandLinkButton opt;
     initStyleOption(&opt);
-    const auto ce = static_cast<QStyle::ControlElement>(QlementineStyle::CE_CommandButton);
-    p.drawControl(ce, opt);
+    qlementineStyle->drawControlExt(QlementineStyle::ControlElementExt::CE_CommandButton, &opt, &p, this);
   } else {
     QCommandLinkButton::paintEvent(e);
   }
@@ -63,9 +87,16 @@ void CommandLinkButton::paintEvent(QPaintEvent* e) {
 
 void CommandLinkButton::initStyleOption(QStyleOptionCommandLinkButton* option) const {
   QCommandLinkButton::initStyleOption(option);
-  const auto pm = static_cast<QStyle::PixelMetric>(QlementineStyle::PM_MediumIconSize);
-  const auto iconExtent = style()->pixelMetric(pm, option, this);
   option->description = description();
-  option->iconSize = QSize{ iconExtent, iconExtent };
+  option->iconSize = iconSize();
 }
+
+void CommandLinkButton::updateIconSize() {
+  if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style())) {
+    const auto iconExtent =
+      qlementineStyle->pixelMetricExt(QlementineStyle::PixelMetricExt::PM_MediumIconSize, nullptr, this);
+    setIconSize(QSize(iconExtent, iconExtent));
+  }
+}
+
 } // namespace oclero::qlementine
