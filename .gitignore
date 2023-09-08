@@ -53,3 +53,6 @@ temp/
 __pycache__/
 *.py[cod]
 *$py.class
+
+# MkDocs build files.
+public/
