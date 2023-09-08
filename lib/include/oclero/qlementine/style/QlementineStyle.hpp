@@ -37,30 +37,30 @@ class QlementineStyle : public QCommonStyle {
   Q_OBJECT
 
   Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled NOTIFY animationsEnabledChanged)
+  Q_PROPERTY(bool useMenuForComboBoxPopup READ useMenuForComboBoxPopup WRITE setUseMenuForComboBoxPopup NOTIFY
+      useMenuForComboBoxPopupChanged)
 
 public:
-  //static constexpr char Property_DoNotColorizeIcon[] = "DoNotColorizeIcon";
-
-  enum StandardPixmapExt {
-    SP_Check = SP_CustomBase + 1,
+  enum class StandardPixmapExt {
+    SP_Check,
     SP_Calendar,
   };
 
-  enum ControlElementExt {
-    CE_CommandButtonLabel = CE_CustomBase + 1,
+  enum class ControlElementExt {
+    CE_CommandButtonLabel,
     CE_CommandButton,
   };
 
-  enum ContentsTypeExt {
-    CT_CommandButton = CT_CustomBase + 1,
+  enum class ContentsTypeExt {
+    CT_CommandButton,
   };
 
-  enum PixelMetricExt {
-    PM_MediumIconSize = PM_CustomBase + 1,
+  enum class PixelMetricExt {
+    PM_MediumIconSize,
   };
 
-  enum PrimitiveElementExt {
-    PE_CommandButtonPanel = PE_CustomBase + 1,
+  enum class PrimitiveElementExt {
+    PE_CommandButtonPanel,
     PE_CommandButtonLabel,
   };
 
@@ -91,7 +91,7 @@ public:
 
   static QIcon makeIcon(const QString& svgPath);
 
-public:
+public: // QStyle overrides.
   void drawPrimitive(
     PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const override;
 
@@ -134,6 +134,22 @@ public:
   void unpolish(QWidget* w) override;
   void unpolish(QApplication* app) override;
 
+public: // QStyle extended enums.
+  virtual void drawPrimitiveExt(
+    PrimitiveElementExt pe, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const;
+
+  virtual QIcon standardIconExt(
+    StandardPixmapExt sp, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const;
+
+  virtual QSize sizeFromContentsExt(
+    ContentsTypeExt ct, const QStyleOption* opt, const QSize& s, const QWidget* w = nullptr) const;
+
+  virtual void drawControlExt(
+    ControlElementExt ce, const QStyleOption* opt, QPainter* p, const QWidget* w = nullptr) const;
+
+  virtual int pixelMetricExt(PixelMetricExt m, const QStyleOption* opt = nullptr, const QWidget* w = nullptr) const;
+
+public: // Theme-related methods.
   virtual QColor const& color(MouseState const mouse, ColorRole const role) const;
 
   virtual QColor const& frameBackgroundColor(MouseState const mouse) const;

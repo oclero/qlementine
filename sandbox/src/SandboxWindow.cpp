@@ -637,10 +637,11 @@ struct SandboxWindow::Impl {
     tableView->setRowCount(rowCount);
     const QIcon icon(":/scene_object.svg");
 
-    QVector<Qt::Alignment> columnAlignments;
+    std::vector<Qt::Alignment> columnAlignments;
+    columnAlignments.resize(columnCount);
     for (auto col = 0; col < columnCount; ++col) {
       const auto alignment = col % 3 == 0 ? Qt::AlignLeft : (col % 3 == 1 ? Qt::AlignRight : Qt::AlignCenter);
-      columnAlignments.append(alignment);
+      columnAlignments[col] = alignment;
     }
 
     for (auto col = 0; col < columnCount; ++col) {
