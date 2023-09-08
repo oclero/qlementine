@@ -1,5 +1,5 @@
-<div align="center">
-	<img height="50" src="branding/logo.svg">
+<div align="center" style="margin: 3em 0;">
+	<img height="64px" src="branding/logo.svg">
 </div>
 
 # Qlementine
