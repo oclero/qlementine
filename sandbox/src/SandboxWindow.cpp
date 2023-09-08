@@ -300,7 +300,7 @@ struct SandboxWindow::Impl {
   void setupUI_label() {
     {
       auto* label = new Label(windowContent);
-      label->setText("Sandbox");
+      label->setText("Headline 1");
       label->setRole(TextRole::H1);
       windowContentLayout->addWidget(label);
     }
