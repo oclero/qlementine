@@ -7,8 +7,9 @@
 #include <QIcon>
 #include <QVariant>
 #include <QString>
-#include <QVector>
 #include <QVariantAnimation>
+
+#include <vector>
 
 namespace oclero::qlementine {
 class RoundedFocusFrame;
@@ -37,7 +38,7 @@ public:
   Q_SIGNAL void currentIndexChanged();
 
   QVariant currentData() const;
-  void setCurrentData(const QVariant& data);
+  void setCurrentData(const QVariant& currentData);
   Q_SIGNAL void currentDataChanged();
 
   const QSize& iconSize() const;
@@ -48,9 +49,9 @@ public:
   void setItemsShouldExpand(bool expand);
   Q_SIGNAL void itemsShouldExpandChanged();
 
-  int addItem(const QString& text, const QIcon& icon = {}, const QString& badge = {}, const QVariant& data = {});
+  int addItem(const QString& text, const QIcon& icon = {}, const QString& badge = {}, const QVariant& itemData = {});
   void removeItem(int index);
-  int findItemIndex(const QVariant& data) const;
+  int findItemIndex(const QVariant& itemData) const;
 
   void setItemData(int index, const QVariant& text);
   QVariant getItemData(int index) const;
@@ -163,7 +164,7 @@ private:
   int _hoveredIndex{ -1 };
   int _pressedIndex{ -1 };
   QSize _iconSize;
-  QVector<Item> _items;
+  std::vector<Item> _items;
   QVariantAnimation _currentIndexAnimation;
   RoundedFocusFrame* _focusFrame{ nullptr };
   QFont _badgeFont;

@@ -120,26 +120,37 @@ struct QlementineStyleImpl {
     QToolTip::setPalette(theme.palette);
   }
 
+  /// Updates the font cache.
   void updateFonts() {
     fontMetricsBold = std::make_unique<QFontMetrics>(theme.fontBold);
   }
 
   /// Gets (or create if not existing yet) an icon from the cache.
-  /// TODO Il faudrait mettre à jour les pixmaps contenues dans le cache
-  /// car les widgets créent les icones dans leurs constructeurs, et ne les
-  /// remettent pas à jour au changement de theme.
-  QIcon& getStandardIcon(unsigned int const standardPixmap, QSize const& size) {
+  QIcon& getStandardIconExt(const QlementineStyle::StandardPixmapExt sp, QSize const& size) {
+    auto& icon = standardIconExtCache[sp];
+    const auto availableSizes = icon.availableSizes();
+    if (!availableSizes.contains(size)) {
+      switch (sp) {
+        case QlementineStyle::StandardPixmapExt::SP_Check:
+          updateCheckIcon(icon, size, owner);
+          break;
+        case QlementineStyle::StandardPixmapExt::SP_Calendar:
+          updateUncheckableButtonIconPixmap(icon, size, owner, makeCalendarPixmap);
+          break;
+        default:
+          break;
+      }
+    }
+    return icon;
+  }
+
+  /// Gets (or create if not existing yet) an icon from the cache.
+  QIcon& getStandardIcon(const QStyle::StandardPixmap standardPixmap, QSize const& size) {
     auto& icon = standardIconCache[standardPixmap];
     const auto availableSizes = icon.availableSizes();
     if (!availableSizes.contains(size)) {
-      // TODO Autres icones : utiliser QPainter ou charger fichier SVG.
+      // TODO Other icons : use QPainter or load SVG file.
       switch (standardPixmap) {
-        case QlementineStyle::SP_Check:
-          updateCheckIcon(icon, size, owner);
-          break;
-        case QlementineStyle::SP_Calendar:
-          updateUncheckableButtonIconPixmap(icon, size, owner, makeCalendarPixmap);
-          break;
         case QlementineStyle::SP_LineEditClearButton:
           updateUncheckableButtonIconPixmap(icon, size, owner, makeClearButtonPixmap);
           break;
@@ -172,6 +183,7 @@ struct QlementineStyleImpl {
     return icon;
   }
 
+  /// Returns true if the QTabBar will show its scroll buttons.
   bool areTabBarScrollButtonsVisible(const QTabBar* tabBar) const {
     if (!tabBar->usesScrollButtons())
       return false;
@@ -192,7 +204,8 @@ struct QlementineStyleImpl {
   Theme theme;
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
   WidgetAnimationManager animations;
-  std::unordered_map<uint32_t, QIcon> standardIconCache;
+  std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
+  std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
   bool useMenuForComboBoxPopup{ false };
   bool autoIconColorEnabled{ false };
 };
@@ -316,8 +329,10 @@ QIcon QlementineStyle::makeIcon(const QString& svgPath) {
   return result;
 }
 
+/* QStyle overrides. */
+
 void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
-  switch (static_cast<std::underlying_type_t<PrimitiveElement>>(pe)) {
+  switch (pe) {
     case PE_Frame:
       return;
     case PE_FrameDefaultButton:
@@ -928,107 +943,6 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       drawRoundedRectBorder(p, frameRect, borderColor, borderW, radius);
     }
       return;
-    case PE_CommandButtonPanel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
-        const auto radius = _impl->theme.borderRadius;
-        const auto mouse = getMouseState(optButton->state);
-        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
-        const auto role = getColorRole(optButton->state, isDefault);
-        const auto& bgColor = commandButtonBackgroundColor(mouse, role);
-        const auto& currentColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
-        p->setPen(Qt::NoPen);
-        p->setBrush(currentColor);
-        p->setRenderHint(QPainter::Antialiasing, true);
-        p->drawRoundedRect(optButton->rect, radius, radius);
-      }
-      return;
-    case PE_CommandButtonLabel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
-        p->setRenderHint(QPainter::Antialiasing, true);
-        p->setBrush(Qt::NoBrush);
-
-        const auto& rect = optButton->rect;
-        const auto spacing = _impl->theme.spacing;
-        const auto mouse = getMouseState(optButton->state);
-        const auto checked = getCheckState(optButton->state);
-        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
-        const auto role = getColorRole(optButton->state, isDefault);
-
-        auto availableX = rect.x();
-        auto availableW = rect.width();
-
-        const auto& icon = optButton->icon;
-        if (!icon.isNull()) {
-          const auto& iconSize = optButton->iconSize;
-          const auto iconX = availableX;
-          const auto iconY = rect.y() + (rect.height() - iconSize.height()) / 2;
-          const auto iconRect = QRect{ QPoint{ iconX, iconY }, iconSize };
-          const auto& pixmap = getPixmap(icon, iconSize, mouse, checked, w);
-
-          if (!pixmap.isNull() && !iconRect.isEmpty()) {
-            const auto& iconColor = commandButtonIconColor(mouse, role);
-            const auto colorize = isAutoIconColorEnabled(w);
-            const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, iconColor) : pixmap;
-
-            // The pixmap may be smaller than the requested size, so we center it in the rect by default.
-            const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
-            const auto targetW = static_cast<int>((qreal) colorizedPixmap.width() / (pixmapPixelRatio));
-            const auto targetH = static_cast<int>((qreal) colorizedPixmap.height() / (pixmapPixelRatio));
-            const auto targetX = iconRect.x() + (iconRect.width() - targetW) / 2;
-            const auto targetY = iconRect.y() + (iconRect.height() - targetH) / 2;
-            const auto targetRect = QRect{ targetX, targetY, targetW, targetH };
-            p->drawPixmap(targetRect, colorizedPixmap);
-
-            const auto iconSpace = iconSize.width() + spacing * 2;
-            availableX += iconSpace;
-            availableW -= iconSpace;
-          }
-        }
-
-        if (availableW < 0) {
-          return;
-        }
-
-        const auto& text = optButton->text;
-        const auto& description = optButton->description;
-        const auto hasText = !text.isEmpty();
-        const auto hasDescription = !description.isEmpty();
-        const auto& fm = optButton->fontMetrics;
-        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
-        const auto vSpacing = hasText && hasDescription ? spacing / 4 : 0;
-        const auto textH = hasText ? boldFm.height() : 0;
-        const auto descriptionH = hasDescription ? fm.height() : 0;
-        const auto totalTextH = textH + vSpacing + descriptionH;
-        const auto totalTextY = rect.y() + (rect.height() - totalTextH) / 2;
-        constexpr auto textFlags =
-          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
-
-        const auto backupFont = QFont{ p->font() };
-        if (hasText) {
-          const auto textX = availableX;
-          const auto textY = totalTextY;
-          const auto textRect = QRect{ textX, textY, availableW, textH };
-          const auto& textColor = commandButtonTextColor(mouse, role);
-          const auto elidedText = boldFm.elidedText(text, Qt::ElideRight, availableW, Qt::TextSingleLine);
-          p->setFont(_impl->theme.fontBold);
-          p->setPen(textColor);
-          p->drawText(textRect, textFlags, elidedText);
-        }
-
-        if (hasDescription) {
-          const auto descriptionX = availableX;
-          const auto descriptionY = totalTextY + textH + vSpacing;
-          const auto descriptionRect = QRect{ descriptionX, descriptionY, availableW, descriptionH };
-          const auto& descriptionColor = commandButtonDescriptionColor(mouse, role);
-          const auto elidedDescription = fm.elidedText(description, Qt::ElideRight, availableW, Qt::TextSingleLine);
-          p->setFont(_impl->theme.fontRegular);
-          p->setPen(descriptionColor);
-          p->drawText(descriptionRect, textFlags, elidedDescription);
-        }
-
-        p->setFont(backupFont);
-      }
-      return;
     default:
       break;
   }
@@ -1036,7 +950,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 }
 
 void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
-  switch (static_cast<std::underlying_type_t<ControlElement>>(ce)) {
+  switch (ce) {
     case CE_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         // Button background and border.
@@ -1054,9 +968,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         auto optButtonBg = QStyleOptionButton(*optButton);
         optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
         drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
-      } else if (const auto* optButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+      } else if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
         // Draw background rect.
-        auto optButtonBg = QStyleOptionRoundedButton(*optButton);
+        auto optButtonBg = QStyleOptionRoundedButton(*optRoundedButton);
         optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
         drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
       }
@@ -1411,11 +1325,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // Background.
           const auto& bgRect = optMenuItem->rect;
           const auto& bgColor = menuItemBackgroundColor(mouse);
-          const auto radius = _impl->theme.menuItemBorderRadius;
+          const auto menuItemRadius = _impl->theme.menuItemBorderRadius;
           p->setRenderHint(QPainter::Antialiasing, true);
           p->setPen(Qt::NoPen);
           p->setBrush(bgColor);
-          p->drawRoundedRect(bgRect, radius, radius);
+          p->drawRoundedRect(bgRect, menuItemRadius, menuItemRadius);
 
           // Foreground.
           const auto spacing = _impl->theme.spacing;
@@ -1456,9 +1370,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
               if (isRadio) {
                 drawRadioButton(p, checkboxRect, boxBgColor, boxBorderColor, boxFgColor, borderW, progress);
               } else {
-                const auto radius = _impl->theme.checkBoxBorderRadius;
-                drawCheckButton(
-                  p, checkboxRect, radius, boxBgColor, boxBorderColor, boxFgColor, borderW, progress, checkState);
+                const auto checkBoxRadius = _impl->theme.checkBoxBorderRadius;
+                drawCheckButton(p, checkboxRect, checkBoxRadius, boxBgColor, boxBorderColor, boxFgColor, borderW,
+                  progress, checkState);
               }
             }
 
@@ -2090,7 +2004,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto contentLeftPadding = spacing;
         const auto contentRightPadding = 2 * spacing + indicatorSize.width();
         const auto contentRect = totalRect.marginsRemoved({ contentLeftPadding, 0, contentRightPadding, 0 });
-        const auto pixmap = getPixmap(optComboBox->currentIcon, optComboBox->iconSize, mouse, CheckState::NotChecked, w);
+        const auto pixmap =
+          getPixmap(optComboBox->currentIcon, optComboBox->iconSize, mouse, CheckState::NotChecked, w);
         const auto colorize = QlementineStyle::isAutoIconColorEnabled(w);
         const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, fgColor) : pixmap; // No animation for icon?
         const auto iconW = colorizedPixmap.isNull() ? 0 : colorizedPixmap.width() / colorizedPixmap.devicePixelRatio();
@@ -2303,23 +2218,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         }
       }
       return;
-    case CE_CommandButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
-        // Button background and border.
-        const auto pePanel = static_cast<PrimitiveElement>(PE_CommandButtonPanel);
-        drawPrimitive(pePanel, optButton, p, w);
-
-        // Button foreground (text, descrption and icon).
-        const auto spacing = _impl->theme.spacing;
-        const auto hPadding = spacing * 2;
-        const auto vPadding = spacing;
-        const auto fgRect = optButton->rect.marginsRemoved(QMargins{ hPadding, vPadding, hPadding, vPadding });
-        const auto peLabel = static_cast<PrimitiveElement>(PE_CommandButtonLabel);
-        auto optLabel = QStyleOptionCommandLinkButton{ *optButton };
-        optLabel.rect = fgRect;
-        drawPrimitive(peLabel, &optLabel, p, w);
-      }
-      return;
     default:
       break;
   }
@@ -2501,13 +2399,21 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_TabBarTearIndicatorLeft: {
       const auto& rect = opt->rect;
       const auto shadowW = _impl->theme.spacing * 3;
-      return { rect.x(), rect.y(), shadowW, rect.height() };
+      const auto x = rect.x();
+      const auto y = rect.y();
+      const auto width = shadowW;
+      const auto height = rect.height();
+      return { x, y, width, height };
     }
     case SE_TabBarTearIndicatorRight: {
       const auto& rect = opt->rect;
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
       const auto shadowW = _impl->theme.spacing * 3;
-      return { rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height() };
+      const auto x = rect.x() + rect.width() - shadowW - scrollButtonsW;
+      const auto y = rect.y();
+      const auto width = shadowW + scrollButtonsW;
+      const auto height = rect.height();
+      return { x, y, width, height };
     }
     case SE_TabBarTabLeftButton:
       // Button on the left of a tab.
@@ -2571,30 +2477,29 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
 
         const auto x = rect.x() + paddingLeft + spacing + leftButtonW;
         const auto y = rect.y() + _impl->theme.tabBarPaddingTop;
-        const auto w = rect.width() - leftButtonW - paddingLeft - rightButtonW - paddingRight - spacing * 2;
-        const auto h = rect.height() - _impl->theme.tabBarPaddingTop;
-        return { x, y, w, h };
+        const auto width = rect.width() - leftButtonW - paddingLeft - rightButtonW - paddingRight - spacing * 2;
+        const auto height = rect.height() - _impl->theme.tabBarPaddingTop;
+        return { x, y, width, height };
       }
       return {};
     case SE_TabBarScrollLeftButton: {
       const auto& rect = opt->rect;
       const auto spacing = _impl->theme.spacing;
-      const auto w = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
-      const auto h = _impl->theme.controlHeightLarge + spacing;
-      const auto x = rect.x() + rect.width() - 2 * w;
+      const auto width = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
+      const auto height = _impl->theme.controlHeightLarge + spacing;
+      const auto x = rect.x() + rect.width() - 2 * width;
       const auto y = rect.y();
-      return { x, y, w, h };
+      return { x, y, width, height };
     }
     case SE_TabBarScrollRightButton: {
       const auto& rect = opt->rect;
       const auto spacing = _impl->theme.spacing;
-      const auto w = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
-      const auto h = _impl->theme.controlHeightLarge + spacing;
-      const auto x = rect.x() + rect.width() - w + spacing / 2;
+      const auto width = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
+      const auto height = _impl->theme.controlHeightLarge + spacing;
+      const auto x = rect.x() + rect.width() - width + spacing / 2;
       const auto y = rect.y();
-      return { x, y, w, h };
+      return { x, y, width, height };
     }
-      return {};
     case SE_ToolBarHandle:
       //qDebug() << "SE_ToolBarHandle";
       break;
@@ -2714,7 +2619,7 @@ void QlementineStyle::drawComplexControl(
 
             if (qobject_cast<const QDateTimeEdit*>(w)) {
               const auto pixelRatio = getPixelRatio(w);
-              const auto& icon = _impl->getStandardIcon(SP_Calendar, indicatorSize * pixelRatio);
+              const auto& icon = _impl->getStandardIconExt(StandardPixmapExt::SP_Calendar, indicatorSize * pixelRatio);
               const auto colorize =
                 QlementineStyle::isAutoIconColorEnabled() && QlementineStyle::isAutoIconColorEnabled(w);
               drawIcon(indicatorRect, p, icon, mouse, CheckState::Checked, w, colorize, currentFgColor);
@@ -3595,8 +3500,8 @@ QRect QlementineStyle::subControlRect(
         const auto hasFrame = !groupBoxOpt->features.testFlag(QStyleOptionFrame::Flat);
         const auto labelH =
           hasTitle ? std::max(_impl->theme.controlHeightMedium, QFontMetrics(_impl->theme.fontH5).height()) : 0;
-        const auto& checkBoxSize = _impl->theme.iconSize;
         const auto titleBottomSpacing = hasFrame && (hasTitle || hasCheckbox) ? _impl->theme.spacing / 2 : 0;
+        const auto& checkBoxSize = hasCheckbox ? _impl->theme.iconSize : QSize{ 0, 0 };
         const auto titleH = hasTitle || hasCheckbox ? std::max(labelH, checkBoxSize.height()) : 0;
         const auto leftPadding = hasTitle || hasCheckbox ? _impl->theme.spacing : 0;
 
@@ -3604,39 +3509,39 @@ QRect QlementineStyle::subControlRect(
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
           case SC_GroupBoxCheckBox:
             if (groupBoxOpt->subControls.testFlag(SC_GroupBoxCheckBox)) {
-              const auto& checkBoxSize = _impl->theme.iconSize;
-              const auto checkBoxY = rect.y() + (titleH - checkBoxSize.height()) / 2;
-              return QRect{ QPoint{ rect.x(), checkBoxY }, checkBoxSize };
+              const auto x = rect.x();
+              const auto y = rect.y() + (titleH - checkBoxSize.height()) / 2;
+              return QRect{ QPoint{ x, y }, checkBoxSize };
             }
             return {};
           case SC_GroupBoxLabel:
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
             if (groupBoxOpt->subControls.testFlag(SC_GroupBoxLabel)) {
-              const auto& checkBoxSize = hasCheckbox ? _impl->theme.iconSize : QSize{ 0, 0 };
               const auto spacing = hasCheckbox ? _impl->theme.spacing : 0;
-              const auto labelX = rect.x() + checkBoxSize.width() + spacing;
+              const auto x = rect.x() + checkBoxSize.width() + spacing;
+              const auto y = rect.y();
               const auto labelW = rect.width() - checkBoxSize.width() - spacing;
-              return QRect{ labelX, rect.y(), labelW, titleH };
+              return QRect{ x, y, labelW, titleH };
             }
             return {};
           case SC_GroupBoxContents:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxContents))*/ {
               const auto x = rect.x() + leftPadding;
               const auto y = rect.y() + titleH + titleBottomSpacing;
-              const auto w = rect.width() - leftPadding;
-              const auto h = rect.height() - titleH - titleBottomSpacing;
-              return QRect{ x, y, w, h };
+              const auto width = rect.width() - leftPadding;
+              const auto height = rect.height() - titleH - titleBottomSpacing;
+              return QRect{ x, y, width, height };
             }
-            return {};
+            //return {};
           case SC_GroupBoxFrame:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxFrame))*/ {
               const auto x = rect.x() + leftPadding;
               const auto y = rect.y() + titleH + titleBottomSpacing;
-              const auto w = rect.width() - leftPadding;
-              const auto h = rect.height() - titleH - titleBottomSpacing;
-              return QRect{ x, y, w, h };
+              const auto width = rect.width() - leftPadding;
+              const auto height = rect.height() - titleH - titleBottomSpacing;
+              return QRect{ x, y, width, height };
             }
-            return {};
+            //return {};
           default:
             break;
         }
@@ -3663,7 +3568,7 @@ QRect QlementineStyle::subControlRect(
 
 QSize QlementineStyle::sizeFromContents(
   ContentsType ct, const QStyleOption* opt, const QSize& contentSize, const QWidget* widget) const {
-  switch (static_cast<std::underlying_type_t<ContentsType>>(ct)) {
+  switch (ct) {
     case CT_PushButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
         const auto hasIcon = !optButton->icon.isNull();
@@ -4072,24 +3977,6 @@ QSize QlementineStyle::sizeFromContents(
         return QSize{ w, h };
       }
       break;
-    case CT_CommandButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
-        const auto iconSize = _impl->theme.iconSizeMedium;
-        const auto& icon = optButton->icon;
-        const auto spacing = _impl->theme.spacing;
-        const auto hPadding = spacing * 2;
-        const auto vPadding = spacing;
-        const auto vSpacing = spacing / 4;
-        const auto iconW = icon.isNull() ? 0 : iconSize.width() + spacing * 2;
-        const auto& fm = optButton->fontMetrics;
-        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
-        const auto textW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
-        const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->description).width();
-        const auto w = hPadding * 2 + iconW + std::max(textW, descriptionW);
-        const auto h = vPadding * 2 + fm.height() + boldFm.height() + vSpacing;
-        return QSize{ w, h };
-      }
-      break;
     default:
       break;
   }
@@ -4097,14 +3984,12 @@ QSize QlementineStyle::sizeFromContents(
 }
 
 int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const QWidget* w) const {
-  switch (static_cast<std::underlying_type_t<PixelMetric>>(m)) {
+  switch (m) {
     // Icons.
     case PM_SmallIconSize:
       return _impl->theme.iconSize.height();
     case PM_LargeIconSize:
       return _impl->theme.iconSizeLarge.height();
-    case PM_MediumIconSize:
-      return _impl->theme.iconSizeMedium.height();
 
     // Button.
     case PM_ButtonMargin:
@@ -4672,25 +4557,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
 }
 
 QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, const QWidget* w) const {
-  switch (static_cast<std::underlying_type_t<StandardPixmap>>(sp)) {
-    case SP_TitleBarMenuButton:
-      break;
-    case SP_TitleBarMinButton:
-      break;
-    case SP_TitleBarMaxButton:
-      break;
-    case SP_TitleBarCloseButton:
-      break;
-    case SP_TitleBarNormalButton:
-      break;
-    case SP_TitleBarShadeButton:
-      break;
-    case SP_TitleBarUnshadeButton:
-      break;
-    case SP_TitleBarContextHelpButton:
-      break;
-    case SP_DockWidgetCloseButton:
-      break;
+  switch (sp) {
     case SP_MessageBoxQuestion:
     case SP_MessageBoxInformation:
     case SP_MessageBoxCritical:
@@ -4698,140 +4565,150 @@ QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, 
       const auto extent = pixelMetric(PM_LargeIconSize) * 4;
       return _impl->getStandardIcon(sp, QSize(extent, extent));
     }
-    case SP_DesktopIcon:
-      break;
-    case SP_TrashIcon:
-      break;
-    case SP_ComputerIcon:
-      break;
-    case SP_DriveFDIcon:
-      break;
-    case SP_DriveHDIcon:
-      break;
-    case SP_DriveCDIcon:
-      break;
-    case SP_DriveDVDIcon:
-      break;
-    case SP_DriveNetIcon:
-      break;
-    case SP_DirOpenIcon:
-      break;
-    case SP_DirClosedIcon:
-      break;
-    case SP_DirLinkIcon:
-      break;
-    case SP_DirLinkOpenIcon:
-      break;
-    case SP_FileIcon:
-      break;
-    case SP_FileLinkIcon:
-      break;
-    case SP_FileDialogStart:
-      break;
-    case SP_FileDialogEnd:
-      break;
-    case SP_FileDialogToParent:
-      break;
-    case SP_FileDialogNewFolder:
-      break;
-    case SP_FileDialogDetailedView:
-      break;
-    case SP_FileDialogInfoView:
-      break;
-    case SP_FileDialogContentsView:
-      break;
-    case SP_FileDialogListView:
-      break;
-    case SP_FileDialogBack:
-      break;
-    case SP_DirIcon:
-      break;
     case SP_ToolBarHorizontalExtensionButton:
     case SP_ToolBarVerticalExtensionButton:
-      return _impl->getStandardIcon(sp, _impl->theme.iconSize);
-    case SP_DialogOkButton:
-      break;
-    case SP_DialogCancelButton:
-      break;
-    case SP_DialogHelpButton:
-      break;
-    case SP_DialogOpenButton:
-      break;
-    case SP_DialogSaveButton:
-      break;
-    case SP_DialogCloseButton:
-      break;
-    case SP_DialogApplyButton:
-      break;
-    case SP_DialogResetButton:
-      break;
-    case SP_DialogDiscardButton:
-      break;
-    case SP_DialogYesButton:
-      break;
-    case SP_DialogNoButton:
-      break;
-    case SP_DialogYesToAllButton:
-      break;
-    case SP_DialogNoToAllButton:
-      break;
-    case SP_DialogSaveAllButton:
-      break;
-    case SP_DialogAbortButton:
-      break;
-    case SP_DialogRetryButton:
-      break;
-    case SP_DialogIgnoreButton:
-      break;
-    case SP_ArrowUp:
-      break;
-    case SP_ArrowDown:
-      break;
     case SP_ArrowLeft:
-      return _impl->getStandardIcon(sp, _impl->theme.iconSize);
     case SP_ArrowRight:
-      return _impl->getStandardIcon(sp, _impl->theme.iconSize);
-    case SP_ArrowBack:
-      break;
-    case SP_ArrowForward:
-      break;
-    case SP_DirHomeIcon:
-      break;
-    case SP_CommandLink:
-      break;
-    case SP_VistaShield:
-      break;
-    case SP_BrowserReload:
-      break;
-    case SP_BrowserStop:
-      break;
-    case SP_MediaPlay:
-      break;
-    case SP_MediaStop:
-      break;
-    case SP_MediaPause:
-      break;
-    case SP_MediaSkipForward:
-      break;
-    case SP_MediaSkipBackward:
-      break;
-    case SP_MediaSeekForward:
-      break;
-    case SP_MediaSeekBackward:
-      break;
-    case SP_MediaVolume:
-      break;
-    case SP_MediaVolumeMuted:
-      break;
     case SP_LineEditClearButton:
       return _impl->getStandardIcon(sp, _impl->theme.iconSize);
-    case SP_RestoreDefaultsButton:
-      break;
-    // Custom ones.
-    case SP_Check:
-      return _impl->getStandardIcon(sp, _impl->theme.iconSize);
-    case SP_Calendar:
-      return _impl->getStandardIcon(sp, _impl->theme.iconSize);
+      //    case SP_TitleBarMenuButton:
+      //      break;
+      //    case SP_TitleBarMinButton:
+      //      break;
+      //    case SP_TitleBarMaxButton:
+      //      break;
+      //    case SP_TitleBarCloseButton:
+      //      break;
+      //    case SP_TitleBarNormalButton:
+      //      break;
+      //    case SP_TitleBarShadeButton:
+      //      break;
+      //    case SP_TitleBarUnshadeButton:
+      //      break;
+      //    case SP_TitleBarContextHelpButton:
+      //      break;
+      //    case SP_DockWidgetCloseButton:
+      //      break;
+      //    case SP_DesktopIcon:
+      //      break;
+      //    case SP_TrashIcon:
+      //      break;
+      //    case SP_ComputerIcon:
+      //      break;
+      //    case SP_DriveFDIcon:
+      //      break;
+      //    case SP_DriveHDIcon:
+      //      break;
+      //    case SP_DriveCDIcon:
+      //      break;
+      //    case SP_DriveDVDIcon:
+      //      break;
+      //    case SP_DriveNetIcon:
+      //      break;
+      //    case SP_DirOpenIcon:
+      //      break;
+      //    case SP_DirClosedIcon:
+      //      break;
+      //    case SP_DirLinkIcon:
+      //      break;
+      //    case SP_DirLinkOpenIcon:
+      //      break;
+      //    case SP_FileIcon:
+      //      break;
+      //    case SP_FileLinkIcon:
+      //      break;
+      //    case SP_FileDialogStart:
+      //      break;
+      //    case SP_FileDialogEnd:
+      //      break;
+      //    case SP_FileDialogToParent:
+      //      break;
+      //    case SP_FileDialogNewFolder:
+      //      break;
+      //    case SP_FileDialogDetailedView:
+      //      break;
+      //    case SP_FileDialogInfoView:
+      //      break;
+      //    case SP_FileDialogContentsView:
+      //      break;
+      //    case SP_FileDialogListView:
+      //      break;
+      //    case SP_FileDialogBack:
+      //      break;
+      //    case SP_DirIcon:
+      //      break;
+      //    case SP_DialogOkButton:
+      //      break;
+      //    case SP_DialogCancelButton:
+      //      break;
+      //    case SP_DialogHelpButton:
+      //      break;
+      //    case SP_DialogOpenButton:
+      //      break;
+      //    case SP_DialogSaveButton:
+      //      break;
+      //    case SP_DialogCloseButton:
+      //      break;
+      //    case SP_DialogApplyButton:
+      //      break;
+      //    case SP_DialogResetButton:
+      //      break;
+      //    case SP_DialogDiscardButton:
+      //      break;
+      //    case SP_DialogYesButton:
+      //      break;
+      //    case SP_DialogNoButton:
+      //      break;
+      //    case SP_DialogYesToAllButton:
+      //      break;
+      //    case SP_DialogNoToAllButton:
+      //      break;
+      //    case SP_DialogSaveAllButton:
+      //      break;
+      //    case SP_DialogAbortButton:
+      //      break;
+      //    case SP_DialogRetryButton:
+      //      break;
+      //    case SP_DialogIgnoreButton:
+      //      break;
+      //    case SP_ArrowUp:
+      //      break;
+      //    case SP_ArrowDown:
+      //      break;
+      //    case SP_ArrowBack:
+      //      break;
+      //    case SP_ArrowForward:
+      //      break;
+      //    case SP_DirHomeIcon:
+      //      break;
+      //    case SP_CommandLink:
+      //      break;
+      //    case SP_VistaShield:
+      //      break;
+      //    case SP_BrowserReload:
+      //      break;
+      //    case SP_BrowserStop:
+      //      break;
+      //    case SP_MediaPlay:
+      //      break;
+      //    case SP_MediaStop:
+      //      break;
+      //    case SP_MediaPause:
+      //      break;
+      //    case SP_MediaSkipForward:
+      //      break;
+      //    case SP_MediaSkipBackward:
+      //      break;
+      //    case SP_MediaSeekForward:
+      //      break;
+      //    case SP_MediaSeekBackward:
+      //      break;
+      //    case SP_MediaVolume:
+      //      break;
+      //    case SP_MediaVolumeMuted:
+      //      break;
+      //    case SP_RestoreDefaultsButton:
+      //      break;
     default:
       break;
   }
@@ -5037,6 +4914,191 @@ void QlementineStyle::unpolish(QWidget* w) {
     w->setMouseTracking(false);
   }
 }
+
+/* QStyle extended enums. */
+
+void QlementineStyle::drawPrimitiveExt(
+  PrimitiveElementExt pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  switch (pe) {
+    case PrimitiveElementExt::PE_CommandButtonPanel:
+      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+        const auto radius = _impl->theme.borderRadius;
+        const auto mouse = getMouseState(optButton->state);
+        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
+        const auto role = getColorRole(optButton->state, isDefault);
+        const auto& bgColor = commandButtonBackgroundColor(mouse, role);
+        const auto& currentColor = _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
+        p->setPen(Qt::NoPen);
+        p->setBrush(currentColor);
+        p->setRenderHint(QPainter::Antialiasing, true);
+        p->drawRoundedRect(optButton->rect, radius, radius);
+      }
+      return;
+    case PrimitiveElementExt::PE_CommandButtonLabel:
+      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+        p->setRenderHint(QPainter::Antialiasing, true);
+        p->setBrush(Qt::NoBrush);
+
+        const auto& rect = optButton->rect;
+        const auto spacing = _impl->theme.spacing;
+        const auto mouse = getMouseState(optButton->state);
+        const auto checked = getCheckState(optButton->state);
+        const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
+        const auto role = getColorRole(optButton->state, isDefault);
+
+        auto availableX = rect.x();
+        auto availableW = rect.width();
+
+        const auto& icon = optButton->icon;
+        if (!icon.isNull()) {
+          const auto& iconSize = optButton->iconSize;
+          const auto iconX = availableX;
+          const auto iconY = rect.y() + (rect.height() - iconSize.height()) / 2;
+          const auto iconRect = QRect{ QPoint{ iconX, iconY }, iconSize };
+          const auto& pixmap = getPixmap(icon, iconSize, mouse, checked, w);
+
+          if (!pixmap.isNull() && !iconRect.isEmpty()) {
+            const auto& iconColor = commandButtonIconColor(mouse, role);
+            const auto colorize = isAutoIconColorEnabled(w);
+            const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, iconColor) : pixmap;
+
+            // The pixmap may be smaller than the requested size, so we center it in the rect by default.
+            const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
+            const auto targetW = static_cast<int>((qreal) colorizedPixmap.width() / (pixmapPixelRatio));
+            const auto targetH = static_cast<int>((qreal) colorizedPixmap.height() / (pixmapPixelRatio));
+            const auto targetX = iconRect.x() + (iconRect.width() - targetW) / 2;
+            const auto targetY = iconRect.y() + (iconRect.height() - targetH) / 2;
+            const auto targetRect = QRect{ targetX, targetY, targetW, targetH };
+            p->drawPixmap(targetRect, colorizedPixmap);
+
+            const auto iconSpace = iconSize.width() + spacing * 2;
+            availableX += iconSpace;
+            availableW -= iconSpace;
+          }
+        }
+
+        if (availableW < 0) {
+          return;
+        }
+
+        const auto& text = optButton->text;
+        const auto& description = optButton->description;
+        const auto hasText = !text.isEmpty();
+        const auto hasDescription = !description.isEmpty();
+        const auto& fm = optButton->fontMetrics;
+        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
+        const auto vSpacing = hasText && hasDescription ? spacing / 4 : 0;
+        const auto textH = hasText ? boldFm.height() : 0;
+        const auto descriptionH = hasDescription ? fm.height() : 0;
+        const auto totalTextH = textH + vSpacing + descriptionH;
+        const auto totalTextY = rect.y() + (rect.height() - totalTextH) / 2;
+        constexpr auto textFlags =
+          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+
+        const auto backupFont = QFont{ p->font() };
+        if (hasText) {
+          const auto textX = availableX;
+          const auto textY = totalTextY;
+          const auto textRect = QRect{ textX, textY, availableW, textH };
+          const auto& textColor = commandButtonTextColor(mouse, role);
+          const auto elidedText = boldFm.elidedText(text, Qt::ElideRight, availableW, Qt::TextSingleLine);
+          p->setFont(_impl->theme.fontBold);
+          p->setPen(textColor);
+          p->drawText(textRect, textFlags, elidedText);
+        }
+
+        if (hasDescription) {
+          const auto descriptionX = availableX;
+          const auto descriptionY = totalTextY + textH + vSpacing;
+          const auto descriptionRect = QRect{ descriptionX, descriptionY, availableW, descriptionH };
+          const auto& descriptionColor = commandButtonDescriptionColor(mouse, role);
+          const auto elidedDescription = fm.elidedText(description, Qt::ElideRight, availableW, Qt::TextSingleLine);
+          p->setFont(_impl->theme.fontRegular);
+          p->setPen(descriptionColor);
+          p->drawText(descriptionRect, textFlags, elidedDescription);
+        }
+
+        p->setFont(backupFont);
+      }
+      return;
+    default:
+      break;
+  }
+}
+
+QIcon QlementineStyle::standardIconExt(StandardPixmapExt sp, const QStyleOption* opt, const QWidget* w) const {
+  Q_UNUSED(opt);
+  Q_UNUSED(w);
+  return _impl->getStandardIconExt(sp, _impl->theme.iconSize);
+}
+
+QSize QlementineStyle::sizeFromContentsExt(
+  ContentsTypeExt ct, const QStyleOption* opt, const QSize& s, const QWidget* w) const {
+  Q_UNUSED(s);
+  Q_UNUSED(w);
+
+  switch (ct) {
+    case ContentsTypeExt::CT_CommandButton:
+      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+        const auto iconSize = _impl->theme.iconSizeMedium;
+        const auto& icon = optButton->icon;
+        const auto spacing = _impl->theme.spacing;
+        const auto hPadding = spacing * 2;
+        const auto vPadding = spacing;
+        const auto vSpacing = spacing / 4;
+        const auto iconW = icon.isNull() ? 0 : iconSize.width() + spacing * 2;
+        const auto& fm = optButton->fontMetrics;
+        const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
+        const auto textW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
+        const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->description).width();
+        const auto width = hPadding * 2 + iconW + std::max(textW, descriptionW);
+        const auto height = vPadding * 2 + fm.height() + boldFm.height() + vSpacing;
+        return QSize{ width, height };
+      }
+      break;
+    default:
+      break;
+  }
+  return {};
+}
+
+void QlementineStyle::drawControlExt(
+  ControlElementExt ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  switch (ce) {
+    case ControlElementExt::CE_CommandButton:
+      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+        // Button background and border.
+        drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonPanel, optButton, p, w);
+
+        // Button foreground (text, descrption and icon).
+        const auto spacing = _impl->theme.spacing;
+        const auto hPadding = spacing * 2;
+        const auto vPadding = spacing;
+        const auto fgRect = optButton->rect.marginsRemoved(QMargins{ hPadding, vPadding, hPadding, vPadding });
+        auto optLabel = QStyleOptionCommandLinkButton{ *optButton };
+        optLabel.rect = fgRect;
+        drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonLabel, &optLabel, p, w);
+      }
+      return;
+    default:
+      return;
+  }
+}
+
+int QlementineStyle::pixelMetricExt(PixelMetricExt m, const QStyleOption* opt, const QWidget* w) const {
+  Q_UNUSED(opt);
+  Q_UNUSED(w);
+
+  switch (m) {
+    // Icons.
+    case PixelMetricExt::PM_MediumIconSize:
+      return _impl->theme.iconSizeMedium.height();
+    default:
+      return 0;
+  }
+}
+
+/* Theme-related methods. */
 
 QColor const& QlementineStyle::color(MouseState const mouse, ColorRole const role) const {
   const auto primary = role == ColorRole::Primary;

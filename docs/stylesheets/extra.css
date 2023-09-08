@@ -1,0 +1,12 @@
+:root > * {
+  --md-primary-fg-color: #41cd52;
+  --md-accent-a-color: var(--md-primary-fg-color);
+  --md-accent-fg-color: var(--md-primary-fg-color);
+  --md-accent-fg-color--transparent: #41cd512a;
+  --md-footer-bg-color: #229867;
+}
+
+/* Override search popup overlay */
+:root .md-search__overlay {
+  backdrop-filter: blur(4px);
+}

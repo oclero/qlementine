@@ -9,7 +9,12 @@ class QStyleOptionCommandLinkButton;
 /// system-default CommandLinkButtton size. It actually lets content decide.
 class CommandLinkButton : public QCommandLinkButton {
 public:
-  using QCommandLinkButton::QCommandLinkButton;
+  explicit CommandLinkButton(QWidget* parent = nullptr);
+  explicit CommandLinkButton(const QString& text, QWidget* parent = nullptr);
+  explicit CommandLinkButton(const QString& text, const QString& description, QWidget* parent = nullptr);
+  explicit CommandLinkButton(
+    const QIcon& icon, const QString& text, const QString& description, QWidget* parent = nullptr);
+  ~CommandLinkButton();
 
 public:
   QSize sizeHint() const override;
@@ -19,6 +24,10 @@ public:
 protected:
   void paintEvent(QPaintEvent*) override;
   using QCommandLinkButton::initStyleOption;
-  void initStyleOption(QStyleOptionCommandLinkButton* option) const;
+
+  virtual void initStyleOption(QStyleOptionCommandLinkButton* option) const;
+
+private:
+  void updateIconSize();
 };
 } // namespace oclero::qlementine
