@@ -78,7 +78,7 @@ public: // Values.
   QColor neutralColorDisabled{ 0xEEEEEE };
   QColor neutralColorTransparent{ QRgba64::fromArgb32(0x00E1E1E1) };
 
-  QColor focusColor{ QRgba64::fromArgb32(0xa9ff6640) };
+  QColor focusColor{ QRgba64::fromArgb32(0x6640a9ff) };
 
   QColor primaryColor{ 0x1890FF };
   QColor primaryColorHovered{ 0x2C9DFF };
@@ -116,22 +116,22 @@ public: // Values.
   QColor secondaryAlternativeColorDisabled{ 0xC3C3C3 };
   QColor secondaryAlternativeColorTransparent{ QRgba64::fromArgb32(0x00909090) };
 
-  QColor statusColorSuccess{ 0x21AF73 };
-  QColor statusColorSuccessHovered{ 0x1A8D5D };
-  QColor statusColorSuccessPressed{ 0x1E9E68 };
-  QColor statusColorSuccessDisabled{ 0xC4E7D8 };
+  QColor statusColorSuccess{ 0x2BB5A0 };
+  QColor statusColorSuccessHovered{ 0x3CBFAB };
+  QColor statusColorSuccessPressed{ 0x4ECDB9 };
+  QColor statusColorSuccessDisabled{ 0xD5F0EC };
   QColor statusColorInfo{ 0x1BA8D5 };
-  QColor statusColorInfoHovered{ 0x1686AA };
-  QColor statusColorInfoPressed{ 0x1897C0 };
-  QColor statusColorInfoDisabled{ 0xcde9f2 };
-  QColor statusColorWarning{ 0xF1C861 };
-  QColor statusColorWarningHovered{ 0xD9B457 };
-  QColor statusColorWarningPressed{ 0xE5BE5C };
-  QColor statusColorWarningDisabled{ 0xF7EBCC };
-  QColor statusColorError{ 0xDF535B };
-  QColor statusColorErrorHovered{ 0xB24249 };
-  QColor statusColorErrorPressed{ 0xC94B52 };
-  QColor statusColorErrorDisabled{ 0xF4D8DA };
+  QColor statusColorInfoHovered{ 0x1EB5E5 };
+  QColor statusColorInfoPressed{ 0x29c0f0 };
+  QColor statusColorInfoDisabled{ 0xC7EAF5 };
+  QColor statusColorWarning{ 0xfbc064 };
+  QColor statusColorWarningHovered{ 0xFFCF6C };
+  QColor statusColorWarningPressed{ 0xFFD880 };
+  QColor statusColorWarningDisabled{ 0xFEEFD8 };
+  QColor statusColorError{ 0xE96B72 };
+  QColor statusColorErrorHovered{ 0xF47C83 };
+  QColor statusColorErrorPressed{ 0xFF9197 };
+  QColor statusColorErrorDisabled{ 0xF9DADC };
   QColor statusColorForeground{ 0xFFFFFF };
   QColor statusColorForegroundHovered{ 0xFFFFFF };
   QColor statusColorForegroundPressed{ 0xFFFFFF };
@@ -144,7 +144,7 @@ public: // Values.
 
   QColor borderColor{ 0xD3D3D3 };
   QColor borderColorHovered{ 0xB3B3B3 };
-  QColor borderColorPressed{ 0XA3A3A3 };
+  QColor borderColorPressed{ 0xA3A3A3 };
   QColor borderColorDisabled{ 0xE9E9E9 };
   QColor borderColorTransparent{ QRgba64::fromArgb32(0x00D3D3D3) };
 
