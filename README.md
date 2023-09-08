@@ -40,7 +40,7 @@ This library contains:
 
 ## Usage
 
-See [documentation](dcos/usage.md). Basically, you just need to add Qlementine as a Git submodule and link with it with CMake.
+See [documentation](docs/usage.md). Basically, you just need to add Qlementine as a Git submodule and link with it with CMake.
 
 ## Creator
 
