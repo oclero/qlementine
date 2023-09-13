@@ -33,6 +33,8 @@
 #include <QStyle>
 
 namespace oclero::qlementine {
+static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
+
 /// Gets the device pixel ratio for the QWidget.
 double getPixelRatio(QWidget const* w);
 
