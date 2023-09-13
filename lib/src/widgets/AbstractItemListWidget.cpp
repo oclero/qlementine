@@ -146,7 +146,7 @@ int AbstractItemListWidget::addItem(
   emit itemCountChanged();
   emit currentIndexChanged();
 
-  const auto [bgColor, fgColor, badgeBgColor, badgeFgColor] = getItemBgAndFgColor(_items.size(), MouseState::Normal);
+  const auto [bgColor, fgColor, badgeBgColor, badgeFgColor] = getItemBgAndFgColor((int)_items.size(), MouseState::Normal);
   bgColorAnimation->setDuration(animDuration);
   bgColorAnimation->setStartValue(QVariant::fromValue<QColor>(bgColor));
   bgColorAnimation->setEndValue(QVariant::fromValue<QColor>(bgColor));
@@ -167,7 +167,7 @@ int AbstractItemListWidget::addItem(
   badgeFgColorAnimation->setDuration(animDuration);
   badgeFgColorAnimation->setEasingCurve(QEasingCurve::Type::InOutCubic);
 
-  return _items.size() - 1;
+  return (int)_items.size() - 1;
 }
 
 void AbstractItemListWidget::removeItem(int index) {
@@ -431,7 +431,7 @@ QSize AbstractItemListWidget::sizeHint() const {
   }
   const auto itemCount = _items.size();
   const auto spacings = itemCount > 1 ? (itemCount - 1) * spacing : 0;
-  neededW += spacings + padding.left() + padding.right();
+  neededW += (int)spacings + padding.left() + padding.right();
   neededH += padding.top() + padding.bottom();
 
   return { neededW, neededH };
