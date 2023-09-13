@@ -1,4 +1,4 @@
-#include <oclero/qlementine/tools/ThemeEditor.hpp>
+﻿#include <oclero/qlementine/tools/ThemeEditor.hpp>
 
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
