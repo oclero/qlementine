@@ -71,8 +71,6 @@
 #include <cmath>
 #include <mutex>
 
-static constexpr auto QLEMENTINE_PI = 3.14159265358979323846;
-
 namespace oclero::qlementine {
 /// Used to initializeResources from .qrc only once.
 std::once_flag qlementineOnceFlag;
