@@ -146,7 +146,7 @@ int AbstractItemListWidget::addItem(
   emit itemCountChanged();
   emit currentIndexChanged();
 
-  const auto [bgColor, fgColor, badgeBgColor, badgeFgColor] = getItemBgAndFgColor(_items.size(), MouseState::Normal);
+  const auto [bgColor, fgColor, badgeBgColor, badgeFgColor] = getItemBgAndFgColor(itemCount(), MouseState::Normal);
   bgColorAnimation->setDuration(animDuration);
   bgColorAnimation->setStartValue(QVariant::fromValue<QColor>(bgColor));
   bgColorAnimation->setEndValue(QVariant::fromValue<QColor>(bgColor));
@@ -167,7 +167,7 @@ int AbstractItemListWidget::addItem(
   badgeFgColorAnimation->setDuration(animDuration);
   badgeFgColorAnimation->setEasingCurve(QEasingCurve::Type::InOutCubic);
 
-  return _items.size() - 1;
+  return itemCount() - 1;
 }
 
 void AbstractItemListWidget::removeItem(int index) {
@@ -275,7 +275,7 @@ bool AbstractItemListWidget::isItemEnabled(int index) const {
 }
 
 void AbstractItemListWidget::moveToNextItem() {
-  setCurrentIndex(std::min(_currentIndex + 1, static_cast<int>(_items.size()) - 1));
+  setCurrentIndex(std::min(_currentIndex + 1, itemCount() - 1));
 }
 
 void AbstractItemListWidget::moveToPreviousItem() {
@@ -338,7 +338,7 @@ void AbstractItemListWidget::keyPressEvent(QKeyEvent* e) {
   QWidget::keyPressEvent(e);
   const auto key = e->key();
   if (key == Qt::Key_Right) {
-    const auto next = std::min(static_cast<int>(_items.size()) - 1, _focusedIndex + 1);
+    const auto next = std::min(itemCount() - 1, _focusedIndex + 1);
     setFocusedIndex(next);
     e->accept();
   } else if (key == Qt::Key_Left) {
@@ -429,7 +429,7 @@ QSize AbstractItemListWidget::sizeHint() const {
     neededW += item.sizeHint.width();
     neededH = std::max(neededH, item.sizeHint.height());
   }
-  const auto itemCount = _items.size();
+  const auto itemCount = this->itemCount();
   const auto spacings = itemCount > 1 ? (itemCount - 1) * spacing : 0;
   neededW += spacings + padding.left() + padding.right();
   neededH += padding.top() + padding.bottom();
@@ -496,7 +496,7 @@ void AbstractItemListWidget::updateItemRects() {
   for (const auto& item : _items) {
     itemsNecessaryW += item.sizeHint.width();
   }
-  const auto itemCount = static_cast<int>(_items.size());
+  const auto itemCount = this->itemCount();
   const auto spacings = itemCount > 1 ? (itemCount - 1) * spacing : 0;
   itemsNecessaryW += spacings;
 
