@@ -1900,7 +1900,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // Dial: placed around the handle.
           optFocus.rect = subElementRect(SE_SliderFocusRect, &optDial, dial);
           optFocus.radiuses = optFocus.rect.height() / 2.;
-        } else if (const auto* lineEdit = qobject_cast<const QLineEdit*>(monitoredWidget)) {
+        } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
           const auto* parentWidget = monitoredWidget ? monitoredWidget->parentWidget() : nullptr;
           const auto* parentParentWidget = parentWidget ? parentWidget->parentWidget() : nullptr;
@@ -5887,14 +5887,6 @@ QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) c
 
 QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
   return mouse == MouseState::Disabled ? _impl->theme.borderColorDisabled : _impl->theme.borderColor;
-}
-
-QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
-  return mouse == MouseState::Disabled ? _impl->theme.adaptativeColorTransparent : _impl->theme.adaptativeColor1;
-}
-
-QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
-  return mouse == MouseState::Disabled ? _impl->theme.borderColor2 : _impl->theme.borderColor3;
 }
 
 QColor const& QlementineStyle::focusBorderColor() const {
