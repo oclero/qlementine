@@ -4,7 +4,7 @@
 
 # Qlementine
 
-Qlementine is a modern QStyle for desktop Qt5/Qt6 applications.
+[Qlementine](https://github.com/oclero/qlementine) is a modern QStyle for desktop Qt5/Qt6 applications, released under the MIT license.
 
 ## Library content
 
