@@ -1,5 +1,7 @@
 <div align="center" style="margin: 3em 0;">
-	<img height="64px" src="branding/logo.svg">
+  <a href="https://oclero.github.io/qlementine">
+	  <img height="64px" src="branding/logo.svg">
+  </a>
 </div>
 
 # Qlementine
@@ -10,7 +12,11 @@
 [![Qt version](https://img.shields.io/badge/Qt-5.15.3+-41CD52?logo=qt)](https://www.qt.io)
 [![Qt version](https://img.shields.io/badge/Qt-6.0.0+-41CD52?logo=qt)](https://www.qt.io)
 
+[![Linux](https://github.com/oclero/qlementine/actions/workflows/linux.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/linux.yml)
+
 Modern QStyle for desktop Qt5/Qt6 applications.
+
+See [documentation](https://oclero.github.io/qlementine) for more information.
 
 ---
 
