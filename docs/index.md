@@ -1,5 +1,5 @@
 <div align="center" style="margin-bottom: 3em;">
-  <img width="500px" alt="Qlementine logo" src="assets/images/logo.svg">
+  <img width="400px" alt="Qlementine logo" src="./assets/images/logo.svg">
 </div>
 
 # Qlementine
