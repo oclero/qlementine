@@ -24,7 +24,9 @@ Allows to pick and display a `QColor`.
 
 Displays a `ColorButton` and the color value in an editable `QLineEdit` besides.
 
-<img width="156" alt="ColorEditor" src="/assets/images/widgets/coloreditor.png">
+![Color Editor](assets/images/widgets/coloreditor.png)
+
+<img width="156" alt="ColorEditor" src="./assets/images/widgets/coloreditor.png">
 
 ## CommandLinkButton
 
