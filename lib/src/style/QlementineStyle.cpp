@@ -861,9 +861,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         p->fillRect(optItem->rect, color);
 
         // Draw selection color in the arrow area.
-        if (opt->rect.x() == 0) {
-          drawPrimitive(PE_PanelItemViewItem, opt, p, w);
-        }
+        drawPrimitive(PE_PanelItemViewItem, opt, p, w);
       }
       return;
     case PE_PanelStatusBar:
