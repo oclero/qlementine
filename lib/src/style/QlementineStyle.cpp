@@ -1221,7 +1221,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (availableW > 0 && hasText) {
           const auto textRect = QRect{ availableX, rect.y(), availableW, rect.height() };
           const auto textFlags =
-            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic | Qt::AlignLeft;
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
           // TODO handle expanding QTabBar.
           // if (expandingTabBar) {
           //   textFlags |= Qt::AlignHCenter;
@@ -1299,7 +1299,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto mouse = getMouseState(optProgressBar->state);
         const auto& color = labelForegroundColor(mouse, w);
         const auto textFlags =
-          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
+          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight;
         p->setBrush(Qt::NoBrush);
         p->setPen(color);
         p->drawText(optProgressBar->rect, textFlags, optProgressBar->text);
@@ -1759,7 +1759,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textHAlignment =
             headerAlignment.testFlag(Qt::AlignmentFlag::AlignRight) && textTheoricalW < textAvailableW ? Qt::AlignRight
                                                                                                        : Qt::AlignLeft;
-          auto textFlags = Qt::Alignment{ Qt::AlignVCenter | Qt::TextSingleLine | Qt::TextHideMnemonic };
+          auto textFlags = Qt::Alignment{ int(Qt::AlignVCenter | Qt::TextSingleLine) };
           textFlags.setFlag(textHAlignment, true);
           p->drawText(textRect, int(textFlags), elidedText);
         }
@@ -2029,7 +2029,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             optComboBox->currentText, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto textRect = QRect{ availableX, contentRect.y(), availableW, contentRect.height() };
           constexpr auto textFlags =
-            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
           p->setBrush(Qt::NoBrush);
 
           const auto status = widgetStatus(w);
@@ -2166,7 +2166,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textX = availableX;
           const auto textRect = QRect{ textX, contentRect.y(), availableW, contentRect.height() };
           const auto textAlignment = optItem->displayAlignment;
-          auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic
+          auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine
                            | (textAlignment.testFlag(Qt::AlignRight) ? Qt::AlignRight : Qt::AlignLeft);
           p->setFont(optItem->font);
           p->setBrush(Qt::NoBrush);
@@ -2995,7 +2995,7 @@ void QlementineStyle::drawComplexControl(
           const auto mouse = getMouseState(groupBoxOpt->state);
           const auto& textColor = groupBoxTitleColor(mouse, w);
           constexpr auto textFlags =
-            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
           p->setFont(font);
           p->setPen(textColor);
           p->setRenderHint(QPainter::Antialiasing, true);
