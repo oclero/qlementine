@@ -92,7 +92,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
       const auto& iconSize = opt.decorationSize; // Get icon size.
       const auto pixmap = getPixmap(icon, iconSize, mouse, CheckState::NotChecked, _widget);
       const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_widget->style());
-      const auto colorize = qlementineStyle && qlementineStyle->isAutoIconColorEnabled(_widget);
+      const auto autoIconColor = qlementineStyle ? qlementineStyle->autoIconColor(_widget) : AutoIconColor::None;
       const auto pixmapPixelRatio = pixmap.devicePixelRatio();
       const auto pixmapW = pixmapPixelRatio != 0 ? static_cast<int>((qreal) pixmap.width() / pixmapPixelRatio) : 0;
       const auto pixmapH = pixmapPixelRatio != 0 ? static_cast<int>((qreal) pixmap.height() / pixmapPixelRatio) : 0;
@@ -102,7 +102,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
       availableW -= iconSize.width() + spacing;
       availableX += iconSize.width() + spacing;
 
-      if (mouse == MouseState::Disabled && !colorize) {
+      if (mouse == MouseState::Disabled && autoIconColor == AutoIconColor::None) {
         // Change only the icon's tint and opacity, so it looks disabled.
         const auto& sourceOverBgColor = qlementineStyle ? qlementineStyle->listItemBackgroundColor(
                                           MouseState::Normal, selected, focus, active, idx, _widget)
@@ -116,7 +116,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
         p->setOpacity(backupOpacity);
       } else {
         // Actually color the whole icon if needed.
-        const auto& colorizedPixmap = colorize ? getColorizedPixmap(pixmap, fgColor) : pixmap;
+        const auto& colorizedPixmap = qlementineStyle ? qlementineStyle->getColorizedPixmap(pixmap, autoIconColor, fgColor, fgColor) : pixmap;
         p->drawPixmap(pixmapRect, colorizedPixmap);
       }
     }
