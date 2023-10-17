@@ -1221,7 +1221,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (availableW > 0 && hasText) {
           const auto textRect = QRect{ availableX, rect.y(), availableW, rect.height() };
           const auto textFlags =
-            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic | Qt::AlignLeft;
           // TODO handle expanding QTabBar.
           // if (expandingTabBar) {
           //   textFlags |= Qt::AlignHCenter;
@@ -1299,7 +1299,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto mouse = getMouseState(optProgressBar->state);
         const auto& color = labelForegroundColor(mouse, w);
         const auto textFlags =
-          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight;
+          Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignRight | Qt::TextHideMnemonic;
         p->setBrush(Qt::NoBrush);
         p->setPen(color);
         p->drawText(optProgressBar->rect, textFlags, optProgressBar->text);
@@ -1759,7 +1759,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textHAlignment =
             headerAlignment.testFlag(Qt::AlignmentFlag::AlignRight) && textTheoricalW < textAvailableW ? Qt::AlignRight
                                                                                                        : Qt::AlignLeft;
-          auto textFlags = Qt::Alignment{ int(Qt::AlignVCenter | Qt::TextSingleLine) };
+          auto textFlags = Qt::Alignment{ Qt::AlignVCenter | Qt::TextSingleLine };
           textFlags.setFlag(textHAlignment, true);
           p->drawText(textRect, int(textFlags), elidedText);
         }
@@ -2029,7 +2029,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             optComboBox->currentText, Qt::ElideRight, availableW, Qt::TextSingleLine);
           const auto textRect = QRect{ availableX, contentRect.y(), availableW, contentRect.height() };
           constexpr auto textFlags =
-            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setBrush(Qt::NoBrush);
 
           const auto status = widgetStatus(w);
