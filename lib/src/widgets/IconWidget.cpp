@@ -86,15 +86,14 @@ QSize IconWidget::sizeHint() const {
 
 void IconWidget::paintEvent(QPaintEvent*) {
   const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style());
-  const auto autoColorize = qlementineStyle && qlementineStyle->isAutoIconColorEnabled(this);
-  const auto iconMode = isEnabled() || autoColorize ? QIcon::Mode::Normal : QIcon::Mode::Disabled;
+  const auto autoIconColor = qlementineStyle ? qlementineStyle->autoIconColor(this) : AutoIconColor::None;
+  const auto iconMode = isEnabled() || autoIconColor != AutoIconColor::None ? QIcon::Mode::Normal : QIcon::Mode::Disabled;
   const auto pixmap = _icon.pixmap(_iconSize.height(), iconMode, QIcon::State::Off);
   if (pixmap.isNull())
     return;
 
-  const auto& colorizedPixmap = autoColorize ? colorizePixmap(pixmap,
-                                  palette().color(isEnabled() ? QPalette::Normal : QPalette::Disabled, QPalette::Text))
-                                             : pixmap;
+  const auto color = palette().color(isEnabled() ? QPalette::Normal : QPalette::Disabled, QPalette::Text);
+  const auto& colorizedPixmap = autoIconColor != AutoIconColor::None ? colorizePixmap(pixmap, color) : pixmap;
 
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);

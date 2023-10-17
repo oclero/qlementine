@@ -205,14 +205,14 @@ TabBarEventFilter::TabBarEventFilter(QlementineStyle& style, QTabBar* tabBar)
     _leftButton->setFocusPolicy(Qt::NoFocus);
     _leftButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     _leftButton->setFixedSize(_leftButton->sizeHint());
-    style.setAutoIconColorEnabled(_leftButton, false);
+    style.setAutoIconColor(_leftButton, AutoIconColor::None);
     _leftButton->installEventFilter(buttonEvtFilter);
 
     _rightButton = toolButtons.at(1);
     _rightButton->setFocusPolicy(Qt::NoFocus);
     _rightButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     _rightButton->setFixedSize(_rightButton->sizeHint());
-    style.setAutoIconColorEnabled(_rightButton, false);
+    style.setAutoIconColor(_rightButton, AutoIconColor::None);
     _rightButton->installEventFilter(buttonEvtFilter);
   }
 }
