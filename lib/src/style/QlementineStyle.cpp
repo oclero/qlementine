@@ -1759,7 +1759,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto textHAlignment =
             headerAlignment.testFlag(Qt::AlignmentFlag::AlignRight) && textTheoricalW < textAvailableW ? Qt::AlignRight
                                                                                                        : Qt::AlignLeft;
-          auto textFlags = Qt::Alignment{ Qt::AlignVCenter | Qt::TextSingleLine };
+          auto textFlags = Qt::Alignment{ int(Qt::AlignVCenter | Qt::TextSingleLine) };
           textFlags.setFlag(textHAlignment, true);
           p->drawText(textRect, int(textFlags), elidedText);
         }
