@@ -2622,8 +2622,7 @@ void QlementineStyle::drawComplexControl(
             if (qobject_cast<const QDateTimeEdit*>(w)) {
               const auto pixelRatio = getPixelRatio(w);
               const auto& icon = _impl->getStandardIconExt(StandardPixmapExt::SP_Calendar, indicatorSize * pixelRatio);
-              const auto autoIconColor = this->autoIconColor(w);
-              const auto colorize = autoIconColor != AutoIconColor::None;
+              const auto colorize = true;
               drawIcon(indicatorRect, p, icon, mouse, CheckState::Checked, w, colorize, currentFgColor);
             } else {
               p->setBrush(Qt::NoBrush);
