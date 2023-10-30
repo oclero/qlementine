@@ -292,10 +292,10 @@ AutoIconColor QlementineStyle::autoIconColor() const {
 }
 
 // Sets automatic icon colorization for a specific widget.
-// This overrides the default value from autoIconColorEnabled().
-void QlementineStyle::setAutoIconColor(QWidget* widget, AutoIconColor mode) {
+// This overrides the default value from ist parent or from autoIconColorEnabled().
+void QlementineStyle::setAutoIconColor(QWidget* widget, AutoIconColor autoIconColor) {
   if (widget) {
-    widget->setProperty(Property_AutoIconColor, QVariant::fromValue(mode));
+    widget->setProperty(Property_AutoIconColor, QVariant::fromValue(autoIconColor));
   }
 }
 
@@ -305,7 +305,7 @@ AutoIconColor QlementineStyle::autoIconColor(const QWidget* widget) const {
   }
   const auto property = widget->property(Property_AutoIconColor);
   if (!property.isValid()) {
-    return autoIconColor();
+    return autoIconColor(widget->parentWidget());
   }
   return property.value<AutoIconColor>();
 }
