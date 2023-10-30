@@ -91,7 +91,7 @@ enum class ColorizeMode {
 enum class AutoIconColor {
     // No automatic icon recolorization.
     None,
-    // Recoloize with the foreground color.
+    // Recolorize with the foreground color.
     ForegroundColor,
     // Recolorize with the current text color, which might be different from the foreground color
     // if the text color was customized in the palette.
