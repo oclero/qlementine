@@ -97,8 +97,8 @@ void IconWidget::paintEvent(QPaintEvent*) {
 
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
-  const auto x = (width() - colorizedPixmap.width()) / 2;
-  const auto y = (height() - colorizedPixmap.height()) / 2;
+  const auto x = (width() - _iconSize.width()) / 2;
+  const auto y = (height() - _iconSize.height()) / 2;
   p.drawPixmap(x, y, colorizedPixmap);
 }
 } // namespace oclero::qlementine
