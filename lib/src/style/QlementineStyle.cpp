@@ -320,6 +320,7 @@ QPixmap QlementineStyle::getColorizedPixmap(const QPixmap& input, AutoIconColor 
   case AutoIconColor::TextColor:
     return qlementine::getColorizedPixmap(input, textColor);
   }
+  return input;
 }
 
 QIcon QlementineStyle::makeIcon(const QString& svgPath) {
