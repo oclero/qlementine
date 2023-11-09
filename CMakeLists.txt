@@ -26,7 +26,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # The library.
 add_subdirectory(lib)
 
+# Sandbox.
 if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
-  # Sandbox.
   add_subdirectory(sandbox)
 endif()
