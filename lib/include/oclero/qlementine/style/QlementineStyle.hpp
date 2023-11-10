@@ -23,6 +23,7 @@
 #pragma once
 
 #include <oclero/qlementine/style/Theme.hpp>
+#include <oclero/qlementine/utils/ImageUtils.hpp>
 
 #include <QCommonStyle>
 
@@ -83,12 +84,14 @@ public:
 
   void triggerCompleteRepaint();
 
-  void setAutoIconColorEnabled(bool enabled);
-  bool isAutoIconColorEnabled() const;
+  void setAutoIconColor(AutoIconColor autoIconColor);
+  AutoIconColor autoIconColor() const;
 
-  void setAutoIconColorEnabled(QWidget* widget, bool enabled);
-  bool isAutoIconColorEnabled(const QWidget* widget) const;
+  static void setAutoIconColor(QWidget* widget, AutoIconColor autoIconColor);
+  AutoIconColor autoIconColor(const QWidget* widget) const;
 
+  QPixmap getColorizedPixmap(const QPixmap& input, AutoIconColor autoIconColor,
+                             const QColor& fgcolor, const QColor& textColor) const;
   static QIcon makeIcon(const QString& svgPath);
 
 public: // QStyle overrides.
@@ -191,7 +194,7 @@ public: // Theme-related methods.
     ActiveState const active, const QModelIndex& index, const QWidget* widget = nullptr) const;
   virtual QColor const& listItemForegroundColor(
     MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;
-  virtual bool listItemIsAutoIconColorEnabled(MouseState const mouse, SelectionState const selected,
+  virtual AutoIconColor listItemAutoIconColor(MouseState const mouse, SelectionState const selected,
     FocusState const focus, ActiveState const active, const QModelIndex& index, const QWidget* widget = nullptr) const;
   virtual QColor const& listItemCaptionForegroundColor(
     MouseState const mouse, SelectionState const selected, FocusState const focus, ActiveState const active) const;

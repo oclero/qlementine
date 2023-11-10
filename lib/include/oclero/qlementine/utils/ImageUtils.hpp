@@ -87,6 +87,17 @@ enum class ColorizeMode {
   Tint,
 };
 
+/// Specifies which color to apply when colorizing an icon.
+enum class AutoIconColor {
+    // No automatic icon recolorization.
+    None,
+    // Recolorize with the foreground color.
+    ForegroundColor,
+    // Recolorize with the current text color, which might be different from the foreground color
+    // if the text color was customized in the palette.
+    TextColor,
+};
+
 /// Gets the pixmap in the cache, or creates it if not yet there.
 QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorizeMode mode);
 
@@ -130,3 +141,5 @@ QPixmap getDropShadowPixmap(QPixmap const& input, double blurRadius, QColor cons
 /// Gets a drop shadow for a QRect.
 QPixmap getDropShadowPixmap(QSize const& size, double borderRadius, double blurRadius, QColor const& color = Qt::black);
 } // namespace oclero::qlementine
+
+Q_DECLARE_METATYPE(oclero::qlementine::AutoIconColor);
