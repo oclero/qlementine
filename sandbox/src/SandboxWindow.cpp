@@ -627,8 +627,7 @@ struct SandboxWindow::Impl {
     tableView->setSortingEnabled(true);
 
     if (auto* qlementineStyle = qobject_cast<QlementineStyle*>(tableView->style())) {
-      qlementineStyle->setAutoIconColorEnabled(false);
-      qlementineStyle->setAutoIconColorEnabled(tableView, false);
+      qlementineStyle->setAutoIconColor(tableView, oclero::qlementine::AutoIconColor::None);
     }
 
     constexpr auto columnCount = 3;
@@ -678,7 +677,7 @@ struct SandboxWindow::Impl {
     treeWidget->setColumnCount(1);
     treeWidget->setHeaderHidden(true);
     treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    qlementineStyle->setAutoIconColorEnabled(treeWidget, false);
+    qlementineStyle->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
 
     for (auto i = 0; i < 3; ++i) {
       auto* root = new QTreeWidgetItem(treeWidget);
@@ -872,7 +871,7 @@ struct SandboxWindow::Impl {
     auto* tabBar = new QTabBar(windowContent);
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    qlementineStyle->setAutoIconColorEnabled(tabBar, false);
+    qlementineStyle->setAutoIconColor(tabBar, oclero::qlementine::AutoIconColor::None);
 
     // QTabBar features.
     tabBar->setTabsClosable(true);
@@ -1051,7 +1050,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       treeWidget->setHeaderHidden(true);
       treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
       treeWidget->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-      qlementineStyle->setAutoIconColorEnabled(treeWidget, false);
+      qlementineStyle->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
 
       for (auto i = 0; i < 3; ++i) {
         auto* root = new QTreeWidgetItem(treeWidget);
