@@ -433,7 +433,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
         const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
         const auto role = getColorRole(opt->state, isDefault);
-        const auto& bgColor = buttonBackgroundColor(mouse, role);
+        const auto& bgColor = buttonBackgroundColor(mouse, role, w);
         const auto& currentBgColor =
           _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         const auto radiuses = optRoundedButton ? optRoundedButton->radiuses : RadiusesF{ _impl->theme.borderRadius };
@@ -5125,7 +5125,8 @@ QColor const& QlementineStyle::frameBackgroundColor(MouseState const mouse) cons
     return _impl->theme.backgroundColorMain1;
 }
 
-QColor const& QlementineStyle::buttonBackgroundColor(MouseState const mouse, ColorRole const role) const {
+QColor const& QlementineStyle::buttonBackgroundColor(MouseState const mouse, ColorRole const role, const QWidget* w) const {
+  Q_UNUSED(w)
   const auto primary = role == ColorRole::Primary;
 
   switch (mouse) {
@@ -5143,7 +5144,8 @@ QColor const& QlementineStyle::buttonBackgroundColor(MouseState const mouse, Col
   }
 }
 
-QColor const& QlementineStyle::buttonForegroundColor(MouseState const mouse, ColorRole const role) const {
+QColor const& QlementineStyle::buttonForegroundColor(MouseState const mouse, ColorRole const role, const QWidget* w) const {
+  Q_UNUSED(w)
   const auto primary = role == ColorRole::Primary;
 
   switch (mouse) {
