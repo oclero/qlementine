@@ -335,6 +335,12 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundDisabled);
       secondaryColorForegroundTransparent = colorWithAlpha(secondaryColorForeground, 0);
 
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor1);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor2);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor3);
+      TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor4);
+      semiTransparentColorTransparent = colorWithAlpha(semiTransparentColor1, 0);
+
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccess);
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessHovered);
       TRY_GET_COLOR_ATTRIBUTE(jsonObj, statusColorSuccessPressed);
