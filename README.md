@@ -1,6 +1,6 @@
-<div align="center" style="margin: 3em 0;">
+<div align="center">
   <a href="https://oclero.github.io/qlementine">
-	  <img height="64px" src="branding/logo.svg">
+	  <img style="margin-bottom: 2em;"  src="branding/thumbnail.png">
   </a>
 </div>
 
