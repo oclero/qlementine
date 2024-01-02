@@ -157,8 +157,8 @@ public: // Theme-related methods.
 
   virtual QColor const& frameBackgroundColor(MouseState const mouse) const;
 
-  virtual QColor const& buttonBackgroundColor(MouseState const mouse, ColorRole const role) const;
-  virtual QColor const& buttonForegroundColor(MouseState const mouse, ColorRole const role) const;
+  virtual QColor const& buttonBackgroundColor(MouseState const mouse, ColorRole const role, const QWidget* w = nullptr) const;
+  virtual QColor const& buttonForegroundColor(MouseState const mouse, ColorRole const role, const QWidget* w = nullptr) const;
 
   virtual QColor const& toolButtonBackgroundColor(MouseState const mouse, ColorRole const role) const;
   virtual QColor const& toolButtonForegroundColor(MouseState const mouse, ColorRole const role) const;
