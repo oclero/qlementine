@@ -1,5 +1,7 @@
 <div align="center">
-	<img height="50" src="branding/logo.svg">
+  <a href="https://oclero.github.io/qlementine">
+	  <img style="margin-bottom: 2em;"  src="branding/thumbnail.png">
+  </a>
 </div>
 
 # Qlementine
@@ -10,7 +12,13 @@
 [![Qt version](https://img.shields.io/badge/Qt-5.15.3+-41CD52?logo=qt)](https://www.qt.io)
 [![Qt version](https://img.shields.io/badge/Qt-6.0.0+-41CD52?logo=qt)](https://www.qt.io)
 
+[![Linux](https://github.com/oclero/qlementine/actions/workflows/linux.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/linux.yml)
+[![Linux](https://github.com/oclero/qlementine/actions/workflows/windows.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/windows.yml)
+[![Linux](https://github.com/oclero/qlementine/actions/workflows/macos.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/macos.yml)
+
 Modern QStyle for desktop Qt5/Qt6 applications.
+
+See [documentation](https://oclero.github.io/qlementine) for more information.
 
 ---
 
@@ -40,7 +48,7 @@ This library contains:
 
 ## Usage
 
-See [documentation](dcos/usage.md). Basically, you just need to add Qlementine as a Git submodule and link with it with CMake.
+See [documentation](docs/usage.md). Basically, you just need to add Qlementine as a Git submodule and link with it with CMake.
 
 ## Creator
 

@@ -1,0 +1,44 @@
+name: Docs
+
+on:
+  push:
+    branches: [ "master" ]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Out
+        # Checks out the repository.
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        # Install Python.
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Create cache key
+        # Store the cache_id environmental variable to access it later during cache key creation.
+        run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+
+      - name: Restore cache
+        # Restores cache.
+        uses: actions/cache@v3
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+
+      - name: Install MkDocs and dependencies
+        # Installs mkdocs and associated plugins.
+        run: pip install mkdocs-material mkdocs-git-revision-date-localized-plugin
+
+      - name: Build and deploy Mkdocs
+        # Builds website and deploys it to branche "gh-pages".
+        run: mkdocs gh-deploy --force

@@ -1,10 +1,10 @@
 <div align="center" style="margin-bottom: 3em;">
-  <img width="500px" alt="Qlementine logo" src="assets/images/logo.svg">
+  <img width="400px" alt="Qlementine logo" src="./assets/images/logo.svg">
 </div>
 
 # Qlementine
 
-Qlementine is a modern QStyle for desktop Qt5/Qt6 applications.
+[Qlementine](https://github.com/oclero/qlementine) is a modern QStyle for desktop Qt5/Qt6 applications, released under the MIT license.
 
 ## Library content
 

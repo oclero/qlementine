@@ -24,13 +24,13 @@ Allows to pick and display a `QColor`.
 
 Displays a `ColorButton` and the color value in an editable `QLineEdit` besides.
 
-<img width="156" alt="ColorEditor" src="/assets/images/widgets/coloreditor.png">
+![ColorEditor](assets/images/widgets/coloreditor.png)
 
 ## CommandLinkButton
 
 Improves `QCommandLinkButton` by supporting the `icon` property of `QAbstractButton`.
 
-<img width="462" alt="CommandLinkButton" src="/assets/images/widgets/commandlinkbutton.png">
+![CommandLinkButton](assets/images/widgets/commandlinkbutton.png)
 
 ## Expander
 
@@ -44,13 +44,13 @@ Widget that just shows an icon.
 
 Improves `QLabel`` by allowing text roles as with HTML (headings h1, etc.).
 
-<img width="194" alt="Label" src="/assets/images/widgets/label.png">
+![Label](assets/images/widgets/label.png)
 
 ## LineEdit
 
 Improves `QLineEdit` by allowing statuses to display feedback for user (valid, error, warning, etc.).
 
-<img width="228" alt="LineEdit" src="/assets/images/widgets/lineedit.png">
+![LineEdit](assets/images/widgets/lineedit.png)
 
 ## Menu
 
@@ -60,13 +60,13 @@ Improves `QMenu` by adding predicates (lambda functions) to update state.
 
 A widget that allows to switch between a range of elements, such as seen on Android.
 
-<img width="391" alt="NavigationBar" src="/assets/images/widgets/navigationbar.png">
+![NavigationBar](assets/images/widgets/navigationbar.png)
 
 ## Popover
 
 A popup-like widget that opens in a separate system window, with a drop shadow and corner radiuses (hence transparency) and an opacity animation when toggling visibility.
 
-<img width="203" alt="Popover" src="/assets/images/widgets/popover.png">
+![Popover](assets/images/widgets/popover.png)
 
 ## PopoverButton
 
@@ -80,16 +80,16 @@ Improves `QFocusFrame` by adding a corner radius property.
 
 A widget that allows to switch between a range of elements, such as seen on iOS or macOS.
 
-<img width="405" alt="SegmentedControl" src="/assets/images/widgets/segmentedcontrol.png">
+![SegmentedControl](assets/images/widgets/segmentedcontrol)
 
 ## StatusBadgeWidget
 
 Widget to display a status icon: info, warning, error, success. Available in two standard sizes.
 
-<img width="234" alt="StatusBadgeWidget" src="/assets/images/widgets/badges.png">
+![StatusBadgeWidget](assets/images/widgets/badges)
 
 ## Switch
 
 The famous Switch to toggle between states.
 
-<img width="193" alt="Switch" src="/assets/images/widgets/switch-checked.png">
+![Switch](assets/images/widgets/switch-checked.png)
