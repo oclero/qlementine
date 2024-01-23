@@ -95,7 +95,11 @@ bool shouldNotHaveWheelEvents(const QWidget* w) {
 }
 
 int getTabIndex(const QStyleOptionTab* optTab, const QWidget* parentWidget) {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+  if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTab*>(optTab)) {
+#else
   if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTabV4*>(optTab)) {
+#endif
     return optTabV4->tabIndex;
   }
 
