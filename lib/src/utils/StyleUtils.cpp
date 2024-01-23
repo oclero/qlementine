@@ -94,20 +94,20 @@ bool shouldNotHaveWheelEvents(const QWidget* w) {
          || qobject_cast<const QAbstractSpinBox*>(w);
 }
 
-int getTabIndex(const QStyleOptionTab* optTab, [[maybe_unused]]const QWidget* parentWidget) {
-  #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    return optTab->tabIndex;
-  #else
-    if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTabV4*>(optTab)) {
-      return optTabV4->tabIndex;
-    }
+int getTabIndex(const QStyleOptionTab* optTab, const QWidget* parentWidget) {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+  if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTab*>(optTab)) {
+#else
+  if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTabV4*>(optTab)) {
+#endif
+    return optTabV4->tabIndex;
+  }
 
-    if (const auto* tabBar = qobject_cast<const QTabBar*>(parentWidget)) {
-      return tabBar->tabAt(optTab->rect.topLeft());
-    }
+  if (const auto* tabBar = qobject_cast<const QTabBar*>(parentWidget)) {
+    return tabBar->tabAt(optTab->rect.topLeft());
+  }
 
-    return -1;
-  #endif
+  return -1;
 }
 
 int getTabCount(const QWidget* parentWidget) {

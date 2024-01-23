@@ -73,7 +73,7 @@ void centerWidget(QWidget* widget, QWidget* host) {
     const auto& hostRect = host->geometry();
     widget->move(hostRect.center() - widget->rect().center());
   } else {
-    const auto screenGeometry = QGuiApplication::screens()[0]->geometry();
+    const auto screenGeometry = QGuiApplication::screens().constFirst()->geometry();
     const auto x = (screenGeometry.width() - widget->width()) / 2;
     const auto y = (screenGeometry.height() - widget->height()) / 2;
     widget->move(x, y);

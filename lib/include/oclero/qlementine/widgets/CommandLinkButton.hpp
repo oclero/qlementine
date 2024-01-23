@@ -14,7 +14,7 @@ public:
   explicit CommandLinkButton(const QString& text, const QString& description, QWidget* parent = nullptr);
   explicit CommandLinkButton(
     const QIcon& icon, const QString& text, const QString& description, QWidget* parent = nullptr);
-  ~CommandLinkButton();
+  ~CommandLinkButton() override;
 
 public:
   QSize sizeHint() const override;

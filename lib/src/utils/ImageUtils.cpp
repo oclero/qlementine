@@ -154,11 +154,11 @@ QPixmap getTintedPixmap(const QPixmap& input, const QColor& color) {
 }
 
 QString getColorizedPixmapKey(QPixmap const& pixmap, QColor const& color) {
-  return QString("qlementine_color_%1_%2").arg(toHex(pixmap.cacheKey())).arg(toHex(color.rgba()));
+  return QString("qlementine_color_%1_%2").arg(toHex(pixmap.cacheKey()), toHex(color.rgba()));
 }
 
 QString getTintedPixmapKey(QPixmap const& pixmap, QColor const& color) {
-  return QString("qlementine_tint_%1_%2").arg(toHex(pixmap.cacheKey())).arg(toHex(color.rgba()));
+  return QString("qlementine_tint_%1_%2").arg(toHex(pixmap.cacheKey()), toHex(color.rgba()));
 }
 
 QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorizeMode mode) {
