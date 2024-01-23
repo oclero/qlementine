@@ -13,6 +13,8 @@
 [![Qt version](https://img.shields.io/badge/Qt-6.0.0+-41CD52?logo=qt)](https://www.qt.io)
 
 [![Linux](https://github.com/oclero/qlementine/actions/workflows/linux.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/linux.yml)
+[![Linux](https://github.com/oclero/qlementine/actions/workflows/windows.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/windows.yml)
+[![Linux](https://github.com/oclero/qlementine/actions/workflows/macos.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/macos.yml)
 
 Modern QStyle for desktop Qt5/Qt6 applications.
 
