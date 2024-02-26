@@ -1200,6 +1200,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto textAvailableWidth = rect.width() - (iconSize.isEmpty() ? 0 : iconSize.width() + spacing);
         const auto elidedText = fm.elidedText(optTab->text, Qt::ElideMiddle, textAvailableWidth, Qt::TextSingleLine);
         const auto hasText = elidedText != QStringLiteral("…");
+        const auto textColor = tabTextColor(mouse, selection, optTab, w);
 
         // TODO handle expanding QTabBar.
         //const auto textW = hasText ? fm.boundingRect(rect, Qt::AlignLeft, elidedText).width() : 0;
@@ -1215,7 +1216,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (!iconSize.isEmpty()) {
           const auto checked = selection == SelectionState::Selected ? CheckState::Checked : CheckState::NotChecked;
           const auto pixmap = getPixmap(icon, iconSize, mouse, checked, w);
-          const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor);
+          const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, textColor);
           const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
           const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.width() / pixmapPixelRatio) : 0;
           const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.height() / pixmapPixelRatio) : 0;
@@ -1239,7 +1240,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           //   textFlags |= Qt::AlignLeft;
           // }
           p->setBrush(Qt::NoBrush);
-          p->setPen(fgColor);
+          p->setPen(textColor);
           p->drawText(textRect, textFlags, elidedText);
         }
       }
@@ -5630,6 +5631,13 @@ QColor const& QlementineStyle::tabBackgroundColor(MouseState const mouse, Select
 QColor const& QlementineStyle::tabForegroundColor(MouseState const mouse, SelectionState const selected) const {
   Q_UNUSED(selected)
   return buttonForegroundColor(mouse, ColorRole::Secondary);
+}
+
+QColor QlementineStyle::tabTextColor(MouseState const mouse, SelectionState const selected,
+                                     const QStyleOptionTab *optTab, const QWidget *w) const {
+  Q_UNUSED(optTab);
+  Q_UNUSED(w);
+  return tabForegroundColor(mouse, selected);
 }
 
 QColor const& QlementineStyle::tabCloseButtonBackgroundColor(
