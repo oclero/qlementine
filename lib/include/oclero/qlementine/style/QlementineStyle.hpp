@@ -28,6 +28,7 @@
 #include <QCommonStyle>
 
 class QAbstractItemView;
+class QStyleOptionTab;
 
 namespace oclero::qlementine {
 class CommandLinkButtonPaintEventFilter;
@@ -225,6 +226,8 @@ public: // Theme-related methods.
   virtual QColor const& tabBarBottomShadowColor() const;
   virtual QColor const& tabBackgroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabForegroundColor(MouseState const mouse, SelectionState const selected) const;
+  virtual QColor tabTextColor(MouseState const mouse, SelectionState const selected,
+                              const QStyleOptionTab *optTab, const QWidget *w = nullptr) const;
   virtual QColor const& tabCloseButtonBackgroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabCloseButtonForegroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabBarScrollButtonBackgroundColor(MouseState const mouse) const;
