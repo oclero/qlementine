@@ -8,14 +8,6 @@ find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
   REQUIRED
 )
 
-if(WIN32)
-  find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
-    COMPONENTS
-      WinExtras
-    REQUIRED
-  )
-endif()
-
 # Declare files.
 set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimator.cpp
@@ -141,13 +133,6 @@ target_link_libraries(${LIB_TARGET_NAME}
     Qt::Widgets
     Qt::Svg
 )
-
-if(WIN32)
-	target_link_libraries(${LIB_TARGET_NAME}
-    PRIVATE
-      Qt::WinExtras
-  )
-endif()
 
 set_target_properties(${LIB_TARGET_NAME}
   PROPERTIES
