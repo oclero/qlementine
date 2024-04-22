@@ -28,12 +28,12 @@
 #include <QScreen>
 #include <QWindow>
 
-#ifdef WIN32
+#ifdef _WIN32
 #  include <QtWin>
 #  include <windows.h>
 #  include <windowsx.h>
 #  include <winuser.h>
-#endif // WIN32
+#endif // _WIN32
 
 #include <array>
 #include <algorithm>
@@ -127,7 +127,7 @@ void FramelessWindowBehavior::setSystemMenuAreaWidth(int width) {
 }
 
 void FramelessWindowBehavior::showSystemMenu(const QPoint& position) {
-#ifdef WIN32
+#ifdef _WIN32
   const auto hWnd = reinterpret_cast<HWND>(_parentWindowHandle->winId());
 
   const auto menu = ::GetSystemMenu(hWnd, FALSE);
@@ -142,7 +142,7 @@ void FramelessWindowBehavior::showSystemMenu(const QPoint& position) {
   }
 #else
   Q_UNUSED(position);
-#endif // WIN32
+#endif // _WIN32
 }
 
 bool FramelessWindowBehavior::eventFilter(QObject* obj, QEvent* evt) {
@@ -161,7 +161,7 @@ bool FramelessWindowBehavior::eventFilter(QObject* obj, QEvent* evt) {
 }
 
 bool FramelessWindowBehavior::nativeEventFilter(const QByteArray& eventType, void* message, long* result) {
-#ifdef WIN32
+#ifdef _WIN32
   if (eventType != QByteArrayLiteral("windows_generic_MSG"))
     return false;
 
@@ -369,7 +369,7 @@ void FramelessWindowBehavior::updateNativeWindowProperties() {
 }
 
 int FramelessWindowBehavior::hitTest(const QPoint& mousePos) const {
-#ifdef WIN32
+#ifdef _WIN32
   enum RegionMask {
     Client = 0x0000,
     Top = 0x0001,
@@ -431,13 +431,13 @@ int FramelessWindowBehavior::hitTest(const QPoint& mousePos) const {
   return hitTestNativeTitleBar(localPos) ? HTCAPTION : HTCLIENT;
 #else
   Q_UNUSED(mousePos);
-#endif // WIN32
+#endif // _WIN32
 
   return false;
 }
 
 bool FramelessWindowBehavior::hitTestNativeTitleBar(const QPoint& mousePos) const {
-#ifdef WIN32
+#ifdef _WIN32
   const int scaledTitleBarHeight = _titleBarHeight * _scaleFactor;
 
   if (!_parentWindowWidget)
@@ -478,12 +478,12 @@ bool FramelessWindowBehavior::hitTestNativeTitleBar(const QPoint& mousePos) cons
   }
 #else
   Q_UNUSED(mousePos);
-#endif // WIN32
+#endif // _WIN32
   return true;
 }
 
 QRect FramelessWindowBehavior::availableGeometry() const {
-#ifdef WIN32
+#ifdef _WIN32
   MONITORINFO monitorInfo{ 0, RECT(), RECT(), 0 };
   monitorInfo.cbSize = sizeof(MONITORINFO);
 
@@ -496,13 +496,13 @@ QRect FramelessWindowBehavior::availableGeometry() const {
 
   return QRect(monitorInfo.rcWork.left, monitorInfo.rcWork.top, monitorInfo.rcWork.right - monitorInfo.rcWork.left,
     monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
-#endif // WIN32
+#endif // _WIN32
 
   return QRect();
 }
 
 QRect FramelessWindowBehavior::systemMenuArea() const {
-#ifdef WIN32
+#ifdef _WIN32
   QRect rect{ 0, 0, _systemMenuAreaWidth, _titleBarHeight };
 
   if (isMaximized(_parentWindowHandle)) {
@@ -512,13 +512,13 @@ QRect FramelessWindowBehavior::systemMenuArea() const {
   }
 
   return rect;
-#endif // WIN32
+#endif // _WIN32
 
   return QRect();
 }
 
 void FramelessWindowBehavior::updateNativeWindowProperties(QWindow* const window) {
-#ifdef WIN32
+#ifdef _WIN32
   if (!window)
     return;
 
@@ -561,11 +561,11 @@ void FramelessWindowBehavior::updateNativeWindowProperties(QWindow* const window
   }
 #else
   Q_UNUSED(window);
-#endif // WIN32
+#endif // _WIN32
 }
 
 bool FramelessWindowBehavior::isMaximized(const QWindow* const window) {
-#ifdef WIN32
+#ifdef _WIN32
   if (!window)
     return false;
 
@@ -581,6 +581,6 @@ bool FramelessWindowBehavior::isMaximized(const QWindow* const window) {
 #else
   Q_UNUSED(window);
   return false;
-#endif // WIN32
+#endif // _WIN32
 }
 } // namespace oclero::qlementine

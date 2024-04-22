@@ -96,7 +96,7 @@ struct QlementineStyleImpl {
 
   /// Registers all the theme fonts to Qt's font database.
   void installFonts() {
-#if defined(WIN32)
+#if defined(_WIN32)
     const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.ttf");
 #else
     const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.otf");
@@ -722,11 +722,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto& borderColor = toolTipBorderColor();
       // More investigation is needed to make rounded tooltips on Windows.
       // Currently we only support this feature on MacOS.
-#ifdef WIN32
+#ifdef _WIN32
       constexpr auto radius = 0;
 #else
       const auto radius = _impl->theme.borderRadius;
-#endif // WIN32
+#endif // _WIN32
 
       const auto borderW = _impl->theme.borderWidth;
       p->setRenderHint(QPainter::Antialiasing, true);
@@ -4752,7 +4752,7 @@ void QlementineStyle::polish(QWidget* w) {
 
 // Currently we only support tooltips with rounded corners on MacOS.
 // More investigation is need to make it work on Windows.
-#ifndef WIN32
+#ifndef _WIN32
   if (w->inherits("QTipLabel")) {
     // TODO: turn this into addAlphaChannel
     w->setBackgroundRole(QPalette::NoRole);

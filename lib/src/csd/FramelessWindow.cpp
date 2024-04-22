@@ -40,7 +40,7 @@ struct FramelessWindow::Impl {
   QVBoxLayout* rootLayout{ nullptr };
   QMenuBar* menuBar{ nullptr };
   QWidget* contentWidget{ nullptr };
-#ifdef WIN32
+#ifdef _WIN32
   WindowsTitleBar* titleBar{ nullptr };
   QPointer<FramelessWindowBehavior> behavior{ nullptr };
 #endif
@@ -53,7 +53,7 @@ struct FramelessWindow::Impl {
     rootLayout->setSpacing(0);
     rootLayout->setContentsMargins(0, 0, 0, 0);
 
-#ifdef WIN32
+#ifdef _WIN32
     // Title bar: stuck the top.
     titleBar = new WindowsTitleBar(&owner);
     rootLayout->addWidget(titleBar, 0, Qt::AlignTop);
@@ -77,7 +77,7 @@ struct FramelessWindow::Impl {
     rootLayout->setMenuBar(menuBar);
 #endif
   }
-#ifdef WIN32
+#ifdef _WIN32
   void createBehavior() {
     if (behavior)
       return;
@@ -106,7 +106,7 @@ FramelessWindow::FramelessWindow(QWidget* parent)
   // Get rid of system's native window frame.
   setWindowFlag(Qt::WindowType::Window, true);
   setWindowFlag(Qt::WindowType::WindowContextHelpButtonHint, false);
-#ifdef WIN32
+#ifdef _WIN32
   setWindowFlag(Qt::FramelessWindowHint, true);
 #endif
   setFocusPolicy(Qt::NoFocus);
@@ -125,7 +125,7 @@ QWidget* FramelessWindow::contentWidget() const {
 
 void FramelessWindow::setContentWidget(QWidget* content) {
   if (content != _impl->contentWidget) {
-#ifdef WIN32
+#ifdef _WIN32
     const auto index = 1;
 #else
     const auto index = 0;
@@ -161,7 +161,7 @@ void FramelessWindow::paintEvent(QPaintEvent* e) {
 }
 
 bool FramelessWindow::event(QEvent* e) {
-#ifdef WIN32
+#ifdef _WIN32
   const auto type = e->type();
   switch (type) {
     case QEvent::Type::PaletteChange:
