@@ -198,6 +198,34 @@ struct QlementineStyleImpl {
     return leftButtonVisible;
   }
 
+  // Returns the extra padding around the tab.
+  // We add extra padding so we have some space to draw nice curve ends.
+  QMargins tabExtraPadding(const QStyleOptionTab* optTab, const QWidget*) const {
+    const auto spacing = theme.spacing;
+    const auto paddingTop = spacing / 2;
+
+    const auto isFirst = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab
+                         || optTab->position == QStyleOptionTab::TabPosition::Beginning;
+    const auto isLast = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab
+                        || optTab->position == QStyleOptionTab::TabPosition::End;
+
+    //const auto isDragNDrop = w->property("qlem_dragging").toBool();
+
+    //qDebug() << isDragNDrop;
+
+    const auto notBesideSelected = optTab->selectedPosition == QStyleOptionTab::SelectedPosition::NotAdjacent;
+    const auto onlyOneTab = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
+    const auto isMovedTab = notBesideSelected && onlyOneTab;
+
+    //qDebug() << optTab->selectedPosition << optTab->documentMode;
+
+    const auto paddingLeft = isMovedTab || isFirst ? spacing : 0;
+    const auto paddingRight = isMovedTab || isLast ? spacing : 0;
+
+    const auto paddingBottom = 0;
+    return QMargins(paddingLeft, paddingTop, paddingRight, paddingBottom);
+  }
+
   QlementineStyle& owner;
   Theme theme;
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
@@ -1120,25 +1148,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_TabBarTab:
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
-        const auto paddingTop = _impl->theme.spacing / 2;
-
-        // We can't rely on tabOpt->position because, when the user is moving the tab,
-        // the next tab has QStyleOptionTab::TabPosition::Beginning, thus is shifted.
-        // Same thing for the previous tab. The only way is to get the actual index.
-        const auto tabIndex = getTabIndex(optTab, w);
-        const auto isFirst = tabIndex == 0;
-        const auto isLast = tabIndex == getTabCount(w) - 1;
-        const auto tabIsMoved = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
-        const auto tabAtBeginning = optTab->position == QStyleOptionTab::TabPosition::Beginning;
-        const auto tabAtEnd = optTab->position == QStyleOptionTab::TabPosition::End;
-        const auto absoluteFirst = optTab->rect.left() == 0;
-
-        const auto paddingLeft = (isFirst && !tabIsMoved && tabAtBeginning) || absoluteFirst ? _impl->theme.spacing : 0;
-        const auto paddingRight = isLast && !tabIsMoved && tabAtEnd ? _impl->theme.spacing : 0;
+        const auto padding = _impl->tabExtraPadding(optTab, w);
 
         // Background.
         auto tabBgOpt = QStyleOptionTab(*optTab);
-        tabBgOpt.rect.adjust(paddingLeft, paddingTop, -paddingRight, 0);
+        tabBgOpt.rect = tabBgOpt.rect.marginsRemoved(padding);
         drawControl(CE_TabBarTabShape, &tabBgOpt, p, w);
 
         // Foreground.
@@ -2427,14 +2441,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto buttonSize = optTab->leftButtonSize;
         const auto paddingTop = _impl->theme.tabBarPaddingTop;
         const auto spacing = _impl->theme.spacing;
-        const auto* tabBar = qobject_cast<const QTabBar*>(w);
-        const auto tabIndex = tabBar->tabAt(optTab->rect.topLeft());
-        const auto isFirst = tabIndex == 0;
-        const auto tabIsMoved = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
-        const auto tabAtBeginning = optTab->position == QStyleOptionTab::TabPosition::Beginning;
-        const auto absoluteFirst = optTab->rect.left() == 0;
-        const auto paddingLeft = (isFirst && !tabIsMoved && tabAtBeginning) || absoluteFirst ? _impl->theme.spacing : 0;
-        const auto x = rect.x() + spacing + paddingLeft;
+        const auto padding = _impl->tabExtraPadding(optTab, w);
+        const auto x = rect.x() + spacing + padding.left();
         const auto y = rect.y() + paddingTop + (rect.height() - paddingTop - buttonSize.height()) / 2;
         return { x, y, buttonSize.width(), buttonSize.height() };
       }
@@ -2446,43 +2454,24 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto buttonSize = optTab->rightButtonSize;
         const auto spacing = _impl->theme.spacing;
         const auto paddingTop = _impl->theme.tabBarPaddingTop;
-        const auto x = rect.x() + rect.width() - spacing - buttonSize.width();
+        const auto padding = _impl->tabExtraPadding(optTab, w);
+        const auto x = rect.x() + rect.width() - spacing - buttonSize.width() - padding.right();
         const auto y = rect.y() + paddingTop + (rect.height() - paddingTop - buttonSize.height()) / 2;
-        const auto* tabBar = qobject_cast<const QTabBar*>(w);
-        const auto tabIndex = tabBar->tabAt(optTab->rect.topLeft());
-        const auto isLast = tabIndex == tabBar->count() - 1;
-        const auto tabIsMoved = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
-        const auto tabAtEnd = optTab->position == QStyleOptionTab::TabPosition::End;
-        const auto paddingRight = isLast && !tabIsMoved && tabAtEnd ? _impl->theme.spacing : 0;
-        return { x - paddingRight, y, buttonSize.width(), buttonSize.height() };
+        return { x, y, buttonSize.width(), buttonSize.height() };
       }
       return {};
     case SE_TabBarTabText:
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
         const auto& rect = optTab->rect;
-
         const auto spacing = _impl->theme.spacing;
         const auto leftButtonWidth = optTab->leftButtonSize.width();
         const auto rightButtonWidth = optTab->rightButtonSize.width();
         const auto leftButtonW = leftButtonWidth > 0 ? leftButtonWidth + spacing : 0;
         const auto rightButtonW = rightButtonWidth > 0 ? rightButtonWidth + spacing : 0;
-
-        // Add fake padding if the tab is first or last.
-        // We can't rely on tabOpt->position. See comment in drawControl(CE_TabBarTab).
-        const auto tabIndex = getTabIndex(optTab, w);
-        const auto isFirst = tabIndex == 0;
-        const auto isLast = tabIndex == getTabCount(w) - 1;
-        const auto tabIsMoved = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
-        const auto tabAtBeginning = optTab->position == QStyleOptionTab::TabPosition::Beginning;
-        const auto tabAtEnd = optTab->position == QStyleOptionTab::TabPosition::End;
-        const auto absoluteFirst = optTab->rect.left() == 0;
-
-        const auto paddingLeft = (isFirst && !tabIsMoved && tabAtBeginning) || absoluteFirst ? spacing : 0;
-        const auto paddingRight = isLast && !tabIsMoved && tabAtEnd ? spacing : 0;
-
-        const auto x = rect.x() + paddingLeft + spacing + leftButtonW;
+        const auto padding = _impl->tabExtraPadding(optTab, w);
+        const auto x = rect.x() + padding.left() + spacing + leftButtonW;
         const auto y = rect.y() + _impl->theme.tabBarPaddingTop;
-        const auto width = rect.width() - leftButtonW - paddingLeft - rightButtonW - paddingRight - spacing * 2;
+        const auto width = rect.width() - leftButtonW - padding.left() - rightButtonW - padding.right() - spacing * 2;
         const auto height = rect.height() - _impl->theme.tabBarPaddingTop;
         return { x, y, width, height };
       }
@@ -2665,9 +2654,9 @@ void QlementineStyle::drawComplexControl(
         const auto grooveRect = subControlRect(CC_ScrollBar, scrollBarOpt, SC_ScrollBarGroove, w);
         const auto currentGrooveRect =
           horizontal ? QRectF(grooveRect.x(), grooveRect.y() + grooveRect.height() - currentThickness,
-            grooveRect.width(), currentThickness)
+                         grooveRect.width(), currentThickness)
                      : QRectF(grooveRect.x() + grooveRect.width() - currentThickness, grooveRect.y(), currentThickness,
-                       grooveRect.height());
+                         grooveRect.height());
 
         const auto& grooveColor = scrollBarGrooveColor(mouse);
         const auto& currentGrooveColor =
@@ -2685,9 +2674,9 @@ void QlementineStyle::drawComplexControl(
         if (!handleRect.isEmpty()) {
           const auto currentHandleRect =
             horizontal ? QRectF(handleRect.x(), handleRect.y() + handleRect.height() - currentThickness,
-              handleRect.width(), currentThickness)
+                           handleRect.width(), currentThickness)
                        : QRectF(handleRect.x() + handleRect.width() - currentThickness, handleRect.y(),
-                         currentThickness, handleRect.height());
+                           currentThickness, handleRect.height());
           const auto handleMouse = getScrollBarHandleState(scrollBarOpt->state, scrollBarOpt->activeSubControls);
           const auto& handleColor = scrollBarHandleColor(handleMouse);
           const auto& currentHandleColor =
@@ -3853,20 +3842,8 @@ QSize QlementineStyle::sizeFromContents(
           w = std::max(w, tabMinWidth);
         }
 
-        // Add fake padding if the tab is first or last.
-        // We can't rely on tabOpt->position. See comment in drawControl(CE_TabBarTab).
-        const auto tabIndex = getTabIndex(optTab, widget);
-        const auto isFirst = tabIndex == 0;
-        const auto isLast = tabIndex == getTabCount(widget) - 1;
-        const auto tabIsMoved = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
-        const auto tabAtBeginning = optTab->position == QStyleOptionTab::TabPosition::Beginning;
-        const auto tabAtEnd = optTab->position == QStyleOptionTab::TabPosition::End;
-        const auto absoluteFirst = optTab->rect.left() == 0;
-
-        const auto paddingLeft = (isFirst && !tabIsMoved && tabAtBeginning) || absoluteFirst ? _impl->theme.spacing : 0;
-        const auto paddingRight = isLast && !tabIsMoved && tabAtEnd ? _impl->theme.spacing : 0;
-
-        w += paddingLeft + paddingRight;
+        const auto padding = _impl->tabExtraPadding(optTab, widget);
+        w += padding.left() + padding.right();
 
         return { w, h };
       }
