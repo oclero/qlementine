@@ -89,13 +89,13 @@ enum class ColorizeMode {
 
 /// Specifies which color to apply when colorizing an icon.
 enum class AutoIconColor {
-    // No automatic icon recolorization.
-    None,
-    // Recolorize with the foreground color.
-    ForegroundColor,
-    // Recolorize with the current text color, which might be different from the foreground color
-    // if the text color was customized in the palette.
-    TextColor,
+  // No automatic icon recolorization.
+  None,
+  // Recolorize with the foreground color.
+  ForegroundColor,
+  // Recolorize with the current text color, which might be different from the foreground color
+  // if the text color was customized in the palette.
+  TextColor,
 };
 
 /// Gets the pixmap in the cache, or creates it if not yet there.

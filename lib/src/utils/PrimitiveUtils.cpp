@@ -849,9 +849,10 @@ void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, cons
   p->setPen(Qt::NoPen);
   p->setBrush(bgColor);
   // To avoid ugly visual artifacts in the rounded corners, we cheat by reducing a bit the size
-  const auto& ellipseRect = borderWidth > 0.1 ? QRectF(rect).marginsRemoved(
-                              QMarginsF(borderWidth / 2., borderWidth / 2., borderWidth / 2., borderWidth / 2.))
-                                              : rect;
+  const auto& ellipseRect =
+    borderWidth > 0.1
+      ? QRectF(rect).marginsRemoved(QMarginsF(borderWidth / 2., borderWidth / 2., borderWidth / 2., borderWidth / 2.))
+      : rect;
   p->drawEllipse(ellipseRect);
 
   // Border.
@@ -878,9 +879,10 @@ void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor&
     p->setBrush(bgColor);
     p->setRenderHint(QPainter::RenderHint::Antialiasing);
     // To avoid ugly visual artifacts in the rounded corners, we cheat by reducing a bit the size
-    const auto& buttonRect = borderWidth > 0.1 ? QRectF(rect).marginsRemoved(
-                               QMarginsF(borderWidth / 2., borderWidth / 2., borderWidth / 2., borderWidth / 2.))
-                                               : rect;
+    const auto& buttonRect =
+      borderWidth > 0.1
+        ? QRectF(rect).marginsRemoved(QMarginsF(borderWidth / 2., borderWidth / 2., borderWidth / 2., borderWidth / 2.))
+        : rect;
     p->drawRoundedRect(buttonRect, radius, radius);
   }
 

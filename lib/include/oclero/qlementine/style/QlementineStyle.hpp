@@ -91,8 +91,8 @@ public:
   static void setAutoIconColor(QWidget* widget, AutoIconColor autoIconColor);
   AutoIconColor autoIconColor(const QWidget* widget) const;
 
-  QPixmap getColorizedPixmap(const QPixmap& input, AutoIconColor autoIconColor,
-                             const QColor& fgcolor, const QColor& textColor) const;
+  QPixmap getColorizedPixmap(
+    const QPixmap& input, AutoIconColor autoIconColor, const QColor& fgcolor, const QColor& textColor) const;
   static QIcon makeIcon(const QString& svgPath);
 
 public: // QStyle overrides.
@@ -158,8 +158,10 @@ public: // Theme-related methods.
 
   virtual QColor const& frameBackgroundColor(MouseState const mouse) const;
 
-  virtual QColor const& buttonBackgroundColor(MouseState const mouse, ColorRole const role, const QWidget* w = nullptr) const;
-  virtual QColor const& buttonForegroundColor(MouseState const mouse, ColorRole const role, const QWidget* w = nullptr) const;
+  virtual QColor const& buttonBackgroundColor(
+    MouseState const mouse, ColorRole const role, const QWidget* w = nullptr) const;
+  virtual QColor const& buttonForegroundColor(
+    MouseState const mouse, ColorRole const role, const QWidget* w = nullptr) const;
 
   virtual QColor const& toolButtonBackgroundColor(MouseState const mouse, ColorRole const role) const;
   virtual QColor const& toolButtonForegroundColor(MouseState const mouse, ColorRole const role) const;
@@ -226,8 +228,8 @@ public: // Theme-related methods.
   virtual QColor const& tabBarBottomShadowColor() const;
   virtual QColor const& tabBackgroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabForegroundColor(MouseState const mouse, SelectionState const selected) const;
-  virtual QColor tabTextColor(MouseState const mouse, SelectionState const selected,
-                              const QStyleOptionTab *optTab, const QWidget *w = nullptr) const;
+  virtual QColor tabTextColor(MouseState const mouse, SelectionState const selected, const QStyleOptionTab* optTab,
+    const QWidget* w = nullptr) const;
   virtual QColor const& tabCloseButtonBackgroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabCloseButtonForegroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& tabBarScrollButtonBackgroundColor(MouseState const mouse) const;

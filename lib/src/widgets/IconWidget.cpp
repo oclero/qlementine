@@ -87,7 +87,8 @@ QSize IconWidget::sizeHint() const {
 void IconWidget::paintEvent(QPaintEvent*) {
   const auto* qlementineStyle = qobject_cast<QlementineStyle*>(style());
   const auto autoIconColor = qlementineStyle ? qlementineStyle->autoIconColor(this) : AutoIconColor::None;
-  const auto iconMode = isEnabled() || autoIconColor != AutoIconColor::None ? QIcon::Mode::Normal : QIcon::Mode::Disabled;
+  const auto iconMode =
+    isEnabled() || autoIconColor != AutoIconColor::None ? QIcon::Mode::Normal : QIcon::Mode::Disabled;
   const auto pixmap = _icon.pixmap(_iconSize.height(), iconMode, QIcon::State::Off);
   if (pixmap.isNull())
     return;

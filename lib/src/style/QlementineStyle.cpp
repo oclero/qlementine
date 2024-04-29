@@ -114,7 +114,7 @@ struct QlementineStyleImpl {
   }
 
   /// Some widgets need to have a QPalette explicitely set.
-  void updatePalette() {
+  void updatePalette() const {
     QToolTip::setPalette(theme.palette);
   }
 
@@ -182,7 +182,7 @@ struct QlementineStyleImpl {
   }
 
   /// Returns true if the QTabBar will show its scroll buttons.
-  bool areTabBarScrollButtonsVisible(const QTabBar* tabBar) const {
+  static bool areTabBarScrollButtonsVisible(const QTabBar* tabBar) {
     if (!tabBar->usesScrollButtons())
       return false;
 
@@ -310,15 +310,15 @@ AutoIconColor QlementineStyle::autoIconColor(const QWidget* widget) const {
   return property.value<AutoIconColor>();
 }
 
-QPixmap QlementineStyle::getColorizedPixmap(const QPixmap& input, AutoIconColor autoIconColor,
-                                            const QColor& fgColor, const QColor& textColor) const {
+QPixmap QlementineStyle::getColorizedPixmap(
+  const QPixmap& input, AutoIconColor autoIconColor, const QColor& fgColor, const QColor& textColor) const {
   switch (autoIconColor) {
-  case AutoIconColor::None:
-    return input;
-  case AutoIconColor::ForegroundColor:
-    return qlementine::getColorizedPixmap(input, fgColor);
-  case AutoIconColor::TextColor:
-    return qlementine::getColorizedPixmap(input, textColor);
+    case AutoIconColor::None:
+      return input;
+    case AutoIconColor::ForegroundColor:
+      return qlementine::getColorizedPixmap(input, fgColor);
+    case AutoIconColor::TextColor:
+      return qlementine::getColorizedPixmap(input, textColor);
   }
   return input;
 }
@@ -1160,7 +1160,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto* tabBar = qobject_cast<const QTabBar*>(w);
         const auto cursorPos = tabBar->mapFromGlobal(QCursor::pos());
         const auto spacing = _impl->theme.spacing;
-        const auto buttonsVisible = _impl->areTabBarScrollButtonsVisible(tabBar);
+        const auto buttonsVisible = QlementineStyleImpl::areTabBarScrollButtonsVisible(tabBar);
         const auto buttonsW = buttonsVisible ? _impl->theme.controlHeightMedium * 2 + spacing * 3 : 0;
         const auto mouseOverButtons = cursorPos.x() > tabBar->width() - buttonsW;
 
@@ -2011,7 +2011,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto contentRect = totalRect.marginsRemoved({ contentLeftPadding, 0, contentRightPadding, 0 });
         const auto pixmap =
           getPixmap(optComboBox->currentIcon, optComboBox->iconSize, mouse, CheckState::NotChecked, w);
-        const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor); // No animation for icon?
+        const auto& colorizedPixmap =
+          getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor); // No animation for icon?
         const auto iconW = colorizedPixmap.isNull() ? 0 : colorizedPixmap.width() / colorizedPixmap.devicePixelRatio();
         const auto iconSpacing = iconW > 0 ? spacing : 0;
         auto availableW = contentRect.width();
@@ -3000,8 +3001,7 @@ void QlementineStyle::drawComplexControl(
             fm.elidedText(groupBoxOpt->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
           const auto mouse = getMouseState(groupBoxOpt->state);
           const auto& textColor = groupBoxTitleColor(mouse, w);
-          constexpr auto textFlags =
-            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
+          constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
           p->setFont(font);
           p->setPen(textColor);
           p->setRenderHint(QPainter::Antialiasing, true);
@@ -4046,7 +4046,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // TabBar.
     case PM_TabBarTabOverlap:
-      return int(_impl->theme.borderRadius);
+      return static_cast<int>(_impl->theme.borderRadius);
     case PM_TabBarTabHSpace:
       return 0;
     case PM_TabBarTabVSpace:
@@ -5126,7 +5126,8 @@ QColor const& QlementineStyle::frameBackgroundColor(MouseState const mouse) cons
     return _impl->theme.backgroundColorMain1;
 }
 
-QColor const& QlementineStyle::buttonBackgroundColor(MouseState const mouse, ColorRole const role, const QWidget* w) const {
+QColor const& QlementineStyle::buttonBackgroundColor(
+  MouseState const mouse, ColorRole const role, const QWidget* w) const {
   Q_UNUSED(w)
   const auto primary = role == ColorRole::Primary;
 
@@ -5145,7 +5146,8 @@ QColor const& QlementineStyle::buttonBackgroundColor(MouseState const mouse, Col
   }
 }
 
-QColor const& QlementineStyle::buttonForegroundColor(MouseState const mouse, ColorRole const role, const QWidget* w) const {
+QColor const& QlementineStyle::buttonForegroundColor(
+  MouseState const mouse, ColorRole const role, const QWidget* w) const {
   Q_UNUSED(w)
   const auto primary = role == ColorRole::Primary;
 
@@ -5633,8 +5635,8 @@ QColor const& QlementineStyle::tabForegroundColor(MouseState const mouse, Select
   return buttonForegroundColor(mouse, ColorRole::Secondary);
 }
 
-QColor QlementineStyle::tabTextColor(MouseState const mouse, SelectionState const selected,
-                                     const QStyleOptionTab *optTab, const QWidget *w) const {
+QColor QlementineStyle::tabTextColor(
+  MouseState const mouse, SelectionState const selected, const QStyleOptionTab* optTab, const QWidget* w) const {
   Q_UNUSED(optTab);
   Q_UNUSED(w);
   return tabForegroundColor(mouse, selected);
