@@ -4757,9 +4757,9 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Font.
   if (shouldHaveBoldFont(w)) {
-    w->setFont(_impl->theme.fontBold);
-  } else if (!qobject_cast<QLabel*>(w)) {
-    w->setFont(_impl->theme.fontRegular);
+    auto font = QFont{ w->font() };
+    font.setBold(true);
+    w->setFont(font);
   }
 
   // Enable hover state.

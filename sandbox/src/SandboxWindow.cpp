@@ -45,6 +45,7 @@
 #include <QDial>
 #include <QDateTimeEdit>
 #include <QPlainTextEdit>
+#include <QTextEdit>
 
 #include <random>
 
@@ -174,7 +175,7 @@ public:
   using QWidget::QWidget;
 
   QColor bgColor{ Qt::red };
-  QColor borderColor { Qt::black };
+  QColor borderColor{ Qt::black };
   QSize customSizeHint{ -1, -1 };
   bool showBounds{ true };
 
@@ -526,6 +527,38 @@ struct SandboxWindow::Impl {
     lineEdit->setClearButtonEnabled(true);
   }
 
+
+  void setupUI_textEdit() {
+    auto* textEdit = new QTextEdit(windowContent);
+    textEdit->setText("TextEdit");
+    textEdit->setPlaceholderText("Placeholder");
+    textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    textEdit->setTabChangesFocus(true);
+    windowContentLayout->addWidget(textEdit);
+  }
+
+  void setupUI_plainTextEdit() {
+    auto* plainTextEdit = new QPlainTextEdit(windowContent);
+    plainTextEdit->setPlainText("PlainTextEdit");
+    plainTextEdit->appendHtml("<b>Bold</b>");
+    plainTextEdit->setPlaceholderText("Placeholder");
+    plainTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    plainTextEdit->setTabChangesFocus(true);
+
+    const auto children = plainTextEdit->findChildren<QWidget*>();
+    for (const auto& c : children) {
+      qDebug() << c;
+    }
+
+    if (auto* qlementine = qobject_cast<QlementineStyle*>(plainTextEdit->style())) {
+      auto font = QFont{ qlementine->theme().fontMonospace };
+      font.setPixelSize(font.pointSize() * 1.5);
+      plainTextEdit->setFont(font);
+    }
+
+    windowContentLayout->addWidget(plainTextEdit);
+  }
+
   void setupUI_dial() {
     auto* dial = new QDial(windowContent);
     dial->setOrientation(Qt::Orientation::Horizontal);
@@ -602,7 +635,7 @@ struct SandboxWindow::Impl {
     // Context menu.
     qDebug() << listView->contextMenuPolicy();
     listView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-    QObject::connect(listView, &QListView::customContextMenuRequested, listView, [listView](const QPoint& pos){
+    QObject::connect(listView, &QListView::customContextMenuRequested, listView, [listView](const QPoint& pos) {
       if (const auto item = listView->itemAt(pos)) {
         QMenu contextMenu(listView);
         //contextMenu.setTearOffEnabled(true);
@@ -1499,43 +1532,39 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     plainWidget->bgColor = QColor(230, 230, 230);
     plainWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    auto* contextMenuEvtFilter = new ContextMenuEventFilter(plainWidget, [plainWidget](QContextMenuEvent* e){
-        // Create menu.
-        QMenu menu;
+    auto* contextMenuEvtFilter = new ContextMenuEventFilter(plainWidget, [plainWidget](QContextMenuEvent* e) {
+      // Create menu.
+      QMenu menu;
 
-        const auto cb = [](){ qDebug() << "Clicked"; };
-        const auto clickPos = e->pos();
-        const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
-        menu.addAction(QString("Pos: %1").arg(clickPosStr), cb , Qt::CTRL + Qt::Key_A);
+      const auto cb = []() {
+        qDebug() << "Clicked";
+      };
+      const auto clickPos = e->pos();
+      const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
+      menu.addAction(QString("Pos: %1").arg(clickPosStr), cb, Qt::CTRL + Qt::Key_A);
 
-        const auto randomCount = getRandomInt(1, 10);
-        for (auto i = 0; i < randomCount; ++i) {
-          const auto textLength = i * 4;
-          QStringList textList;
-          for (auto n = 0; n < textLength; ++n) {
-            textList.append("A");
-          }
-
-          menu.addAction(textList.join("") + QString(" %1").arg(i), cb, Qt::ALT + Qt::SHIFT + Qt::Key_0 + i);
+      const auto randomCount = getRandomInt(1, 10);
+      for (auto i = 0; i < randomCount; ++i) {
+        const auto textLength = i * 4;
+        QStringList textList;
+        for (auto n = 0; n < textLength; ++n) {
+          textList.append("A");
         }
 
-        // Show menu.
-        menu.exec(plainWidget->mapToGlobal(clickPos));
+        menu.addAction(textList.join("") + QString(" %1").arg(i), cb, Qt::ALT + Qt::SHIFT + Qt::Key_0 + i);
+      }
 
-        // Mark as handled.
-        e->setAccepted(true);
-        return true;
+      // Show menu.
+      menu.exec(plainWidget->mapToGlobal(clickPos));
+
+      // Mark as handled.
+      e->setAccepted(true);
+      return true;
     });
 
     plainWidget->installEventFilter(contextMenuEvtFilter);
 
     windowContentLayout->addWidget(plainWidget);
-  }
-
-  void setupUI_plainTextEdit() {
-    auto* plainTextEdit = new QPlainTextEdit(windowContent);
-
-    windowContentLayout->addWidget(plainTextEdit);
   }
 
   SandboxWindow& owner;
@@ -1565,6 +1594,8 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_sliderAndProgressBar();
 //      _impl->setupUI_sliderWithTicks();
 //      _impl->setupUI_lineEdit();
+//      _impl->setupUI_textEdit();
+//      _impl->setupUI_plainTextEdit();
 //      _impl->setupUI_dial();
 //      _impl->setupUI_spinBox();
 //      _impl->setupUI_comboBox();
@@ -1582,7 +1613,6 @@ SandboxWindow::SandboxWindow(QWidget* parent)
 //      _impl->setupUI_specialProgressBar();
 //      _impl->setupUI_lineEditStatus();
 //      _impl->setupUI_dateTimeEdit();
-//      _impl->setupUI_plainTextEdit();
 //      _impl->setupUI_contextMenu();
 
 //      _impl->setupUI_switch();
