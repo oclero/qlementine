@@ -1544,9 +1544,15 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       const auto cb = []() {
         qDebug() << "Clicked";
       };
+
       const auto clickPos = e->pos();
       const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       menu.addAction(QString("Pos: %1").arg(clickPosStr), cb, Qt::CTRL + Qt::Key_A);
+#else
+      menu.addAction(QString("Pos: %1").arg(clickPosStr), Qt::CTRL | Qt::Key_A, cb);
+#endif
 
       const auto randomCount = getRandomInt(1, 10);
       for (auto i = 0; i < randomCount; ++i) {
@@ -1556,7 +1562,11 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
           textList.append("A");
         }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         menu.addAction(textList.join("") + QString(" %1").arg(i), cb, Qt::ALT + Qt::SHIFT + Qt::Key_0 + i);
+#else
+        menu.addAction(textList.join("") + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, cb);
+#endif
       }
 
       // Show menu.

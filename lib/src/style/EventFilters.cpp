@@ -362,7 +362,7 @@ bool TextEditEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
       switch (frameShape) {
         case QFrame::Shape::StyledPanel: {
           QStyleOptionFrame opt;
-          opt.init(_textEdit);
+          opt.initFrom(_textEdit);
           opt.rect = _textEdit->rect();
           QPainter p(_textEdit);
           qlementineStyle->drawPrimitive(QStyle::PE_PanelLineEdit, &opt, &p, _textEdit);
