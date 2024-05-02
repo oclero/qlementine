@@ -67,6 +67,8 @@
 #include <QTimer>
 #include <QDateTimeEdit>
 #include <QWindow>
+#include <QPlainTextEdit>
+#include <QTextEdit>
 
 #include <cmath>
 #include <mutex>
@@ -373,6 +375,7 @@ QIcon QlementineStyle::makeIcon(const QString& svgPath) {
 void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
   switch (pe) {
     case PE_Frame:
+      //qDebug() << pe;
       return;
     case PE_FrameDefaultButton:
       break;
@@ -4719,6 +4722,7 @@ void QlementineStyle::polish(QPalette& palette) {
 void QlementineStyle::polish(QApplication* app) {
   QCommonStyle::polish(app);
   app->setFont(_impl->theme.fontRegular);
+  //app->installEventFilter(new AppEventFilter(app));
 }
 
 void QlementineStyle::unpolish(QApplication* app) {
@@ -4877,6 +4881,21 @@ void QlementineStyle::polish(QWidget* w) {
   // Make the QSlider horizontal by default.
   if (auto* slider = qobject_cast<QSlider*>(w)) {
     slider->setOrientation(Qt::Orientation::Horizontal);
+  }
+
+  // Make the QPlainTextEdit have a frame by default.
+  if (auto* plainTextEdit = qobject_cast<QPlainTextEdit*>(w)) {
+    plainTextEdit->installEventFilter(new TextEditEventFilter(plainTextEdit));
+    if (auto* viewport = plainTextEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
+      viewport->setAutoFillBackground(false);
+    }
+  }
+  // Make the QTextEdit have a frame by default.
+  if (auto* textEdit = qobject_cast<QTextEdit*>(w)) {
+    textEdit->installEventFilter(new TextEditEventFilter(textEdit));
+    if (auto* viewport = textEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
+      viewport->setAutoFillBackground(false);
+    }
   }
 }
 

@@ -97,4 +97,15 @@ public:
 private:
   QAbstractItemView* _view{ nullptr };
 };
+
+// Works for both QTextEdit and QPlainTextEdit
+class TextEditEventFilter : public QObject {
+public:
+  TextEditEventFilter(QAbstractScrollArea* textEdit);
+
+  bool eventFilter(QObject* watchedObject, QEvent* evt) override;
+
+private:
+  QAbstractScrollArea* _textEdit{ nullptr };
+};
 } // namespace oclero::qlementine

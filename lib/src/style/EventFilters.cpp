@@ -33,6 +33,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QTimer>
+#include <QStylePainter>
 
 namespace oclero::qlementine {
 LineEditButtonEventFilter::LineEditButtonEventFilter(
@@ -178,7 +179,7 @@ public:
     , _tabBar(tabBar) {}
 
 protected:
-  bool eventFilter(QObject*, QEvent* evt) override {
+  bool eventFilter(QObject* watchedObject, QEvent* evt) override {
     const auto type = evt->type();
     if (type == QEvent::Leave || type == QEvent::Enter) {
       if (_tabBar) {
@@ -186,7 +187,7 @@ protected:
       }
     }
 
-    return false;
+    return QObject::eventFilter(watchedObject, evt);
   }
 
 private:
@@ -292,7 +293,7 @@ MenuEventFilter::MenuEventFilter(QMenu* menu)
   menu->installEventFilter(this);
 }
 
-bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
+bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   const auto type = evt->type();
   if (type == QEvent::Type::Show) {
     // Place the QMenu correctly by making up for the drop shadow margins.
@@ -322,7 +323,7 @@ bool MenuEventFilter::eventFilter(QObject*, QEvent* evt) {
     }
   }
 
-  return false;
+  return QObject::eventFilter(watchedObject, evt);
 }
 
 ComboboxItemViewFilter::ComboboxItemViewFilter(QAbstractItemView* view)
@@ -331,13 +332,56 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QAbstractItemView* view)
   view->installEventFilter(this);
 }
 
-bool ComboboxItemViewFilter::eventFilter(QObject* /*watchedObject*/, QEvent* evt) {
+bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   const auto type = evt->type();
   if (type == QEvent::Type::Show) {
     // Fix Qt bug.
     const auto width = _view->sizeHintForColumn(0);
     _view->setMinimumWidth(width);
   }
-  return false;
+  return QObject::eventFilter(watchedObject, evt);
+}
+
+TextEditEventFilter::TextEditEventFilter(QAbstractScrollArea* textEdit)
+  : QObject(textEdit)
+  , _textEdit(textEdit) {}
+
+bool TextEditEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
+  const auto type = evt->type();
+  switch (type) {
+    case QEvent::Enter:
+    case QEvent::Leave:
+      _textEdit->update();
+      break;
+    case QEvent::Paint: {
+      const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_textEdit->style());
+      if (!qlementineStyle)
+        break;
+
+      const auto frameShape = _textEdit->frameShape();
+      switch (frameShape) {
+        case QFrame::Shape::StyledPanel: {
+          QStyleOptionFrame opt;
+          opt.init(_textEdit);
+          opt.rect = _textEdit->rect();
+          QPainter p(_textEdit);
+          qlementineStyle->drawPrimitive(QStyle::PE_PanelLineEdit, &opt, &p, _textEdit);
+        } break;
+        case QFrame::Shape::Panel: {
+          const auto mouse = getMouseState(_textEdit->hasFocus(), _textEdit->underMouse(), _textEdit->isEnabled());
+          const auto& bgColor = qlementineStyle->textFieldBackgroundColor(mouse, Status::Default);
+          const auto rect = _textEdit->rect();
+          QPainter p(_textEdit);
+          p.fillRect(rect, bgColor);
+        } break;
+        default:
+          break;
+      }
+    } break;
+    default:
+      break;
+  }
+
+  return QObject::eventFilter(watchedObject, evt);
 }
 } // namespace oclero::qlementine

@@ -37,6 +37,7 @@
 #include <QCheckBox>
 #include <QRadioButton>
 #include <QToolButton>
+#include <QPlainTextEdit>
 
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 
@@ -59,6 +60,11 @@ bool shouldHaveBoldFont(const QWidget* w) {
 }
 
 bool shouldHaveExternalFocusFrame(const QWidget* w) {
+  // Special case for QPlainTextEdit and QTextEdit.
+  if (auto* frame = qobject_cast<const QFrame*>(w)) {
+    return frame->focusPolicy() != Qt::NoFocus && frame->frameShape() == QFrame::StyledPanel;
+  }
+
   return (w && qobject_cast<const QAbstractButton*>(w) && !qobject_cast<const QTabBar*>(w->parentWidget()))
          || qobject_cast<const QComboBox*>(w) || qobject_cast<const QLineEdit*>(w)
          || (!qobject_cast<const QScrollBar*>(w) && qobject_cast<const QAbstractSlider*>(w))
@@ -95,7 +101,7 @@ bool shouldNotHaveWheelEvents(const QWidget* w) {
 }
 
 int getTabIndex(const QStyleOptionTab* optTab, const QWidget* parentWidget) {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTab*>(optTab)) {
 #else
   if (const auto* optTabV4 = qstyleoption_cast<const QStyleOptionTabV4*>(optTab)) {

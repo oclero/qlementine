@@ -17,6 +17,7 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
+#include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 #include <oclero/qlementine/tools/ThemeEditor.hpp>
 
 #include <QActionGroup>
@@ -530,29 +531,33 @@ struct SandboxWindow::Impl {
 
   void setupUI_textEdit() {
     auto* textEdit = new QTextEdit(windowContent);
-    textEdit->setText("TextEdit");
-    textEdit->setPlaceholderText("Placeholder");
-    textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     textEdit->setTabChangesFocus(true);
+    const auto text =
+      R"(Lorem ipsum <b>dolor sit amet</b>, consectetur <i>adipiscing elit</i>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)";
+    textEdit->append(text);
+    textEdit->setPlaceholderText("Placeholder");
+    textEdit->setFixedHeight(84);
+
     windowContentLayout->addWidget(textEdit);
   }
 
   void setupUI_plainTextEdit() {
-    auto* plainTextEdit = new QPlainTextEdit(windowContent);
-    plainTextEdit->setPlainText("PlainTextEdit");
-    plainTextEdit->appendHtml("<b>Bold</b>");
-    plainTextEdit->setPlaceholderText("Placeholder");
-    plainTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    auto* plainTextEdit = new PlainTextEdit(windowContent); // Also PlainTextEdit
     plainTextEdit->setTabChangesFocus(true);
+    plainTextEdit->setFixedHeight(84);
+    const auto text =
+      R"(Lorem ipsum <b>dolor sit amet</b>, consectetur <i>adipiscing elit</i>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)";
+    plainTextEdit->appendHtml(text);
+    plainTextEdit->setPlaceholderText("Placeholder");
 
-    const auto children = plainTextEdit->findChildren<QWidget*>();
-    for (const auto& c : children) {
-      qDebug() << c;
-    }
+    // Use QFrame::Shape::StyledPanel if you want the default look (borders, corner radiuses).
+    // Use QFrame::Shape::Panel if you don't want borders neither corner radiuses.
+    plainTextEdit->setFrameShape(QFrame::Shape::StyledPanel);
 
+    // Use QPlainTextEdit::setFont() to change the font.
     if (auto* qlementine = qobject_cast<QlementineStyle*>(plainTextEdit->style())) {
       auto font = QFont{ qlementine->theme().fontMonospace };
-      font.setPixelSize(font.pointSize() * 1.5);
+      font.setPixelSize(font.pointSize() * 2);
       plainTextEdit->setFont(font);
     }
 
@@ -1585,48 +1590,48 @@ SandboxWindow::SandboxWindow(QWidget* parent)
   _impl->beginSetupUI();
   {
     // Uncomment the line to show the corresponding widget.
-//      _impl->setupUI_label();
-//      _impl->setupUI_button();
-//      _impl->setupUI_buttonVariants();
-//      _impl->setupUI_checkbox();
-//      _impl->setupUI_radioButton();
-//      _impl->setupUI_commandLinkButton();
-//      _impl->setupUI_sliderAndProgressBar();
-//      _impl->setupUI_sliderWithTicks();
-//      _impl->setupUI_lineEdit();
-//      _impl->setupUI_textEdit();
-//      _impl->setupUI_plainTextEdit();
-//      _impl->setupUI_dial();
-//      _impl->setupUI_spinBox();
-//      _impl->setupUI_comboBox();
-//      _impl->setupUI_listView();
-//      _impl->setupUI_treeWidget();
-//      _impl->setupUI_table();
-//      _impl->setupUI_menuBar();
-//      _impl->setupUI_toolButton();
-//      _impl->setupUI_toolButtonsVariants();
-//      _impl->setupUI_tabBar();
-//      _impl->setupUI_tabWidget();
-//      _impl->setupUI_groupBox();
-//      _impl->setupUI_treeView();
-//      _impl->setupUI_focus();
-//      _impl->setupUI_specialProgressBar();
-//      _impl->setupUI_lineEditStatus();
-//      _impl->setupUI_dateTimeEdit();
-//      _impl->setupUI_contextMenu();
+    //      _impl->setupUI_label();
+    //      _impl->setupUI_button();
+    //      _impl->setupUI_buttonVariants();
+    //      _impl->setupUI_checkbox();
+    //      _impl->setupUI_radioButton();
+    //      _impl->setupUI_commandLinkButton();
+    //      _impl->setupUI_sliderAndProgressBar();
+    //      _impl->setupUI_sliderWithTicks();
+    //      _impl->setupUI_lineEdit();
+    //      _impl->setupUI_textEdit();
+    //      _impl->setupUI_plainTextEdit();
+    //      _impl->setupUI_dial();
+    //      _impl->setupUI_spinBox();
+    //      _impl->setupUI_comboBox();
+    //      _impl->setupUI_listView();
+    //      _impl->setupUI_treeWidget();
+    //      _impl->setupUI_table();
+    //      _impl->setupUI_menuBar();
+    //      _impl->setupUI_toolButton();
+    //      _impl->setupUI_toolButtonsVariants();
+    //      _impl->setupUI_tabBar();
+    //      _impl->setupUI_tabWidget();
+    //      _impl->setupUI_groupBox();
+    //      _impl->setupUI_treeView();
+    //      _impl->setupUI_focus();
+    //      _impl->setupUI_specialProgressBar();
+    //      _impl->setupUI_lineEditStatus();
+    //      _impl->setupUI_dateTimeEdit();
+    //      _impl->setupUI_contextMenu();
 
-//      _impl->setupUI_switch();
-//      _impl->setupUI_expander();
-//      _impl->setupUI_popover();
-//      _impl->setupUI_navigationBar();
-//      _impl->setupUI_badge();
-//      _impl->setupUI_colorButton();
+    //      _impl->setupUI_switch();
+    //      _impl->setupUI_expander();
+    //      _impl->setupUI_popover();
+    //      _impl->setupUI_navigationBar();
+    //      _impl->setupUI_badge();
+    //      _impl->setupUI_colorButton();
 
-//      _impl->setupUI_messageBoxIcons();
-//      _impl->setupUI_fontMetricsTests();
-//      _impl->setupUI_blur();
-//      _impl->setupUI_themeEditor();
-//      _impl->setupUI_messageBox();
+    //      _impl->setupUI_messageBoxIcons();
+    //      _impl->setupUI_fontMetricsTests();
+    //      _impl->setupUI_blur();
+    //      _impl->setupUI_themeEditor();
+    //      _impl->setupUI_messageBox();
   }
   _impl->endSetupUI();
 }
