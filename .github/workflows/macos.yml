@@ -2,9 +2,9 @@ name: MacOS
 
 on:
   push:
-    branches: [ "master", "setup-ci" ]
+    branches: ['master', 'setup-ci']
   pull_request:
-    branches: [ "master" ]
+    branches: ['master']
 
 env:
   # CMake build type (Release, Debug, RelWithDebInfo, etc.).
@@ -14,29 +14,30 @@ env:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-13
 
     steps:
-    - name: Check Out
-      # Checks out the repository.
-      uses: actions/checkout@v4
+      - name: Check Out
+        # Checks out the repository.
+        uses: actions/checkout@v4
 
-    - name: Install Qt
-      # Installs the Qt SDK.
-      uses: jurplel/install-qt-action@v3
-      with:
-        version: ${{env.QT_VERSION}}
-        host: mac
-        target: desktop
+      - name: Install Qt
+        # Installs the Qt SDK.
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{env.QT_VERSION}}
+          host: mac
+          target: desktop
+          arch: clang_64
 
-    - name: Configure CMake
-      # Configures CMake in a 'build' subdirectory.
-      run: cmake -B ${{github.workspace}}/build -G "${{env.GENERATOR}}" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=OFF -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY=""
+      - name: Configure CMake
+        # Configures CMake in a 'build' subdirectory.
+        run: cmake -B ${{github.workspace}}/build -G "${{env.GENERATOR}}" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=OFF -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY=""
 
-    - name: Builds the library.
-      # Builds with the given configuration.
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Builds the library.
+        # Builds with the given configuration.
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: Builds the Sandbox app.
-      # Builds the sandbox app with the given configuration.
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target sandbox
+      - name: Builds the Sandbox app.
+        # Builds the sandbox app with the given configuration.
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target sandbox
