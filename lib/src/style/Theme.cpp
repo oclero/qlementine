@@ -138,7 +138,7 @@ QJsonDocument readJsonDoc(QString const& jsonPath) {
   if (jsonFile.open(QIODevice::ReadOnly)) {
     const auto fileContents = jsonFile.readAll();
     QJsonParseError jsonParseError{};
-    auto jsonDoc = QJsonDocument::fromJson(fileContents, &jsonParseError);
+    const auto jsonDoc = QJsonDocument::fromJson(fileContents, &jsonParseError);
     if (jsonParseError.error == QJsonParseError::ParseError::NoError && !jsonDoc.isEmpty()) {
       return jsonDoc;
     }
@@ -160,18 +160,18 @@ void setDouble(QJsonObject& jsonObj, const QString& key, double value) {
 }
 } // namespace
 
-Theme::Theme() {
-  initializeFonts();
-  initializePalette();
-}
-
-Theme::Theme(QJsonDocument const& jsonDoc) {
-  initializeFromJson(jsonDoc);
-  initializePalette();
-}
+Theme::Theme()
+  : Theme(QJsonDocument{}) {}
 
 Theme::Theme(QString const& jsonPath)
   : Theme(readJsonDoc(jsonPath)) {}
+
+
+Theme::Theme(QJsonDocument const& jsonDoc) {
+  initializeFromJson(jsonDoc);
+  initializeFonts();
+  initializePalette();
+}
 
 void Theme::initializeFonts() {
   // Fonts.
@@ -268,8 +268,6 @@ void Theme::initializePalette() {
   palette.setColor(QPalette::ColorGroup::Current, QPalette::ColorRole::Button, neutralColorHovered);
   palette.setColor(QPalette::ColorGroup::Active, QPalette::ColorRole::Button, neutralColorPressed);
   palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Button, neutralColorDisabled);
-
-  //palette.setColor(QPalette::ColorGroup::, QPalette::ColorRole::Background, backgroundColor);
 }
 
 void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
@@ -424,9 +422,6 @@ void Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
       if (tabBarTabMinWidth > tabBarTabMaxWidth) {
         std::swap(tabBarTabMinWidth, tabBarTabMaxWidth);
       }
-
-      // Fonts.
-      initializeFonts();
     }
   }
 }

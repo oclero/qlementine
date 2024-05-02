@@ -51,10 +51,11 @@ struct ThemeMeta {
 class Theme {
 public: // Ctor.
   Theme();
+  Theme(QString const& jsonPath);
+  explicit Theme(QJsonDocument const& jsonDoc);
+
   Theme(Theme const& other) = default;
   Theme(Theme&& other) = default;
-  explicit Theme(QJsonDocument const& jsonDoc);
-  Theme(QString const& jsonPath);
   virtual ~Theme() = default;
 
 public: // Operators.
