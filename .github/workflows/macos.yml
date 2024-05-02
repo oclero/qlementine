@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    runs-on: macos-latest-large
+    runs-on: macos-13
 
     steps:
       - name: Check Out
