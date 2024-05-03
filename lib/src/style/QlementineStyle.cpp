@@ -1882,7 +1882,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           // ColorButton: circle around the button.
           optFocus.rect = subElementRect(SE_PushButtonFocusRect, &optColorButton, colorButton);
-          optFocus.radiuses = optFocus.rect.height() / 2; // NOLINT (we do want an integer division here)
+          optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (const auto* switchWidget = qobject_cast<const Switch*>(monitoredWidget)) {
           switchWidget->initStyleOptionFocus(optFocus);
         } else if (const auto* abstractButton = qobject_cast<const QAbstractButton*>(monitoredWidget)) {
@@ -2059,7 +2059,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           p->setBrush(Qt::NoBrush);
 
           const auto status = widgetStatus(w);
-          const auto textColor = comboBoxTextColor(mouse, status, w);
+          const auto& textColor = comboBoxTextColor(mouse, status, w);
           p->setPen(textColor);
           p->drawText(textRect, textFlags, elidedText, nullptr);
         }
@@ -3730,7 +3730,7 @@ QSize QlementineStyle::sizeFromContents(
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         const auto indeterminate = optProgressBar->maximum == 0 && optProgressBar->minimum == 0;
         const auto showText = !indeterminate && optProgressBar->textVisible;
-        const auto maximumText = indeterminate ? QString{} : QString("%1%").arg(optProgressBar->maximum);
+        const auto& maximumText = indeterminate ? QString{} : QString("%1%").arg(optProgressBar->maximum);
         const auto labelW =
           showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, maximumText).width()
                    : 0;

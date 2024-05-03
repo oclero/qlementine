@@ -120,12 +120,12 @@ int AbstractItemListWidget::addItem(
     update();
   });
 
-  const auto newItem = Item{
+  const Item newItem{
     true,
     text,
     icon,
     badge,
-    itemData,
+    QVariant(itemData),
     QRect{},
     QSize{ 0, 0 },
     bgColorAnimation,

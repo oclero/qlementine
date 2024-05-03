@@ -56,7 +56,7 @@ private:
   std::function<bool(QContextMenuEvent* evt)> _cb;
 
 public:
-  ContextMenuEventFilter(QObject* parent, const std::function<bool(QContextMenuEvent*)>&& cb)
+  ContextMenuEventFilter(QObject* parent, std::function<bool(QContextMenuEvent*)>&& cb)
     : QObject(parent)
     , _cb(std::move(cb)) {
     parent->installEventFilter(this);
@@ -741,7 +741,7 @@ struct SandboxWindow::Impl {
     treeWidget->topLevelItem(0)->setSelected(true), windowContentLayout->addWidget(treeWidget);
   }
 
-  void setupUI_menuBar() {
+  void setupUI_menuBar() const {
     auto* menuBar = owner.menuBar();
     // NB: it looks like MacOS' native menu bar has an issue with QIcon, so we have to force
     // it to generate icons for High-DPI screens.
@@ -927,7 +927,7 @@ struct SandboxWindow::Impl {
       for (auto j = 0; j < i; ++j) {
         tabTextList.append("Tab");
       }
-      const auto tabText = tabTextList.join(" ").append(QString(" %1").arg(i + 1));
+      const auto tabText = QString(tabTextList.join(" ").append(QString(" %1").arg(i + 1)));
 
       if (i % 3 == 0) {
         tabBar->addTab(icon, tabText);
@@ -984,7 +984,7 @@ struct SandboxWindow::Impl {
       for (auto j = 0; j < i; ++j) {
         tabTextList.append("Tab");
       }
-      const auto tabText = tabTextList.join(" ").append(QString(" %1").arg(i + 1));
+      const auto tabText = QString(tabTextList.join(" ").append(QString(" %1").arg(i + 1)));
       const auto icon = QIcon(icons.at(i % icons.size()));
       tabWidget->addTab(tabContent, icon, tabText);
     }
@@ -1545,7 +1545,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
         qDebug() << "Clicked";
       };
 
-      const auto clickPos = e->pos();
+      const auto& clickPos = e->pos();
       const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

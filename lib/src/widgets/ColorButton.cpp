@@ -115,12 +115,12 @@ void ColorButton::paintEvent(QPaintEvent*) {
 
   // Background
   const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
-  const auto borderColor = qlementineStyle ? qlementineStyle->theme().semiTransparentColor4 : Qt::black;
+  const auto& borderColor = qlementineStyle ? qlementineStyle->theme().semiTransparentColor4 : Qt::black;
   qlementine::drawColorMark(&p, rect(), _color, hasFocus ? Qt::transparent : borderColor, borderWidth);
 
   // To improve readability when the button has focus, draw a stroke with the focus color.
   if (hasFocus) {
-    const auto focusColor = qlementineStyle ? qlementineStyle->theme().primaryColor : Qt::white;
+    const auto& focusColor = qlementineStyle ? qlementineStyle->theme().primaryColor : Qt::white;
     qlementine::drawColorMarkBorder(&p, rect(), focusColor, borderWidth);
   }
 }

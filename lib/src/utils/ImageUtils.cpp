@@ -351,7 +351,7 @@ QPixmap getBlurredPixmap(QPixmap const& input, double blurRadius, bool const ext
   }
 
   const auto padding = static_cast<int>(std::ceil(blurRadius * 4));
-  auto inputImage = extend ? getExtendedImage(input, padding) : input.toImage();
+  const auto& inputImage = extend ? getExtendedImage(input, padding) : input.toImage();
   const auto outputImage = getBlurredImage(inputImage, blurRadius);
   return QPixmap::fromImage(outputImage);
 }

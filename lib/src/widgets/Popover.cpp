@@ -319,7 +319,7 @@ void Popover::paintEvent(QPaintEvent*) {
     // Update cache if necessary.
     if (_dropShadowCacheSize != size()) {
       const auto dropShadowBlurRadius = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
-      const auto dropShadowColor = qlementineStyle ? qlementineStyle->theme().shadowColor1 : QColor(0, 0, 0, 64);
+      const auto& dropShadowColor = qlementineStyle ? qlementineStyle->theme().shadowColor1 : QColor(0, 0, 0, 64);
       const auto framePixmap = getFrameShape();
       _dropShadowCache = qlementine::getDropShadowPixmap(framePixmap, dropShadowBlurRadius, dropShadowColor);
       _dropShadowCacheSize = size();
@@ -337,9 +337,9 @@ void Popover::paintEvent(QPaintEvent*) {
   // Frame.
   {
     const auto radius = qlementineStyle ? qlementineStyle->theme().borderRadius : 0;
-    const auto bgColor = palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
-    const auto borderColor = qlementineStyle ? qlementineStyle->frameBorderColor()
-                                             : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Mid);
+    const auto& bgColor = palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
+    const auto& borderColor = qlementineStyle ? qlementineStyle->frameBorderColor()
+                                              : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Mid);
     const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
     const auto bgRect = _frame->rect().translated(_frame->mapTo(this, QPoint(0, 0)));
 

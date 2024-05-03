@@ -70,7 +70,7 @@ void PopoverButton::paintEvent(QPaintEvent* /*e*/) {
   const auto* style = this->style();
   QPainter p(this);
 
-  auto font = this->font();
+  auto font = QFont(this->font());
   font.setBold(false);
   p.setFont(font);
 

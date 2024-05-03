@@ -93,7 +93,7 @@ void IconWidget::paintEvent(QPaintEvent*) {
   if (pixmap.isNull())
     return;
 
-  const auto color = palette().color(isEnabled() ? QPalette::Normal : QPalette::Disabled, QPalette::Text);
+  const auto& color = palette().color(isEnabled() ? QPalette::Normal : QPalette::Disabled, QPalette::Text);
   const auto& colorizedPixmap = autoIconColor != AutoIconColor::None ? colorizePixmap(pixmap, color) : pixmap;
 
   QPainter p(this);

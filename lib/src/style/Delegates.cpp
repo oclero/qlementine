@@ -78,7 +78,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     auto availableW = fgRect.width();
     auto availableX = fgRect.x();
     const auto& fgData = idx.data(Qt::ForegroundRole);
-    auto fgColor = _qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().secondaryColor;
+    auto fgColor = QColor(_qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().secondaryColor);
     if (fgData.isValid()) {
       fgColor = fgData.value<QColor>();
     }

@@ -245,7 +245,7 @@ struct ThemeEditor::Impl {
           QFileDialog::getSaveFileName(&owner, "Save JSON theme", previousPath, "JSON Files (*.json)");
         if (!fileName.isEmpty()) {
           const auto jsonDoc = theme.toJson();
-          const auto data = jsonDoc.toJson(QJsonDocument::JsonFormat::Indented).replace("    ", "  ");
+          const auto data = QByteArray(jsonDoc.toJson(QJsonDocument::JsonFormat::Indented).replace("    ", "  "));
           QFile file(fileName);
           if (file.open(QIODevice::ReadWrite)) {
             // Save to disk.

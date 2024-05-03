@@ -84,7 +84,7 @@ void Switch::paintEvent(QPaintEvent*) {
   const auto& bgColor = _bgAnimation.currentValue().value<QColor>();
   const auto& fgColor = _fgAnimation.currentValue().value<QColor>();
   const auto& borderColor = _borderAnimation.currentValue().value<QColor>();
-  const auto textColor = getTextColor();
+  const auto& textColor = getTextColor();
   p.setPen(Qt::NoPen);
   p.setBrush(bgColor);
   p.drawRoundedRect(switchRect, switchRadius, switchRadius);
