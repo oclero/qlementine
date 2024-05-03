@@ -39,6 +39,7 @@
 #include <oclero/qlementine/widgets/Switch.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/ColorButton.hpp>
+#include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 
 #include "EventFilters.hpp"
 
@@ -392,7 +393,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           borderRadiuses = optRoundedFocus->radiuses;
         }
 
-        const auto& borderColor = focusBorderColor();
+        const auto status = widgetStatus(w);
+        const auto& borderColor = focusBorderColor(status);
         const auto focused = optFocus->state.testFlag(State_HasFocus);
         const auto progress = focused ? 1. : 0.;
         const auto currentProgress =
@@ -5899,8 +5901,72 @@ QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const
   return mouse == MouseState::Disabled ? _impl->theme.borderColorDisabled : _impl->theme.borderColor;
 }
 
-QColor const& QlementineStyle::focusBorderColor() const {
-  return _impl->theme.focusColor;
+QColor const& QlementineStyle::statusColor(Status const status, MouseState const mouse) const {
+  switch (status) {
+    case Status::Success:
+      switch (mouse) {
+        case MouseState::Disabled:
+          return _impl->theme.statusColorSuccessDisabled;
+        case MouseState::Pressed:
+          return _impl->theme.statusColorSuccessPressed;
+        case MouseState::Hovered:
+          return _impl->theme.statusColorSuccessHovered;
+        default:
+          return _impl->theme.statusColorSuccess;
+      }
+    case Status::Warning:
+      switch (mouse) {
+        case MouseState::Disabled:
+          return _impl->theme.statusColorWarningDisabled;
+        case MouseState::Pressed:
+          return _impl->theme.statusColorWarningPressed;
+        case MouseState::Hovered:
+          return _impl->theme.statusColorWarningHovered;
+        default:
+          return _impl->theme.statusColorWarning;
+      }
+    case Status::Error:
+      switch (mouse) {
+        case MouseState::Disabled:
+          return _impl->theme.statusColorErrorDisabled;
+        case MouseState::Pressed:
+          return _impl->theme.statusColorErrorPressed;
+        case MouseState::Hovered:
+          return _impl->theme.statusColorErrorHovered;
+        default:
+          return _impl->theme.statusColorError;
+      }
+    case Status::Default:
+    case Status::Info:
+    default:
+      switch (mouse) {
+        case MouseState::Disabled:
+          return _impl->theme.statusColorInfoDisabled;
+        case MouseState::Pressed:
+          return _impl->theme.statusColorInfoPressed;
+        case MouseState::Hovered:
+          return _impl->theme.statusColorInfoHovered;
+        default:
+          return _impl->theme.statusColorInfo;
+      }
+  }
+}
+
+QColor QlementineStyle::focusBorderColor(Status status) const {
+  if (status == Status::Default)
+    return _impl->theme.focusColor;
+
+  const auto& statusColor = this->statusColor(status, MouseState::Normal);
+  const auto focusAlpha = _impl->theme.focusColor.alpha();
+  auto statusFocusColor = QColor{
+    statusColor.red(),
+    statusColor.green(),
+    statusColor.blue(),
+    focusAlpha,
+  };
+  statusFocusColor = statusFocusColor.lighter(110);
+
+  return statusFocusColor;
 }
 
 QColor const& QlementineStyle::frameBorderColor() const {
@@ -6035,8 +6101,14 @@ int QlementineStyle::pixelSizeForTextRole(TextRole role) const {
 }
 
 Status QlementineStyle::widgetStatus(QWidget const* widget) const {
-  if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
+  if (const auto* focusFrame = qobject_cast<const QFocusFrame*>(widget)) {
+    if (const auto* focusedWidget = focusFrame->widget()) {
+      return widgetStatus(focusedWidget);
+    }
+  } else if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
     return qlementineLineEdit->status();
+  } else if (const auto* qlementineTextEdit = qobject_cast<const qlementine::PlainTextEdit*>(widget)) {
+    return qlementineTextEdit->status();
   }
   return Status::Default;
 }

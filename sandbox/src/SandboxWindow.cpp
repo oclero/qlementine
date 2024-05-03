@@ -1467,9 +1467,10 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     auto* comboBoxStatus = new QComboBox(&owner);
     comboBoxStatus->addItem("Default", static_cast<int>(Status::Default));
-    comboBoxStatus->addItem("Error", static_cast<int>(Status::Error));
-    comboBoxStatus->addItem("Warning", static_cast<int>(Status::Warning));
+    comboBoxStatus->addItem("Info", static_cast<int>(Status::Info));
     comboBoxStatus->addItem("Success", static_cast<int>(Status::Success));
+    comboBoxStatus->addItem("Warning", static_cast<int>(Status::Warning));
+    comboBoxStatus->addItem("Error", static_cast<int>(Status::Error));
     windowContentLayout->addWidget(comboBoxStatus);
     QObject::connect(
       comboBoxStatus, qOverload<int>(&QComboBox::currentIndexChanged), &owner, [comboBoxStatus, lineEdit](int index) {
