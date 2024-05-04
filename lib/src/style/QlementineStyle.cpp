@@ -2086,9 +2086,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_ToolBar:
       if (const auto* optToolBar = qstyleoption_cast<const QStyleOptionToolBar*>(opt)) {
-        // Reserve the beveled appearance only for mainwindow toolbars.
-        if (w && !(qobject_cast<const QMainWindow*>(w->parentWidget())))
-          break;
+        //// Reserve the beveled appearance only for mainwindow toolbars.
+        //if (w && !(qobject_cast<const QMainWindow*>(w->parentWidget())))
+        //  break;
         // Background.
         drawPrimitive(PE_PanelToolBar, optToolBar, p, w);
       }
