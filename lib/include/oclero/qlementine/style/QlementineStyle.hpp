@@ -295,6 +295,10 @@ public: // Theme-related methods.
   friend class CommandLinkButtonPaintEventFilter;
   friend class LineEditButtonEventFilter;
 
+  virtual QColor const& statusBarBackgroundColor() const;
+  virtual QColor const& statusBarBorderColor() const;
+  virtual QColor const& statusBarSeparatorColor() const;
+
 private:
   std::unique_ptr<QlementineStyleImpl> _impl;
 };

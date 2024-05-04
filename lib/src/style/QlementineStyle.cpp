@@ -910,8 +910,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         drawPrimitive(PE_PanelItemViewItem, opt, p, w);
       }
       return;
-    case PE_PanelStatusBar:
-      break;
+    case PE_PanelStatusBar: {
+      const auto& bgColor = statusBarBackgroundColor();
+      const auto& borderColor = statusBarBorderColor();
+      const auto borderW = _impl->theme.borderWidth;
+      p->fillRect(opt->rect, bgColor);
+
+      const auto lineRect = QRect(opt->rect.x(), opt->rect.y(), opt->rect.width(), borderW);
+      p->fillRect(lineRect, borderColor);
+    }
+      return;
     case PE_IndicatorTabClose:
       if (const auto* button = qobject_cast<const QAbstractButton*>(w)) {
         if (const auto* tabBar = qobject_cast<const QTabBar*>(w->parentWidget())) {
@@ -6113,4 +6121,15 @@ Status QlementineStyle::widgetStatus(QWidget const* widget) const {
   return Status::Default;
 }
 
+QColor const& QlementineStyle::statusBarBackgroundColor() const {
+  return _impl->theme.backgroundColorMain2;
+}
+
+QColor const& QlementineStyle::statusBarBorderColor() const {
+  return _impl->theme.borderColor;
+}
+
+QColor const& QlementineStyle::statusBarSeparatorColor() const {
+  return _impl->theme.secondaryColorDisabled;
+}
 } // namespace oclero::qlementine
