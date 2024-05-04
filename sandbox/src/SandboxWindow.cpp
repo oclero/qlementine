@@ -528,7 +528,6 @@ struct SandboxWindow::Impl {
     lineEdit->setClearButtonEnabled(true);
   }
 
-
   void setupUI_textEdit() {
     auto* textEdit = new QTextEdit(windowContent);
     textEdit->setTabChangesFocus(true);
