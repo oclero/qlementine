@@ -39,4 +39,5 @@ add_subdirectory(lib)
 # Sandbox.
 if(${PROJECT_IS_TOP_LEVEL})
   add_subdirectory(sandbox)
+  add_subdirectory(showcase)
 endif()
