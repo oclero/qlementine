@@ -60,7 +60,13 @@ bool shouldHaveBoldFont(const QWidget* w) {
 }
 
 bool shouldHaveExternalFocusFrame(const QWidget* w) {
+  // Special case for all widgets inheriting QAbstractScrollArea.
+  if (auto* scrollarea = qobject_cast<const QAbstractScrollArea*>(w)) {
+    return false;
+  }
+
   // Special case for QPlainTextEdit and QTextEdit.
+  // NB: they are QAbstractScrollAreas so need to be handled after.
   if (auto* frame = qobject_cast<const QFrame*>(w)) {
     return frame->focusPolicy() != Qt::NoFocus && frame->frameShape() == QFrame::StyledPanel;
   }
