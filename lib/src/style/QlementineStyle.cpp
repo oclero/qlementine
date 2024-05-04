@@ -556,6 +556,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto p2 = QPointF(x2, y2);
         const auto& lineColor = toolBarBorderColor();
         p->setPen(QPen(lineColor, lineW, Qt::SolidLine, Qt::FlatCap));
+        p->setBrush(Qt::NoBrush);
         p->drawLine(p1, p2);
       }
       return;
@@ -2214,14 +2215,13 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ShapedFrame:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
         const auto frameShape = frameOpt->frameShape;
-
         const auto lineW = _impl->theme.borderWidth;
-        const auto& lineColor = frameBorderColor();
-        const auto& pen = QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap);
 
         switch (frameShape) {
           case QFrame::HLine:
           case QFrame::VLine: {
+            const auto& lineColor = separatorColor();
+            const auto& pen = QPen(lineColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::FlatCap);
             p->setBrush(Qt::NoBrush);
             p->setPen(pen);
             if (frameShape == QFrame::HLine) {
@@ -2236,6 +2236,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           } break;
           default: {
             if (w != nullptr) {
+              const auto& borderColor = frameBorderColor();
+              const auto& pen = QPen(borderColor, lineW, Qt::PenStyle::SolidLine, Qt::PenCapStyle::SquareCap);
               const auto bgRole = w->backgroundRole();
               if (bgRole != QPalette::NoRole && w->autoFillBackground()) {
                 const auto& palette = _impl->theme.palette;
@@ -5979,6 +5981,10 @@ QColor QlementineStyle::focusBorderColor(Status status) const {
 
 QColor const& QlementineStyle::frameBorderColor() const {
   return _impl->theme.borderColorDisabled;
+}
+
+QColor const& QlementineStyle::separatorColor() const {
+  return _impl->theme.borderColor;
 }
 
 const QFont& QlementineStyle::fontForTextRole(TextRole role) const {

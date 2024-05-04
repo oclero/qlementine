@@ -275,6 +275,7 @@ public: // Theme-related methods.
   virtual QColor const& statusColor(Status const status, MouseState const mouse) const;
   virtual QColor focusBorderColor(Status status) const;
   virtual QColor const& frameBorderColor() const;
+  virtual QColor const& separatorColor() const;
 
   virtual QColor const& colorForTextRole(TextRole role, MouseState const mouse) const;
   virtual int pixelSizeForTextRole(TextRole role) const;
