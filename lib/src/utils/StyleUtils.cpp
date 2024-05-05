@@ -61,7 +61,7 @@ bool shouldHaveBoldFont(const QWidget* w) {
 
 bool shouldHaveExternalFocusFrame(const QWidget* w) {
   // Special case for all widgets inheriting QAbstractScrollArea.
-  if (auto* scrollarea = qobject_cast<const QAbstractScrollArea*>(w)) {
+  if (qobject_cast<const QAbstractScrollArea*>(w)) {
     return false;
   }
 
