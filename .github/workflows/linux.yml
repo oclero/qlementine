@@ -2,39 +2,34 @@ name: Linux
 
 on:
   push:
-    branches: [ "master", "setup-ci" ]
+    branches:
+      - master
+      - setup-ci
   pull_request:
-    branches: [ "master" ]
-
-env:
-  # CMake build type (Release, Debug, RelWithDebInfo, etc.).
-  BUILD_TYPE: Release
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check Out
-      # Checks out the repository.
-      uses: actions/checkout@v4
+      - name: Check Out
+        uses: actions/checkout@v4
 
-    - name: Install Qt
-      # Installs the Qt SDK.
-      uses: jurplel/install-qt-action@v3
-      with:
-        version: '5.15.2'
-        host: 'linux'
-        target: 'desktop'
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "5.15.2"
+          host: linux
+          target: desktop
+          arch: gcc_64
 
-    - name: Configure CMake
-      # Configures CMake in a 'build' subdirectory.
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Configure CMake
+        run: cmake --preset linux
 
-    - name: Builds the library.
-      # Builds with the given configuration.
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Build the library.
+        run: cmake --build --preset linux
 
-    - name: Builds the Sandbox app.
-      # Builds the sandbox app with the given configuration.
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target sandbox
+      - name: Build the Sandbox app.
+        run: cmake --build --preset linux-sandbox

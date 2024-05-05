@@ -2,43 +2,19 @@
 
 ## Installation
 
-1. Add the library's repository as a Git submodule.
+1. Add the library as a dependency with CMake FetchContent.
 
-    ```bash
-    git submodule add git@github.com:oclero/qlementine.git submodules/qlementine
-    ```
+   ```bash
+   include(FetchContent)
+   FetchContent_Declare(QtUpdater GIT_REPOSITORY "https://github.com/oclero/qtupdater.git")
+   FetchContent_MakeAvailable(QtUpdater)
+   ```
 
-2. Download submodules.
+2. Link with the library in CMake.
 
-    ```bash
-    git submodule update --init --recursive
-    ```
-
-3. Add the library to your CMake project.
-
-    ```cmake
-    add_subdirectory(submodules/qlementine)
-    ```
-
-4. Link with the library in CMake.
-
-    ```cmake
-    target_link_libraries(your_project oclero::qlementine)
-    ```
-
-5. Define the Qt version (Qt5 is the default). Two options:
-
-    1. When calling `cmake`:
-
-        ```bash
-        cmake -B ./build -DQT_DEFAULT_MAJOR_VERSION=6
-        ```
-
-    2. Directly in a top-level CMake file:
-
-        ```cmake
-        set(QT_DEFAULT_MAJOR_VERSION 6)
-        ```
+   ```cmake
+   target_link_libraries(your_project oclero::qlementine)
+   ```
 
 ## Usage
 

@@ -40,7 +40,6 @@ Testing/
 .qt_for_python/
 
 # Qt Creator files.
-CMakeLists.txt.user
 *creator.user*
 *.qml.autosave
 debug.log
@@ -56,3 +55,7 @@ __pycache__/
 
 # MkDocs build files.
 public/
+
+# CMake files.
+CMakeUserPresets.json
+CMakeLists.txt.user
