@@ -21,13 +21,13 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: "5.15.2"
+          version: '5.15.2'
           host: mac
           target: desktop
           arch: clang_64
 
       - name: Configure CMake
-        run: cmake --preset macos -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=OFF -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY=""
+        run: cmake --preset macos -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=OFF -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE="Manual"
 
       - name: Build the library.
         run: cmake --build --preset macos

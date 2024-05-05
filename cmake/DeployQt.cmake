@@ -36,6 +36,10 @@ function(target_deploy_qt TARGET_NAME)
           COMMAND ${CMAKE_COMMAND} -E echo "Deploying Qt..."
           COMMAND ${QTDEPLOY_TARGET_NAME} "$<TARGET_BUNDLE_DIR:${TARGET_NAME}>" -verbose=0
         )
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E echo "Removing unwanted codesigning made by macdeployqt..."
+          COMMAND codesign --remove-signature "$<TARGET_BUNDLE_DIR:${TARGET_NAME}>"
+        )
       endif()
     endif()
   endif()

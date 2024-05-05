@@ -13,7 +13,7 @@
       "generator": "Xcode",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "QT_DIR": "/opt/homebrew/opt/qt/lib/cmake/Qt6"
+        "QT_DIR": "/opt/homebrew/opt/qt/lib/cmake/Qt5"
       },
       "condition": {
         "type": "equals",
