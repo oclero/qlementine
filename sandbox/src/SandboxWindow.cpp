@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Olivier Cléro <oclero@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #include "SandboxWindow.hpp"
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>

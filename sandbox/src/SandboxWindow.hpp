@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Olivier Cléro <oclero@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <QMainWindow>
@@ -14,7 +17,7 @@ public:
 
   void setCustomStyle(QlementineStyle* style);
 
-  bool eventFilter(QObject *watched, QEvent *event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
   struct Impl;

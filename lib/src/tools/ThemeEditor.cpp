@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Olivier Cléro <oclero@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #include <oclero/qlementine/tools/ThemeEditor.hpp>
 
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
