@@ -5,7 +5,7 @@ function(target_deploy_qt TARGET_NAME)
   elseif(APPLE)
     set(DEPLOYQT_NAME "macdeployqt")
   else()
-    message(WARNING "Deployement of dependecies not implemented yet for this platform.")
+    #message(WARNING "Deployement of dependecies not implemented yet for this platform.")
     return()
   endif()
 
