@@ -35,20 +35,20 @@ See [documentation](https://oclero.github.io/qlementine) for more information.
 ## Requirements
 
 - Windows, MacOS or Linux.
-- [CMake 3.17.5+](https://cmake.org/download)
+- [CMake 3.20.0+](https://cmake.org/download)
 - [Qt 5.15.3+ or Qt 6.0.0+](https://www.qt.io/download-qt-installer)
 
 ## Features
 
 This library contains:
 
-- A custom `QStyle` named `QlementineStyle`, that implements all the necessary API to give a modern look and feel to your Qt application. It's a drop-in replacement for the default `QStyle`.
-- Lots of utilities to help you write beautiful `QWidgets`.
+- A custom `QStyle` named `QlementineStyle`, that implements all the necessary API to give a modern look and feel to your Qt application. It's a **drop-in replacement** for the default `QStyle`.
+- Lots of utilities to help you write beautiful `QWidgets` that fits well with the style.
 - A collection of new `QWidgets` that are missing in Qt's standard collection, such as `Switch`.
 
 ## Usage
 
-See [documentation](docs/usage.md). Basically, you just need to add Qlementine as a Git submodule and link with it with CMake.
+See [documentation](docs/usage.md) for details. Basically, you just need to add Qlementine as a dependency with CMake, and call `QApplication::setStyle`.
 
 ## Creator
 

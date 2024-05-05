@@ -1,33 +1,84 @@
-find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
-  COMPONENTS
-    Core
-    Widgets
-  REQUIRED
-)
+set(SANDBOX_NAME "sandbox")
 
-add_executable(sandbox WIN32 MACOSX_BUNDLE)
-target_sources(sandbox PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/resources/sandbox.qrc
+if(APPLE)
+  set(APP_ICON_MACOS "${CMAKE_SOURCE_DIR}/branding/icon/icon.icns")
+  set_source_files_properties(${APP_ICON_MACOS} PROPERTIES
+    MACOSX_PACKAGE_LOCATION "Resources"
+  )
+endif()
+
+set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.hpp
-  #${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.cpp
-  #${CMAKE_CURRENT_SOURCE_DIR}/src/CsdWindow.hpp
-)
-target_link_libraries(sandbox
-  PRIVATE
-    oclero::qlementine
-    Qt::Core
-    Qt::Widgets
+  ${CMAKE_CURRENT_SOURCE_DIR}/resources/sandbox.qrc
+  ${APP_ICON_MACOS}
 )
 
-set_target_properties(sandbox PROPERTIES
+if(${QT_VERSION_MAJOR} STREQUAL "6")
+  qt_add_executable(${SANDBOX_NAME} WIN32 MACOSX_BUNDLE
+    ${SOURCES}
+  )
+else()
+  add_executable(${SANDBOX_NAME} WIN32 MACOSX_BUNDLE
+    ${SOURCES}
+  )
+endif()
+
+target_link_libraries(${SANDBOX_NAME} PUBLIC
+  oclero::qlementine
+)
+
+install(TARGETS ${SANDBOX_NAME}
+  BUNDLE  DESTINATION .
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+set_target_properties(${SANDBOX_NAME} PROPERTIES
   INTERNAL_CONSOLE OFF
   EXCLUDE_FROM_ALL OFF
-  FOLDER sandbox
-  AUTOMOC ON
-  AUTORCC ON
+  FOLDER "sandbox"
+  CMAKE_AUTOMOC ON
+  CMAKE_AUTORCC ON
+  CMAKE_AUTOUIC ON
+
+  MACOSX_BUNDLE_GUI_IDENTIFIER "oclero.qlementine.${SANDBOX_NAME}"
+  MACOSX_BUNDLE_BUNDLE_NAME "Sandbox"
+  MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+  MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+  MACOSX_BUNDLE_LONG_VERSION_STRING ${PROJECT_VERSION}
+  MACOSX_BUNDLE_ICON_FILE "icon.icns"
+  MACOSX_BUNDLE_COPYRIGHT ${PROJECT_COPYRIGHT}
+
+  XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "${XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED}"
+  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}"
+  XCODE_ATTRIBUTE_CODE_SIGN_STYLE "${XCODE_ATTRIBUTE_CODE_SIGN_STYLE}"
+  XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS OFF
 )
 
-############# Minimal example ends here #############
 target_deploy_qt(sandbox)
+
+# if(${QT_VERSION_MAJOR} STREQUAL "6")
+#   # NB: Broken in 6.7.x
+
+#   # qt_generate_deploy_app_script(
+#   #   TARGET ${SANDBOX_NAME}
+#   #   OUTPUT_SCRIPT SANDBOX_DEPLOY_SCRIPT
+#   # )
+
+#   # add_custom_command(TARGET ${SANDBOX_NAME} POST_BUILD
+#   #   COMMENT "Deploying Qt..."
+#   #   COMMAND ${CMAKE_COMMAND} -P ${SANDBOX_DEPLOY_SCRIPT} -DQT_DEPLOY_PREFIX=$<TARGET_BUNDLE_DIR:${SANDBOX_NAME}> -DQT_DEPLOY_BIN_DIR=.
+#   # )
+#   # install(SCRIPT ${SANDBOX_DEPLOY_SCRIPT})
+
+#   # add_custom_command(TARGET ${SANDBOX_NAME} POST_BUILD
+#   #   COMMENT "Deploying Qt..."
+#   #   COMMAND ${CMAKE_COMMAND} -P ${SANDBOX_DEPLOY_SCRIPT}
+#   # )
+# else()
+#   target_deploy_qt(sandbox)
+# endif()
+
+
+

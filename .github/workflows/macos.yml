@@ -2,15 +2,11 @@ name: MacOS
 
 on:
   push:
-    branches: ['master', 'setup-ci']
+    branches:
+      - master
   pull_request:
-    branches: ['master']
-
-env:
-  # CMake build type (Release, Debug, RelWithDebInfo, etc.).
-  BUILD_TYPE: Release
-  GENERATOR: Xcode
-  QT_VERSION: '5.15.2'
+    branches:
+      - master
 
 jobs:
   build:
@@ -18,26 +14,21 @@ jobs:
 
     steps:
       - name: Check Out
-        # Checks out the repository.
         uses: actions/checkout@v4
 
       - name: Install Qt
-        # Installs the Qt SDK.
         uses: jurplel/install-qt-action@v3
         with:
-          version: ${{env.QT_VERSION}}
+          version: '5.15.2'
           host: mac
           target: desktop
           arch: clang_64
 
       - name: Configure CMake
-        # Configures CMake in a 'build' subdirectory.
-        run: cmake -B ${{github.workspace}}/build -G "${{env.GENERATOR}}" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=OFF -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY=""
+        run: cmake --preset macos -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=OFF -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE="Manual"
 
-      - name: Builds the library.
-        # Builds with the given configuration.
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Build the library.
+        run: cmake --build --preset macos
 
-      - name: Builds the Sandbox app.
-        # Builds the sandbox app with the given configuration.
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target sandbox
+      - name: Build the Sandbox app.
+        run: cmake --build --preset macos-sandbox

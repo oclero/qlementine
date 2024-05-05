@@ -1,0 +1,132 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "macos",
+      "displayName": "macOS",
+      "description": "Xcode project for macOS",
+      "generator": "Xcode",
+      "binaryDir": "${sourceDir}/_build",
+      "cacheVariables": {
+        "QT_DIR": "/opt/homebrew/opt/qt/lib/cmake/Qt5"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows",
+      "description": "Visual Studio project for Windows",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/_build",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux",
+      "description": "Makefile for Linux",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/_build",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "macos",
+      "displayName": "macOS",
+      "configurePreset": "macos",
+      "description": "Release build with Xcode for macOS",
+      "targets": ["qlementine"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "macos-sandbox",
+      "displayName": "Sandbox for macOS",
+      "configurePreset": "macos",
+      "description": "Sandbox - Release build with Xcode for macOS",
+      "targets": ["sandbox"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows",
+      "configurePreset": "windows",
+      "description": "Release build with Visual Studio for Windows",
+      "targets": ["qlementine"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-sandbox",
+      "displayName": "Sandbox for Windows",
+      "configurePreset": "windows",
+      "description": "Sandbox - Release build with Visual Studio for Windows",
+      "targets": ["sandbox"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux",
+      "configurePreset": "linux",
+      "description": "Release build for Linux",
+      "targets": ["qlementine"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-sandbox",
+      "displayName": "Sandbox for Linux",
+      "configurePreset": "linux",
+      "description": "Sandbox - Release build for Linux",
+      "targets": ["sandbox"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ]
+}
