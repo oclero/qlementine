@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      - setup-ci
-      - feature/cmake-presets
   pull_request:
     branches:
       - master
@@ -21,7 +19,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: "5.15.2"
+          version: '5.15.2'
           host: windows
           target: desktop
           arch: win64_msvc2019_64

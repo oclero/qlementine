@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      - setup-ci
-      - feature/cmake-presets
   pull_request:
     branches:
       - master
