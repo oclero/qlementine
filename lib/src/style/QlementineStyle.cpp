@@ -4469,10 +4469,9 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
 
     // LineEdit
     case SH_LineEdit_PasswordCharacter:
-      break;
-      //return 2022u; // TODO big bullet unicode
+      return QChar(0x2022).unicode(); // Bullet.
     case SH_LineEdit_PasswordMaskDelay:
-      return 0;
+      return 200;
 
     // FocusFrame
     case SH_FocusFrame_AboveWidget:
