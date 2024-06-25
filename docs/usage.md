@@ -6,8 +6,8 @@
 
    ```bash
    include(FetchContent)
-   FetchContent_Declare(QtUpdater GIT_REPOSITORY "https://github.com/oclero/qtupdater.git")
-   FetchContent_MakeAvailable(QtUpdater)
+   FetchContent_Declare(Qlementine GIT_REPOSITORY "https://github.com/oclero/qlementine.git")
+   FetchContent_MakeAvailable(Qlementine)
    ```
 
 2. Link with the library in CMake.
