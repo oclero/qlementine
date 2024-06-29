@@ -77,6 +77,19 @@
       }
     },
     {
+      "name": "macos-showcase",
+      "displayName": "Showcase for macOS",
+      "configurePreset": "macos",
+      "description": "Showcase - Release build with Xcode for macOS",
+      "targets": ["showcase"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
       "name": "windows",
       "displayName": "Windows",
       "configurePreset": "windows",
@@ -103,6 +116,19 @@
       }
     },
     {
+      "name": "windows-showcase",
+      "displayName": "Showcase for Windows",
+      "configurePreset": "windows",
+      "description": "Showcase - Release build with Visual Studio for Windows",
+      "targets": ["showcase"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
       "name": "linux",
       "displayName": "Linux",
       "configurePreset": "linux",
@@ -121,6 +147,19 @@
       "configurePreset": "linux",
       "description": "Sandbox - Release build for Linux",
       "targets": ["sandbox"],
+      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-showcase",
+      "displayName": "Showcase for Linux",
+      "configurePreset": "linux",
+      "description": "Showcase - Release build for Linux",
+      "targets": ["showcase"],
       "configuration": "Release",
       "condition": {
         "type": "equals",

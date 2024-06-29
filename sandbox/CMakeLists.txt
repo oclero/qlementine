@@ -56,7 +56,7 @@ set_target_properties(${SANDBOX_NAME} PROPERTIES
   XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS OFF
 )
 
-target_deploy_qt(sandbox)
+target_deploy_qt(${SANDBOX_NAME})
 
 # if(${QT_VERSION_MAJOR} STREQUAL "6")
 #   # NB: Broken in 6.7.x
