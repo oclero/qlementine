@@ -1,30 +1,63 @@
-find_package(Qt${QT_DEFAULT_MAJOR_VERSION}
-  COMPONENTS
-    Core
-    Widgets
-  REQUIRED
-)
+set(SHOWCASE_NAME "showcase")
 
-add_executable(showcase WIN32 MACOSX_BUNDLE)
-target_sources(showcase PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/resources/showcase.qrc
+include(FetchContent)
+FetchContent_Declare(qlementine_icons GIT_REPOSITORY "https://github.com/oclero/qlementine-icons.git")
+FetchContent_MakeAvailable(qlementine_icons)
+
+if(APPLE)
+  set(APP_ICON_MACOS "${CMAKE_SOURCE_DIR}/branding/icon/icon.icns")
+  set_source_files_properties(${APP_ICON_MACOS} PROPERTIES
+    MACOSX_PACKAGE_LOCATION "Resources"
+  )
+endif()
+
+set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ShowcaseWindow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ShowcaseWindow.hpp
-)
-target_link_libraries(showcase
-  PRIVATE
-    oclero::qlementine
-    Qt::Core
-    Qt::Widgets
+  ${CMAKE_CURRENT_SOURCE_DIR}/resources/showcase.qrc
 )
 
-set_target_properties(showcase PROPERTIES
+if(${QT_VERSION_MAJOR} STREQUAL "6")
+  qt_add_executable(${SHOWCASE_NAME} WIN32 MACOSX_BUNDLE
+    ${SOURCES}
+  )
+else()
+  add_executable(${SHOWCASE_NAME} WIN32 MACOSX_BUNDLE
+    ${SOURCES}
+  )
+endif()
+
+target_link_libraries(${SHOWCASE_NAME} PUBLIC
+  oclero::qlementine
+  oclero::qlementine_icons
+)
+
+install(TARGETS ${SHOWCASE_NAME}
+  BUNDLE  DESTINATION .
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+set_target_properties(${SHOWCASE_NAME} PROPERTIES
   INTERNAL_CONSOLE OFF
   EXCLUDE_FROM_ALL OFF
-  FOLDER tools
-  AUTOMOC ON
-  AUTORCC ON
+  FOLDER "tools"
+  CMAKE_AUTOMOC ON
+  CMAKE_AUTORCC ON
+  CMAKE_AUTOUIC ON
+
+  MACOSX_BUNDLE_GUI_IDENTIFIER "oclero.qlementine.${SHOWCASE_NAME}"
+  MACOSX_BUNDLE_BUNDLE_NAME "Showcase"
+  MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+  MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+  MACOSX_BUNDLE_LONG_VERSION_STRING ${PROJECT_VERSION}
+  MACOSX_BUNDLE_ICON_FILE "icon.icns"
+  MACOSX_BUNDLE_COPYRIGHT ${PROJECT_COPYRIGHT}
+
+  XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "${XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED}"
+  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}"
+  XCODE_ATTRIBUTE_CODE_SIGN_STYLE "${XCODE_ATTRIBUTE_CODE_SIGN_STYLE}"
+  XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS OFF
 )
 
-target_deploy_qt(showcase)
+target_deploy_qt(${SHOWCASE_NAME})
