@@ -45,27 +45,3 @@ set_target_properties(${SANDBOX_NAME} PROPERTIES
   XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
   XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS OFF
 )
-
-# target_deploy_qt(sandbox)
-
-# if(${QT_VERSION_MAJOR} STREQUAL "6")
-#   # NB: Broken in 6.7.x
-
-#   # qt_generate_deploy_app_script(
-#   #   TARGET ${SANDBOX_NAME}
-#   #   OUTPUT_SCRIPT SANDBOX_DEPLOY_SCRIPT
-#   # )
-
-#   # add_custom_command(TARGET ${SANDBOX_NAME} POST_BUILD
-#   #   COMMENT "Deploying Qt..."
-#   #   COMMAND ${CMAKE_COMMAND} -P ${SANDBOX_DEPLOY_SCRIPT} -DQT_DEPLOY_PREFIX=$<TARGET_BUNDLE_DIR:${SANDBOX_NAME}> -DQT_DEPLOY_BIN_DIR=.
-#   # )
-#   # install(SCRIPT ${SANDBOX_DEPLOY_SCRIPT})
-
-#   # add_custom_command(TARGET ${SANDBOX_NAME} POST_BUILD
-#   #   COMMENT "Deploying Qt..."
-#   #   COMMAND ${CMAKE_COMMAND} -P ${SANDBOX_DEPLOY_SCRIPT}
-#   # )
-# else()
-#   target_deploy_qt(sandbox)
-# endif()

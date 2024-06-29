@@ -1,6 +1,7 @@
 #include <QApplication>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
+#include <oclero/qlementine/icons/QlementineIcons.hpp>
 
 #include "ShowcaseWindow.hpp"
 
@@ -24,6 +25,10 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setApplicationVersion("1.0.0");
   QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
   QApplication::setWindowIcon(QIcon(QStringLiteral(":/showcase/qlementine_icon.ico")));
+
+  // Custom icon theme.
+  oclero::qlementine::icons::initializeIconTheme();
+  QIcon::setThemeName("qlementine");
 
   // Set custom QStyle.
 #if USE_CUSTOM_STYLE
