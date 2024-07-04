@@ -8,6 +8,7 @@
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
+#include <oclero/qlementine/utils/IconUtils.hpp>
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>

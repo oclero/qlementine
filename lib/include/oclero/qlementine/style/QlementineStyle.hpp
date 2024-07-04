@@ -5,6 +5,7 @@
 
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
+#include <oclero/qlementine/utils/IconUtils.hpp>
 
 #include <QCommonStyle>
 
@@ -74,7 +75,11 @@ public:
 
   QPixmap getColorizedPixmap(
     const QPixmap& input, AutoIconColor autoIconColor, const QColor& fgcolor, const QColor& textColor) const;
-  static QIcon makeIcon(const QString& svgPath);
+
+  QIcon makeThemedIcon(
+    const QString& svgPath, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
+  QIcon makeThemedIcon(
+    icons::Icons16 id, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
 
 public: // QStyle overrides.
   void drawPrimitive(
@@ -237,6 +242,8 @@ public: // Theme-related methods.
   virtual QColor const& labelForegroundColor(MouseState const mouse, const QWidget* w = nullptr) const;
   virtual QColor const& labelCaptionForegroundColor(MouseState const mouse) const;
 
+  virtual QColor const& iconForegroundColor(MouseState const mouse, ColorRole const role) const;
+
   virtual QColor const& toolBarBackgroundColor() const;
   virtual QColor const& toolBarBorderColor() const;
   virtual QColor const& toolBarSeparatorColor() const;
@@ -284,4 +291,9 @@ public: // Theme-related methods.
 private:
   std::unique_ptr<QlementineStyleImpl> _impl;
 };
+
+QlementineStyle* appStyle();
+
+QIcon makeThemedIcon(icons::Icons16 id, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary);
+
 } // namespace oclero::qlementine
