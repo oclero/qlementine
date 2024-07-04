@@ -2676,9 +2676,9 @@ void QlementineStyle::drawComplexControl(
         const auto grooveRect = subControlRect(CC_ScrollBar, scrollBarOpt, SC_ScrollBarGroove, w);
         const auto currentGrooveRect =
           horizontal ? QRectF(grooveRect.x(), grooveRect.y() + grooveRect.height() - currentThickness,
-                         grooveRect.width(), currentThickness)
+            grooveRect.width(), currentThickness)
                      : QRectF(grooveRect.x() + grooveRect.width() - currentThickness, grooveRect.y(), currentThickness,
-                         grooveRect.height());
+                       grooveRect.height());
 
         const auto& grooveColor = scrollBarGrooveColor(mouse);
         const auto& currentGrooveColor =
@@ -2696,9 +2696,9 @@ void QlementineStyle::drawComplexControl(
         if (!handleRect.isEmpty()) {
           const auto currentHandleRect =
             horizontal ? QRectF(handleRect.x(), handleRect.y() + handleRect.height() - currentThickness,
-                           handleRect.width(), currentThickness)
+              handleRect.width(), currentThickness)
                        : QRectF(handleRect.x() + handleRect.width() - currentThickness, handleRect.y(),
-                           currentThickness, handleRect.height());
+                         currentThickness, handleRect.height());
           const auto handleMouse = getScrollBarHandleState(scrollBarOpt->state, scrollBarOpt->activeSubControls);
           const auto& handleColor = scrollBarHandleColor(handleMouse);
           const auto& currentHandleColor =
@@ -4579,8 +4579,8 @@ QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, 
       //      break;
       //    case SP_DesktopIcon:
       //      break;
-      //    case SP_TrashIcon:
-      //      break;
+    case SP_TrashIcon:
+      return makeIconFromSvg(icons::Icons16::Action_Trash, _impl->iconThemeFromTheme(), _impl->theme.iconSize);
       //    case SP_ComputerIcon:
       //      break;
       //    case SP_DriveFDIcon:
