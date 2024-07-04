@@ -1,9 +1,5 @@
 set(SHOWCASE_NAME "showcase")
 
-include(FetchContent)
-FetchContent_Declare(qlementine_icons GIT_REPOSITORY "https://github.com/oclero/qlementine-icons.git")
-FetchContent_MakeAvailable(qlementine_icons)
-
 if(APPLE)
   set(APP_ICON_MACOS "${CMAKE_SOURCE_DIR}/branding/icon/icon.icns")
   set_source_files_properties(${APP_ICON_MACOS} PROPERTIES

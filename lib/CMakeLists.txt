@@ -1,5 +1,10 @@
 set(LIB_TARGET_NAME ${PROJECT_NAME})
 
+# Dependency: qlementine-icons
+include(FetchContent)
+FetchContent_Declare(qlementine_icons GIT_REPOSITORY "https://github.com/oclero/qlementine-icons.git")
+FetchContent_MakeAvailable(qlementine_icons)
+
 # Declare files.
 set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimator.cpp
@@ -20,6 +25,7 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/BadgeUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ColorUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FontUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/IconUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ImageUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/PrimitiveUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/RadiusesF.cpp
@@ -69,6 +75,7 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/BadgeUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ColorUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/FontUtils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/IconUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ImageUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/PrimitiveUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/RadiusesF.hpp
@@ -124,6 +131,7 @@ target_link_libraries(${LIB_TARGET_NAME} PUBLIC
   Qt6::Core
   Qt6::Widgets
   Qt6::Svg
+  oclero::qlementine_icons
 )
 
 set_target_properties(${LIB_TARGET_NAME}
