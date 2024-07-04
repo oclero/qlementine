@@ -104,4 +104,11 @@ private:
   QFocusFrame* _focusFrame{ nullptr };
 };
 
+class LineEditMenuEventFilter : public QObject {
+public:
+  LineEditMenuEventFilter(QWidget* parent);
+
+protected:
+  virtual bool eventFilter(QObject* obj, QEvent* evt) override;
+};
 } // namespace oclero::qlementine

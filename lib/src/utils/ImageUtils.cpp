@@ -165,26 +165,6 @@ QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorizeMode 
   return pixmapInCache.isNull() ? input : pixmapInCache;
 }
 
-QIcon makeIconFromSvg(const QString& svgPath, const QSize& size) {
-  if (svgPath.isEmpty())
-    return {};
-
-  QIcon icon;
-  QSvgRenderer renderer(svgPath);
-  constexpr auto ratios = std::array<int, 2>{ 1, 2 };
-  for (const auto& ratio : ratios) {
-    const auto pixmapSize = size * ratio;
-    QPixmap pixmap(pixmapSize);
-    pixmap.fill(Qt::transparent);
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    renderer.render(&painter, pixmap.rect());
-    pixmap.setDevicePixelRatio(static_cast<double>(ratio));
-    icon.addPixmap(pixmap);
-  }
-  return icon;
-}
-
 QPixmap makePixmapFromSvg(const QString& svgPath, const QSize& size) {
   if (svgPath.isEmpty())
     return {};

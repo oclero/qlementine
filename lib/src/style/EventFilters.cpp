@@ -7,6 +7,8 @@
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 
+#include <oclero/qlementine/icons/Icons16.hpp>
+
 #include <QMouseEvent>
 #include <QWidget>
 #include <QLineEdit>
@@ -16,6 +18,8 @@
 #include <QTimer>
 #include <QStylePainter>
 #include <QFocusFrame>
+#include <QPointer>
+#include <QSpinBox>
 
 namespace oclero::qlementine {
 LineEditButtonEventFilter::LineEditButtonEventFilter(
@@ -367,10 +371,9 @@ bool TextEditEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   return QObject::eventFilter(watchedObject, evt);
 }
 
-WidgetWithFocusFrameEventFilter::WidgetWithFocusFrameEventFilter(QWidget* widget):
-  QObject(widget),
-  _widget(widget) {
-}
+WidgetWithFocusFrameEventFilter::WidgetWithFocusFrameEventFilter(QWidget* widget)
+  : QObject(widget)
+  , _widget(widget) {}
 
 bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   if (watchedObject == _widget) {
@@ -385,6 +388,124 @@ bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent
   }
 
   return QObject::eventFilter(watchedObject, evt);
+}
+
+class LineEditMenuIconsBehavior : public QObject {
+  QPointer<QMenu> _menu{ nullptr };
+  bool _menuCustomized{ false };
+
+  enum class IconListMode {
+    None,
+    LineEdit,
+    ReadOnlyLineEdit,
+    SpinBox,
+  };
+
+  static std::vector<QIcon> iconList(IconListMode mode) {
+    using Icons16 = icons::Icons16;
+    // The order follows the one defined QLineEdit.cpp and QSpinBox.cpp (Qt6).
+    switch (mode) {
+      case IconListMode::LineEdit:
+        return {
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_Undo),
+          makeThemedIcon(Icons16::Action_Redo),
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_Cut),
+          makeThemedIcon(Icons16::Action_Copy),
+          makeThemedIcon(Icons16::Action_Paste),
+          makeThemedIcon(Icons16::Action_Erase),
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_SelectAll),
+        };
+      case IconListMode::ReadOnlyLineEdit:
+        return {
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_Copy),
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_SelectAll),
+        };
+      case IconListMode::SpinBox:
+        return {
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_Undo),
+          makeThemedIcon(Icons16::Action_Redo),
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_Cut),
+          makeThemedIcon(Icons16::Action_Copy),
+          makeThemedIcon(Icons16::Action_Paste),
+          makeThemedIcon(Icons16::Action_Erase),
+          QIcon(), // Separator
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Action_SelectAll),
+          QIcon(), // Separator
+          makeThemedIcon(Icons16::Navigation_ChevronUp),
+          makeThemedIcon(Icons16::Navigation_ChevronDown),
+        };
+      default:
+        return {};
+    }
+  }
+
+  static IconListMode getMode(const QMenu* menu) {
+    if (const auto* menu_parent = menu->parent()) {
+      if (qobject_cast<const QSpinBox*>(menu_parent->parent())) {
+        return IconListMode::SpinBox;
+      } else if (const auto* line_edit = qobject_cast<const QLineEdit*>(menu_parent)) {
+        return line_edit->isReadOnly() ? IconListMode::ReadOnlyLineEdit : IconListMode::LineEdit;
+      }
+    }
+    return IconListMode::None;
+  }
+
+  void customizeMenu() {
+    const auto actions = _menu->findChildren<QAction*>();
+    if (!actions.empty()) {
+      const auto icons = iconList(getMode(_menu));
+      for (auto i = 0; i < static_cast<int>(icons.size()) && i < static_cast<int>(actions.size()); ++i) {
+        if (auto* action = actions.at(i)) {
+          action->setIcon(icons.at(i));
+        }
+      }
+    }
+  }
+
+public:
+  LineEditMenuIconsBehavior(QMenu* menu)
+    : QObject(menu)
+    , _menu(menu) {
+    // Hack pour modifier les icones du menu contextuel des line edit.
+    QObject::connect(_menu, &QMenu::aboutToShow, this, [this]() {
+      if (!_menuCustomized) {
+        customizeMenu();
+        _menuCustomized = true;
+      }
+    });
+  }
+};
+
+LineEditMenuEventFilter::LineEditMenuEventFilter(QWidget* parent)
+  : QObject(parent) {
+  assert(parent);
+  if (auto* menu = qobject_cast<QMenu*>(parent)) {
+    new LineEditMenuIconsBehavior(menu);
+  } else {
+    parent->installEventFilter(this);
+  }
+}
+
+bool LineEditMenuEventFilter::eventFilter(QObject*, QEvent* evt) {
+  const auto type = evt->type();
+  if (type == QEvent::ChildPolished) {
+    auto* child = static_cast<QChildEvent*>(evt)->child();
+    if (auto* lineedit = qobject_cast<QLineEdit*>(child)) {
+      lineedit->installEventFilter(this);
+    } else if (auto* menu = qobject_cast<QMenu*>(child)) {
+      new LineEditMenuIconsBehavior(menu);
+    }
+  }
+
+  return false;
 }
 
 } // namespace oclero::qlementine
