@@ -4745,6 +4745,9 @@ void QlementineStyle::polish(QApplication* app) {
   QCommonStyle::polish(app);
   app->setFont(_impl->theme.fontRegular);
   //app->installEventFilter(new AppEventFilter(app));
+
+  QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+  QApplication::setAttribute(Qt::ApplicationAttribute::AA_DontShowIconsInMenus, false);
 }
 
 void QlementineStyle::unpolish(QApplication* app) {
@@ -4918,6 +4921,12 @@ void QlementineStyle::polish(QWidget* w) {
     if (auto* viewport = textEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
       viewport->setAutoFillBackground(false);
     }
+  }
+
+  if (auto* lineEdit = qobject_cast<QLineEdit*>(w)) {
+    lineEdit->installEventFilter(new LineEditMenuEventFilter(lineEdit));
+  } else if (auto* spinBox = qobject_cast<QSpinBox*>(w)) {
+    spinBox->installEventFilter(new LineEditMenuEventFilter(spinBox));
   }
 }
 
