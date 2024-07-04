@@ -86,7 +86,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
       if (mouse == MouseState::Disabled && autoIconColor == AutoIconColor::None) {
         // Change only the icon's tint and opacity, so it looks disabled.
         const auto& sourceOverBgColor = qlementineStyle ? qlementineStyle->listItemBackgroundColor(
-                                                            MouseState::Normal, selected, focus, active, idx, _widget)
+                                          MouseState::Normal, selected, focus, active, idx, _widget)
                                                         : Theme().neutralColorTransparent;
         const auto premultipiedColor = getColorSourceOver(sourceOverBgColor, fgColor);
         const auto& tintedPixmap = getTintedPixmap(pixmap, premultipiedColor);
