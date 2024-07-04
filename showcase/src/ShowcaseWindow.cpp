@@ -5,6 +5,9 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/NavigationBar.hpp>
+#include <oclero/qlementine/utils/IconUtils.hpp>
+
+#include <oclero/qlementine/icons/Icons16.hpp>
 
 #include <QPointer>
 #include <QBoxLayout>
@@ -22,6 +25,12 @@
 #include <QPushButton>
 
 namespace oclero::qlementine::showcase {
+using Icons16 = oclero::qlementine::icons::Icons16;
+
+static QIcon makeQIcon(Icons16 id, const QSize& size = QSize(16,16)) {
+  return oclero::qlementine::makeThemedIcon(id, size);
+}
+
 class DummyWorkspace : public QWidget {
 public:
   using QWidget::QWidget;
@@ -87,26 +96,25 @@ struct ShowcaseWindow::Impl {
       auto* menu = menuBar->addMenu("File");
       {
         // TODO: Use the enum provided by Qt6 instead of strings for icon IDs.
-        menu->addAction(QIcon::fromTheme("document-new"), "New", cb, QKeySequence::StandardKey::New);
-        menu->addAction(QIcon::fromTheme("document-open"), "Open...", cb, QKeySequence::StandardKey::Open);
+        menu->addAction(makeQIcon(Icons16::Document_New), "New", cb, QKeySequence::StandardKey::New);
+        menu->addAction(makeQIcon(Icons16::Document_Open), "Open...", cb, QKeySequence::StandardKey::Open);
 
-        auto* recentFilesMenu = menu->addMenu("Recent Files");
+        auto* recentFilesMenu = menu->addMenu(makeQIcon(Icons16::Document_OpenRecent), "Recent Files");
         for (auto i = 0; i < 5; ++i) {
-          recentFilesMenu->addAction(
-            QIcon::fromTheme("document-open-recent"), QString("Recent File %1").arg(i + 1), cb, QKeySequence{});
+          recentFilesMenu->addAction(makeQIcon(Icons16::File_File), QString("Recent File %1").arg(i + 1), cb, QKeySequence{});
         }
 
         menu->addSeparator();
-        menu->addAction(QIcon::fromTheme("document-save"), "Save", cb, QKeySequence::StandardKey::Save);
-        menu->addAction(QIcon::fromTheme(""), "Close", cb, QKeySequence::StandardKey::Close);
-        menu->addAction(QIcon::fromTheme("document-print"), "Print...", cb, QKeySequence::StandardKey::Print);
+        menu->addAction(makeQIcon(Icons16::Action_Save), "Save", cb, QKeySequence::StandardKey::Save);
+        menu->addAction(makeQIcon(Icons16::Action_Close), "Close", cb, QKeySequence::StandardKey::Close);
+        menu->addAction(makeQIcon(Icons16::Action_Print), "Print...", cb, QKeySequence::StandardKey::Print);
+        menu->addAction(makeQIcon(Icons16::Action_PrintPreview), "Print Preview...", cb);
 
         menu->addSeparator();
-        menu->addAction(QIcon::fromTheme(""), "Preferences...", cb, QKeySequence::StandardKey::Preferences);
+        menu->addAction(makeQIcon(Icons16::Navigation_Settings), "Preferences...", cb, QKeySequence::StandardKey::Preferences);
 
         menu->addSeparator();
-        menu->addAction(
-          QIcon::fromTheme("application-exit"), "Quit",
+        menu->addAction(makeQIcon(Icons16::Action_Close), "Quit",
           []() {
             qApp->quit();
           },
@@ -116,21 +124,32 @@ struct ShowcaseWindow::Impl {
     {
       auto* menu = menuBar->addMenu("Edit");
       {
-        menu->addAction(QIcon::fromTheme("edit-undo"), "Undo", cb, QKeySequence::StandardKey::Undo);
-        menu->addAction(QIcon::fromTheme("edit-redo"), "Redo", cb, QKeySequence::StandardKey::Redo);
+        menu->addAction(makeQIcon(Icons16::Action_Undo), "Undo", cb, QKeySequence::StandardKey::Undo);
+        menu->addAction(makeQIcon(Icons16::Action_Redo), "Redo", cb, QKeySequence::StandardKey::Redo);
 
         menu->addSeparator();
-        menu->addAction(QIcon::fromTheme("edit-cut"), "Cut", cb, QKeySequence::StandardKey::Cut);
-        menu->addAction(QIcon::fromTheme("edit-copy"), "Copy", cb, QKeySequence::StandardKey::Copy);
-        menu->addAction(QIcon::fromTheme("edit-paste"), "Paste", cb, QKeySequence::StandardKey::Paste);
-        menu->addAction(QIcon::fromTheme("edit-delete"), "Delete", cb, QKeySequence::StandardKey::Delete);
+        menu->addAction(makeQIcon(Icons16::Action_Cut), "Cut", cb, QKeySequence::StandardKey::Cut);
+        menu->addAction(makeQIcon(Icons16::Action_Copy), "Copy", cb, QKeySequence::StandardKey::Copy);
+        menu->addAction(makeQIcon(Icons16::Action_Paste), "Paste", cb, QKeySequence::StandardKey::Paste);
+        menu->addAction(makeQIcon(Icons16::Action_Trash), "Delete", cb, QKeySequence::StandardKey::Delete);
+      }
+    }
+    {
+      auto* menu = menuBar->addMenu("View");
+      {
+        menu->addAction(makeQIcon(Icons16::Action_ZoomIn), "Zoom In", cb, QKeySequence::StandardKey::ZoomIn);
+        menu->addAction(makeQIcon(Icons16::Action_ZoomOut), "Zoom Out", cb, QKeySequence::StandardKey::ZoomOut);
+        menu->addAction(makeQIcon(Icons16::Action_ZoomFit), "Fit", cb, QKeySequence{});
+
+        menu->addSeparator();
+        menu->addAction(makeQIcon(Icons16::Action_Fullscreen), "Full Screen", cb, QKeySequence::StandardKey::FullScreen);
       }
     }
     {
       auto* menu = menuBar->addMenu("Help");
       {
-        menu->addAction(QIcon::fromTheme("mail-send"), "Contact", cb, QKeySequence{});
-        menu->addAction(QIcon::fromTheme(""), "About...", cb, QKeySequence{});
+        menu->addAction(makeQIcon(Icons16::Misc_Mail), "Contact", cb, QKeySequence{});
+        menu->addAction(makeQIcon(Icons16::Misc_Info), "About...", cb, QKeySequence{});
       }
     }
   }
@@ -146,10 +165,10 @@ struct ShowcaseWindow::Impl {
     tabBar->setChangeCurrentOnDrag(true);
     tabBar->setUsesScrollButtons(true);
 
-    qlementineStyle->setAutoIconColor(tabBar, oclero::qlementine::AutoIconColor::None);
+    qlementineStyle->setAutoIconColor(tabBar, oclero::qlementine::AutoIconColor::ForegroundColor);
 
     for (auto i = 0; i < 4; ++i) {
-      tabBar->addTab(QIcon(), QString("Document %1").arg(i + 1));
+      tabBar->addTab(makeQIcon(Icons16::File_File), QString("Document %1").arg(i + 1));
     }
 
     QObject::connect(tabBar, &QTabBar::tabCloseRequested, tabBar, [this](int index) {
@@ -169,14 +188,14 @@ struct ShowcaseWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolBar);
       toolButton->setFocusPolicy(Qt::NoFocus);
-      toolButton->setIcon(QIcon::fromTheme("edit-undo"));
+      toolButton->setIcon(makeQIcon(Icons16::Action_Undo));
       toolBar->addWidget(toolButton);
     }
 
     {
       auto* toolButton = new QToolButton(toolBar);
       toolButton->setFocusPolicy(Qt::NoFocus);
-      toolButton->setIcon(QIcon::fromTheme("edit-undo"));
+      toolButton->setIcon(makeQIcon(Icons16::Action_Redo));
       toolBar->addWidget(toolButton);
     }
   }
@@ -202,7 +221,7 @@ struct ShowcaseWindow::Impl {
       lineEdit->setPlaceholderText("Search...");
       topBarLayout->addWidget(lineEdit, 1);
 
-      auto* button = new QPushButton(widget);
+      auto* button = new QPushButton(makeQIcon(Icons16::Action_Filter), "", widget);
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       topBarLayout->addWidget(button);
     }
@@ -241,7 +260,7 @@ struct ShowcaseWindow::Impl {
         auto* segmentedControl = new SegmentedControl(topBar);
         topBarLayout->addWidget(segmentedControl);
         segmentedControl->setItemsShouldExpand(false);
-        segmentedControl->addItem("Properties", QIcon(), QString("%1").arg(4));
+        segmentedControl->addItem("Properties", makeQIcon(Icons16::Navigation_SlidersVertical), QString("%1").arg(4));
         segmentedControl->addItem("Scene", QIcon(), QString("%1").arg(2));
       }
     }

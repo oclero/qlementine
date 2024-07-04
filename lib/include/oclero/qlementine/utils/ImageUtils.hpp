@@ -82,9 +82,6 @@ enum class AutoIconColor {
 /// Gets the pixmap in the cache, or creates it if not yet there.
 QPixmap getCachedPixmap(QPixmap const& input, QColor const& color, ColorizeMode mode);
 
-/// Makes an icon from the file located at the path in parameter. Fixes the standard Qt behavior.
-QIcon makeIconFromSvg(const QString& svgPath, const QSize& size);
-
 /// Makes a QPixmap from the file located at the path in parameter at the desired size.
 QPixmap makePixmapFromSvg(const QString& svgPath, const QSize& size);
 
