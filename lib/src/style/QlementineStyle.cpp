@@ -14,6 +14,7 @@
 #include <oclero/qlementine/utils/StyleUtils.hpp>
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
+#include <oclero/qlementine/utils/IconUtils.hpp>
 #include <oclero/qlementine/style/Delegates.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 #include <oclero/qlementine/widgets/RoundedFocusFrame.hpp>
@@ -52,11 +53,25 @@
 #include <QWindow>
 #include <QPlainTextEdit>
 #include <QTextEdit>
+#include <QSpinBox>
 
 #include <cmath>
 #include <mutex>
 
 namespace oclero::qlementine {
+
+QlementineStyle* appStyle() {
+  return qobject_cast<QlementineStyle*>(qApp->style());
+}
+
+QIcon makeThemedIcon(icons::Icons16 id, const QSize& size, ColorRole role) {
+  if (const auto* style = appStyle()) {
+    return style->makeThemedIcon(id, size, role);
+  } else {
+    return makeIconFromSvg(id, size);
+  }
+}
+
 /// Used to initializeResources from .qrc only once.
 std::once_flag qlementineOnceFlag;
 
@@ -211,6 +226,27 @@ struct QlementineStyleImpl {
     return QMargins(paddingLeft, paddingTop, paddingRight, paddingBottom);
   }
 
+  /// Makes an IconTheme from the Theme.
+  IconTheme iconThemeFromTheme(ColorRole role = ColorRole::Secondary) const {
+    switch (role) {
+      case ColorRole::Primary:
+        return {
+          owner.iconForegroundColor(MouseState::Normal, ColorRole::Primary),
+          owner.iconForegroundColor(MouseState::Hovered, ColorRole::Primary),
+          owner.iconForegroundColor(MouseState::Pressed, ColorRole::Primary),
+          owner.iconForegroundColor(MouseState::Disabled, ColorRole::Primary),
+        };
+      case ColorRole::Secondary:
+      default:
+        return {
+          owner.iconForegroundColor(MouseState::Normal, ColorRole::Secondary),
+          owner.iconForegroundColor(MouseState::Hovered, ColorRole::Secondary),
+          owner.iconForegroundColor(MouseState::Pressed, ColorRole::Secondary),
+          owner.iconForegroundColor(MouseState::Disabled, ColorRole::Secondary),
+        };
+    }
+  }
+
   QlementineStyle& owner;
   Theme theme;
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
@@ -336,21 +372,14 @@ QPixmap QlementineStyle::getColorizedPixmap(
   return input;
 }
 
-QIcon QlementineStyle::makeIcon(const QString& svgPath) {
-  QIcon result;
-  QPixmap pixmap(svgPath);
+QIcon QlementineStyle::makeThemedIcon(const QString& svgPath, const QSize& size, ColorRole role) const {
+  const auto iconTheme = _impl->iconThemeFromTheme(role);
+  return makeIconFromSvg(svgPath, iconTheme, size);
+}
 
-  result.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
-  result.addPixmap(pixmap, QIcon::Disabled, QIcon::Off);
-  result.addPixmap(pixmap, QIcon::Active, QIcon::Off);
-  result.addPixmap(pixmap, QIcon::Selected, QIcon::Off);
-
-  result.addPixmap(pixmap, QIcon::Normal, QIcon::On);
-  result.addPixmap(pixmap, QIcon::Disabled, QIcon::On);
-  result.addPixmap(pixmap, QIcon::Active, QIcon::On);
-  result.addPixmap(pixmap, QIcon::Selected, QIcon::On);
-
-  return result;
+QIcon QlementineStyle::makeThemedIcon(icons::Icons16 id, const QSize& size, ColorRole role) const {
+  const auto iconTheme = _impl->iconThemeFromTheme(role);
+  return makeIconFromSvg(id, iconTheme, size);
 }
 
 /* QStyle overrides. */
@@ -5790,6 +5819,14 @@ QColor const& QlementineStyle::labelCaptionForegroundColor(MouseState const mous
     return _impl->theme.secondaryAlternativeColorDisabled;
   else
     return _impl->theme.secondaryAlternativeColor;
+}
+
+QColor const& QlementineStyle::iconForegroundColor(MouseState const mouse, ColorRole const role) const {
+  if (mouse == MouseState::Disabled)
+    return role == ColorRole::Primary ? _impl->theme.primaryColorForegroundDisabled
+                                      : _impl->theme.secondaryColorForegroundDisabled;
+  else
+    return role == ColorRole::Primary ? _impl->theme.primaryColorForeground : _impl->theme.secondaryColorForeground;
 }
 
 QColor const& QlementineStyle::toolBarBackgroundColor() const {
