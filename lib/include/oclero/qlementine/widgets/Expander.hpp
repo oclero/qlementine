@@ -8,7 +8,8 @@
 #include <QVariantAnimation>
 
 namespace oclero::qlementine {
-/// A QWidget that allows to expand vertically, displaying its content.
+/// A QWidget that allows to expand vertically or horizontally,
+/// revealing or hiding its content with an animation.
 class Expander : public QWidget {
   Q_OBJECT
 
