@@ -1152,29 +1152,54 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContent->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     {
       auto* container = new CustomBgWidget(windowContent);
+      container->bgColor = QColor{ 255, 0, 0, 10 };
+      container->borderColor = QColor{ 255, 0, 0, 40 };
       auto* containerLayout = new QVBoxLayout(container);
       containerLayout->setContentsMargins(10, 10, 10, 10);
       container->setLayout(containerLayout);
 
       auto* expander = new Expander(container);
+      expander->setOrientation(Qt::Orientation::Horizontal);
       auto* expanderContent = new CustomBgWidget(expander);
-      expanderContent->bgColor = QColor{ 255, 127, 0 };
+      expanderContent->bgColor = QColor{ 0, 0, 255, 40 };
+      expanderContent->borderColor = QColor{ 0, 0, 255, 127 };
       expanderContent->customSizeHint = QSize{ 150, 100 };
       expanderContent->showBounds = true;
       expander->setContent(expanderContent);
 
       auto* checkBox = new QCheckBox("Expanded", container);
+      checkBox->setChecked(expander->expanded());
       QObject::connect(checkBox, &QCheckBox::toggled, &owner, [expander](bool checked) {
         expander->setExpanded(checked);
       });
 
-      auto* button = new QPushButton("Increase content height", container);
-      QObject::connect(button, &QPushButton::clicked, &owner, [expanderContent]() {
-        expanderContent->customSizeHint.rheight() += 20;
+      auto* vLayout = new QVBoxLayout();
+      auto* buttonGroup = new QButtonGroup(windowContent);
+      for (auto orientation : { Qt::Vertical, Qt::Horizontal }) {
+        auto* radioButton = new QRadioButton(orientation == Qt::Vertical ? "Vertical" : "Horizontal", container);
+        radioButton->setChecked(orientation == expander->orientation());
+        buttonGroup->addButton(radioButton);
+        vLayout->addWidget(radioButton);
+        QObject::connect(radioButton, &QRadioButton::toggled, &owner, [expander, orientation](bool checked) {
+          if (checked) {
+            expander->setOrientation(orientation);
+          }
+        });
+      }
+
+      auto* button = new QPushButton("Increase content animated dimension", container);
+      QObject::connect(button, &QPushButton::clicked, &owner, [expanderContent, expander]() {
+        if (expander->orientation() == Qt::Vertical) {
+          expanderContent->customSizeHint.rheight() += 20;
+        } else {
+          expanderContent->customSizeHint.rwidth() += 20;
+        }
         expanderContent->updateGeometry();
       });
+
       containerLayout->addWidget(checkBox);
       containerLayout->addWidget(button);
+      containerLayout->addLayout(vLayout);
       containerLayout->addWidget(expander);
 
       windowContentLayout->addWidget(container);
