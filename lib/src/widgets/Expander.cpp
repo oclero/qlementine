@@ -7,13 +7,20 @@
 #include <QEvent>
 
 namespace oclero::qlementine {
-constexpr auto animationDurationFactor = 1;
+constexpr auto animationDurationFactor = 1.;
 
 Expander::Expander(QWidget* parent)
   : QWidget(parent) {
-  const auto animationDuration = style()->styleHint(QStyle::SH_Widget_Animation_Duration);
-  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   setFocusPolicy(Qt::NoFocus);
+
+  if (_orientation == Qt::Vertical) {
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  } else {
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+  }
+
+  // Initialize animation.
+  const auto animationDuration = style()->styleHint(QStyle::SH_Widget_Animation_Duration);
   _animation.setStartValue(QVariant::fromValue<int>(0));
   _animation.setEndValue(QVariant::fromValue<int>(0));
   _animation.setDuration(animationDuration * animationDurationFactor);
@@ -25,10 +32,20 @@ Expander::Expander(QWidget* parent)
 
 QSize Expander::sizeHint() const {
   const auto contentSizeHint = _content ? _content->sizeHint() : QSize{ 0, 0 };
-  const auto w = contentSizeHint.width();
-  const auto h = _animation.state() == QVariantAnimation::Running ? _animation.currentValue().toInt()
-                                                                  : (_expanded ? contentSizeHint.height() : 0);
-  return { w, h };
+  const auto isVertical = _orientation == Qt::Orientation::Vertical;
+  const auto currentValue = _animation.currentValue().toInt();
+
+  if (isVertical) {
+    const auto finalValue = _expanded ? contentSizeHint.height() : 0;
+    const auto w = contentSizeHint.width();
+    const auto h = _animation.state() == QVariantAnimation::Running ? currentValue : finalValue;
+    return { w, h };
+  } else {
+    const auto finalValue = _expanded ? contentSizeHint.width() : 0;
+    const auto h = contentSizeHint.height();
+    const auto w = _animation.state() == QVariantAnimation::Running ? currentValue : finalValue;
+    return { w, h };
+  }
 }
 
 bool Expander::event(QEvent* e) {
@@ -58,9 +75,11 @@ void Expander::updateContentGeometry() {
     _content->ensurePolished();
     const auto& availableSize = size();
     const auto contentSizeHint = _content->sizeHint();
-    const auto w = availableSize.width();
-    const auto h = contentSizeHint.height();
-    _content->setVisible(w > 0);
+    const auto isVertical = _orientation == Qt::Orientation::Vertical;
+    const auto w = isVertical ? availableSize.width() : contentSizeHint.width();
+    const auto h = isVertical ? contentSizeHint.height() : availableSize.height();
+    const auto visible = isVertical ? w > 0 : h > 0;
+    _content->setVisible(visible);
     _content->setGeometry(0, 0, w, h);
   }
 }
@@ -76,8 +95,10 @@ void Expander::setExpanded(bool expanded) {
     }
     _expanded = expanded;
 
-    const auto current = height();
-    const auto target = _content && _expanded ? _content->sizeHint().height() : 0;
+    const auto isVertical = _orientation == Qt::Orientation::Vertical;
+    const auto current = isVertical ? height() : width();
+    const auto contentSizeHint = _content->sizeHint();
+    const auto target = _content && _expanded ? (isVertical ? contentSizeHint.height() : contentSizeHint.width()) : 0;
     const auto animationDuration = isVisible() ? style()->styleHint(QStyle::SH_Widget_Animation_Duration) : 0;
     _animation.stop();
     _animation.setDuration(animationDuration * animationDurationFactor);
@@ -86,6 +107,25 @@ void Expander::setExpanded(bool expanded) {
     _animation.start();
 
     emit expandedChanged();
+  }
+}
+
+Qt::Orientation Expander::orientation() const {
+  return _orientation;
+}
+
+void Expander::setOrientation(Qt::Orientation orientation) {
+  if (_orientation != orientation) {
+    _orientation = orientation;
+
+    if (_orientation == Qt::Vertical) {
+      setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    } else {
+      setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    }
+
+    updateGeometry();
+    emit orientationChanged();
   }
 }
 
@@ -102,7 +142,12 @@ void Expander::setContent(QWidget* content) {
 
     _content = content;
     if (_content) {
-      _content->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Ignored);
+      if (_orientation == Qt::Orientation::Vertical) {
+        _content->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Ignored);
+      } else {
+        _content->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::MinimumExpanding);
+      }
+
       _content->setParent(this);
       _content->installEventFilter(this);
       _content->setVisible(_expanded);
