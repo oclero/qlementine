@@ -12,6 +12,10 @@ find_package(Qt${QT_VERSION_MAJOR}
 include(FetchContent)
 FetchContent_Declare(qlementine_icons GIT_REPOSITORY "https://github.com/oclero/qlementine-icons.git")
 FetchContent_MakeAvailable(qlementine_icons)
+set_target_properties(qlementine_icons
+  PROPERTIES
+    FOLDER dependencies
+)
 
 # Declare files.
 set(SOURCES
