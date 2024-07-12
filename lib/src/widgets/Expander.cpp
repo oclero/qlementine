@@ -28,6 +28,14 @@ Expander::Expander(QWidget* parent)
   QObject::connect(&_animation, &QVariantAnimation::valueChanged, this, [this]() {
     updateGeometry();
   });
+
+  QObject::connect(&_animation, &QVariantAnimation::finished, this, [this]() {
+    if (_expanded) {
+      emit didExpand();
+    } else {
+      emit didShrink();
+    }
+  });
 }
 
 QSize Expander::sizeHint() const {
@@ -95,6 +103,12 @@ void Expander::setExpanded(bool expanded) {
     }
     _expanded = expanded;
 
+    if (_expanded) {
+      emit aboutToExpand();
+    } else {
+      emit aboutToShrink();
+    }
+
     const auto isVertical = _orientation == Qt::Orientation::Vertical;
     const auto current = isVertical ? height() : width();
     const auto contentSizeHint = _content->sizeHint();
@@ -108,6 +122,10 @@ void Expander::setExpanded(bool expanded) {
 
     emit expandedChanged();
   }
+}
+
+void Expander::toggleExpanded() {
+  setExpanded(!expanded());
 }
 
 Qt::Orientation Expander::orientation() const {
