@@ -21,6 +21,12 @@ public:
   bool expanded() const;
   Q_SLOT void setExpanded(bool expanded);
   Q_SIGNAL void expandedChanged();
+  void toggleExpanded();
+
+  Q_SIGNAL void aboutToExpand();
+  Q_SIGNAL void aboutToShrink();
+  Q_SIGNAL void didExpand();
+  Q_SIGNAL void didShrink();
 
   Qt::Orientation orientation() const;
   Q_SLOT void setOrientation(Qt::Orientation orientation);
