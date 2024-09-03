@@ -19,9 +19,9 @@ set(PROJECT_NAMESPACE "oclero")
 # With Qt5, it was "path/to/Qt/6.7.0/msvc2019_64/lib/cmake/Qt6",
 # but with Qt6, it is now "path/to/Qt/6.7.0/msvc2019_64".
 if(WIN32)
-  string(FIND ${CMAKE_PREFIX_PATH} "/lib/cmake/Qt6" USING_Qt6_INDEX)
+  string(FIND "${CMAKE_PREFIX_PATH}" "/lib/cmake/Qt6" USING_Qt6_INDEX)
   if(NOT ${USING_Qt6_INDEX} EQUAL -1)
-    string(REPLACE "/lib/cmake/Qt6" "" ${CMAKE_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
+    string(REPLACE "/lib/cmake/Qt6" "" "${CMAKE_PREFIX_PATH}" "${CMAKE_PREFIX_PATH}")
   endif()
 endif()
 
