@@ -75,7 +75,7 @@ QPixmap LineEdit::getPixmap() const {
     const auto pixmap = qlementine::getPixmap(_icon, iconSize, MouseState::Normal, CheckState::NotChecked, this);
     const auto colorGroup = isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled;
     const auto& color = palette().color(colorGroup, QPalette::ColorRole::Text);
-    const auto colorizedPixmap = qlementine::colorizePixmap(pixmap, color);
+    const auto colorizedPixmap = qlementine::getColorizedPixmap(pixmap, color);
     return colorizedPixmap;
   } else {
     const auto mouse = isEnabled() ? MouseState::Normal : MouseState::Disabled;

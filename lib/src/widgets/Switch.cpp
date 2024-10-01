@@ -87,8 +87,8 @@ void Switch::paintEvent(QPaintEvent*) {
   // Draw icon.
   const auto extent = iconSize.height();
   if (hasIcon && availableW >= extent) {
-    const auto pixmap = icon().pixmap(extent, QIcon::Mode::Normal, QIcon::State::On);
-    const auto coloredPixmap = colorizePixmap(pixmap, textColor);
+    const auto pixmap = qlementine::getPixmap(icon(), {extent, extent}, MouseState::Normal, CheckState::Checked, this);
+    const auto coloredPixmap = getColorizedPixmap(pixmap, textColor);
     const auto iconX = availableX;
     const auto iconY = contentRect.y() + (contentRect.height() - extent) / 2;
     const auto iconRect = QRect{ iconX, iconY, extent, extent };
