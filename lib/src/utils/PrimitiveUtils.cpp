@@ -1367,17 +1367,19 @@ QPixmap getPixmap(
   return icon.pixmap(getWindow(widget), iconSize, iconMode, iconState);
 #else
   const auto devicePixelRatio = widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
-  if (devicePixelRatio <= 1.0) {
-    return icon.pixmap(iconSize, devicePixelRatio, iconMode, iconState);
-  }
-
   // Qt icon pixmap cache is broken when devicePixelRatio > 1.0.
-  auto pixmap = icon.pixmap(iconSize * devicePixelRatio, 1.0, iconMode, iconState);  // The 1.0 pixmap gives a stable cache key.
-  auto cacheKey = QString("qlementine_icon_pixmap_%1_%2").arg(pixmap.cacheKey()).arg(devicePixelRatio);
+  auto cacheKey = QString("qlementine_icon_pixmap_%1_%2_%3_%4_%5_%6")
+                      .arg(icon.cacheKey())
+                      .arg(iconSize.width())
+                      .arg(iconSize.height())
+                      .arg(devicePixelRatio)
+                      .arg(static_cast<int>(iconMode))
+                      .arg(static_cast<int>(iconState));
+  QPixmap pixmap;
   if (QPixmapCache::find(cacheKey, &pixmap)) {
     return pixmap;
   }
-  pixmap.setDevicePixelRatio(devicePixelRatio);  // This changes the internal cache key.
+  pixmap = icon.pixmap(iconSize, devicePixelRatio, iconMode, iconState);
   QPixmapCache::insert(cacheKey, pixmap);
   return pixmap;
 #endif
