@@ -13,6 +13,7 @@
 #include <QPaintDevice>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPixmapCache>
 #include <QWindow>
 #include <QApplication>
 
@@ -1365,7 +1366,20 @@ QPixmap getPixmap(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   return icon.pixmap(getWindow(widget), iconSize, iconMode, iconState);
 #else
-  return icon.pixmap(iconSize, widget ? widget->devicePixelRatio() : qApp->devicePixelRatio(), iconMode, iconState);
+  const auto devicePixelRatio = widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
+  if (devicePixelRatio <= 1.0) {
+    return icon.pixmap(iconSize, devicePixelRatio, iconMode, iconState);
+  }
+
+  // Qt icon pixmap cache is broken when devicePixelRatio > 1.0.
+  auto pixmap = icon.pixmap(iconSize * devicePixelRatio, 1.0, iconMode, iconState);  // The 1.0 pixmap gives a stable cache key.
+  auto cacheKey = QString("qlementine_icon_pixmap_%1_%2").arg(pixmap.cacheKey()).arg(devicePixelRatio);
+  if (QPixmapCache::find(cacheKey, &pixmap)) {
+    return pixmap;
+  }
+  pixmap.setDevicePixelRatio(devicePixelRatio);  // This changes the internal cache key.
+  QPixmapCache::insert(cacheKey, pixmap);
+  return pixmap;
 #endif
 }
 
