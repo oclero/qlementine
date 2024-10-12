@@ -229,9 +229,9 @@ const QColor& Switch::getBgColor() const {
   const auto palette = style->standardPalette();
   const auto& bgColor = qlementineStyle
                           ? qlementineStyle->switchGrooveColor(
-                            getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
                           : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
-                            QPalette::ColorRole::Button);
+                              QPalette::ColorRole::Button);
   return bgColor;
 }
 
@@ -240,10 +240,10 @@ const QColor& Switch::getBorderColor() const {
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
   const auto palette = style->standardPalette();
   const auto& borderColor =
-    qlementineStyle ? qlementineStyle->switchGrooveBorderColor(
-      getMouseState(isDown(), _isMouseOver, isEnabled()), getFocusState(hasFocus()), getCheckState(isChecked()))
+    qlementineStyle ? qlementineStyle->switchGrooveBorderColor(getMouseState(isDown(), _isMouseOver, isEnabled()),
+                        getFocusState(hasFocus()), getCheckState(isChecked()))
                     : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
-                      QPalette::ColorRole::ButtonText);
+                        QPalette::ColorRole::ButtonText);
   return borderColor;
 }
 
@@ -253,9 +253,9 @@ const QColor& Switch::getFgColor() const {
   const auto palette = style->standardPalette();
   const auto& fgColor = qlementineStyle
                           ? qlementineStyle->switchHandleColor(
-                            getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
                           : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
-                            QPalette::ColorRole::ButtonText);
+                              QPalette::ColorRole::ButtonText);
   return fgColor;
 }
 
@@ -266,7 +266,7 @@ const QColor& Switch::getTextColor() const {
   const auto& textColor =
     qlementineStyle ? qlementineStyle->labelForegroundColor(getMouseState(isDown(), _isMouseOver, isEnabled()), this)
                     : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
-                      QPalette::ColorRole::Text);
+                        QPalette::ColorRole::Text);
   return textColor;
 }
 
