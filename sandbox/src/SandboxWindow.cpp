@@ -727,7 +727,8 @@ struct SandboxWindow::Impl {
       }
     }
 
-    treeWidget->topLevelItem(0)->setSelected(true), windowContentLayout->addWidget(treeWidget);
+    treeWidget->topLevelItem(0)->setSelected(true);
+    windowContentLayout->addWidget(treeWidget);
   }
 
   void setupUI_menuBar() const {
