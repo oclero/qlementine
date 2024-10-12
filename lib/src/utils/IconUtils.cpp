@@ -36,7 +36,7 @@ const QColor& IconTheme::color(QIcon::Mode mode, QIcon::State state) const {
 }
 
 QIcon makeIconFromSvg(const QString& svgPath, const QSize& size) {
-  if (svgPath.isEmpty())
+  if (svgPath.isEmpty() || size.isEmpty())
     return {};
 
   QIcon icon;
@@ -65,7 +65,7 @@ QIcon makeIconFromSvg(const QString& svgPath, const QSize& size) {
 }
 
 QIcon makeIconFromSvg(const QString& svgPath, const IconTheme& iconTheme, const QSize& size) {
-  if (svgPath.isEmpty())
+  if (svgPath.isEmpty() || size.isEmpty())
     return {};
 
   QIcon icon;
