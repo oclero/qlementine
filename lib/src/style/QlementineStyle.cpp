@@ -2676,9 +2676,9 @@ void QlementineStyle::drawComplexControl(
         const auto grooveRect = subControlRect(CC_ScrollBar, scrollBarOpt, SC_ScrollBarGroove, w);
         const auto currentGrooveRect =
           horizontal ? QRectF(grooveRect.x(), grooveRect.y() + grooveRect.height() - currentThickness,
-            grooveRect.width(), currentThickness)
+                         grooveRect.width(), currentThickness)
                      : QRectF(grooveRect.x() + grooveRect.width() - currentThickness, grooveRect.y(), currentThickness,
-                       grooveRect.height());
+                         grooveRect.height());
 
         const auto& grooveColor = scrollBarGrooveColor(mouse);
         const auto& currentGrooveColor =
@@ -2696,9 +2696,9 @@ void QlementineStyle::drawComplexControl(
         if (!handleRect.isEmpty()) {
           const auto currentHandleRect =
             horizontal ? QRectF(handleRect.x(), handleRect.y() + handleRect.height() - currentThickness,
-              handleRect.width(), currentThickness)
+                           handleRect.width(), currentThickness)
                        : QRectF(handleRect.x() + handleRect.width() - currentThickness, handleRect.y(),
-                         currentThickness, handleRect.height());
+                           currentThickness, handleRect.height());
           const auto handleMouse = getScrollBarHandleState(scrollBarOpt->state, scrollBarOpt->activeSubControls);
           const auto& handleColor = scrollBarHandleColor(handleMouse);
           const auto& currentHandleColor =
@@ -4730,7 +4730,6 @@ void QlementineStyle::polish(QApplication* app) {
   app->setFont(_impl->theme.fontRegular);
   //app->installEventFilter(new AppEventFilter(app));
 
-  QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
   QApplication::setAttribute(Qt::ApplicationAttribute::AA_DontShowIconsInMenus, false);
 }
 

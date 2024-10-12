@@ -12,7 +12,7 @@ RadiusesF::RadiusesF(int left, int right)
 
 RadiusesF::RadiusesF(int topLeft, int topRight, int bottomRight, int bottomLeft)
   : RadiusesF(static_cast<double>(topLeft), static_cast<double>(topRight), static_cast<double>(bottomRight),
-    static_cast<double>(bottomLeft)) {}
+      static_cast<double>(bottomLeft)) {}
 
 RadiusesF::RadiusesF(double radius) {
   *this = radius;
