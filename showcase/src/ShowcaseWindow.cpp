@@ -96,60 +96,59 @@ struct ShowcaseWindow::Impl {
       auto* menu = menuBar->addMenu("File");
       {
         // TODO: Use the enum provided by Qt6 instead of strings for icon IDs.
-        menu->addAction(makeQIcon(Icons16::Document_New), "New", cb, QKeySequence::StandardKey::New);
-        menu->addAction(makeQIcon(Icons16::Document_Open), "Open...", cb, QKeySequence::StandardKey::Open);
+        menu->addAction(makeQIcon(Icons16::Document_New), "New", QKeySequence::StandardKey::New, cb);
+        menu->addAction(makeQIcon(Icons16::Document_Open), "Open...", QKeySequence::StandardKey::Open, cb);
 
         auto* recentFilesMenu = menu->addMenu(makeQIcon(Icons16::Document_OpenRecent), "Recent Files");
         for (auto i = 0; i < 5; ++i) {
-          recentFilesMenu->addAction(makeQIcon(Icons16::File_File), QString("Recent File %1").arg(i + 1), cb, QKeySequence{});
+          recentFilesMenu->addAction(makeQIcon(Icons16::File_File), QString("Recent File %1").arg(i + 1), QKeySequence{}, cb);
         }
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Action_Save), "Save", cb, QKeySequence::StandardKey::Save);
-        menu->addAction(makeQIcon(Icons16::Action_Close), "Close", cb, QKeySequence::StandardKey::Close);
-        menu->addAction(makeQIcon(Icons16::Action_Print), "Print...", cb, QKeySequence::StandardKey::Print);
-        menu->addAction(makeQIcon(Icons16::Action_PrintPreview), "Print Preview...", cb);
+        menu->addAction(makeQIcon(Icons16::Action_Save), "Save", QKeySequence::StandardKey::Save, cb);
+        menu->addAction(makeQIcon(Icons16::Action_Close), "Close", QKeySequence::StandardKey::Close, cb);
+        menu->addAction(makeQIcon(Icons16::Action_Print), "Print...", QKeySequence::StandardKey::Print, cb);
+        menu->addAction(makeQIcon(Icons16::Action_PrintPreview), "Print Preview...", QKeySequence{}, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Navigation_Settings), "Preferences...", cb, QKeySequence::StandardKey::Preferences);
+        menu->addAction(makeQIcon(Icons16::Navigation_Settings), "Preferences...", QKeySequence::StandardKey::Preferences, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Action_Close), "Quit",
+        menu->addAction(makeQIcon(Icons16::Action_Close), "Quit", QKeySequence::StandardKey::Quit,
           []() {
             qApp->quit();
-          },
-          QKeySequence::StandardKey::Quit);
+          });
       }
     }
     {
       auto* menu = menuBar->addMenu("Edit");
       {
-        menu->addAction(makeQIcon(Icons16::Action_Undo), "Undo", cb, QKeySequence::StandardKey::Undo);
-        menu->addAction(makeQIcon(Icons16::Action_Redo), "Redo", cb, QKeySequence::StandardKey::Redo);
+        menu->addAction(makeQIcon(Icons16::Action_Undo), "Undo", QKeySequence::StandardKey::Undo, cb);
+        menu->addAction(makeQIcon(Icons16::Action_Redo), "Redo", QKeySequence::StandardKey::Redo, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Action_Cut), "Cut", cb, QKeySequence::StandardKey::Cut);
-        menu->addAction(makeQIcon(Icons16::Action_Copy), "Copy", cb, QKeySequence::StandardKey::Copy);
-        menu->addAction(makeQIcon(Icons16::Action_Paste), "Paste", cb, QKeySequence::StandardKey::Paste);
-        menu->addAction(makeQIcon(Icons16::Action_Trash), "Delete", cb, QKeySequence::StandardKey::Delete);
+        menu->addAction(makeQIcon(Icons16::Action_Cut), "Cut", QKeySequence::StandardKey::Cut, cb);
+        menu->addAction(makeQIcon(Icons16::Action_Copy), "Copy", QKeySequence::StandardKey::Copy, cb);
+        menu->addAction(makeQIcon(Icons16::Action_Paste), "Paste", QKeySequence::StandardKey::Paste, cb);
+        menu->addAction(makeQIcon(Icons16::Action_Trash), "Delete", QKeySequence::StandardKey::Delete, cb);
       }
     }
     {
       auto* menu = menuBar->addMenu("View");
       {
-        menu->addAction(makeQIcon(Icons16::Action_ZoomIn), "Zoom In", cb, QKeySequence::StandardKey::ZoomIn);
-        menu->addAction(makeQIcon(Icons16::Action_ZoomOut), "Zoom Out", cb, QKeySequence::StandardKey::ZoomOut);
-        menu->addAction(makeQIcon(Icons16::Action_ZoomFit), "Fit", cb, QKeySequence{});
+        menu->addAction(makeQIcon(Icons16::Action_ZoomIn), "Zoom In", QKeySequence::StandardKey::ZoomIn, cb);
+        menu->addAction(makeQIcon(Icons16::Action_ZoomOut), "Zoom Out", QKeySequence::StandardKey::ZoomOut, cb);
+        menu->addAction(makeQIcon(Icons16::Action_ZoomFit), "Fit", QKeySequence{}, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Action_Fullscreen), "Full Screen", cb, QKeySequence::StandardKey::FullScreen);
+        menu->addAction(makeQIcon(Icons16::Action_Fullscreen), "Full Screen", QKeySequence::StandardKey::FullScreen, cb);
       }
     }
     {
       auto* menu = menuBar->addMenu("Help");
       {
-        menu->addAction(makeQIcon(Icons16::Misc_Mail), "Contact", cb, QKeySequence{});
-        menu->addAction(makeQIcon(Icons16::Misc_Info), "About...", cb, QKeySequence{});
+        menu->addAction(makeQIcon(Icons16::Misc_Mail), "Contact", QKeySequence{}, cb);
+        menu->addAction(makeQIcon(Icons16::Misc_Info), "About...", QKeySequence{}, cb);
       }
     }
   }
