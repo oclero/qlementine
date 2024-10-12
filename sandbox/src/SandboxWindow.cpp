@@ -230,12 +230,7 @@ struct SandboxWindow::Impl {
   }
 
   void setupShortcuts() {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    auto* enableShortcut = new QShortcut(Qt::CTRL + Qt::Key_E, &owner);
-#else
     auto* enableShortcut = new QShortcut(Qt::CTRL | Qt::Key_E, &owner);
-#endif
-
     enableShortcut->setAutoRepeat(false);
     enableShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
     QObject::connect(enableShortcut, &QShortcut::activated, enableShortcut, [this]() {
@@ -248,12 +243,7 @@ struct SandboxWindow::Impl {
       }
     });
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    auto* themeShortcut = new QShortcut(Qt::CTRL + Qt::Key_T, &owner);
-#else
     auto* themeShortcut = new QShortcut(Qt::CTRL | Qt::Key_T, &owner);
-#endif
-
     themeShortcut->setAutoRepeat(false);
     themeShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
     QObject::connect(themeShortcut, &QShortcut::activated, themeShortcut, [this]() {
@@ -268,11 +258,7 @@ struct SandboxWindow::Impl {
       }
     });
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    auto* focusShortcut = new QShortcut(Qt::CTRL + Qt::Key_F, &owner);
-#else
     auto* focusShortcut = new QShortcut(Qt::CTRL | Qt::Key_F, &owner);
-#endif
     focusShortcut->setAutoRepeat(false);
     focusShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
     QObject::connect(focusShortcut, &QShortcut::activated, focusShortcut, []() {
@@ -774,21 +760,12 @@ struct SandboxWindow::Impl {
           action->setCheckable(true);
           action->setChecked(true);
         } else if (j % 2 == 0) {
-          const auto key_number = (Qt::Key)(Qt::Key_0 + j);
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          const auto keySeq = QKeySequence(Qt::CTRL + (Qt::Key_0 + key_number));
-#else
-          const auto keySeq = QKeySequence(Qt::CTRL | (Qt::Key_0 + key_number));
-#endif
+          const auto keyNumber = (Qt::Key)(Qt::Key_0 + j);
+          const auto keySeq = QKeySequence(Qt::CTRL | (Qt::Key_0 + keyNumber));
           action->setShortcut(keySeq);
         } else if (j % 3 == 0) {
-          const auto key_number = (Qt::Key)(Qt::Key_0 + j);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          const auto keySeq = QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::ALT | (Qt::Key_0 + key_number));
-#else
-          const auto keySeq = QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::ALT | (Qt::Key_0 + key_number));
-#endif
+          const auto keyNumber = (Qt::Key)(Qt::Key_0 + j);
+          const auto keySeq = QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::ALT | (Qt::Key_0 + keyNumber));
           action->setShortcut(keySeq);
         } else if (j % 5 == 0) {
           action->setEnabled(false);
@@ -1551,11 +1528,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       const auto& clickPos = e->pos();
       const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      menu.addAction(QString("Pos: %1").arg(clickPosStr), cb, Qt::CTRL + Qt::Key_A);
-#else
       menu.addAction(QString("Pos: %1").arg(clickPosStr), Qt::CTRL | Qt::Key_A, cb);
-#endif
 
       const auto randomCount = getRandomInt(1, 10);
       for (auto i = 0; i < randomCount; ++i) {
@@ -1565,11 +1538,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
           textList.append("A");
         }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        menu.addAction(textList.join("") + QString(" %1").arg(i), cb, Qt::ALT + Qt::SHIFT + Qt::Key_0 + i);
-#else
         menu.addAction(textList.join("") + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, cb);
-#endif
       }
 
       // Show menu.

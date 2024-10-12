@@ -59,11 +59,7 @@ public:
 
   void updateMask() {
     const auto mask = getMask();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const auto maskPixmap = QBitmap(mask);
-#else
     const auto maskPixmap = QBitmap::fromPixmap(mask);
-#endif
     setMask(maskPixmap);
   }
 };

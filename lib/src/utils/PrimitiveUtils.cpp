@@ -1362,19 +1362,15 @@ QPixmap getPixmap(
   QIcon const& icon, const QSize& iconSize, MouseState const mouse, CheckState const checked, const QWidget* widget) {
   const auto iconMode = getIconMode(mouse);
   const auto iconState = getIconState(checked);
-  // QIcon::pixmap will automatically get the correct pixel ratio based on the window's pixel ratio.
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  return icon.pixmap(getWindow(widget), iconSize, iconMode, iconState);
-#else
   const auto devicePixelRatio = widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
   // Qt icon pixmap cache is broken when devicePixelRatio > 1.0.
   auto cacheKey = QString("qlementine_icon_pixmap_%1_%2_%3_%4_%5_%6")
-                      .arg(icon.cacheKey())
-                      .arg(iconSize.width())
-                      .arg(iconSize.height())
-                      .arg(devicePixelRatio)
-                      .arg(static_cast<int>(iconMode))
-                      .arg(static_cast<int>(iconState));
+                    .arg(icon.cacheKey())
+                    .arg(iconSize.width())
+                    .arg(iconSize.height())
+                    .arg(devicePixelRatio)
+                    .arg(static_cast<int>(iconMode))
+                    .arg(static_cast<int>(iconState));
   QPixmap pixmap;
   if (QPixmapCache::find(cacheKey, &pixmap)) {
     return pixmap;
@@ -1382,7 +1378,6 @@ QPixmap getPixmap(
   pixmap = icon.pixmap(iconSize, devicePixelRatio, iconMode, iconState);
   QPixmapCache::insert(cacheKey, pixmap);
   return pixmap;
-#endif
 }
 
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,

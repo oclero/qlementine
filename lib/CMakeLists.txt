@@ -1,13 +1,5 @@
 set(LIB_TARGET_NAME ${PROJECT_NAME})
 
-find_package(Qt${QT_VERSION_MAJOR}
-  COMPONENTS
-    Core
-    Widgets
-    Svg
-  REQUIRED
-)
-
 # Declare files.
 set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimator.cpp
@@ -111,18 +103,15 @@ set(RESOURCES
   $<$<PLATFORM_ID:Windows>:resources/qlementine_font_inter_windows.qrc>
 )
 
-# Configure target.
-add_library(${LIB_TARGET_NAME} STATIC)
+# Create target.
+qt_add_library(${LIB_TARGET_NAME} STATIC
+  ${HEADERS}
+  ${SOURCES}
+  ${RESOURCES}
+)
 
 # Create a target alias.
 add_library(${PROJECT_NAMESPACE}::${LIB_TARGET_NAME} ALIAS ${LIB_TARGET_NAME})
-
-target_sources(${LIB_TARGET_NAME}
-  PRIVATE
-    ${HEADERS}
-    ${SOURCES}
-    ${RESOURCES}
-)
 
 target_include_directories(${LIB_TARGET_NAME}
   PUBLIC
@@ -132,9 +121,9 @@ target_include_directories(${LIB_TARGET_NAME}
 )
 
 target_link_libraries(${LIB_TARGET_NAME} PUBLIC
-  Qt::Core
-  Qt::Widgets
-  Qt::Svg
+  Qt6::Core
+  Qt6::Widgets
+  Qt6::Svg
 )
 
 set_target_properties(${LIB_TARGET_NAME}

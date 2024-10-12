@@ -16,10 +16,7 @@
 
 int main(int argc, char* argv[]) {
   // Must be set before creating a QApplication.
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
-  QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-#endif
+  QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
   QApplication qApplication(argc, argv);
 
@@ -30,7 +27,6 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setOrganizationName("oclero");
   QCoreApplication::setOrganizationDomain("olivierclero.com");
   QCoreApplication::setApplicationVersion("1.0.0");
-  QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
   QApplication::setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
 
   // Set custom QStyle.

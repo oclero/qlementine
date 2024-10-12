@@ -145,17 +145,10 @@ std::optional<QColor> tryGetColorFromHexaString(QString const& str) {
   if (str.startsWith('#') && (length == RGB_LENGTH || length == RGBA_LENGTH)) {
     auto success{ false };
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const auto r_str = str.midRef(1, 2);
-    const auto g_str = str.midRef(3, 2);
-    const auto b_str = str.midRef(5, 2);
-    const auto a_str = str.midRef(7, 2);
-#else
     const auto r_str = str.mid(1, 2);
     const auto g_str = str.mid(3, 2);
     const auto b_str = str.mid(5, 2);
     const auto a_str = str.mid(7, 2);
-#endif
 
     const auto r = r_str.toInt(&success, HEX_BASE);
     if (success) {
@@ -180,11 +173,7 @@ std::optional<QColor> tryGetColorFromHexaString(QString const& str) {
 }
 
 std::optional<QColor> tryGetColorFromVariant(QVariant const& variant) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  const auto variantType = static_cast<QMetaType::Type>(variant.type());
-#else
   const auto variantType = variant.typeId();
-#endif
 
   // Channel list ([RRR, GGG, BBB, AAA]).
   if (variantType == QMetaType::Type::QVariantList) {

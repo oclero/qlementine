@@ -80,8 +80,8 @@ void ColorButton::setColorMode(ColorMode mode) {
 QSize ColorButton::sizeHint() const {
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  const auto extent = qlementineStyle ? qlementineStyle->theme().controlHeightMedium
-                                      : style->pixelMetric(QStyle::PM_DialogButtonsButtonHeight);
+  const auto extent =
+    qlementineStyle ? qlementineStyle->theme().controlHeightMedium : style->pixelMetric(QStyle::PM_ButtonIconSize);
   return { extent, extent };
 }
 
