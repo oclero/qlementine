@@ -7,23 +7,13 @@ if(APPLE)
   )
 endif()
 
-set(SOURCES
+qt_add_executable(${SANDBOX_NAME} WIN32 MACOSX_BUNDLE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SandboxWindow.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/resources/sandbox.qrc
   ${APP_ICON_MACOS}
 )
-
-if(${QT_VERSION_MAJOR} STREQUAL "6")
-  qt_add_executable(${SANDBOX_NAME} WIN32 MACOSX_BUNDLE
-    ${SOURCES}
-  )
-else()
-  add_executable(${SANDBOX_NAME} WIN32 MACOSX_BUNDLE
-    ${SOURCES}
-  )
-endif()
 
 target_link_libraries(${SANDBOX_NAME} PUBLIC
   oclero::qlementine
@@ -50,13 +40,13 @@ set_target_properties(${SANDBOX_NAME} PROPERTIES
   MACOSX_BUNDLE_ICON_FILE "icon.icns"
   MACOSX_BUNDLE_COPYRIGHT ${PROJECT_COPYRIGHT}
 
-  XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "${XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED}"
-  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}"
-  XCODE_ATTRIBUTE_CODE_SIGN_STYLE "${XCODE_ATTRIBUTE_CODE_SIGN_STYLE}"
+  XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED OFF
+  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
+  XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
   XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS OFF
 )
 
-target_deploy_qt(sandbox)
+# target_deploy_qt(sandbox)
 
 # if(${QT_VERSION_MAJOR} STREQUAL "6")
 #   # NB: Broken in 6.7.x
@@ -79,6 +69,3 @@ target_deploy_qt(sandbox)
 # else()
 #   target_deploy_qt(sandbox)
 # endif()
-
-
-

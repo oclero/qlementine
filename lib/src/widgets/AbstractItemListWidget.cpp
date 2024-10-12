@@ -343,11 +343,7 @@ void AbstractItemListWidget::keyReleaseEvent(QKeyEvent* e) {
   }
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void AbstractItemListWidget::enterEvent(QEvent* e) {
-#else
 void AbstractItemListWidget::enterEvent(QEnterEvent* e) {
-#endif
   QWidget::enterEvent(e);
   update();
 }

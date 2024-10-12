@@ -80,11 +80,7 @@ protected: // QWidget override.
   void keyPressEvent(QKeyEvent* e) override;
   void keyReleaseEvent(QKeyEvent* e) override;
   void mousePressEvent(QMouseEvent* e) override;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  void enterEvent(QEvent* e) override;
-#else
   void enterEvent(QEnterEvent* e) override;
-#endif
   void leaveEvent(QEvent* e) override;
   void mouseReleaseEvent(QMouseEvent* e) override;
   void mouseMoveEvent(QMouseEvent* e) override;

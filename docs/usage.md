@@ -16,7 +16,7 @@
    target_link_libraries(your_project oclero::qlementine)
    ```
 
-## Usage
+## Usage in code
 
 Define the `QStyle` on your `QApplication`.
 

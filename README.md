@@ -1,22 +1,21 @@
 <div align="center">
   <a href="https://oclero.github.io/qlementine">
-	  <img style="margin-bottom: 2em;"  src="branding/thumbnail.png">
+    <img style="margin-bottom: 2em;"  src="branding/thumbnail.png">
   </a>
 </div>
 
 # Qlementine
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://mit-license.org/)
-[![CMake version](https://img.shields.io/badge/CMake-3.17.5+-064F8C?logo=cmake)](https://www.qt.io)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://mit-license.org)
+[![CMake version](https://img.shields.io/badge/CMake-3.21.0+-064F8C?logo=cmake)](https://cmake.org)
 [![C++ version](https://img.shields.io/badge/C++-17-00599C?logo=++)](https://www.qt.io)
-[![Qt version](https://img.shields.io/badge/Qt-5.15.3+-41CD52?logo=qt)](https://www.qt.io)
-[![Qt version](https://img.shields.io/badge/Qt-6.0.0+-41CD52?logo=qt)](https://www.qt.io)
+[![Qt version](https://img.shields.io/badge/Qt-6.8.0+-41CD52?logo=qt)](https://www.qt.io)
 
 [![Linux](https://github.com/oclero/qlementine/actions/workflows/linux.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/linux.yml)
 [![Linux](https://github.com/oclero/qlementine/actions/workflows/windows.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/windows.yml)
 [![Linux](https://github.com/oclero/qlementine/actions/workflows/macos.yml/badge.svg)](https://github.com/oclero/qlementine/actions/workflows/macos.yml)
 
-Modern QStyle for desktop Qt5/Qt6 applications.
+Modern QStyle for desktop Qt6 applications.
 
 See [documentation](https://oclero.github.io/qlementine) for more information.
 
@@ -35,8 +34,8 @@ See [documentation](https://oclero.github.io/qlementine) for more information.
 ## Requirements
 
 - Windows, MacOS or Linux.
-- [CMake 3.20.0+](https://cmake.org/download)
-- [Qt 5.15.3+ or Qt 6.0.0+](https://www.qt.io/download-qt-installer)
+- [CMake 3.21.0+](https://cmake.org/download)
+- [Qt 6.8.0+](https://www.qt.io/download-qt-installer)
 
 ## Features
 

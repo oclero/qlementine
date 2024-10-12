@@ -1755,12 +1755,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto autoIconColor = this->autoIconColor(w);
             const auto colorize = autoIconColor != AutoIconColor::None;
             const auto iconMode = (optHeader->state & State_Enabled || colorize) ? QIcon::Normal : QIcon::Disabled;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            const auto iconPixmap = icon.pixmap(qlementine::getWindow(w), { iconExtent, iconExtent }, iconMode);
-#else
             const auto iconPixmap =
               icon.pixmap({ iconExtent, iconExtent }, qlementine::getWindow(w)->devicePixelRatio(), iconMode);
-#endif
             const auto& colorizedPixmap = colorize ? qlementine::colorizePixmap(iconPixmap, fgColor) : iconPixmap;
             p->drawPixmap(iconRect, colorizedPixmap);
           }
@@ -3759,13 +3755,7 @@ QSize QlementineStyle::sizeFromContents(
 
           // Shortcut. NB: Some difficulties to understand what's going on. Qt changes the width so here's a hack.
           const auto hasShortcut = shortcut.length() > 0;
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          const auto reservedShortcutW = optMenuItem->tabWidth;
-#else
           const auto reservedShortcutW = optMenuItem->reservedShortcutWidth;
-#endif
-
           const auto shortcutW = hasShortcut ? 3 * spacing - reservedShortcutW : 0;
 
           // Icon.
@@ -4098,12 +4088,6 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
       return _impl->theme.iconSize.height();
 
     // Dialog.
-    case PM_DialogButtonsSeparator:
-      break;
-    case PM_DialogButtonsButtonWidth:
-      break;
-    case PM_DialogButtonsButtonHeight:
-      return _impl->theme.controlHeightLarge;
     case PM_MessageBoxIconSize:
       return _impl->theme.iconSizeLarge.height();
 

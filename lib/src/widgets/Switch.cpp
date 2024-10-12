@@ -87,7 +87,8 @@ void Switch::paintEvent(QPaintEvent*) {
   // Draw icon.
   const auto extent = iconSize.height();
   if (hasIcon && availableW >= extent) {
-    const auto pixmap = qlementine::getPixmap(icon(), {extent, extent}, MouseState::Normal, CheckState::Checked, this);
+    const auto pixmap =
+      qlementine::getPixmap(icon(), { extent, extent }, MouseState::Normal, CheckState::Checked, this);
     const auto coloredPixmap = getColorizedPixmap(pixmap, textColor);
     const auto iconX = availableX;
     const auto iconY = contentRect.y() + (contentRect.height() - extent) / 2;
@@ -113,11 +114,7 @@ void Switch::paintEvent(QPaintEvent*) {
   }
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void Switch::enterEvent(QEvent* e) {
-#else
 void Switch::enterEvent(QEnterEvent* e) {
-#endif
   QAbstractButton::enterEvent(e);
   _isMouseOver = true;
   startAnimation();

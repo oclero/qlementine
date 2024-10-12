@@ -13,7 +13,7 @@
       "generator": "Xcode",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "QT_DIR": "/opt/homebrew/opt/qt/lib/cmake/Qt5"
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6"
       },
       "condition": {
         "type": "equals",
@@ -28,7 +28,7 @@
       "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "C:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5"
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2022_64"
       },
       "condition": {
         "type": "equals",
