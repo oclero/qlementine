@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/showcase">
+        <file>icons/scene_light.svg</file>
+        <file>icons/scene_material.svg</file>
+        <file>icons/scene_object.svg</file>
         <file>themes/dark.json</file>
         <file>themes/light.json</file>
         <file>qlementine_icon.ico</file>

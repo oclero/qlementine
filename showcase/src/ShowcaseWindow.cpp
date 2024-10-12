@@ -23,11 +23,15 @@
 #include <QPainter>
 #include <QStatusBar>
 #include <QPushButton>
+#include <QTreeWidget>
+#include <QStackedWidget>
+#include <QListWidget>
+#include <QStyledItemDelegate>
 
 namespace oclero::qlementine::showcase {
 using Icons16 = oclero::qlementine::icons::Icons16;
 
-static QIcon makeQIcon(Icons16 id, const QSize& size = QSize(16,16)) {
+static QIcon makeQIcon(Icons16 id, const QSize& size = QSize(16, 16)) {
   return oclero::qlementine::makeThemedIcon(id, size);
 }
 
@@ -101,7 +105,8 @@ struct ShowcaseWindow::Impl {
 
         auto* recentFilesMenu = menu->addMenu(makeQIcon(Icons16::Document_OpenRecent), "Recent Files");
         for (auto i = 0; i < 5; ++i) {
-          recentFilesMenu->addAction(makeQIcon(Icons16::File_File), QString("Recent File %1").arg(i + 1), QKeySequence{}, cb);
+          recentFilesMenu->addAction(
+            makeQIcon(Icons16::File_File), QString("Recent File %1").arg(i + 1), QKeySequence{}, cb);
         }
 
         menu->addSeparator();
@@ -111,13 +116,13 @@ struct ShowcaseWindow::Impl {
         menu->addAction(makeQIcon(Icons16::Action_PrintPreview), "Print Preview...", QKeySequence{}, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Navigation_Settings), "Preferences...", QKeySequence::StandardKey::Preferences, cb);
+        menu->addAction(
+          makeQIcon(Icons16::Navigation_Settings), "Preferences...", QKeySequence::StandardKey::Preferences, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Action_Close), "Quit", QKeySequence::StandardKey::Quit,
-          []() {
-            qApp->quit();
-          });
+        menu->addAction(makeQIcon(Icons16::Action_Close), "Quit", QKeySequence::StandardKey::Quit, []() {
+          qApp->quit();
+        });
       }
     }
     {
@@ -141,7 +146,8 @@ struct ShowcaseWindow::Impl {
         menu->addAction(makeQIcon(Icons16::Action_ZoomFit), "Fit", QKeySequence{}, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Action_Fullscreen), "Full Screen", QKeySequence::StandardKey::FullScreen, cb);
+        menu->addAction(
+          makeQIcon(Icons16::Action_Fullscreen), "Full Screen", QKeySequence::StandardKey::FullScreen, cb);
       }
     }
     {
@@ -188,6 +194,7 @@ struct ShowcaseWindow::Impl {
       auto* toolButton = new QToolButton(toolBar);
       toolButton->setFocusPolicy(Qt::NoFocus);
       toolButton->setIcon(makeQIcon(Icons16::Action_Undo));
+      toolButton->setToolTip("Undo");
       toolBar->addWidget(toolButton);
     }
 
@@ -195,6 +202,7 @@ struct ShowcaseWindow::Impl {
       auto* toolButton = new QToolButton(toolBar);
       toolButton->setFocusPolicy(Qt::NoFocus);
       toolButton->setIcon(makeQIcon(Icons16::Action_Redo));
+      toolButton->setToolTip("Redo");
       toolBar->addWidget(toolButton);
     }
   }
@@ -225,8 +233,8 @@ struct ShowcaseWindow::Impl {
       topBarLayout->addWidget(button);
     }
 
+    auto* navBar = new NavigationBar(widget);
     {
-      auto* navBar = new NavigationBar(widget);
       layout->addWidget(navBar);
       navBar->setItemsShouldExpand(true);
       navBar->addItem("Objects", QIcon(), QString("%1").arg(12));
@@ -235,8 +243,94 @@ struct ShowcaseWindow::Impl {
 
     layout->addWidget(makeHorizontalLine(widget));
 
-    auto* treeView = new QTreeView(widget);
-    layout->addWidget(treeView, 1);
+    auto* stackedWidget = new QStackedWidget(widget);
+    {
+      stackedWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+
+      {
+        auto* treeWidget = new QTreeWidget(widget);
+        stackedWidget->addWidget(treeWidget);
+
+        qlementineStyle->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
+
+        const auto object_icon = QIcon(":/showcase/icons/scene_object.svg");
+        const auto light_icon = QIcon(":/showcase/icons/scene_light.svg");
+        const auto material_icon = QIcon(":/showcase/icons/scene_material.svg");
+
+        treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+        treeWidget->setAlternatingRowColors(false);
+        treeWidget->setColumnCount(1);
+        treeWidget->setHeaderHidden(true);
+        treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+        for (auto i = 0; i < 24; ++i) {
+          auto* root = new QTreeWidgetItem(treeWidget);
+          root->setText(0, QString("Root %1").arg(i + 1));
+          root->setIcon(0, object_icon);
+          root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
+
+          for (auto j = 0; j < 4; ++j) {
+            auto* child = new QTreeWidgetItem(root);
+            child->setText(0, QString("Child %1 of Root %2").arg(j + 1).arg(i + 1));
+            child->setIcon(0, light_icon);
+            child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j + 1).arg(i + 1));
+
+            for (auto k = 0; k < 3; ++k) {
+              auto* subChild = new QTreeWidgetItem(child);
+              subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k + 1).arg(j + 1).arg(i + 1));
+              subChild->setIcon(0, material_icon);
+              subChild->setText(
+                1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k + 1).arg(j + 1).arg(i + 1));
+            }
+          }
+        }
+
+        treeWidget->topLevelItem(0)->setSelected(true);
+        navBar->setItemBadge(0, QString::number(treeWidget->topLevelItemCount()));
+      }
+
+      {
+        class CustomDelegate : public QStyledItemDelegate {
+          using QStyledItemDelegate::QStyledItemDelegate;
+
+          QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override {
+            const auto result = QStyledItemDelegate::sizeHint(option, index);
+            return { 0, result.height() };
+          }
+        };
+
+
+        auto* listWidget = new QListWidget(widget);
+        stackedWidget->addWidget(listWidget);
+
+        listWidget->setItemDelegate(new CustomDelegate(listWidget));
+        listWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+        listWidget->setSizeAdjustPolicy(QListView::SizeAdjustPolicy::AdjustIgnored);
+        listWidget->setAlternatingRowColors(true);
+        listWidget->setIconSize(QSize(32, 32));
+        qlementineStyle->setAutoIconColor(listWidget, AutoIconColor::None);
+
+        const auto materialIcon = QIcon(":/showcase/icons/scene_material.svg");
+        for (auto i = 0; i < 16; ++i) {
+          const auto itemText = QString("Item #%1 with very long text that can be elided").arg(i);
+          auto* item = new QListWidgetItem(materialIcon, itemText, listWidget);
+          item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
+          item->setCheckState(i % 3 == 0 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+          listWidget->addItem(item);
+        }
+        listWidget->item(0)->setSelected(true);
+        navBar->setItemBadge(1, QString::number(listWidget->count()));
+      }
+
+      layout->addWidget(stackedWidget, 1);
+    }
+
+    {
+      stackedWidget->setCurrentIndex(navBar->currentIndex());
+      QObject::connect(navBar, &NavigationBar::currentIndexChanged, stackedWidget, [stackedWidget, navBar]() {
+        stackedWidget->setCurrentIndex(navBar->currentIndex());
+      });
+    }
   }
 
   void setupRightPanel() {
