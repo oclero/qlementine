@@ -434,8 +434,19 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameMenu:
       return; // Let PE_PanelMenu do the drawing.
-    case PE_FrameStatusBarItem:
-      break;
+    case PE_FrameStatusBarItem: {
+      // p->fillRect(opt->rect, Qt::red);
+
+      const auto rect = opt->rect;
+      const auto penColor = Qt::red; // _impl->theme.borderColor;
+      const auto penWidth = _impl->theme.borderWidth;
+      const auto p1 = QPoint{rect.x() + 1 + penWidth, rect.y() + rect.x()};
+      const auto p2 =  QPoint{rect.x() + 1 + penWidth, rect.y() + rect.height()};
+      p->setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+      p->setBrush(Qt::NoBrush);
+      p->drawLine(p1, p2);
+    }
+      return;
     case PE_FrameTabWidget: {
       // QTabWidget.cpp, line 1296, in QTabWidget::paintEvent():
       // The widget does not draw the Tab bar background unless it's in
