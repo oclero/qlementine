@@ -449,7 +449,7 @@ class LineEditMenuIconsBehavior : public QObject {
 
   static IconListMode getMode(const QMenu* menu) {
     if (const auto* menu_parent = menu->parent()) {
-      if (qobject_cast<const QSpinBox*>(menu_parent->parent())) {
+      if (qobject_cast<const QAbstractSpinBox*>(menu_parent->parent())) {
         return IconListMode::SpinBox;
       } else if (const auto* line_edit = qobject_cast<const QLineEdit*>(menu_parent)) {
         return line_edit->isReadOnly() ? IconListMode::ReadOnlyLineEdit : IconListMode::LineEdit;
