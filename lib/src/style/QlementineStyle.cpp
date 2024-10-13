@@ -3887,10 +3887,12 @@ QSize QlementineStyle::sizeFromContents(
       break;
     case CT_SpinBox:
       if (const auto* optSpinbox = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
+        const auto isDateTimeEdit = qobject_cast<const QDateTimeEdit*>(widget) != nullptr;
         const auto hasButtons = optSpinbox->buttonSymbols != QAbstractSpinBox::NoButtons;
-        const auto buttonW = hasButtons ? _impl->theme.controlHeightLarge : 0;
+        const auto buttonW = isDateTimeEdit || hasButtons ? _impl->theme.controlHeightLarge : 0;
+        const auto dateTimeWidth = isDateTimeEdit ? _impl->theme.iconSize.width() : 0;
         const auto borderW = optSpinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, opt, widget) : 0;
-        return QSize{ contentSize.width() + buttonW + 2 * borderW, _impl->theme.controlHeightLarge };
+        return QSize{ contentSize.width() + buttonW + dateTimeWidth + 2 * borderW, _impl->theme.controlHeightLarge };
       }
       break;
     case CT_SizeGrip:
