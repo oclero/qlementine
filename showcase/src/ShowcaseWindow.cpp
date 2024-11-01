@@ -196,7 +196,13 @@ struct ShowcaseWindow::Impl {
           makeQIcon(Icons16::Navigation_Settings), "Preferences...", QKeySequence::StandardKey::Preferences, cb);
 
         menu->addSeparator();
-        menu->addAction(makeQIcon(Icons16::Action_Close), "Quit", QKeySequence::StandardKey::Quit, []() {
+#ifdef Q_OS_WIN
+        // QKeySequence::Quit is empty on Windows.
+        const auto quitShortcut = QKeySequence(Qt::CTRL | Qt::Key_Q);
+#else
+        const auto quitShortcut = QKeySequence(QKeySequence::Quit);
+#endif
+        menu->addAction(makeQIcon(Icons16::Action_Close), "Quit", quitShortcut, []() {
           qApp->quit();
         });
       }
