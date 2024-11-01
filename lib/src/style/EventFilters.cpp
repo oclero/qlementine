@@ -6,6 +6,7 @@
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
+#include <oclero/qlementine/utils/MenuUtils.hpp>
 
 #include <oclero/qlementine/icons/Icons16.hpp>
 
@@ -281,32 +282,72 @@ MenuEventFilter::MenuEventFilter(QMenu* menu)
 
 bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   const auto type = evt->type();
-  if (type == QEvent::Type::Show) {
-    // Place the QMenu correctly by making up for the drop shadow margins.
-    // It'll be reset before every show, so we can safely move it every time.
-    // Submenus should already be placed correctly, so there's no need to translate their geometry.
-    // Also, make up for the menu item padding so the texts are aligned.
-    const auto isMenuBarMenu = qobject_cast<QMenuBar*>(_menu->parentWidget()) != nullptr;
-    const auto isSubMenu = qobject_cast<QMenu*>(_menu->parentWidget()) != nullptr;
-    const auto alignForMenuBar = isMenuBarMenu && !isSubMenu;
-    const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
-    const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
-    const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
-    const auto menuOriginalPos = _menu->pos();
-    const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
-    const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
-    const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
 
-    // Menus have weird sizing bugs when moving them from this event.
-    // We have to wait for the event loop to be processed before setting the final position.
-    const auto menuSize = _menu->size();
-    if (menuSize != QSize(0, 0)) {
-      _menu->resize(0, 0); // Hide the menu for now until we can set the position.
-      QTimer::singleShot(0, _menu, [this, menuNewPos, menuSize]() {
-        _menu->move(menuNewPos);
-        _menu->resize(menuSize);
-      });
-    }
+  switch (type) {
+    case QEvent::Type::Show: {
+      // Place the QMenu correctly by making up for the drop shadow margins.
+      // It'll be reset before every show, so we can safely move it every time.
+      // Submenus should already be placed correctly, so there's no need to translate their geometry.
+      // Also, make up for the menu item padding so the texts are aligned.
+      const auto isMenuBarMenu = qobject_cast<QMenuBar*>(_menu->parentWidget()) != nullptr;
+      const auto isSubMenu = qobject_cast<QMenu*>(_menu->parentWidget()) != nullptr;
+      const auto alignForMenuBar = isMenuBarMenu && !isSubMenu;
+      const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
+      const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+      const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+      const auto menuOriginalPos = _menu->pos();
+      const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
+      const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
+      const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
+
+      // Menus have weird sizing bugs when moving them from this event.
+      // We have to wait for the event loop to be processed before setting the final position.
+      const auto menuSize = _menu->size();
+      if (menuSize != QSize(0, 0)) {
+        _menu->resize(0, 0); // Hide the menu for now until we can set the position.
+        QTimer::singleShot(0, _menu, [this, menuNewPos, menuSize]() {
+          _menu->move(menuNewPos);
+          _menu->resize(menuSize);
+        });
+      }
+    } break;
+    case QEvent::Type::MouseButtonPress: {
+      const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
+      const auto mousePos = mouseEvt->pos();
+      if (const auto* action = _menu->actionAt(mousePos)) {
+        if (action->isSeparator() || !action->isEnabled() || action->property("qlementine_flashing").toBool()) {
+          return true;
+        }
+      } else if (_menu->rect().contains(mousePos)) {
+        return true;
+      }
+    } break;
+    case QEvent::Type::MouseButtonRelease: {
+      const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
+      const auto mousePos = mouseEvt->pos();
+      if (auto* action = _menu->actionAt(mousePos)) {
+        if (action->isSeparator() || !action->isEnabled() || action->property("qlementine_flashing").toBool())
+          return true;
+
+        if (action->menu() == nullptr) {
+          flashAction(action, _menu, [this, action]() {
+            // The call to QAction::trigger might destroy the menu or the actions.
+            const QPointer<QMenu> menu_guard(_menu);
+            action->trigger();
+            if (menu_guard) {
+              if (auto* top_menu = getTopLevelMenu(menu_guard)) {
+                top_menu->close();
+              }
+            }
+          });
+          return true;
+        }
+      } else if (_menu->rect().contains(mousePos)) {
+        return true;
+      }
+    } break;
+    default:
+      break;
   }
 
   return QObject::eventFilter(watchedObject, evt);
