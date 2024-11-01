@@ -263,6 +263,7 @@ QlementineStyle::QlementineStyle(QObject* parent)
   : _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
+  oclero::qlementine::icons::initializeIconTheme();
 }
 
 QlementineStyle::~QlementineStyle() = default;
@@ -442,8 +443,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto rect = opt->rect;
       const auto penColor = Qt::red; // _impl->theme.borderColor;
       const auto penWidth = _impl->theme.borderWidth;
-      const auto p1 = QPoint{rect.x() + 1 + penWidth, rect.y() + rect.x()};
-      const auto p2 =  QPoint{rect.x() + 1 + penWidth, rect.y() + rect.height()};
+      const auto p1 = QPoint{ rect.x() + 1 + penWidth, rect.y() + rect.x() };
+      const auto p2 = QPoint{ rect.x() + 1 + penWidth, rect.y() + rect.height() };
       p->setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
       p->setBrush(Qt::NoBrush);
       p->drawLine(p1, p2);
