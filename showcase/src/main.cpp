@@ -1,7 +1,6 @@
 #include <QApplication>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
-#include <oclero/qlementine/icons/QlementineIcons.hpp>
 
 #include "ShowcaseWindow.hpp"
 
@@ -22,18 +21,15 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setApplicationVersion("1.0.0");
   QApplication::setWindowIcon(QIcon(QStringLiteral(":/showcase/qlementine_icon.ico")));
 
-  // Custom icon theme.
-  oclero::qlementine::icons::initializeIconTheme();
-  QIcon::setThemeName("qlementine");
-
-  // Set custom QStyle.
 #if USE_CUSTOM_STYLE
+  // Custom QStyle.
   auto* const style = new oclero::qlementine::QlementineStyle(&qApplication);
   style->setAnimationsEnabled(true);
-  style->setUseMenuForComboBoxPopup(false);
   style->setAutoIconColor(oclero::qlementine::AutoIconColor::TextColor);
   style->setThemeJsonPath(QStringLiteral(":/light.json"));
   qApplication.setStyle(style);
+  // Custom icon theme.
+  QIcon::setThemeName("qlementine");
 #endif
 
   auto window = std::make_unique<oclero::qlementine::showcase::ShowcaseWindow>();

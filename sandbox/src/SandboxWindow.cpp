@@ -51,10 +51,16 @@
 #include <QDateTimeEdit>
 #include <QPlainTextEdit>
 #include <QTextEdit>
+#include <QFontComboBox>
 
 #include <random>
 
 namespace oclero::qlementine::sandbox {
+using Icons16 = oclero::qlementine::icons::Icons16;
+static QIcon makeQIcon(Icons16 id, const QSize& size = { 16, 16 }) {
+  return oclero::qlementine::makeThemedIcon(id, size);
+}
+
 class ContextMenuEventFilter : public QObject {
 private:
   std::function<bool(QContextMenuEvent* evt)> _cb;
@@ -337,7 +343,7 @@ struct SandboxWindow::Impl {
   void setupUI_button() {
     auto* button = new QPushButton(windowContent);
     button->setText("Button with a very long text that can be elided");
-    button->setIcon(QIcon(":/refresh.svg"));
+    button->setIcon(makeQIcon(Icons16::Action_Save));
     button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     button->setDefault(true);
     windowContentLayout->addWidget(button);
@@ -355,7 +361,7 @@ struct SandboxWindow::Impl {
     {
       // Icon, fixed size
       auto* button = new QPushButton(windowContent);
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(makeQIcon(Icons16::Action_Save));
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       windowContentLayout->addWidget(button);
     }
@@ -363,7 +369,7 @@ struct SandboxWindow::Impl {
       // Text+Icon, fixed size
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(makeQIcon(Icons16::Action_Save));
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       windowContentLayout->addWidget(button);
     }
@@ -371,7 +377,7 @@ struct SandboxWindow::Impl {
       // Text+Icon+Menu, fixed size
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(makeQIcon(Icons16::Action_Save));
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
       auto* menu = new QMenu(button);
@@ -391,21 +397,21 @@ struct SandboxWindow::Impl {
     {
       // Icon, expanding size.
       auto* button = new QPushButton(windowContent);
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(makeQIcon(Icons16::Action_Save));
       windowContentLayout->addWidget(button);
     }
     {
       // Text+Icon, expanding size.
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(makeQIcon(Icons16::Action_Save));
       windowContentLayout->addWidget(button);
     }
     {
       // Text+Icon+Menu, expanding size
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(makeQIcon(Icons16::Action_Save));
 
       auto* menu = new QMenu("ButtonMenu");
       for (auto i = 0; i < 3; ++i) {
@@ -423,7 +429,7 @@ struct SandboxWindow::Impl {
       const auto tristate = i > 1;
 
       checkbox->setChecked(checked);
-      checkbox->setIcon(QIcon(":/refresh.svg"));
+      checkbox->setIcon(makeQIcon(Icons16::Action_Save));
       checkbox->setText(QString("%1 checkbox %2 with a very long text").arg(tristate ? "Tristate" : "Normal").arg(i));
       checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       checkbox->setTristate(tristate);
@@ -437,7 +443,7 @@ struct SandboxWindow::Impl {
     for (auto i = 0; i < 2; ++i) {
       auto* radiobutton = new QRadioButton(windowContent);
       radiobutton->setChecked(true);
-      radiobutton->setIcon(QIcon(":/refresh.svg"));
+      radiobutton->setIcon(makeQIcon(Icons16::Action_Save));
       radiobutton->setText(QString("RadioButton %1 with a very long text").arg(i));
       radiobutton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       radioGroup->addButton(radiobutton);
@@ -587,7 +593,7 @@ struct SandboxWindow::Impl {
       combobox->setEditable(true);
 
       for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
+        combobox->addItem(makeQIcon(Icons16::Action_Save), QString("Editable comboBox item %1").arg(i));
       }
       auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
       auto* item = model->item(2);
@@ -602,11 +608,18 @@ struct SandboxWindow::Impl {
       combobox->setFocusPolicy(Qt::StrongFocus);
 
       for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
+        combobox->addItem(makeQIcon(Icons16::Action_Save), QString("ComboBox item %1").arg(i));
       }
 
       windowContentLayout->addWidget(combobox);
     }
+  }
+
+  void setupUI_fontComboBox() {
+    auto* combobox = new QFontComboBox(windowContent);
+    combobox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    combobox->setFocusPolicy(Qt::StrongFocus);
+    windowContentLayout->addWidget(combobox);
   }
 
   void setupUI_listView() {
@@ -615,9 +628,9 @@ struct SandboxWindow::Impl {
     //listView->setAlternatingRowColors(true);
     listView->setIconSize(QSize(32, 32));
 
-    for (auto i = 0; i < 6; ++i) {
+    for (auto i = 0; i < 2; ++i) {
       auto* item = new QListWidgetItem(
-        QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
+        makeQIcon(Icons16::Action_Save), QString("Item #%1 with very long text that can be elided").arg(i), listView);
       item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
       item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
       //item->setForeground(i % 2 ? Qt::red : Qt::blue);
@@ -778,14 +791,14 @@ struct SandboxWindow::Impl {
 
   void setupUI_toolButton() {
     auto* toolButton = new QToolButton(toolbar);
-    toolButton->setIcon(QIcon(":/refresh.svg"));
+    toolButton->setIcon(makeQIcon(Icons16::Action_Save));
     toolButton->setText(QString("Button with a very long text that can be elided"));
     toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     toolButton->setCheckable(false);
     toolButton->setChecked(false);
 
     {
-      const auto icon = QIcon(":/refresh.svg");
+      const auto icon = makeQIcon(Icons16::Action_Save);
       auto* subMenu = new QMenu("Menu title", toolButton);
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
@@ -799,7 +812,7 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_toolButtonsVariants() {
-    const auto icon = QIcon(":/refresh.svg");
+    const auto icon = makeQIcon(Icons16::Action_Save);
 
     toolbar = owner.addToolBar("ToolBar name");
     //toolbar->set
@@ -1104,7 +1117,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
       for (auto i = 0; i < 3; ++i) {
         auto* item = new QListWidgetItem(
-          QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
+          makeQIcon(Icons16::Action_Save), QString("Item #%1 with very long text that can be elided").arg(i), listView);
         item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
         item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
 
@@ -1122,7 +1135,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       tableView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
       tableView->setColumnCount(columnCount);
       tableView->setRowCount(rowCount);
-      QIcon icon(":/refresh.svg");
+      auto icon = makeQIcon(Icons16::Action_Save);
       auto* headerItem = new QTableWidgetItem(icon, "A veeeeeery long header label");
       tableView->setHorizontalHeaderItem(0, headerItem);
       tableView->setSelectionBehavior(QTableView::SelectionBehavior::SelectRows);
@@ -1347,7 +1360,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_navigationBar() {
-    const QIcon dummyIcon(":/refresh.svg");
+    const auto dummyIcon = makeQIcon(Icons16::Action_Save);
 
     auto* navBar = new NavigationBar(windowContent);
     for (auto i = 0; i < 3; ++i) {
@@ -1363,7 +1376,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_switch() {
-    const QIcon dummyIcon(":/refresh.svg");
+    const auto dummyIcon = makeQIcon(Icons16::Action_Save);
     auto* switchWidget = new Switch(windowContent);
     switchWidget->setText("Label of the Switch");
     switchWidget->setIcon(dummyIcon);
@@ -1462,7 +1475,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_lineEditStatus() {
-    const QIcon dummyIcon(":/refresh.svg");
+    const auto dummyIcon = makeQIcon(Icons16::Action_Save);
 
     auto* lineEdit = new LineEdit(windowContent);
     lineEdit->setText("Label of the Switch");
@@ -1628,6 +1641,7 @@ SandboxWindow::SandboxWindow(QWidget* parent)
     //      _impl->setupUI_lineEditStatus();
     //      _impl->setupUI_dateTimeEdit();
     //      _impl->setupUI_contextMenu();
+    //      _impl->setupUI_fontComboBox();
 
     //      _impl->setupUI_switch();
     //      _impl->setupUI_expander();

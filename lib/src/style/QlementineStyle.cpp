@@ -23,6 +23,7 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
+#include <oclero/qlementine/icons/QlementineIcons.hpp>
 
 #include "EventFilters.hpp"
 
