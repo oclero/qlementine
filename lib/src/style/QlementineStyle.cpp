@@ -54,6 +54,7 @@
 #include <QPlainTextEdit>
 #include <QTextEdit>
 #include <QSpinBox>
+#include <QFontComboBox>
 
 #include <cmath>
 #include <mutex>
@@ -3301,7 +3302,9 @@ QRect QlementineStyle::subControlRect(
             if (comboBoxOpt->editable) {
               const auto indicatorSize = _impl->theme.iconSize;
               const auto spacing = _impl->theme.spacing;
-              if (qobject_cast<const QComboBox*>(w) != nullptr) {
+              const auto isBasicComboBox =
+                qobject_cast<const QComboBox*>(w) != nullptr && qobject_cast<const QFontComboBox*>(w) == nullptr;
+              if (isBasicComboBox) {
                 // Strange hack to place the QLineEdit correctly.
                 const auto indicatorButtonW = spacing * 2 + indicatorSize.width();
                 const auto shiftX = static_cast<int>(spacing * 2.5);
