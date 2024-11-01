@@ -133,35 +133,38 @@ target_include_directories(${LIB_TARGET_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-target_link_libraries(${LIB_TARGET_NAME} PUBLIC
-  Qt6::Core
-  Qt6::Widgets
-  Qt6::Svg
-  oclero::qlementine_icons
+target_link_libraries(${LIB_TARGET_NAME}
+  PUBLIC
+    Qt::Core
+    Qt::Widgets
+    Qt::Svg
+    oclero::qlementine_icons
 )
 
 set_target_properties(${LIB_TARGET_NAME}
   PROPERTIES
-    OUTPUT_NAME     ${LIB_TARGET_NAME}
-    PROJECT_LABEL   ${LIB_TARGET_NAME}
-    FOLDER          lib
-    SOVERSION       ${PROJECT_VERSION_MAJOR}
-    VERSION         ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    DEBUG_POSTFIX   _debug
+    OUTPUT_NAME ${LIB_TARGET_NAME}
+    PROJECT_LABEL ${LIB_TARGET_NAME}
+    FOLDER lib
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    DEBUG_POSTFIX _debug
     CMAKE_AUTORCC ON
     CMAKE_AUTOMOC ON
     CMAKE_AUTOUIC ON
 )
 
-target_compile_options(${LIB_TARGET_NAME} PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/MP /WX /W4>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
+target_compile_options(${LIB_TARGET_NAME}
+  PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/MP /WX /W4>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
 )
 
 # Create source groups.
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
-  ${HEADERS}
-  ${SOURCES}
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
+  FILES
+    ${HEADERS}
+    ${SOURCES}
 )
 
 # Select correct startup project in Visual Studio.
