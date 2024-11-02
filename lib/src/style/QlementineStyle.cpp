@@ -4502,7 +4502,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_LineEdit_PasswordCharacter:
       return QChar(0x2022).unicode(); // Bullet.
     case SH_LineEdit_PasswordMaskDelay:
-      return 200;
+      return 0;
 
     // FocusFrame
     case SH_FocusFrame_AboveWidget:
