@@ -21,8 +21,6 @@ class QlementineStyle : public QCommonStyle {
   Q_OBJECT
 
   Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled NOTIFY animationsEnabledChanged)
-  Q_PROPERTY(bool useMenuForComboBoxPopup READ useMenuForComboBoxPopup WRITE setUseMenuForComboBoxPopup NOTIFY
-      useMenuForComboBoxPopupChanged)
 
 public:
   enum class StandardPixmapExt {
@@ -60,10 +58,6 @@ public:
   bool animationsEnabled() const;
   void setAnimationsEnabled(bool enabled);
   Q_SIGNAL void animationsEnabledChanged();
-
-  bool useMenuForComboBoxPopup() const;
-  void setUseMenuForComboBoxPopup(bool useMenu);
-  Q_SIGNAL void useMenuForComboBoxPopupChanged();
 
   void triggerCompleteRepaint();
 

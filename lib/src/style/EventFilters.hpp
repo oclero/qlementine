@@ -8,7 +8,8 @@
 
 #include <QTabBar>
 #include <QToolButton>
-#include <QAbstractItemView>
+#include <QListView>
+#include <QComboBox>
 #include <QCommandLinkButton>
 
 class QFocusFrame;
@@ -73,12 +74,14 @@ private:
 
 class ComboboxItemViewFilter : public QObject {
 public:
-  ComboboxItemViewFilter(QAbstractItemView* view);
+  ComboboxItemViewFilter(QComboBox* comboBox, QListView* view);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
 private:
-  QAbstractItemView* _view{ nullptr };
+  void fixViewGeometry();
+  QComboBox* _comboBox{ nullptr };
+  QListView* _view{ nullptr };
 };
 
 // Works for both QTextEdit and QPlainTextEdit

@@ -255,7 +255,6 @@ struct QlementineStyleImpl {
   WidgetAnimationManager animations;
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
   std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
-  bool useMenuForComboBoxPopup{ false };
   AutoIconColor autoIconColor{ AutoIconColor::None };
 };
 
@@ -295,17 +294,6 @@ void QlementineStyle::setAnimationsEnabled(bool enabled) {
     _impl->animations.setEnabled(enabled);
     emit animationsEnabledChanged();
     triggerCompleteRepaint();
-  }
-}
-
-bool QlementineStyle::useMenuForComboBoxPopup() const {
-  return _impl->useMenuForComboBoxPopup;
-}
-
-void QlementineStyle::setUseMenuForComboBoxPopup(bool useMenu) {
-  if (useMenu != _impl->useMenuForComboBoxPopup) {
-    _impl->useMenuForComboBoxPopup = useMenu;
-    emit useMenuForComboBoxPopupChanged();
   }
 }
 
@@ -438,10 +426,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_FrameMenu:
       return; // Let PE_PanelMenu do the drawing.
     case PE_FrameStatusBarItem: {
-      // p->fillRect(opt->rect, Qt::red);
-
       const auto rect = opt->rect;
-      const auto penColor = Qt::red; // _impl->theme.borderColor;
+      const auto penColor = _impl->theme.borderColor;
       const auto penWidth = _impl->theme.borderWidth;
       const auto p1 = QPoint{ rect.x() + 1 + penWidth, rect.y() + rect.x() };
       const auto p2 = QPoint{ rect.x() + 1 + penWidth, rect.y() + rect.height() };
@@ -3329,8 +3315,17 @@ QRect QlementineStyle::subControlRect(
             const auto frameY = comboBoxOpt->rect.y() + (comboBoxOpt->rect.height() - frameH) / 2;
             return QRect{ frameX, frameY, frameW, frameH };
           } break;
-          case SC_ComboBoxListBoxPopup:
-            return opt->rect;
+          case SC_ComboBoxListBoxPopup: {
+            const auto contentMarginH = pixelMetric(PM_MenuHMargin);
+            const auto contentMarginV = pixelMetric(PM_MenuVMargin);
+            const auto shadowWidth = _impl->theme.spacing;
+            const auto borderWidth = _impl->theme.borderWidth;
+            const auto width = std::max(opt->rect.width(), w->width());
+            const auto height = opt->rect.height() + 12; // Not possible to change height here.
+            const auto x = opt->rect.x() - shadowWidth - borderWidth - contentMarginH;
+            const auto y = opt->rect.y() - shadowWidth - borderWidth - contentMarginV / 2; // TODO remove hardcoded
+            return { x, y, width, height };
+          } break;
           default:
             break;
         }
@@ -4101,9 +4096,11 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
       // Scroller is the part where the user can click to scroll the menu when it is too big.
       return _impl->theme.controlHeightSmall;
     case PM_MenuHMargin:
-    case PM_MenuVMargin:
+    case PM_MenuVMargin: {
       // Keep some space between the items and the frame.
-      return _impl->theme.spacing;
+      const auto borderW = qobject_cast<const QMenu*>(w) ? 1 : 0;
+      return _impl->theme.spacing / 2 + borderW;
+    }
     case PM_MenuPanelWidth:
       // Keep some space for drop shadow.
       return _impl->theme.spacing;
@@ -4384,17 +4381,13 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_ComboBox_ListMouseTracking:
       return true;
     case SH_ComboBox_Popup:
-      // This changes the way the dropdown popup behaves.
-      // A different QItemDelegate will be used to size/draw the items.
-      // - true: not animated, uses QComboBoxMenuDelegate, that calls QStyle::drawControl(CE_MenuItem)
-      // - false: animated, uses QComboBoxDelegate, that just calls QItemDelegate::sizeHint()/paint()
-      return _impl->useMenuForComboBoxPopup;
+      return true;
     case SH_ComboBox_LayoutDirection:
       break;
     case SH_ComboBox_PopupFrameStyle:
       return QFrame::StyledPanel | QFrame::Plain;
-    case SH_ComboBox_UseNativePopup: // Only on MacOS.
-      return true;
+    case SH_ComboBox_UseNativePopup:
+      return false;
     case SH_ComboBox_AllowWheelScrolling:
       return false;
 
@@ -4827,25 +4820,26 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   // Try to remove the background...
-  if (auto* itemView = qobject_cast<QAbstractItemView*>(w)) {
-    auto* parent = itemView->parentWidget();
-    auto isComboBoxPopupContainer = parent && parent->inherits("QComboBoxPrivateContainer");
+  if (auto* itemView = qobject_cast<QListView*>(w)) {
+    auto* popup = itemView->parentWidget();
+    auto isComboBoxPopupContainer = popup && popup->inherits("QComboBoxPrivateContainer");
     if (isComboBoxPopupContainer) {
-      itemView->setBackgroundRole(QPalette::NoRole);
-      itemView->viewport()->setBackgroundRole(QPalette::NoRole);
-      parent->setBackgroundRole(QPalette::NoRole);
-      parent->setAutoFillBackground(false);
-      parent->setAttribute(Qt::WA_TranslucentBackground, true);
-      parent->setAttribute(Qt::WA_OpaquePaintEvent, false);
-      parent->setAttribute(Qt::WA_NoSystemBackground, true);
-      itemView->installEventFilter(new ComboboxItemViewFilter(itemView));
-      if (auto* scrollArea = parent->findChild<QAbstractScrollArea*>()) {
-        scrollArea->setBackgroundRole(QPalette::NoRole);
-        scrollArea->setAutoFillBackground(false);
-        scrollArea->setAttribute(Qt::WA_TranslucentBackground, true);
-        scrollArea->setAttribute(Qt::WA_OpaquePaintEvent, false);
-        scrollArea->setAttribute(Qt::WA_NoSystemBackground, true);
-      }
+      popup->setAttribute(Qt::WA_TranslucentBackground, true);
+      popup->setAttribute(Qt::WA_OpaquePaintEvent, false);
+      popup->setAttribute(Qt::WA_NoSystemBackground, true);
+      popup->setWindowFlag(Qt::FramelessWindowHint, true);
+      popup->setWindowFlag(Qt::NoDropShadowWindowHint, true);
+      popup->setProperty("_q_windowsDropShadow", false);
+
+      // Same shadow as QMenu.
+      const auto shadowWidth = _impl->theme.spacing;
+      const auto borderWidth = _impl->theme.borderWidth;
+      const auto margin = shadowWidth + borderWidth;
+      popup->layout()->setContentsMargins(margin, margin, margin, margin);
+
+      itemView->viewport()->setAutoFillBackground(false);
+      auto* comboBox = findFirstParentOfType<QComboBox>(itemView);
+      itemView->installEventFilter(new ComboboxItemViewFilter(comboBox, itemView));
     }
   }
 

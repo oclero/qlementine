@@ -604,7 +604,7 @@ struct SandboxWindow::Impl {
     // Non-editable
     {
       auto* combobox = new QComboBox(windowContent);
-      combobox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      combobox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       combobox->setFocusPolicy(Qt::StrongFocus);
 
       for (auto i = 0; i < 4; ++i) {
@@ -640,7 +640,6 @@ struct SandboxWindow::Impl {
     windowContentLayout->addWidget(listView);
 
     // Context menu.
-    qDebug() << listView->contextMenuPolicy();
     listView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     QObject::connect(listView, &QListView::customContextMenuRequested, listView, [listView](const QPoint& pos) {
       if (const auto item = listView->itemAt(pos)) {
@@ -748,7 +747,7 @@ struct SandboxWindow::Impl {
     auto* menuBar = owner.menuBar();
     // NB: it looks like MacOS' native menu bar has an issue with QIcon, so we have to force
     // it to generate icons for High-DPI screens.
-    const auto icon = makeIconFromSvg(":/refresh.svg", owner.iconSize());
+    const auto icon = makeQIcon(Icons16::Action_Save);
 
     for (auto i = 0; i < 5; ++i) {
       auto* menu = menuBar->addMenu(QString("Menu &%1").arg(i));

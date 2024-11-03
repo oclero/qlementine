@@ -7,6 +7,7 @@
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/MenuUtils.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 
 #include <oclero/qlementine/icons/Icons16.hpp>
 
@@ -21,6 +22,9 @@
 #include <QFocusFrame>
 #include <QPointer>
 #include <QSpinBox>
+#include <QComboBox>
+#include <QListView>
+#include <QLayout>
 
 namespace oclero::qlementine {
 LineEditButtonEventFilter::LineEditButtonEventFilter(
@@ -353,20 +357,45 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   return QObject::eventFilter(watchedObject, evt);
 }
 
-ComboboxItemViewFilter::ComboboxItemViewFilter(QAbstractItemView* view)
+ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* view)
   : QObject(view)
+  , _comboBox(comboBox)
   , _view(view) {
-  view->installEventFilter(this);
+  _view->installEventFilter(this);
+  _view->parentWidget()->installEventFilter(this);
+  _comboBox->installEventFilter(this);
 }
 
 bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   const auto type = evt->type();
-  if (type == QEvent::Type::Show) {
-    // Fix Qt bug.
-    const auto width = _view->sizeHintForColumn(0);
-    _view->setMinimumWidth(width);
+  switch (type) {
+    case QEvent::Type::Show:
+      fixViewGeometry();
+      break;
+    case QEvent::Type::Resize:
+      if (watchedObject == _comboBox) {
+        fixViewGeometry();
+      }
+      break;
+    default:
+      break;
   }
   return QObject::eventFilter(watchedObject, evt);
+}
+
+void ComboboxItemViewFilter::fixViewGeometry() {
+  const auto* comboBox = findFirstParentOfType<QComboBox>(_view);
+  const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style());
+  const auto contentMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
+  const auto shadowWidth = qlementineStyle->theme().spacing;
+  const auto borderWidth = qlementineStyle->theme().borderWidth;
+  const auto width =
+    std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + contentMargin * 2 + borderWidth * 2;
+  const auto scrollButtonHeight = qlementineStyle->pixelMetric(QStyle::PM_MenuTearoffHeight);
+  const auto height = _view->minimumSizeHint().height() + scrollButtonHeight * 2;
+  _view->setFixedWidth(width);
+  _view->setFixedHeight(height);
+  _view->parentWidget()->adjustSize();
 }
 
 TextEditEventFilter::TextEditEventFilter(QAbstractScrollArea* textEdit)
@@ -548,5 +577,4 @@ bool LineEditMenuEventFilter::eventFilter(QObject*, QEvent* evt) {
 
   return false;
 }
-
 } // namespace oclero::qlementine
