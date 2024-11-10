@@ -240,12 +240,20 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
     _tabBar->setIconSize(_tabBar->iconSize());
   } else if (type == QEvent::Wheel) {
     const auto* wheelEvent = static_cast<QWheelEvent*>(evt);
+
+    // Block non-horizontal scorll.
+    const bool wheelVertical = qAbs(wheelEvent->angleDelta().y()) > qAbs(wheelEvent->angleDelta().x());
+    if (wheelVertical) {
+      evt->ignore();
+      return true;
+    }
+
     auto delta = wheelEvent->pixelDelta().x();
 
     // If delta is null, it might be because we are on MacOS, using a trackpad.
     // So let's use angleDelta instead.
     if (delta == 0) {
-      delta = wheelEvent->angleDelta().y();
+      delta = wheelEvent->angleDelta().x();
     }
 
     // Invert the value if necessary.
