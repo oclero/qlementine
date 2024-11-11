@@ -1,6 +1,7 @@
 #include <QApplication>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
+#include <oclero/qlementine/style/ThemeManager.hpp>
 
 #include "ShowcaseWindow.hpp"
 
@@ -21,22 +22,27 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setApplicationVersion("1.0.0");
   QApplication::setWindowIcon(QIcon(QStringLiteral(":/showcase/qlementine_icon.ico")));
 
+  oclero::qlementine::ThemeManager* themeManager{ nullptr };
+
 #if USE_CUSTOM_STYLE
   // Custom QStyle.
-  auto* const style = new oclero::qlementine::QlementineStyle(&qApplication);
+  auto* style = new oclero::qlementine::QlementineStyle(&qApplication);
   style->setAnimationsEnabled(true);
   style->setAutoIconColor(oclero::qlementine::AutoIconColor::TextColor);
-  style->setThemeJsonPath(QStringLiteral(":/light.json"));
   qApplication.setStyle(style);
+
   // Custom icon theme.
   QIcon::setThemeName("qlementine");
+
+  // Theme manager.
+  themeManager = new oclero::qlementine::ThemeManager(style);
+  themeManager->loadDirectory(":/showcase/themes");
+
+  // Define theme on QStyle.
+  themeManager->setCurrentTheme("Light");
 #endif
 
-  auto window = std::make_unique<oclero::qlementine::showcase::ShowcaseWindow>();
-#if USE_CUSTOM_STYLE
-  window->setCustomStyle(style);
-#endif
-
+  auto window = std::make_unique<oclero::qlementine::showcase::ShowcaseWindow>(themeManager);
   window->show();
 
   return qApplication.exec();

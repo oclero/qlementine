@@ -250,7 +250,7 @@ struct QlementineStyleImpl {
   }
 
   QlementineStyle& owner;
-  Theme theme;
+  Theme theme{};
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
   WidgetAnimationManager animations;
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
@@ -263,6 +263,7 @@ QlementineStyle::QlementineStyle(QObject* parent)
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
   oclero::qlementine::icons::initializeIconTheme();
+  triggerCompleteRepaint();
 }
 
 QlementineStyle::~QlementineStyle() = default;
@@ -281,8 +282,10 @@ void QlementineStyle::setTheme(Theme const& theme) {
 }
 
 void QlementineStyle::setThemeJsonPath(QString const& jsonPath) {
-  const auto theme = Theme(jsonPath);
-  setTheme(theme);
+  const auto themeOpt = Theme::fromJsonPath(jsonPath);
+  if (themeOpt.has_value()) {
+    setTheme(themeOpt.value());
+  }
 }
 
 bool QlementineStyle::animationsEnabled() const {

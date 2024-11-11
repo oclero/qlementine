@@ -3,6 +3,8 @@
 
 #include <oclero/qlementine/style/ThemeManager.hpp>
 
+#include <QDir>
+
 namespace oclero::qlementine {
 ThemeManager::ThemeManager(QObject* parent)
   : ThemeManager(nullptr, parent) {}
@@ -32,8 +34,27 @@ const std::vector<Theme>& ThemeManager::themes() const {
 void ThemeManager::addTheme(const Theme& theme) {
   _themes.emplace_back(theme);
   emit themeCountChanged();
-  if (_currentIndex == -1) {
+  if (_currentIndex < 0) {
     setCurrentThemeIndex(0);
+  }
+}
+
+void ThemeManager::loadDirectory(const QString& path) {
+  QDir dir(path);
+  if (!dir.exists())
+    return;
+
+  dir.setFilter(QDir::Filter::Files | QDir::Filter::NoDotAndDotDot);
+  dir.setSorting(QDir::SortFlag::Name | QDir::SortFlag::IgnoreCase);
+  const auto files = dir.entryInfoList();
+  for (const auto& file : files) {
+    QFileInfo fileInfo(file);
+    if (fileInfo.suffix().toLower() == QStringLiteral("json")) {
+      const auto themeOpt = Theme::fromJsonPath(file.absoluteFilePath());
+      if (themeOpt.has_value()) {
+        addTheme(themeOpt.value());
+      }
+    }
   }
 }
 
@@ -54,11 +75,12 @@ int ThemeManager::currentThemeIndex() const {
 }
 
 void ThemeManager::setCurrentThemeIndex(int index) {
-  index = std::max(-1, std::min(themeCount() - 1, index));
-  if (index != _currentIndex) {
-    _currentIndex = index;
-    synchronizeThemeOnStyle();
-    emit currentThemeChanged();
+  if (index > -1 && index < themeCount()) {
+    if (index != _currentIndex) {
+      _currentIndex = index;
+      synchronizeThemeOnStyle();
+      emit currentThemeChanged();
+    }
   }
 }
 
@@ -93,18 +115,18 @@ int ThemeManager::themeIndex(const QString& key) const {
   return -1;
 }
 
-QString ThemeManager::getLocalizedThemeName(const QString& baseThemeName) const {
-  if (baseThemeName.toLower() == QStringLiteral("light")) {
-    return tr("Light Theme");
-  } else if (baseThemeName.toLower() == QStringLiteral("dark")) {
-    return tr("Dark Theme");
-  }
-  return baseThemeName;
-}
-
 void ThemeManager::synchronizeThemeOnStyle() {
-  if (_style && _currentIndex != -1 && !_themes.empty() && _currentIndex < themeCount()) {
+  if (!_style)
+    return;
+
+  if (_themes.empty())
+    return;
+
+  if (_currentIndex >= 0 && _currentIndex < themeCount()) {
     _style->setTheme(_themes.at(_currentIndex));
+  } else {
+    addTheme(_style->theme());
+    setCurrentThemeIndex(themeCount() - 1);
   }
 }
 } // namespace oclero::qlementine
