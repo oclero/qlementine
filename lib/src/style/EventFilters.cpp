@@ -387,7 +387,18 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* v
   , _comboBox(comboBox)
   , _view(view) {
   _view->installEventFilter(this);
-  _view->parentWidget()->installEventFilter(this);
+
+  auto* comboBoxPopup = _view->parentWidget();
+  comboBoxPopup->installEventFilter(this);
+
+  const auto childWidgets = comboBoxPopup->findChildren<QWidget*>();
+  for (auto* child : childWidgets) {
+    if (child->inherits("QComboBoxPrivateScroller")) {
+      child->setFixedHeight(0);
+      child->setVisible(false);
+    }
+  }
+
   _comboBox->installEventFilter(this);
 }
 
@@ -411,16 +422,30 @@ bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 void ComboboxItemViewFilter::fixViewGeometry() {
   const auto* comboBox = findFirstParentOfType<QComboBox>(_view);
   const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style());
-  const auto contentMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
+  const auto hMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
   const auto shadowWidth = qlementineStyle->theme().spacing;
   const auto borderWidth = qlementineStyle->theme().borderWidth;
   const auto width =
-    std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + contentMargin * 2 + borderWidth * 2;
-  const auto scrollButtonHeight = qlementineStyle->pixelMetric(QStyle::PM_MenuTearoffHeight);
-  const auto height = _view->minimumSizeHint().height() + scrollButtonHeight * 2;
+    std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + hMargin * 2 + borderWidth * 2;
+  const auto height = viewMinimumSizeHint().height();
   _view->setFixedWidth(width);
   _view->setFixedHeight(height);
   _view->parentWidget()->adjustSize();
+}
+
+QSize ComboboxItemViewFilter::viewMinimumSizeHint() const {
+  // QListView::minimumSizeHint() doesn't give the correct minimumHeight,
+  // so we have to compute it.
+  const auto rowCount = _view->model()->rowCount();
+  const auto maxHeight = _view->maximumHeight();
+  auto height = 0;
+  for (auto i = 0; i < rowCount && height <= maxHeight; ++i) {
+    const auto rowSizeHint = _view->sizeHintForRow(i);
+    height = std::min(maxHeight, height + rowSizeHint);
+  }
+  // It looks like it is OK for the width, though.
+  const auto width = _view->sizeHintForColumn(0);
+  return { width, height };
 }
 
 TextEditEventFilter::TextEditEventFilter(QAbstractScrollArea* textEdit)

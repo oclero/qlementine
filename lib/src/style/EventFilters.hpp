@@ -81,6 +81,7 @@ public:
 
 private:
   void fixViewGeometry();
+  QSize viewMinimumSizeHint() const;
   QComboBox* _comboBox{ nullptr };
   QListView* _view{ nullptr };
 };
