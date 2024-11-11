@@ -11,7 +11,7 @@
   "meta": {
     "author": "Olivier Cléro",
     "name": "Dark",
-    "version": "1.4.0"
+    "version": "1.4.1"
   },
   "neutralColor": "#565656",
   "neutralColorDisabled": "#353535",
@@ -41,10 +41,10 @@
   "secondaryColorForegroundPressed": "#2f2f2f",
   "secondaryColorHovered": "#d5d5d5",
   "secondaryColorPressed": "#ebebeb",
-  "semiTransparentColor1": "0xffffff18",
-  "semiTransparentColor2": "0xffffff23",
-  "semiTransparentColor3": "0xffffff28",
-  "semiTransparentColor4": "0xffffff2d",
+  "semiTransparentColor1": "#ffffff18",
+  "semiTransparentColor2": "#ffffff23",
+  "semiTransparentColor3": "#ffffff28",
+  "semiTransparentColor4": "#ffffff2d",
   "shadowColor1": "#00000066",
   "shadowColor2": "#000000bb",
   "shadowColor3": "#000000ff",
