@@ -11,18 +11,19 @@
 #include <QListView>
 #include <QComboBox>
 #include <QCommandLinkButton>
+#include <QPointer>
 
 class QFocusFrame;
 
 namespace oclero::qlementine {
 class LineEditButtonEventFilter : public QObject {
 public:
-  LineEditButtonEventFilter(QlementineStyle& style, WidgetAnimationManager& animManager, QToolButton* button);
+  LineEditButtonEventFilter(QlementineStyle* style, WidgetAnimationManager& animManager, QToolButton* button);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
 private:
-  QlementineStyle& _style;
+  QPointer<QlementineStyle> _style;
   WidgetAnimationManager& _animManager;
   QToolButton* _button{ nullptr };
 };

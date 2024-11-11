@@ -4766,7 +4766,7 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Special case for the Qt-private buttons in a QLineEdit.
   if (w->inherits("QLineEditIconButton")) {
-    w->installEventFilter(new LineEditButtonEventFilter(*this, _impl->animations, qobject_cast<QToolButton*>(w)));
+    w->installEventFilter(new LineEditButtonEventFilter(this, _impl->animations, qobject_cast<QToolButton*>(w)));
     w->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     // Fix hardcoded width in qlineedit_p.cpp:493
     w->setFixedSize(_impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium);
