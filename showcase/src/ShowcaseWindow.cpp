@@ -1,6 +1,7 @@
 #include "ShowcaseWindow.hpp"
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
+#include <oclero/qlementine/style/ThemeManager.hpp>
 
 #include <oclero/qlementine/utils/IconUtils.hpp>
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
@@ -12,6 +13,7 @@
 #include <oclero/qlementine/widgets/Switch.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/ColorButton.hpp>
+#include <oclero/qlementine/widgets/IconWidget.hpp>
 
 #include <oclero/qlementine/icons/Icons16.hpp>
 
@@ -43,6 +45,7 @@
 #include <QGroupBox>
 #include <QButtonGroup>
 #include <QProgressBar>
+#include <QActionGroup>
 
 #include <random>
 
@@ -125,7 +128,7 @@ static QIcon getDummyMonochromeIcon(const QSize& size = { 16, 16 }) {
 struct ShowcaseWindow::Impl {
   ShowcaseWindow& owner;
   QPointer<QlementineStyle> qlementineStyle;
-
+  QPointer<ThemeManager> themeManager;
   QVBoxLayout* rootLayout{ nullptr };
   QMenuBar* menuBar{ nullptr };
   QTabBar* tabBar{ nullptr };
@@ -135,26 +138,11 @@ struct ShowcaseWindow::Impl {
   QWidget* rightPanel{ nullptr };
   QWidget* workspace{ nullptr };
   QStatusBar* statusBar{ nullptr };
+  oclero::qlementine::Switch* themeSwitch{ nullptr };
 
-  struct Actions {
-    QAction* newFile{ nullptr };
-    QAction* openFile{ nullptr };
-    QAction* saveFile{ nullptr };
-    QAction* closeFile{ nullptr };
-    QAction* preferences{ nullptr };
-    QAction* quit{ nullptr };
-
-    QAction* undo{ nullptr };
-    QAction* redo{ nullptr };
-    QAction* cut{ nullptr };
-    QAction* copy{ nullptr };
-    QAction* paste{ nullptr };
-    QAction* delete_{ nullptr };
-  } actions;
-
-  Impl(ShowcaseWindow& o)
+  Impl(ShowcaseWindow& o, ThemeManager* themeManager)
     : owner(o)
-    , actions({}) {}
+    , themeManager(themeManager) {}
 
   void setupUI() {
     setupMenuBar();
@@ -166,6 +154,20 @@ struct ShowcaseWindow::Impl {
     setupSplitter();
     setupStatusBar();
     setupLayout();
+  }
+
+  void setTheme(const QString& theme) {
+    themeManager->setCurrentTheme(theme);
+  }
+
+  void switchTheme() {
+    themeManager->setNextTheme();
+  }
+
+  void updateThemeSwitch() {
+    themeSwitch->blockSignals(true);
+    themeSwitch->setChecked(themeManager->currentTheme() == "Dark");
+    themeSwitch->blockSignals(false);
   }
 
   void setupMenuBar() {
@@ -230,6 +232,35 @@ struct ShowcaseWindow::Impl {
         menu->addSeparator();
         menu->addAction(
           makeQIcon(Icons16::Action_Fullscreen), "Full Screen", QKeySequence::StandardKey::FullScreen, cb);
+
+        auto* themeMenu = menu->addMenu("Theme");
+        auto* themeActionGroup = new QActionGroup(themeMenu);
+        themeActionGroup->setExclusive(true);
+        const auto& themes = themeManager->themes();
+        const auto currentTheme = themeManager->currentTheme();
+
+        for (const auto& theme : themes) {
+          const auto name = theme.meta.name;
+          auto* action = themeMenu->addAction(name);
+          action->setCheckable(true);
+          themeActionGroup->addAction(action);
+          action->setChecked(name == currentTheme);
+
+          QObject::connect(action, &QAction::triggered, action, [this, name](auto checked) {
+            if (checked) {
+              setTheme(name);
+            }
+          });
+          QObject::connect(
+            themeManager, &oclero::qlementine::ThemeManager::currentThemeChanged, action, [this, name, action]() {
+              action->setChecked(name == themeManager->currentTheme());
+            });
+        }
+
+        themeMenu->addSeparator();
+        themeMenu->addAction("Switch Theme", { Qt::CTRL | Qt::Key_T }, [this]() {
+          switchTheme();
+        });
       }
     }
     {
@@ -321,6 +352,44 @@ struct ShowcaseWindow::Impl {
       exportButton->setMenu(menu);
       exportButton->setPopupMode(QToolButton::ToolButtonPopupMode::MenuButtonPopup);
     }
+
+    // Spacer.
+    auto* spacer_widget = new QWidget(toolBar);
+    spacer_widget->setAttribute(Qt::WA_TransparentForMouseEvents);
+    spacer_widget->setMinimumSize(0, 0);
+    spacer_widget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Ignored);
+    spacer_widget->setUpdatesEnabled(false); // No paint events.
+    toolBar->addWidget(spacer_widget);
+
+    // Theme switch.
+    auto* themeWidget = new QWidget(toolBar);
+    {
+      const auto hSpacing = getLayoutHSpacing(themeWidget) / 2;
+      themeWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      auto* themeLayout = new QHBoxLayout(themeWidget);
+      themeLayout->setSpacing(hSpacing);
+      themeLayout->setContentsMargins(0, 0, 0, 0);
+      themeWidget->setLayout(themeLayout);
+
+      auto* lightIconWidget = new oclero::qlementine::IconWidget(makeQIcon(Icons16::Misc_Sun), themeWidget);
+      themeLayout->addWidget(lightIconWidget);
+
+      themeSwitch = new oclero::qlementine::Switch(toolBar);
+      themeSwitch->setToolTip("Switch between light and dark theme");
+      QObject::connect(themeSwitch, &oclero::qlementine::Switch::clicked, themeSwitch, [this](auto checked) {
+        setTheme(checked ? "Dark" : "Light");
+      });
+      QObject::connect(themeManager, &oclero::qlementine::ThemeManager::currentThemeChanged, themeSwitch, [this]() {
+        updateThemeSwitch();
+      });
+      themeLayout->addWidget(themeSwitch);
+
+      auto* darkIconWidget = new oclero::qlementine::IconWidget(makeQIcon(Icons16::Misc_Moon), themeWidget);
+      themeLayout->addWidget(darkIconWidget);
+
+      updateThemeSwitch();
+    }
+    toolBar->addWidget(themeWidget);
   }
 
   void setupLeftPanel() {
@@ -543,6 +612,7 @@ struct ShowcaseWindow::Impl {
             auto* radioGroup = new QButtonGroup(groupBox);
             for (auto i = 0; i < 3; ++i) {
               auto* radioButton = new QRadioButton(getDummyText(), groupBox);
+              radioButton->setChecked(i == 0);
               radioButton->setIcon(getDummyMonochromeIcon());
               radioButton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
               radioGroup->addButton(radioButton);
@@ -628,26 +698,20 @@ struct ShowcaseWindow::Impl {
     rootLayout->addWidget(statusBar);
     workspace->setFocus(Qt::NoFocusReason);
   }
-
-  void setupShortcuts() {
-    // TODO
-  }
 };
 
-ShowcaseWindow::ShowcaseWindow(QWidget* parent)
+ShowcaseWindow::ShowcaseWindow(ThemeManager* themeManager, QWidget* parent)
   : QWidget(parent)
-  , _impl(new Impl(*this)) {
+  , _impl(new Impl(*this, themeManager)) {
   setWindowIcon(QIcon(QStringLiteral(":/showcase/qlementine_icon.ico")));
   _impl->setupUI();
-  _impl->setupShortcuts();
   setMinimumSize(600, 400);
   resize(800, 600);
   oclero::qlementine::centerWidget(this);
+
+  this->ensurePolished();
+  _impl->qlementineStyle = qobject_cast<QlementineStyle*>(this->style());
 }
 
 ShowcaseWindow::~ShowcaseWindow() = default;
-
-void ShowcaseWindow::setCustomStyle(QlementineStyle* style) {
-  _impl->qlementineStyle = style;
-}
 } // namespace oclero::qlementine::showcase

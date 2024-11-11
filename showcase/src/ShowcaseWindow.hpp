@@ -6,15 +6,14 @@
 
 namespace oclero::qlementine {
 class QlementineStyle;
-}
+class ThemeManager;
+} // namespace oclero::qlementine
 
 namespace oclero::qlementine::showcase {
 class ShowcaseWindow : public QWidget {
 public:
-  ShowcaseWindow(QWidget* parent = nullptr);
+  ShowcaseWindow(ThemeManager* themeManager, QWidget* parent = nullptr);
   ~ShowcaseWindow();
-
-  void setCustomStyle(QlementineStyle* style);
 
 private:
   struct Impl;
