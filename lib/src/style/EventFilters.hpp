@@ -11,6 +11,8 @@
 #include <QAbstractItemView>
 #include <QCommandLinkButton>
 
+class QFocusFrame;
+
 namespace oclero::qlementine {
 class LineEditButtonEventFilter : public QObject {
 public:
@@ -89,4 +91,17 @@ public:
 private:
   QAbstractScrollArea* _textEdit{ nullptr };
 };
+
+class WidgetWithFocusFrameEventFilter : public QObject {
+  Q_OBJECT
+public:
+  WidgetWithFocusFrameEventFilter(QWidget* widget);
+
+  bool eventFilter(QObject* obj, QEvent* event) override;
+
+private:
+  QWidget* _widget{ nullptr };
+  QFocusFrame* _focusFrame{ nullptr };
+};
+
 } // namespace oclero::qlementine
