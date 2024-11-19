@@ -4754,20 +4754,7 @@ void QlementineStyle::polish(QWidget* w) {
 
   // QFocusFrame is used to draw focus outside of the widget's bound.
   if (shouldHaveExternalFocusFrame(w)) {
-    auto* focusFrame = new QFocusFrame(w);
-    // If the widget is inside a scrollArea, we need to force the update of the QFocusFrame position.
-    //    if (auto* parentScrollArea = findFirstParentOfType<QScrollArea>(w)) {
-    //      if (auto* vScrollBar = parentScrollArea->verticalScrollBar()) {
-    //        QObject::connect(vScrollBar, &QScrollBar::valueChanged, focusFrame, [w](int){
-    //          QTimer::singleShot(1000, w, [w](){
-    //            auto* resizeEvent = new QResizeEvent(QSize(), w->size());
-    //            QApplication::postEvent(w, resizeEvent);
-    //          });
-    //        });
-    //      }
-    //    }
-
-    focusFrame->setWidget(w);
+    w->installEventFilter(new WidgetWithFocusFrameEventFilter(w));
   }
 
   // Hijack the default focus policy for buttons.

@@ -15,6 +15,7 @@
 #include <QMenuBar>
 #include <QTimer>
 #include <QStylePainter>
+#include <QFocusFrame>
 
 namespace oclero::qlementine {
 LineEditButtonEventFilter::LineEditButtonEventFilter(
@@ -365,4 +366,25 @@ bool TextEditEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
   return QObject::eventFilter(watchedObject, evt);
 }
+
+WidgetWithFocusFrameEventFilter::WidgetWithFocusFrameEventFilter(QWidget* widget):
+  QObject(widget),
+  _widget(widget) {
+}
+
+bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
+  if (watchedObject == _widget) {
+    if (evt->type() == QEvent::Show) {
+      if (_focusFrame == nullptr) {
+        // Create the focus frame as late as possible to give
+        // more chances to any parent scroll area to already exist.
+        _focusFrame = new QFocusFrame(_widget);
+        _focusFrame->setWidget(_widget);
+      }
+    }
+  }
+
+  return QObject::eventFilter(watchedObject, evt);
+}
+
 } // namespace oclero::qlementine
