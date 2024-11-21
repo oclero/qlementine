@@ -1435,6 +1435,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           }
 
           // Icon.
+          const auto iconSpace = optMenuItem->maxIconWidth > 0 ? optMenuItem->maxIconWidth + spacing : 0;
           const auto pixmap = getPixmap(optMenuItem->icon, _impl->theme.iconSize, mouse, checkState, w);
           if (!pixmap.isNull()) {
             const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor);
@@ -1445,11 +1446,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto pixmapY = fgRect.y() + (fgRect.height() - pixmapH) / 2;
             const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
             p->drawPixmap(pixmapRect, colorizedPixmap);
-
-            const auto taken = pixmapW + spacing;
-            availableW -= taken;
-            availableX += taken;
           }
+          availableW -= iconSpace;
+          availableX += iconSpace;
 
           // Shortcut text.
           if (!shortcut.isEmpty()) {
