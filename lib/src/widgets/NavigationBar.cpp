@@ -16,11 +16,11 @@ const QColor& NavigationBar::getBgColor(const Theme& theme) const {
 const QColor& NavigationBar::getItemBgColor(MouseState mouse, const Theme& theme) const {
   switch (mouse) {
     case MouseState::Hovered:
-      return theme.neutralColorHovered;
+      return theme.backgroundColorMain3;
     case MouseState::Pressed:
-      return theme.neutralColorPressed;
+      return theme.backgroundColorMain4;
     default:
-      return theme.neutralColorTransparent;
+      return theme.backgroundColorMainTransparent;
   }
 }
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Olivier Cléro <oclero@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #include <QApplication>
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
@@ -22,9 +25,9 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setApplicationVersion("1.0.0");
   QApplication::setWindowIcon(QIcon(QStringLiteral(":/showcase/qlementine_icon.ico")));
 
+#if USE_CUSTOM_STYLE
   oclero::qlementine::ThemeManager* themeManager{ nullptr };
 
-#if USE_CUSTOM_STYLE
   // Custom QStyle.
   auto* style = new oclero::qlementine::QlementineStyle(&qApplication);
   style->setAnimationsEnabled(true);

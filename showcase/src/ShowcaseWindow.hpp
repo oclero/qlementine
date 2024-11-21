@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Olivier Cléro <oclero@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <QMainWindow>
@@ -12,7 +15,7 @@ class ThemeManager;
 namespace oclero::qlementine::showcase {
 class ShowcaseWindow : public QWidget {
 public:
-  ShowcaseWindow(ThemeManager* themeManager, QWidget* parent = nullptr);
+  ShowcaseWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
   ~ShowcaseWindow();
 
 private:

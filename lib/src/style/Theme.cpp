@@ -252,7 +252,7 @@ void Theme::initializePalette() {
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::WindowText, secondaryColor);
   palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::WindowText, secondaryColorDisabled);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::PlaceholderText, secondaryColorDisabled);
-  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::PlaceholderText, neutralColorDisabled);
+  palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::PlaceholderText, secondaryColorDisabled);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::Link, primaryColor);
   palette.setColor(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Link, secondaryColorDisabled);
   palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::LinkVisited, primaryColor);
@@ -297,6 +297,9 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain3);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorMain4);
     backgroundColorMainTransparent = colorWithAlpha(backgroundColorMain1, 0);
+
+    TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorWorkspace);
+    TRY_GET_COLOR_ATTRIBUTE(jsonObj, backgroundColorTabBar);
 
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, neutralColorDisabled);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, neutralColor);
@@ -452,6 +455,9 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, backgroundColorMain3);
   SET_COLOR(jsonObj, backgroundColorMain4);
 
+  SET_COLOR(jsonObj, backgroundColorWorkspace);
+  SET_COLOR(jsonObj, backgroundColorTabBar);
+
   SET_COLOR(jsonObj, neutralColor);
   SET_COLOR(jsonObj, neutralColorHovered);
   SET_COLOR(jsonObj, neutralColorPressed);
@@ -579,6 +585,8 @@ bool Theme::operator==(const Theme& other) const {
     && backgroundColorMain2 == other.backgroundColorMain2
     && backgroundColorMain3 == other.backgroundColorMain3
     && backgroundColorMain4 == other.backgroundColorMain4
+
+    && backgroundColorWorkspace == other.backgroundColorWorkspace
 
     && neutralColorDisabled == other.neutralColorDisabled
     && neutralColor == other.neutralColor

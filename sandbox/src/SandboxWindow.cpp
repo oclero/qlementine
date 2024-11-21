@@ -4,11 +4,13 @@
 #include "SandboxWindow.hpp"
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
+#include <oclero/qlementine/style/ThemeManager.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
 #include <oclero/qlementine/utils/IconUtils.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
@@ -213,8 +215,17 @@ protected:
 };
 
 struct SandboxWindow::Impl {
-  Impl(SandboxWindow& o)
-    : owner(o) {}
+  SandboxWindow& owner;
+  QPointer<ThemeManager> themeManager{ nullptr };
+
+  QWidget* windowContent{ nullptr };
+  QBoxLayout* windowContentLayout{ nullptr };
+  QScrollArea* globalScrollArea{ nullptr };
+  QToolBar* toolbar{ nullptr };
+
+  Impl(SandboxWindow& o, ThemeManager* themeManager)
+    : owner(o)
+    , themeManager(themeManager) {}
 
   void beginSetupUI() {
     // Create a scrollarea to wrap everything §the window can be quite huge).
@@ -250,20 +261,16 @@ struct SandboxWindow::Impl {
       }
     });
 
-    auto* themeShortcut = new QShortcut(Qt::CTRL | Qt::Key_T, &owner);
-    themeShortcut->setAutoRepeat(false);
-    themeShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
-    QObject::connect(themeShortcut, &QShortcut::activated, themeShortcut, [this]() {
-      const auto light = QStringLiteral(":/light.json");
-      const auto dark = QStringLiteral(":/dark.json");
-      if (lastJsonThemePath == dark) {
-        lastJsonThemePath = light;
-        qlementineStyle->setThemeJsonPath(light);
-      } else {
-        lastJsonThemePath = dark;
-        qlementineStyle->setThemeJsonPath(dark);
-      }
-    });
+    if (themeManager) {
+      auto* themeShortcut = new QShortcut(Qt::CTRL | Qt::Key_T, &owner);
+      themeShortcut->setAutoRepeat(false);
+      themeShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
+      QObject::connect(themeShortcut, &QShortcut::activated, themeShortcut, [this]() {
+        if (themeManager) {
+          themeManager->setNextTheme();
+        }
+      });
+    }
 
     auto* focusShortcut = new QShortcut(Qt::CTRL | Qt::Key_F, &owner);
     focusShortcut->setAutoRepeat(false);
@@ -453,7 +460,7 @@ struct SandboxWindow::Impl {
 
   void setupUI_commandLinkButton() {
     {
-      const QIcon icon(":/plus_24.svg");
+      const QIcon icon(":/sandbox/plus_24.svg");
       auto* button = new CommandLinkButton(windowContent);
       button->setText("First Line with a very long text that should be cropped");
       button->setDescription("Second Line that could be very long and should be cropped");
@@ -463,7 +470,7 @@ struct SandboxWindow::Impl {
       windowContentLayout->addWidget(button);
     }
     {
-      const QIcon icon(":/plus_24.svg");
+      const QIcon icon(":/sandbox/plus_24.svg");
       auto* button = new CommandLinkButton(windowContent);
       button->setText("First Line with a very long text that should be cropped");
       button->setDescription("Second Line that could be very long and should be cropped");
@@ -673,7 +680,7 @@ struct SandboxWindow::Impl {
     constexpr auto rowCount = 3;
     tableView->setColumnCount(columnCount);
     tableView->setRowCount(rowCount);
-    const QIcon icon(":/scene_object.svg");
+    const QIcon icon(":/sandbox/scene_object.svg");
 
     std::vector<Qt::Alignment> columnAlignments;
     columnAlignments.resize(columnCount);
@@ -716,24 +723,25 @@ struct SandboxWindow::Impl {
     treeWidget->setColumnCount(1);
     treeWidget->setHeaderHidden(true);
     treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    qlementineStyle->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
+
+    oclero::qlementine::appStyle()->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
 
     for (auto i = 0; i < 3; ++i) {
       auto* root = new QTreeWidgetItem(treeWidget);
       root->setText(0, QString("Root %1").arg(i + 1));
-      root->setIcon(0, QIcon(":/scene_object.svg"));
+      root->setIcon(0, QIcon(":/sandbox/scene_object.svg"));
       root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
 
       for (auto j = 0; j < 3; ++j) {
         auto* child = new QTreeWidgetItem(root);
         child->setText(0, QString("Child %1 of Root %2").arg(j).arg(i));
-        child->setIcon(0, j == 2 ? QIcon(":/scene_light.svg") : QIcon(":/scene_object.svg"));
+        child->setIcon(0, j == 2 ? QIcon(":/sandbox/scene_light.svg") : QIcon(":/sandbox/scene_object.svg"));
         child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j).arg(i));
 
         for (auto k = 0; k < 3; ++k) {
           auto* subChild = new QTreeWidgetItem(child);
           subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
-          subChild->setIcon(0, QIcon(":/scene_material.svg"));
+          subChild->setIcon(0, QIcon(":/sandbox/scene_material.svg"));
           subChild->setText(1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
         }
       }
@@ -898,11 +906,11 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_tabBar() {
-    const QIcon icon(":/scene_object.svg");
+    const QIcon icon(":/sandbox/scene_object.svg");
     auto* tabBar = new QTabBar(windowContent);
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    qlementineStyle->setAutoIconColor(tabBar, oclero::qlementine::AutoIconColor::None);
+    oclero::qlementine::appStyle()->setAutoIconColor(tabBar, oclero::qlementine::AutoIconColor::None);
 
     // QTabBar features.
     tabBar->setTabsClosable(true);
@@ -949,7 +957,8 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_tabWidget() {
-    const QStringList icons = { ":/scene_object.svg", ":/scene_light.svg", ":/scene_material.svg" };
+    const QStringList icons = { ":/sandbox/scene_object.svg", ":/sandbox/scene_light.svg",
+      ":/sandbox/scene_material.svg" };
     auto* tabWidget = new QTabWidget(windowContent);
 
     tabWidget->setDocumentMode(false);
@@ -1081,24 +1090,24 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       treeWidget->setHeaderHidden(true);
       treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
       treeWidget->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-      qlementineStyle->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
+      oclero::qlementine::appStyle()->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
 
       for (auto i = 0; i < 3; ++i) {
         auto* root = new QTreeWidgetItem(treeWidget);
         root->setText(0, QString("Root %1").arg(i + 1));
-        root->setIcon(0, QIcon(":/scene_object.svg"));
+        root->setIcon(0, QIcon(":/sandbox/scene_object.svg"));
         root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
 
         for (auto j = 0; j < 3; ++j) {
           auto* child = new QTreeWidgetItem(root);
           child->setText(0, QString("Child %1 of Root %2").arg(j).arg(i));
-          child->setIcon(0, j == 2 ? QIcon(":/scene_light.svg") : QIcon(":/scene_object.svg"));
+          child->setIcon(0, j == 2 ? QIcon(":/sandbox/scene_light.svg") : QIcon(":/sandbox/scene_object.svg"));
           child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j).arg(i));
 
           for (auto k = 0; k < 3; ++k) {
             auto* subChild = new QTreeWidgetItem(child);
             subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
-            subChild->setIcon(0, QIcon(":/scene_material.svg"));
+            subChild->setIcon(0, QIcon(":/sandbox/scene_material.svg"));
             subChild->setText(1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
           }
         }
@@ -1592,78 +1601,65 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     windowContentLayout->addWidget(plainWidget);
   }
-
-  SandboxWindow& owner;
-  QString lastJsonThemePath;
-  QPointer<QlementineStyle> qlementineStyle;
-
-  QWidget* windowContent{ nullptr };
-  QBoxLayout* windowContentLayout{ nullptr };
-  QScrollArea* globalScrollArea{ nullptr };
-  QToolBar* toolbar{ nullptr };
 };
 
-SandboxWindow::SandboxWindow(QWidget* parent)
+SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
   : QMainWindow(parent)
-  , _impl(new Impl(*this)) {
-  setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
+  , _impl(new Impl(*this, themeManager)) {
+  setWindowIcon(QIcon(QStringLiteral(":/sandbox/qlementine_icon.ico")));
 
   _impl->beginSetupUI();
   {
     // Uncomment the line to show the corresponding widget.
-    //      _impl->setupUI_label();
-    //      _impl->setupUI_button();
-    //      _impl->setupUI_buttonVariants();
-    //      _impl->setupUI_checkbox();
-    //      _impl->setupUI_radioButton();
-    //      _impl->setupUI_commandLinkButton();
-    //      _impl->setupUI_sliderAndProgressBar();
-    //      _impl->setupUI_sliderWithTicks();
-    //      _impl->setupUI_lineEdit();
-    //      _impl->setupUI_textEdit();
-    //      _impl->setupUI_plainTextEdit();
-    //      _impl->setupUI_dial();
-    //      _impl->setupUI_spinBox();
-    //      _impl->setupUI_comboBox();
-    //      _impl->setupUI_listView();
-    //      _impl->setupUI_treeWidget();
-    //      _impl->setupUI_table();
-    //      _impl->setupUI_menuBar();
-    //      _impl->setupUI_toolButton();
-    //      _impl->setupUI_toolButtonsVariants();
-    //      _impl->setupUI_tabBar();
-    //      _impl->setupUI_tabWidget();
-    //      _impl->setupUI_groupBox();
-    //      _impl->setupUI_treeView();
-    //      _impl->setupUI_focus();
-    //      _impl->setupUI_specialProgressBar();
-    //      _impl->setupUI_lineEditStatus();
-    //      _impl->setupUI_dateTimeEdit();
-    //      _impl->setupUI_contextMenu();
-    //      _impl->setupUI_fontComboBox();
+    // _impl->setupUI_label();
+    // _impl->setupUI_button();
+    _impl->setupUI_buttonVariants();
+    // _impl->setupUI_checkbox();
+    // _impl->setupUI_radioButton();
+    // _impl->setupUI_commandLinkButton();
+    // _impl->setupUI_sliderAndProgressBar();
+    // _impl->setupUI_sliderWithTicks();
+    // _impl->setupUI_lineEdit();
+    // _impl->setupUI_textEdit();
+    // _impl->setupUI_plainTextEdit();
+    // _impl->setupUI_dial();
+    // _impl->setupUI_spinBox();
+    // _impl->setupUI_comboBox();
+    // _impl->setupUI_listView();
+    // _impl->setupUI_treeWidget();
+    // _impl->setupUI_table();
+    // _impl->setupUI_menuBar();
+    // _impl->setupUI_toolButton();
+    // _impl->setupUI_toolButtonsVariants();
+    // _impl->setupUI_tabBar();
+    // _impl->setupUI_tabWidget();
+    // _impl->setupUI_groupBox();
+    // _impl->setupUI_treeView();
+    // _impl->setupUI_focus();
+    // _impl->setupUI_specialProgressBar();
+    // _impl->setupUI_lineEditStatus();
+    // _impl->setupUI_dateTimeEdit();
+    // _impl->setupUI_contextMenu();
+    // _impl->setupUI_fontComboBox();
 
-    //      _impl->setupUI_switch();
-    //      _impl->setupUI_expander();
-    //      _impl->setupUI_popover();
-    //      _impl->setupUI_navigationBar();
-    //      _impl->setupUI_badge();
-    //      _impl->setupUI_colorButton();
+    // _impl->setupUI_switch();
+    // _impl->setupUI_expander();
+    // _impl->setupUI_popover();
+    _impl->setupUI_navigationBar();
+    // _impl->setupUI_badge();
+    // _impl->setupUI_colorButton();
+    // _impl->setupUI_messageBoxIcons();
 
-    //      _impl->setupUI_messageBoxIcons();
     //      _impl->setupUI_fontMetricsTests();
     //      _impl->setupUI_blur();
     //      _impl->setupUI_themeEditor();
     //      _impl->setupUI_messageBox();
   }
   _impl->endSetupUI();
+  oclero::qlementine::centerWidget(this);
 }
 
 SandboxWindow::~SandboxWindow() = default;
-
-void SandboxWindow::setCustomStyle(QlementineStyle* style) {
-  _impl->qlementineStyle = style;
-  _impl->lastJsonThemePath = QStringLiteral(":/light.json");
-}
 
 bool SandboxWindow::eventFilter(QObject* watched, QEvent* event) {
   if (event->type() == QEvent::Type::Close) {

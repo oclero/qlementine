@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Olivier Cléro <oclero@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #include "ShowcaseWindow.hpp"
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
@@ -67,7 +70,7 @@ protected:
     QColor backgroundColor;
     if (const auto* qlementine_style = qlementine::appStyle()) {
       const auto theme = qlementine_style->theme();
-      backgroundColor = theme.backgroundColorMain4.darker(110);
+      backgroundColor = theme.backgroundColorWorkspace;
     }
     p.fillRect(rect(), backgroundColor);
   }
@@ -157,16 +160,20 @@ struct ShowcaseWindow::Impl {
   }
 
   void setTheme(const QString& theme) {
-    themeManager->setCurrentTheme(theme);
+    if (themeManager) {
+      themeManager->setCurrentTheme(theme);
+    }
   }
 
   void switchTheme() {
-    themeManager->setNextTheme();
+    if (themeManager) {
+      themeManager->setNextTheme();
+    }
   }
 
   void updateThemeSwitch() {
     themeSwitch->blockSignals(true);
-    themeSwitch->setChecked(themeManager->currentTheme() == "Dark");
+    themeSwitch->setChecked(themeManager ? themeManager->currentTheme() == "Dark" : false);
     themeSwitch->blockSignals(false);
   }
 
@@ -233,34 +240,37 @@ struct ShowcaseWindow::Impl {
         menu->addAction(
           makeQIcon(Icons16::Action_Fullscreen), "Full Screen", QKeySequence::StandardKey::FullScreen, cb);
 
-        auto* themeMenu = menu->addMenu("Theme");
-        auto* themeActionGroup = new QActionGroup(themeMenu);
-        themeActionGroup->setExclusive(true);
-        const auto& themes = themeManager->themes();
-        const auto currentTheme = themeManager->currentTheme();
+        if (themeManager) {
+          auto* themeMenu = menu->addMenu("Theme");
+          auto* themeActionGroup = new QActionGroup(themeMenu);
+          themeActionGroup->setExclusive(true);
 
-        for (const auto& theme : themes) {
-          const auto name = theme.meta.name;
-          auto* action = themeMenu->addAction(name);
-          action->setCheckable(true);
-          themeActionGroup->addAction(action);
-          action->setChecked(name == currentTheme);
+          const auto& themes = themeManager->themes();
+          const auto currentTheme = themeManager->currentTheme();
 
-          QObject::connect(action, &QAction::triggered, action, [this, name](auto checked) {
-            if (checked) {
-              setTheme(name);
-            }
-          });
-          QObject::connect(
-            themeManager, &oclero::qlementine::ThemeManager::currentThemeChanged, action, [this, name, action]() {
-              action->setChecked(name == themeManager->currentTheme());
+          for (const auto& theme : themes) {
+            const auto name = theme.meta.name;
+            auto* action = themeMenu->addAction(name);
+            action->setCheckable(true);
+            themeActionGroup->addAction(action);
+            action->setChecked(name == currentTheme);
+
+            QObject::connect(action, &QAction::triggered, action, [this, name](auto checked) {
+              if (checked) {
+                setTheme(name);
+              }
             });
-        }
+            QObject::connect(
+              themeManager, &oclero::qlementine::ThemeManager::currentThemeChanged, action, [this, name, action]() {
+                action->setChecked(name == themeManager->currentTheme());
+              });
+          }
 
-        themeMenu->addSeparator();
-        themeMenu->addAction("Switch Theme", { Qt::CTRL | Qt::Key_T }, [this]() {
-          switchTheme();
-        });
+          themeMenu->addSeparator();
+          themeMenu->addAction("Switch Theme", { Qt::CTRL | Qt::Key_T }, [this]() {
+            switchTheme();
+          });
+        }
       }
     }
     {
@@ -598,6 +608,13 @@ struct ShowcaseWindow::Impl {
             dateTimeEdit->setCalendarPopup(true);
             groupBoxLayout->addRow(getDummyText(1, 1) + ":", dateTimeEdit);
           }
+          {
+            auto* lineEdit = new QLineEdit(groupBox);
+            lineEdit->setPlaceholderText("Enter text...");
+            lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            lineEdit->setClearButtonEnabled(true);
+            groupBoxLayout->addRow(getDummyText(1, 1) + ":", lineEdit);
+          }
           contentLayout->addRow(groupBox);
         }
         {
@@ -661,7 +678,6 @@ struct ShowcaseWindow::Impl {
 
   void setupSplitter() {
     splitter = new QSplitter(&owner);
-    splitter->setHandleWidth(1);
     splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     splitter->setOrientation(Qt::Horizontal);
     splitter->addWidget(leftPanel);
@@ -682,7 +698,8 @@ struct ShowcaseWindow::Impl {
     {
       auto* progressBar = new QProgressBar(statusBar);
       progressBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-      progressBar->setValue(80);
+      progressBar->setTextVisible(false);
+      progressBar->setRange(0, 0);
       statusBar->addPermanentWidget(progressBar);
     }
   }

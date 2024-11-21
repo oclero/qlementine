@@ -203,7 +203,7 @@ public: // Theme-related methods.
   virtual QColor const& menuBarItemBackgroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& menuBarItemForegroundColor(MouseState const mouse, SelectionState const selected) const;
 
-  virtual QColor const& tabBarBackgroundColor() const;
+  virtual QColor const& tabBarBackgroundColor(MouseState const mouse) const;
   virtual QColor const& tabBarShadowColor() const;
   virtual QColor const& tabBarBottomShadowColor() const;
   virtual QColor const& tabBackgroundColor(MouseState const mouse, SelectionState const selected) const;
@@ -252,7 +252,7 @@ public: // Theme-related methods.
 
   virtual QColor const& groupBoxTitleColor(MouseState const mouse, const QWidget* w = nullptr) const;
   virtual QColor const& groupBoxBorderColor(MouseState const mouse) const;
-  virtual QColor const& groupBoxBackgroundColor(MouseState const mouse) const;
+  virtual QColor groupBoxBackgroundColor(MouseState const mouse) const;
 
   virtual QColor const& statusColor(Status const status, MouseState const mouse) const;
   virtual QColor focusBorderColor(Status status) const;
@@ -281,6 +281,8 @@ public: // Theme-related methods.
   virtual QColor const& statusBarBackgroundColor() const;
   virtual QColor const& statusBarBorderColor() const;
   virtual QColor const& statusBarSeparatorColor() const;
+
+  virtual QColor const& splitterColor(MouseState const mouse) const;
 
 private:
   std::unique_ptr<QlementineStyleImpl> _impl;

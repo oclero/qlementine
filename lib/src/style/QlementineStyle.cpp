@@ -449,8 +449,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto* tabBar = tabWidget ? tabWidget->tabBar() : nullptr;
       if (!documentMode && tabBar) {
         // Draw a border around the content.
+        const auto mouse = getMouseState(opt->state);
         const auto radius = _impl->theme.borderRadius * 1.5;
-        const auto& borderColor = tabBarBackgroundColor();
+        const auto borderColor = tabBarBackgroundColor(mouse);
         const auto borderW = _impl->theme.borderWidth;
         drawRoundedRectBorder(
           p, opt->rect.adjusted(0, -borderW, 0, 0), borderColor, borderW, RadiusesF(0., 0., radius, radius));
@@ -490,11 +491,13 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     }
     case PE_FrameTabBarBase:
       if (const auto* optTabBar = qstyleoption_cast<const QStyleOptionTabBarBase*>(opt)) {
+        const auto mouse = getMouseState(opt->state);
+        const auto& bgColor = tabBarBackgroundColor(mouse);
         if (optTabBar->documentMode) {
-          p->fillRect(opt->rect, tabBarBackgroundColor());
+          p->fillRect(opt->rect, bgColor);
         } else {
           const auto radius = _impl->theme.borderRadius * 1.5;
-          drawRoundedRect(p, opt->rect, tabBarBackgroundColor(), RadiusesF(radius, radius, 0., 0.));
+          drawRoundedRect(p, opt->rect, bgColor, RadiusesF(radius, radius, 0., 0.));
         }
       }
       return;
@@ -830,7 +833,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
       // Filled rectangle below scroll buttons.
       // We need to fill the whole surface to ensure tabs are not visible below.
-      const auto& tabBarBgColor = tabBarBackgroundColor();
+      const auto mouse = getMouseState(opt->state);
+      const auto& tabBarBgColor = tabBarBackgroundColor(mouse);
       const auto filledRect = QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
       drawRoundedRect(p, filledRect, tabBarBgColor, documentMode ? 0. : RadiusesF(0., radius, 0., 0.));
     }
@@ -1821,8 +1825,14 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       break;
     case CE_SizeGrip:
       break;
-    case CE_Splitter:
-      break;
+    case CE_Splitter: {
+      const auto mouse = getMouseState(opt->state);
+      const auto& lineColor = splitterColor(mouse);
+      // const auto currentLineColor = _impl->animations.animateBackgroundColor(w, lineColor, _impl->theme.animationDuration);
+      const auto line_rect = opt->rect.adjusted(-1, 0, 1, 0);
+      p->fillRect(line_rect, lineColor);
+    }
+      return;
     case CE_RubberBand:
       break;
     case CE_DockWidgetTitle:
@@ -2860,11 +2870,13 @@ void QlementineStyle::drawComplexControl(
 
             // Draw an opaque background to hide tabs below.
             const auto isLeftButton = toolbuttonOpt->arrowType == Qt::ArrowType::LeftArrow;
+            const auto tabBarState = parentTabBar->isEnabled() ? MouseState::Normal : MouseState::Disabled;
             if (parentTabBar->documentMode() || isLeftButton) {
-              p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor());
+              p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor(tabBarState));
             } else {
               const auto bgRadius = _impl->theme.borderRadius * 1.5;
-              drawRoundedRect(p, toolbuttonOpt->rect, tabBarBackgroundColor(), RadiusesF(0., bgRadius, 0., 0.));
+              drawRoundedRect(
+                p, toolbuttonOpt->rect, tabBarBackgroundColor(tabBarState), RadiusesF(0., bgRadius, 0., 0.));
             }
 
             // Rect.
@@ -4084,8 +4096,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // Splitter.
     case PM_SplitterWidth:
-      break;
-
+      return 1;
     // TitleBar.
     case PM_TitleBarHeight:
       break;
@@ -5613,8 +5624,8 @@ QColor const& QlementineStyle::menuBarItemForegroundColor(MouseState const mouse
   }
 }
 
-QColor const& QlementineStyle::tabBarBackgroundColor() const {
-  return _impl->theme.backgroundColorMain3;
+QColor const& QlementineStyle::tabBarBackgroundColor(MouseState const mouse) const {
+  return mouse == MouseState::Disabled ? _impl->theme.backgroundColorMain3 : _impl->theme.backgroundColorTabBar;
 }
 
 QColor const& QlementineStyle::tabBarShadowColor() const {
@@ -5627,18 +5638,21 @@ QColor const& QlementineStyle::tabBarBottomShadowColor() const {
 
 QColor const& QlementineStyle::tabBackgroundColor(MouseState const mouse, SelectionState const selected) const {
   const auto isSelected = selected == SelectionState::Selected;
+  const auto& selectedTabColor = _impl->theme.backgroundColorMain2;
+  const auto& hoverTabColor = _impl->theme.neutralColor;
+  const auto& defaultTabColor = _impl->theme.backgroundColorMainTransparent;
 
   switch (mouse) {
     case MouseState::Hovered:
-      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.neutralColorPressed;
+      return isSelected ? selectedTabColor : hoverTabColor;
     case MouseState::Pressed:
-      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.secondaryColorPressed;
+      return _impl->theme.backgroundColorMain2;
     case MouseState::Normal:
-      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.neutralColorTransparent;
+      return isSelected ? selectedTabColor : defaultTabColor;
     case MouseState::Disabled:
     case MouseState::Transparent:
     default:
-      return _impl->theme.neutralColorTransparent;
+      return defaultTabColor;
   }
 }
 
@@ -5915,8 +5929,13 @@ QColor const& QlementineStyle::groupBoxTitleColor(MouseState const mouse, const 
   return labelForegroundColor(mouse, w);
 }
 
-QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
-  return mouse == MouseState::Disabled ? _impl->theme.neutralColorTransparent : _impl->theme.neutralColorDisabled;
+QColor QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled) {
+    return _impl->theme.backgroundColorMainTransparent;
+  } else {
+    return getColorSourceOver(_impl->theme.backgroundColorMain2,
+      colorWithAlphaF(_impl->theme.backgroundColorMain3, _impl->theme.backgroundColorMain3.alphaF() * .75));
+  }
 }
 
 QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
@@ -6149,5 +6168,19 @@ QColor const& QlementineStyle::statusBarBorderColor() const {
 
 QColor const& QlementineStyle::statusBarSeparatorColor() const {
   return _impl->theme.secondaryColorDisabled;
+}
+
+QColor const& QlementineStyle::splitterColor(const MouseState mouse) const {
+  switch (mouse) {
+    case MouseState::Normal:
+      return _impl->theme.borderColor;
+    case MouseState::Hovered:
+      return _impl->theme.primaryColor;
+    case MouseState::Pressed:
+      return _impl->theme.primaryColorPressed;
+    case MouseState::Disabled:
+    default:
+      return _impl->theme.borderColorTransparent;
+  }
 }
 } // namespace oclero::qlementine

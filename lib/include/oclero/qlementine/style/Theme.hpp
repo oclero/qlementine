@@ -57,6 +57,9 @@ public: // Values.
   QColor backgroundColorMain4{ 0xdcdcdc };
   QColor backgroundColorMainTransparent{ QRgba64::fromArgb32(0x00fafafa) };
 
+  QColor backgroundColorWorkspace{ 0xb7b7b7 };
+  QColor backgroundColorTabBar{ 0xb7b7b7 };
+
   QColor neutralColor{ 0xe1e1e1 };
   QColor neutralColorHovered{ 0xdadada };
   QColor neutralColorPressed{ 0xd2d2d2 };
