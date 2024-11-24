@@ -19,6 +19,11 @@ Modern QStyle for desktop Qt6 applications.
 
 See [documentation](https://oclero.github.io/qlementine) for more information.
 
+<div align="center">
+  <img style="width: 45%; padding: 10px;"  src="branding/screenshots/windows-light.png">
+  <img style="width: 45%; padding: 10px;"  src="branding/screenshots/windows-dark.png">
+</div>
+
 ---
 
 ### Table of Contents

@@ -6,6 +6,8 @@
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
+#include <oclero/qlementine/utils/MenuUtils.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 
 #include <QMouseEvent>
 #include <QWidget>
@@ -16,10 +18,15 @@
 #include <QTimer>
 #include <QStylePainter>
 #include <QFocusFrame>
+#include <QPointer>
+#include <QSpinBox>
+#include <QComboBox>
+#include <QListView>
+#include <QLayout>
 
 namespace oclero::qlementine {
 LineEditButtonEventFilter::LineEditButtonEventFilter(
-  QlementineStyle& style, WidgetAnimationManager& animManager, QToolButton* button)
+  QlementineStyle* style, WidgetAnimationManager& animManager, QToolButton* button)
   : QObject(button)
   , _style(style)
   , _animManager(animManager)
@@ -44,7 +51,7 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
     // Instead, place the button by ourselves.
     const auto* parentLineEdit = _button->parentWidget();
     const auto parentRect = parentLineEdit->rect();
-    const auto& theme = _style.theme();
+    const auto& theme = _style ? _style->theme() : Theme{};
     const auto buttonH = theme.controlHeightMedium;
     const auto buttonW = buttonH;
     const auto spacing = theme.spacing / 2;
@@ -63,29 +70,46 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
     const auto hovered = _button->underMouse();
     const auto pressed = _button->isDown();
     const auto mouse = getMouseState(pressed, hovered, enabled);
-    const auto& theme = _style.theme();
+    const auto& theme = _style ? _style->theme() : Theme{};
     const auto rect = _button->rect();
-    const auto& bgColor = _style.toolButtonBackgroundColor(mouse, ColorRole::Secondary);
+
+    const auto& bgColor =
+      _style ? _style->toolButtonBackgroundColor(mouse, ColorRole::Secondary)
+             : _button->style()->standardPalette().color(getPaletteColorGroup(mouse), QPalette::ColorRole::ButtonText);
+    const auto& fgColor =
+      _style ? _style->toolButtonForegroundColor(mouse, ColorRole::Secondary)
+             : _button->style()->standardPalette().color(getPaletteColorGroup(mouse), QPalette::ColorRole::Button);
+    const auto animationDuration = _style ? _style->theme().animationDuration : 0;
+    const auto& currentBgColor = _animManager.animateBackgroundColor(_button, bgColor, animationDuration);
+    const auto& currentFgColor = _animManager.animateForegroundColor(_button, fgColor, animationDuration);
+
+    // Get opacity animated in qlinedit_p.cpp:436
+    const auto opacity = _button->property(QByteArrayLiteral("opacity")).toDouble();
+
     const auto circleH = theme.controlHeightMedium;
     const auto circleW = circleH;
     const auto circleX = rect.x() + (rect.width() - circleW) / 2;
     const auto circleY = rect.y() + (rect.height() - circleH) / 2;
     const auto circleRect = QRect(QPoint{ circleX, circleY }, QSize{ circleW, circleH });
-    // Get opacity animated in qlinedit_p.cpp:436
-    const auto opacity = _button->property(QByteArrayLiteral("opacity")).toDouble();
+
     const auto pixmap = getPixmap(_button->icon(), theme.iconSize, mouse, CheckState::NotChecked, _button);
+    const auto autoIconColor = _style ? _style->autoIconColor(_button) : AutoIconColor::None;
+    const auto& colorizedPixmap = _style->getColorizedPixmap(pixmap, autoIconColor, currentFgColor, currentFgColor);
     const auto pixmapX = circleRect.x() + (circleRect.width() - theme.iconSize.width()) / 2;
     const auto pixmapY = circleRect.y() + (circleRect.height() - theme.iconSize.height()) / 2;
     const auto pixmapRect = QRect{ { pixmapX, pixmapY }, theme.iconSize };
-    const auto& currentBgColor = _animManager.animateBackgroundColor(_button, bgColor, theme.animationDuration);
 
     QPainter p(_button);
     p.setOpacity(opacity);
     p.setPen(Qt::NoPen);
-    p.setBrush(currentBgColor);
     p.setRenderHint(QPainter::Antialiasing, true);
+
+    // Background.
+    p.setBrush(currentBgColor);
     p.drawEllipse(circleRect);
-    p.drawPixmap(pixmapRect, pixmap);
+
+    // Foreground.
+    p.drawPixmap(pixmapRect, colorizedPixmap);
 
     evt->accept();
     return true;
@@ -231,12 +255,20 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
     _tabBar->setIconSize(_tabBar->iconSize());
   } else if (type == QEvent::Wheel) {
     const auto* wheelEvent = static_cast<QWheelEvent*>(evt);
+
+    // Block non-horizontal scorll.
+    const bool wheelVertical = qAbs(wheelEvent->angleDelta().y()) > qAbs(wheelEvent->angleDelta().x());
+    if (wheelVertical) {
+      evt->ignore();
+      return true;
+    }
+
     auto delta = wheelEvent->pixelDelta().x();
 
     // If delta is null, it might be because we are on MacOS, using a trackpad.
     // So let's use angleDelta instead.
     if (delta == 0) {
-      delta = wheelEvent->angleDelta().y();
+      delta = wheelEvent->angleDelta().x();
     }
 
     // Invert the value if necessary.
@@ -277,51 +309,141 @@ MenuEventFilter::MenuEventFilter(QMenu* menu)
 
 bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   const auto type = evt->type();
-  if (type == QEvent::Type::Show) {
-    // Place the QMenu correctly by making up for the drop shadow margins.
-    // It'll be reset before every show, so we can safely move it every time.
-    // Submenus should already be placed correctly, so there's no need to translate their geometry.
-    // Also, make up for the menu item padding so the texts are aligned.
-    const auto isMenuBarMenu = qobject_cast<QMenuBar*>(_menu->parentWidget()) != nullptr;
-    const auto isSubMenu = qobject_cast<QMenu*>(_menu->parentWidget()) != nullptr;
-    const auto alignForMenuBar = isMenuBarMenu && !isSubMenu;
-    const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
-    const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
-    const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
-    const auto menuOriginalPos = _menu->pos();
-    const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
-    const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
-    const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
 
-    // Menus have weird sizing bugs when moving them from this event.
-    // We have to wait for the event loop to be processed before setting the final position.
-    const auto menuSize = _menu->size();
-    if (menuSize != QSize(0, 0)) {
-      _menu->resize(0, 0); // Hide the menu for now until we can set the position.
-      QTimer::singleShot(0, _menu, [this, menuNewPos, menuSize]() {
-        _menu->move(menuNewPos);
-        _menu->resize(menuSize);
-      });
-    }
+  switch (type) {
+    case QEvent::Type::Show: {
+      // Place the QMenu correctly by making up for the drop shadow margins.
+      // It'll be reset before every show, so we can safely move it every time.
+      // Submenus should already be placed correctly, so there's no need to translate their geometry.
+      // Also, make up for the menu item padding so the texts are aligned.
+      const auto isMenuBarMenu = qobject_cast<QMenuBar*>(_menu->parentWidget()) != nullptr;
+      const auto isSubMenu = qobject_cast<QMenu*>(_menu->parentWidget()) != nullptr;
+      const auto alignForMenuBar = isMenuBarMenu && !isSubMenu;
+      const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_menu->style());
+      const auto menuItemHPadding = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+      const auto menuDropShadowWidth = qlementineStyle ? qlementineStyle->theme().spacing : 0;
+      const auto menuOriginalPos = _menu->pos();
+      const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
+      const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
+      const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
+
+      // Menus have weird sizing bugs when moving them from this event.
+      // We have to wait for the event loop to be processed before setting the final position.
+      const auto menuSize = _menu->size();
+      if (menuSize != QSize(0, 0)) {
+        _menu->resize(0, 0); // Hide the menu for now until we can set the position.
+        QTimer::singleShot(0, _menu, [this, menuNewPos, menuSize]() {
+          _menu->move(menuNewPos);
+          _menu->resize(menuSize);
+        });
+      }
+    } break;
+    case QEvent::Type::MouseButtonPress: {
+      const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
+      const auto mousePos = mouseEvt->pos();
+      if (const auto* action = _menu->actionAt(mousePos)) {
+        if (action->isSeparator() || !action->isEnabled() || action->property("qlementine_flashing").toBool()) {
+          return true;
+        }
+      } else if (_menu->rect().contains(mousePos)) {
+        return true;
+      }
+    } break;
+    case QEvent::Type::MouseButtonRelease: {
+      const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
+      const auto mousePos = mouseEvt->pos();
+      if (auto* action = _menu->actionAt(mousePos)) {
+        if (action->isSeparator() || !action->isEnabled() || action->property("qlementine_flashing").toBool())
+          return true;
+
+        if (action->menu() == nullptr) {
+          flashAction(action, _menu, [this, action]() {
+            // The call to QAction::trigger might destroy the menu or the actions.
+            const QPointer<QMenu> menu_guard(_menu);
+            action->trigger();
+            if (menu_guard) {
+              if (auto* top_menu = getTopLevelMenu(menu_guard)) {
+                top_menu->close();
+              }
+            }
+          });
+          return true;
+        }
+      } else if (_menu->rect().contains(mousePos)) {
+        return true;
+      }
+    } break;
+    default:
+      break;
   }
 
   return QObject::eventFilter(watchedObject, evt);
 }
 
-ComboboxItemViewFilter::ComboboxItemViewFilter(QAbstractItemView* view)
+ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* view)
   : QObject(view)
+  , _comboBox(comboBox)
   , _view(view) {
-  view->installEventFilter(this);
+  _view->installEventFilter(this);
+
+  auto* comboBoxPopup = _view->parentWidget();
+  comboBoxPopup->installEventFilter(this);
+
+  const auto childWidgets = comboBoxPopup->findChildren<QWidget*>();
+  for (auto* child : childWidgets) {
+    if (child->inherits("QComboBoxPrivateScroller")) {
+      child->setFixedHeight(0);
+      child->setVisible(false);
+    }
+  }
+
+  _comboBox->installEventFilter(this);
 }
 
 bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   const auto type = evt->type();
-  if (type == QEvent::Type::Show) {
-    // Fix Qt bug.
-    const auto width = _view->sizeHintForColumn(0);
-    _view->setMinimumWidth(width);
+  switch (type) {
+    case QEvent::Type::Show:
+      fixViewGeometry();
+      break;
+    case QEvent::Type::Resize:
+      if (watchedObject == _comboBox) {
+        fixViewGeometry();
+      }
+      break;
+    default:
+      break;
   }
   return QObject::eventFilter(watchedObject, evt);
+}
+
+void ComboboxItemViewFilter::fixViewGeometry() {
+  const auto* comboBox = findFirstParentOfType<QComboBox>(_view);
+  const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style());
+  const auto hMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
+  const auto shadowWidth = qlementineStyle->theme().spacing;
+  const auto borderWidth = qlementineStyle->theme().borderWidth;
+  const auto width =
+    std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + hMargin * 2 + borderWidth * 2;
+  const auto height = viewMinimumSizeHint().height();
+  _view->setFixedWidth(width);
+  _view->setFixedHeight(height);
+  _view->parentWidget()->adjustSize();
+}
+
+QSize ComboboxItemViewFilter::viewMinimumSizeHint() const {
+  // QListView::minimumSizeHint() doesn't give the correct minimumHeight,
+  // so we have to compute it.
+  const auto rowCount = _view->model()->rowCount();
+  const auto maxHeight = _view->maximumHeight();
+  auto height = 0;
+  for (auto i = 0; i < rowCount && height <= maxHeight; ++i) {
+    const auto rowSizeHint = _view->sizeHintForRow(i);
+    height = std::min(maxHeight, height + rowSizeHint);
+  }
+  // It looks like it is OK for the width, though.
+  const auto width = _view->sizeHintForColumn(0);
+  return { width, height };
 }
 
 TextEditEventFilter::TextEditEventFilter(QAbstractScrollArea* textEdit)
@@ -367,10 +489,9 @@ bool TextEditEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   return QObject::eventFilter(watchedObject, evt);
 }
 
-WidgetWithFocusFrameEventFilter::WidgetWithFocusFrameEventFilter(QWidget* widget):
-  QObject(widget),
-  _widget(widget) {
-}
+WidgetWithFocusFrameEventFilter::WidgetWithFocusFrameEventFilter(QWidget* widget)
+  : QObject(widget)
+  , _widget(widget) {}
 
 bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   if (watchedObject == _widget) {
@@ -387,4 +508,127 @@ bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent
   return QObject::eventFilter(watchedObject, evt);
 }
 
+class LineEditMenuIconsBehavior : public QObject {
+  QPointer<QMenu> _menu{ nullptr };
+  bool _menuCustomized{ false };
+
+  enum class IconListMode {
+    None,
+    LineEdit,
+    ReadOnlyLineEdit,
+    SpinBox,
+  };
+
+  static std::vector<QIcon> iconList(IconListMode mode) {
+    const auto* qlem = oclero::qlementine::appStyle();
+    if (!qlem)
+      return {};
+
+    // The order follows the one defined QLineEdit.cpp and QSpinBox.cpp (Qt6).
+    switch (mode) {
+      case IconListMode::LineEdit:
+        return {
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-undo"),
+          qlem->makeThemedIconFromName("edit-redo"),
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-cut"),
+          qlem->makeThemedIconFromName("edit-copy"),
+          qlem->makeThemedIconFromName("edit-paste"),
+          qlem->makeThemedIconFromName("edit-delete"),
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-select-all"),
+        };
+      case IconListMode::ReadOnlyLineEdit:
+        return {
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-copy"),
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-select-all"),
+        };
+      case IconListMode::SpinBox:
+        return {
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-undo"),
+          qlem->makeThemedIconFromName("edit-redo"),
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-cut"),
+          qlem->makeThemedIconFromName("edit-copy"),
+          qlem->makeThemedIconFromName("edit-paste"),
+          qlem->makeThemedIconFromName("edit-delete"),
+          QIcon(), // Separator
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("edit-select-all"),
+          QIcon(), // Separator
+          qlem->makeThemedIconFromName("go-up"),
+          qlem->makeThemedIconFromName("go-down"),
+        };
+      default:
+        return {};
+    }
+  }
+
+  static IconListMode getMode(const QMenu* menu) {
+    if (const auto* menu_parent = menu->parent()) {
+      if (qobject_cast<const QAbstractSpinBox*>(menu_parent->parent())) {
+        return IconListMode::SpinBox;
+      } else if (const auto* line_edit = qobject_cast<const QLineEdit*>(menu_parent)) {
+        return line_edit->isReadOnly() ? IconListMode::ReadOnlyLineEdit : IconListMode::LineEdit;
+      }
+    }
+    return IconListMode::None;
+  }
+
+  void customizeMenu() {
+    const auto actions = _menu->findChildren<QAction*>();
+    if (!actions.empty()) {
+      const auto icons = iconList(getMode(_menu));
+      if (!icons.empty()) {
+        for (auto i = 0; i < static_cast<int>(icons.size()) && i < static_cast<int>(actions.size()); ++i) {
+          if (auto* action = actions.at(i)) {
+            action->setIcon(icons.at(i));
+          }
+        }
+      }
+    }
+    _menu->adjustSize();
+  }
+
+public:
+  LineEditMenuIconsBehavior(QMenu* menu)
+    : QObject(menu)
+    , _menu(menu) {
+    // Hack pour modifier les icones du menu contextuel des line edit.
+    QObject::connect(_menu, &QMenu::aboutToShow, this, [this]() {
+      if (!_menuCustomized) {
+        customizeMenu();
+        _menuCustomized = true;
+      }
+    });
+  }
+};
+
+LineEditMenuEventFilter::LineEditMenuEventFilter(QWidget* parent)
+  : QObject(parent) {
+  assert(parent);
+  if (auto* menu = qobject_cast<QMenu*>(parent)) {
+    new LineEditMenuIconsBehavior(menu);
+  } else {
+    parent->installEventFilter(this);
+  }
+}
+
+bool LineEditMenuEventFilter::eventFilter(QObject*, QEvent* evt) {
+  const auto type = evt->type();
+  if (type == QEvent::ChildPolished) {
+    auto* child = static_cast<QChildEvent*>(evt)->child();
+    if (auto* lineedit = qobject_cast<QLineEdit*>(child)) {
+      lineedit->installEventFilter(this);
+    } else if (auto* menu = qobject_cast<QMenu*>(child)) {
+      new LineEditMenuIconsBehavior(menu);
+    }
+  }
+
+  return false;
+}
 } // namespace oclero::qlementine

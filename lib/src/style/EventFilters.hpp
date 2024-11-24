@@ -8,20 +8,22 @@
 
 #include <QTabBar>
 #include <QToolButton>
-#include <QAbstractItemView>
+#include <QListView>
+#include <QComboBox>
 #include <QCommandLinkButton>
+#include <QPointer>
 
 class QFocusFrame;
 
 namespace oclero::qlementine {
 class LineEditButtonEventFilter : public QObject {
 public:
-  LineEditButtonEventFilter(QlementineStyle& style, WidgetAnimationManager& animManager, QToolButton* button);
+  LineEditButtonEventFilter(QlementineStyle* style, WidgetAnimationManager& animManager, QToolButton* button);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
 private:
-  QlementineStyle& _style;
+  QPointer<QlementineStyle> _style;
   WidgetAnimationManager& _animManager;
   QToolButton* _button{ nullptr };
 };
@@ -73,12 +75,15 @@ private:
 
 class ComboboxItemViewFilter : public QObject {
 public:
-  ComboboxItemViewFilter(QAbstractItemView* view);
+  ComboboxItemViewFilter(QComboBox* comboBox, QListView* view);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
 private:
-  QAbstractItemView* _view{ nullptr };
+  void fixViewGeometry();
+  QSize viewMinimumSizeHint() const;
+  QComboBox* _comboBox{ nullptr };
+  QListView* _view{ nullptr };
 };
 
 // Works for both QTextEdit and QPlainTextEdit
@@ -104,4 +109,11 @@ private:
   QFocusFrame* _focusFrame{ nullptr };
 };
 
+class LineEditMenuEventFilter : public QObject {
+public:
+  LineEditMenuEventFilter(QWidget* parent);
+
+protected:
+  virtual bool eventFilter(QObject* obj, QEvent* evt) override;
+};
 } // namespace oclero::qlementine

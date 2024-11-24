@@ -15,11 +15,11 @@ const QColor& SegmentedControl::getBgColor(const Theme& theme) const {
 const QColor& SegmentedControl::getItemBgColor(MouseState mouse, const Theme& theme) const {
   switch (mouse) {
     case MouseState::Hovered:
-      return theme.semiTransparentColor2;
+      return theme.neutralColor;
     case MouseState::Pressed:
-      return theme.semiTransparentColor4;
+      return theme.neutralColorHovered;
     default:
-      return theme.semiTransparentColorTransparent;
+      return theme.neutralColorTransparent;
   }
 }
 

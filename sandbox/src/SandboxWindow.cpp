@@ -4,10 +4,13 @@
 #include "SandboxWindow.hpp"
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
+#include <oclero/qlementine/style/ThemeManager.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
+#include <oclero/qlementine/utils/IconUtils.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
@@ -50,10 +53,24 @@
 #include <QDateTimeEdit>
 #include <QPlainTextEdit>
 #include <QTextEdit>
+#include <QFontComboBox>
 
 #include <random>
 
 namespace oclero::qlementine::sandbox {
+
+static QIcon getTestQIcon(const QSize& size = { 16, 16 }, bool colored = false) {
+  if (size.height() == 24) {
+    return QIcon(":/sandbox/test_image_24x24.svg");
+  } else {
+    return colored ? QIcon(":/sandbox/test_image_color_16x16.svg") : QIcon(":/sandbox/test_image_16x16.svg");
+  }
+}
+
+// static QIcon makeQIcon(Icons16 id, const QSize& size = { 16, 16 }) {
+//   return oclero::qlementine::makeThemedIcon(id, size);
+// }
+
 class ContextMenuEventFilter : public QObject {
 private:
   std::function<bool(QContextMenuEvent* evt)> _cb;
@@ -206,8 +223,17 @@ protected:
 };
 
 struct SandboxWindow::Impl {
-  Impl(SandboxWindow& o)
-    : owner(o) {}
+  SandboxWindow& owner;
+  QPointer<ThemeManager> themeManager{ nullptr };
+
+  QWidget* windowContent{ nullptr };
+  QBoxLayout* windowContentLayout{ nullptr };
+  QScrollArea* globalScrollArea{ nullptr };
+  QToolBar* toolbar{ nullptr };
+
+  Impl(SandboxWindow& o, ThemeManager* themeManager)
+    : owner(o)
+    , themeManager(themeManager) {}
 
   void beginSetupUI() {
     // Create a scrollarea to wrap everything §the window can be quite huge).
@@ -243,20 +269,16 @@ struct SandboxWindow::Impl {
       }
     });
 
-    auto* themeShortcut = new QShortcut(Qt::CTRL | Qt::Key_T, &owner);
-    themeShortcut->setAutoRepeat(false);
-    themeShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
-    QObject::connect(themeShortcut, &QShortcut::activated, themeShortcut, [this]() {
-      const auto light = QStringLiteral(":/light.json");
-      const auto dark = QStringLiteral(":/dark.json");
-      if (lastJsonThemePath == dark) {
-        lastJsonThemePath = light;
-        qlementineStyle->setThemeJsonPath(light);
-      } else {
-        lastJsonThemePath = dark;
-        qlementineStyle->setThemeJsonPath(dark);
-      }
-    });
+    if (themeManager) {
+      auto* themeShortcut = new QShortcut(Qt::CTRL | Qt::Key_T, &owner);
+      themeShortcut->setAutoRepeat(false);
+      themeShortcut->setContext(Qt::ShortcutContext::ApplicationShortcut);
+      QObject::connect(themeShortcut, &QShortcut::activated, themeShortcut, [this]() {
+        if (themeManager) {
+          themeManager->setNextTheme();
+        }
+      });
+    }
 
     auto* focusShortcut = new QShortcut(Qt::CTRL | Qt::Key_F, &owner);
     focusShortcut->setAutoRepeat(false);
@@ -336,7 +358,7 @@ struct SandboxWindow::Impl {
   void setupUI_button() {
     auto* button = new QPushButton(windowContent);
     button->setText("Button with a very long text that can be elided");
-    button->setIcon(QIcon(":/refresh.svg"));
+    button->setIcon(getTestQIcon());
     button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     button->setDefault(true);
     windowContentLayout->addWidget(button);
@@ -354,7 +376,7 @@ struct SandboxWindow::Impl {
     {
       // Icon, fixed size
       auto* button = new QPushButton(windowContent);
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(getTestQIcon());
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       windowContentLayout->addWidget(button);
     }
@@ -362,7 +384,7 @@ struct SandboxWindow::Impl {
       // Text+Icon, fixed size
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(getTestQIcon());
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       windowContentLayout->addWidget(button);
     }
@@ -370,7 +392,7 @@ struct SandboxWindow::Impl {
       // Text+Icon+Menu, fixed size
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(getTestQIcon());
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
       auto* menu = new QMenu(button);
@@ -390,21 +412,21 @@ struct SandboxWindow::Impl {
     {
       // Icon, expanding size.
       auto* button = new QPushButton(windowContent);
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(getTestQIcon());
       windowContentLayout->addWidget(button);
     }
     {
       // Text+Icon, expanding size.
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(getTestQIcon());
       windowContentLayout->addWidget(button);
     }
     {
       // Text+Icon+Menu, expanding size
       auto* button = new QPushButton(windowContent);
       button->setText("Button");
-      button->setIcon(QIcon(":/refresh.svg"));
+      button->setIcon(getTestQIcon());
 
       auto* menu = new QMenu("ButtonMenu");
       for (auto i = 0; i < 3; ++i) {
@@ -422,7 +444,7 @@ struct SandboxWindow::Impl {
       const auto tristate = i > 1;
 
       checkbox->setChecked(checked);
-      checkbox->setIcon(QIcon(":/refresh.svg"));
+      checkbox->setIcon(getTestQIcon());
       checkbox->setText(QString("%1 checkbox %2 with a very long text").arg(tristate ? "Tristate" : "Normal").arg(i));
       checkbox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       checkbox->setTristate(tristate);
@@ -436,7 +458,7 @@ struct SandboxWindow::Impl {
     for (auto i = 0; i < 2; ++i) {
       auto* radiobutton = new QRadioButton(windowContent);
       radiobutton->setChecked(true);
-      radiobutton->setIcon(QIcon(":/refresh.svg"));
+      radiobutton->setIcon(getTestQIcon());
       radiobutton->setText(QString("RadioButton %1 with a very long text").arg(i));
       radiobutton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       radioGroup->addButton(radiobutton);
@@ -446,21 +468,19 @@ struct SandboxWindow::Impl {
 
   void setupUI_commandLinkButton() {
     {
-      const QIcon icon(":/plus_24.svg");
       auto* button = new CommandLinkButton(windowContent);
       button->setText("First Line with a very long text that should be cropped");
       button->setDescription("Second Line that could be very long and should be cropped");
-      button->setIcon(icon);
+      button->setIcon(getTestQIcon({ 24, 24 }));
       button->setDefault(true);
       button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       windowContentLayout->addWidget(button);
     }
     {
-      const QIcon icon(":/plus_24.svg");
       auto* button = new CommandLinkButton(windowContent);
       button->setText("First Line with a very long text that should be cropped");
       button->setDescription("Second Line that could be very long and should be cropped");
-      button->setIcon(icon);
+      button->setIcon(getTestQIcon({ 24, 24 }));
       button->setDefault(false);
       button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       windowContentLayout->addWidget(button);
@@ -586,7 +606,7 @@ struct SandboxWindow::Impl {
       combobox->setEditable(true);
 
       for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(QIcon(":/refresh.svg"), QString("Editable comboBox item %1").arg(i));
+        combobox->addItem(getTestQIcon(), QString("Editable comboBox item %1").arg(i));
       }
       auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
       auto* item = model->item(2);
@@ -597,15 +617,22 @@ struct SandboxWindow::Impl {
     // Non-editable
     {
       auto* combobox = new QComboBox(windowContent);
-      combobox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      combobox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       combobox->setFocusPolicy(Qt::StrongFocus);
 
       for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(QIcon(":/refresh.svg"), QString("ComboBox item %1").arg(i));
+        combobox->addItem(getTestQIcon(), QString("ComboBox item %1").arg(i));
       }
 
       windowContentLayout->addWidget(combobox);
     }
+  }
+
+  void setupUI_fontComboBox() {
+    auto* combobox = new QFontComboBox(windowContent);
+    combobox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    combobox->setFocusPolicy(Qt::StrongFocus);
+    windowContentLayout->addWidget(combobox);
   }
 
   void setupUI_listView() {
@@ -614,9 +641,9 @@ struct SandboxWindow::Impl {
     //listView->setAlternatingRowColors(true);
     listView->setIconSize(QSize(32, 32));
 
-    for (auto i = 0; i < 6; ++i) {
+    for (auto i = 0; i < 2; ++i) {
       auto* item = new QListWidgetItem(
-        QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
+        getTestQIcon(), QString("Item #%1 with very long text that can be elided").arg(i), listView);
       item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
       item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
       //item->setForeground(i % 2 ? Qt::red : Qt::blue);
@@ -626,7 +653,6 @@ struct SandboxWindow::Impl {
     windowContentLayout->addWidget(listView);
 
     // Context menu.
-    qDebug() << listView->contextMenuPolicy();
     listView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     QObject::connect(listView, &QListView::customContextMenuRequested, listView, [listView](const QPoint& pos) {
       if (const auto item = listView->itemAt(pos)) {
@@ -660,7 +686,6 @@ struct SandboxWindow::Impl {
     constexpr auto rowCount = 3;
     tableView->setColumnCount(columnCount);
     tableView->setRowCount(rowCount);
-    const QIcon icon(":/scene_object.svg");
 
     std::vector<Qt::Alignment> columnAlignments;
     columnAlignments.resize(columnCount);
@@ -671,21 +696,21 @@ struct SandboxWindow::Impl {
 
     for (auto col = 0; col < columnCount; ++col) {
       auto* item = new QTableWidgetItem(QString("Column %1").arg(col + 1));
-      item->setIcon(icon);
+      item->setIcon(getTestQIcon({ 16, 16 }, true));
       item->setTextAlignment(columnAlignments.at(col));
       tableView->setHorizontalHeaderItem(col, item);
     }
 
     for (auto row = 0; row < rowCount; ++row) {
       auto* item = new QTableWidgetItem(QString("Row %1").arg(row + 1));
-      item->setIcon(icon);
+      item->setIcon(getTestQIcon({ 16, 16 }, true));
       tableView->setVerticalHeaderItem(row, item);
     }
 
     for (auto row = 0; row < rowCount; ++row) {
       for (auto col = 0; col < columnCount; ++col) {
         auto* item = new QTableWidgetItem(QString("Item at %1, %2").arg(row + 1).arg(col + 1));
-        item->setIcon(icon);
+        item->setIcon(getTestQIcon({ 16, 16 }, true));
         item->setTextAlignment(columnAlignments.at(col));
         item->setFlags(Qt::ItemFlag::ItemIsEditable | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
         item->setData(Qt::DisplayRole, QVariant::fromValue(true));
@@ -703,37 +728,39 @@ struct SandboxWindow::Impl {
     treeWidget->setColumnCount(1);
     treeWidget->setHeaderHidden(true);
     treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    qlementineStyle->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
+
+    oclero::qlementine::appStyle()->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
 
     for (auto i = 0; i < 3; ++i) {
       auto* root = new QTreeWidgetItem(treeWidget);
       root->setText(0, QString("Root %1").arg(i + 1));
-      root->setIcon(0, QIcon(":/scene_object.svg"));
+      root->setIcon(0, getTestQIcon({ 16, 16 }, true));
       root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
 
       for (auto j = 0; j < 3; ++j) {
         auto* child = new QTreeWidgetItem(root);
         child->setText(0, QString("Child %1 of Root %2").arg(j).arg(i));
-        child->setIcon(0, j == 2 ? QIcon(":/scene_light.svg") : QIcon(":/scene_object.svg"));
+        child->setIcon(0, getTestQIcon({ 16, 16 }, true));
         child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j).arg(i));
 
         for (auto k = 0; k < 3; ++k) {
           auto* subChild = new QTreeWidgetItem(child);
           subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
-          subChild->setIcon(0, QIcon(":/scene_material.svg"));
+          subChild->setIcon(0, getTestQIcon({ 16, 16 }, true));
           subChild->setText(1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
         }
       }
     }
 
-    treeWidget->topLevelItem(0)->setSelected(true), windowContentLayout->addWidget(treeWidget);
+    treeWidget->topLevelItem(0)->setSelected(true);
+    windowContentLayout->addWidget(treeWidget);
   }
 
   void setupUI_menuBar() const {
     auto* menuBar = owner.menuBar();
     // NB: it looks like MacOS' native menu bar has an issue with QIcon, so we have to force
     // it to generate icons for High-DPI screens.
-    const auto icon = makeIconFromSvg(":/refresh.svg", owner.iconSize());
+    const auto icon = getTestQIcon();
 
     for (auto i = 0; i < 5; ++i) {
       auto* menu = menuBar->addMenu(QString("Menu &%1").arg(i));
@@ -776,14 +803,14 @@ struct SandboxWindow::Impl {
 
   void setupUI_toolButton() {
     auto* toolButton = new QToolButton(toolbar);
-    toolButton->setIcon(QIcon(":/refresh.svg"));
+    toolButton->setIcon(getTestQIcon());
     toolButton->setText(QString("Button with a very long text that can be elided"));
     toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     toolButton->setCheckable(false);
     toolButton->setChecked(false);
 
     {
-      const auto icon = QIcon(":/refresh.svg");
+      const auto icon = getTestQIcon();
       auto* subMenu = new QMenu("Menu title", toolButton);
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, "Sub Action 1");
@@ -797,7 +824,7 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_toolButtonsVariants() {
-    const auto icon = QIcon(":/refresh.svg");
+    const auto icon = getTestQIcon();
 
     toolbar = owner.addToolBar("ToolBar name");
     //toolbar->set
@@ -884,11 +911,10 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_tabBar() {
-    const QIcon icon(":/scene_object.svg");
     auto* tabBar = new QTabBar(windowContent);
     tabBar->setFocusPolicy(Qt::NoFocus);
     tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    qlementineStyle->setAutoIconColor(tabBar, oclero::qlementine::AutoIconColor::None);
+    oclero::qlementine::appStyle()->setAutoIconColor(tabBar, oclero::qlementine::AutoIconColor::None);
 
     // QTabBar features.
     tabBar->setTabsClosable(true);
@@ -909,7 +935,7 @@ struct SandboxWindow::Impl {
       const auto tabText = QString(tabTextList.join(" ").append(QString(" %1").arg(i + 1)));
 
       if (i % 3 == 0) {
-        tabBar->addTab(icon, tabText);
+        tabBar->addTab(getTestQIcon({ 16, 16 }, true), tabText);
       } else {
         tabBar->addTab(tabText);
       }
@@ -935,7 +961,6 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_tabWidget() {
-    const QStringList icons = { ":/scene_object.svg", ":/scene_light.svg", ":/scene_material.svg" };
     auto* tabWidget = new QTabWidget(windowContent);
 
     tabWidget->setDocumentMode(false);
@@ -964,7 +989,7 @@ struct SandboxWindow::Impl {
         tabTextList.append("Tab");
       }
       const auto tabText = QString(tabTextList.join(" ").append(QString(" %1").arg(i + 1)));
-      const auto icon = QIcon(icons.at(i % icons.size()));
+      const auto icon = getTestQIcon();
       tabWidget->addTab(tabContent, icon, tabText);
     }
   }
@@ -1067,24 +1092,24 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       treeWidget->setHeaderHidden(true);
       treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
       treeWidget->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-      qlementineStyle->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
+      oclero::qlementine::appStyle()->setAutoIconColor(treeWidget, oclero::qlementine::AutoIconColor::None);
 
       for (auto i = 0; i < 3; ++i) {
         auto* root = new QTreeWidgetItem(treeWidget);
         root->setText(0, QString("Root %1").arg(i + 1));
-        root->setIcon(0, QIcon(":/scene_object.svg"));
+        root->setIcon(0, getTestQIcon({ 16, 16 }, true));
         root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
 
         for (auto j = 0; j < 3; ++j) {
           auto* child = new QTreeWidgetItem(root);
           child->setText(0, QString("Child %1 of Root %2").arg(j).arg(i));
-          child->setIcon(0, j == 2 ? QIcon(":/scene_light.svg") : QIcon(":/scene_object.svg"));
+          child->setIcon(0, getTestQIcon({ 16, 16 }, true));
           child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j).arg(i));
 
           for (auto k = 0; k < 3; ++k) {
             auto* subChild = new QTreeWidgetItem(child);
             subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
-            subChild->setIcon(0, QIcon(":/scene_material.svg"));
+            subChild->setIcon(0, getTestQIcon({ 16, 16 }, true));
             subChild->setText(1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
           }
         }
@@ -1102,7 +1127,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
       for (auto i = 0; i < 3; ++i) {
         auto* item = new QListWidgetItem(
-          QIcon(":/refresh.svg"), QString("Item #%1 with very long text that can be elided").arg(i), listView);
+          getTestQIcon(), QString("Item #%1 with very long text that can be elided").arg(i), listView);
         item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
         item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
 
@@ -1120,7 +1145,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       tableView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
       tableView->setColumnCount(columnCount);
       tableView->setRowCount(rowCount);
-      QIcon icon(":/refresh.svg");
+      auto icon = getTestQIcon();
       auto* headerItem = new QTableWidgetItem(icon, "A veeeeeery long header label");
       tableView->setHorizontalHeaderItem(0, headerItem);
       tableView->setSelectionBehavior(QTableView::SelectionBehavior::SelectRows);
@@ -1151,29 +1176,54 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContent->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     {
       auto* container = new CustomBgWidget(windowContent);
+      container->bgColor = QColor{ 255, 0, 0, 10 };
+      container->borderColor = QColor{ 255, 0, 0, 40 };
       auto* containerLayout = new QVBoxLayout(container);
       containerLayout->setContentsMargins(10, 10, 10, 10);
       container->setLayout(containerLayout);
 
       auto* expander = new Expander(container);
+      expander->setOrientation(Qt::Orientation::Horizontal);
       auto* expanderContent = new CustomBgWidget(expander);
-      expanderContent->bgColor = QColor{ 255, 127, 0 };
+      expanderContent->bgColor = QColor{ 0, 0, 255, 40 };
+      expanderContent->borderColor = QColor{ 0, 0, 255, 127 };
       expanderContent->customSizeHint = QSize{ 150, 100 };
       expanderContent->showBounds = true;
       expander->setContent(expanderContent);
 
       auto* checkBox = new QCheckBox("Expanded", container);
+      checkBox->setChecked(expander->expanded());
       QObject::connect(checkBox, &QCheckBox::toggled, &owner, [expander](bool checked) {
         expander->setExpanded(checked);
       });
 
-      auto* button = new QPushButton("Increase content height", container);
-      QObject::connect(button, &QPushButton::clicked, &owner, [expanderContent]() {
-        expanderContent->customSizeHint.rheight() += 20;
+      auto* vLayout = new QVBoxLayout();
+      auto* buttonGroup = new QButtonGroup(windowContent);
+      for (auto orientation : { Qt::Vertical, Qt::Horizontal }) {
+        auto* radioButton = new QRadioButton(orientation == Qt::Vertical ? "Vertical" : "Horizontal", container);
+        radioButton->setChecked(orientation == expander->orientation());
+        buttonGroup->addButton(radioButton);
+        vLayout->addWidget(radioButton);
+        QObject::connect(radioButton, &QRadioButton::toggled, &owner, [expander, orientation](bool checked) {
+          if (checked) {
+            expander->setOrientation(orientation);
+          }
+        });
+      }
+
+      auto* button = new QPushButton("Increase content animated dimension", container);
+      QObject::connect(button, &QPushButton::clicked, &owner, [expanderContent, expander]() {
+        if (expander->orientation() == Qt::Vertical) {
+          expanderContent->customSizeHint.rheight() += 20;
+        } else {
+          expanderContent->customSizeHint.rwidth() += 20;
+        }
         expanderContent->updateGeometry();
       });
+
       containerLayout->addWidget(checkBox);
       containerLayout->addWidget(button);
+      containerLayout->addLayout(vLayout);
       containerLayout->addWidget(expander);
 
       windowContentLayout->addWidget(container);
@@ -1320,7 +1370,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_navigationBar() {
-    const QIcon dummyIcon(":/refresh.svg");
+    const auto dummyIcon = getTestQIcon();
 
     auto* navBar = new NavigationBar(windowContent);
     for (auto i = 0; i < 3; ++i) {
@@ -1336,7 +1386,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_switch() {
-    const QIcon dummyIcon(":/refresh.svg");
+    const auto dummyIcon = getTestQIcon();
     auto* switchWidget = new Switch(windowContent);
     switchWidget->setText("Label of the Switch");
     switchWidget->setIcon(dummyIcon);
@@ -1435,7 +1485,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_lineEditStatus() {
-    const QIcon dummyIcon(":/refresh.svg");
+    const auto dummyIcon = getTestQIcon();
 
     auto* lineEdit = new LineEdit(windowContent);
     lineEdit->setText("Label of the Switch");
@@ -1553,77 +1603,65 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     windowContentLayout->addWidget(plainWidget);
   }
-
-  SandboxWindow& owner;
-  QString lastJsonThemePath;
-  QPointer<QlementineStyle> qlementineStyle;
-
-  QWidget* windowContent{ nullptr };
-  QBoxLayout* windowContentLayout{ nullptr };
-  QScrollArea* globalScrollArea{ nullptr };
-  QToolBar* toolbar{ nullptr };
 };
 
-SandboxWindow::SandboxWindow(QWidget* parent)
+SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
   : QMainWindow(parent)
-  , _impl(new Impl(*this)) {
-  setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
+  , _impl(new Impl(*this, themeManager)) {
+  setWindowIcon(QIcon(QStringLiteral(":/sandbox/qlementine_icon.ico")));
 
   _impl->beginSetupUI();
   {
     // Uncomment the line to show the corresponding widget.
-    //      _impl->setupUI_label();
-    //      _impl->setupUI_button();
-    //      _impl->setupUI_buttonVariants();
-    //      _impl->setupUI_checkbox();
-    //      _impl->setupUI_radioButton();
-    //      _impl->setupUI_commandLinkButton();
-    //      _impl->setupUI_sliderAndProgressBar();
-    //      _impl->setupUI_sliderWithTicks();
-    //      _impl->setupUI_lineEdit();
-    //      _impl->setupUI_textEdit();
-    //      _impl->setupUI_plainTextEdit();
-    //      _impl->setupUI_dial();
-    //      _impl->setupUI_spinBox();
-    //      _impl->setupUI_comboBox();
-    //      _impl->setupUI_listView();
-    //      _impl->setupUI_treeWidget();
-    //      _impl->setupUI_table();
-    //      _impl->setupUI_menuBar();
-    //      _impl->setupUI_toolButton();
-    //      _impl->setupUI_toolButtonsVariants();
-    //      _impl->setupUI_tabBar();
-    //      _impl->setupUI_tabWidget();
-    //      _impl->setupUI_groupBox();
-    //      _impl->setupUI_treeView();
-    //      _impl->setupUI_focus();
-    //      _impl->setupUI_specialProgressBar();
-    //      _impl->setupUI_lineEditStatus();
-    //      _impl->setupUI_dateTimeEdit();
-    //      _impl->setupUI_contextMenu();
+    // _impl->setupUI_label();
+    // _impl->setupUI_button();
+    // _impl->setupUI_buttonVariants();
+    // _impl->setupUI_checkbox();
+    // _impl->setupUI_radioButton();
+    // _impl->setupUI_commandLinkButton();
+    // _impl->setupUI_sliderAndProgressBar();
+    // _impl->setupUI_sliderWithTicks();
+    // _impl->setupUI_lineEdit();
+    // _impl->setupUI_textEdit();
+    // _impl->setupUI_plainTextEdit();
+    // _impl->setupUI_dial();
+    // _impl->setupUI_spinBox();
+    // _impl->setupUI_comboBox();
+    // _impl->setupUI_listView();
+    // _impl->setupUI_treeWidget();
+    // _impl->setupUI_table();
+    // _impl->setupUI_menuBar();
+    // _impl->setupUI_toolButton();
+    // _impl->setupUI_toolButtonsVariants();
+    // _impl->setupUI_tabBar();
+    // _impl->setupUI_tabWidget();
+    // _impl->setupUI_groupBox();
+    // _impl->setupUI_treeView();
+    // _impl->setupUI_focus();
+    // _impl->setupUI_specialProgressBar();
+    // _impl->setupUI_lineEditStatus();
+    // _impl->setupUI_dateTimeEdit();
+    // _impl->setupUI_contextMenu();
+    // _impl->setupUI_fontComboBox();
 
-    //      _impl->setupUI_switch();
-    //      _impl->setupUI_expander();
-    //      _impl->setupUI_popover();
-    //      _impl->setupUI_navigationBar();
-    //      _impl->setupUI_badge();
-    //      _impl->setupUI_colorButton();
+    // _impl->setupUI_switch();
+    // _impl->setupUI_expander();
+    // _impl->setupUI_popover();
+    // _impl->setupUI_navigationBar();
+    // _impl->setupUI_badge();
+    // _impl->setupUI_colorButton();
+    // _impl->setupUI_messageBoxIcons();
 
-    //      _impl->setupUI_messageBoxIcons();
-    //      _impl->setupUI_fontMetricsTests();
-    //      _impl->setupUI_blur();
-    //      _impl->setupUI_themeEditor();
-    //      _impl->setupUI_messageBox();
+    // _impl->setupUI_fontMetricsTests();
+    // _impl->setupUI_blur();
+    // _impl->setupUI_themeEditor();
+    // _impl->setupUI_messageBox();
   }
   _impl->endSetupUI();
+  oclero::qlementine::centerWidget(this);
 }
 
 SandboxWindow::~SandboxWindow() = default;
-
-void SandboxWindow::setCustomStyle(QlementineStyle* style) {
-  _impl->qlementineStyle = style;
-  _impl->lastJsonThemePath = QStringLiteral(":/light.json");
-}
 
 bool SandboxWindow::eventFilter(QObject* watched, QEvent* event) {
   if (event->type() == QEvent::Type::Close) {

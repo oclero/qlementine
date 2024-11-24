@@ -122,7 +122,9 @@ void Switch::enterEvent(QEnterEvent* e) {
 
 void Switch::changeEvent(QEvent* e) {
   QAbstractButton::changeEvent(e);
-  if (e->type() == QEvent::Type::EnabledChange) {
+  const auto type = e->type();
+  if (type == QEvent::Type::EnabledChange || type == QEvent::Type::PaletteChange
+      || type == QEvent::Type::ApplicationPaletteChange) {
     startAnimation();
   }
 }

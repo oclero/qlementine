@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="/showcase">
+    <file>icons/cube-green.svg</file>
+    <file>icons/cube-red.svg</file>
+    <file>icons/cube-yellow.svg</file>
+    <file>themes/dark.json</file>
+    <file>themes/light.json</file>
+    <file>qlementine_icon.ico</file>
+    <file>qlementine_icon.icns</file>
+  </qresource>
+</RCC>

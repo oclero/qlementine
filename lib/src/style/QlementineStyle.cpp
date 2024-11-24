@@ -14,6 +14,7 @@
 #include <oclero/qlementine/utils/StyleUtils.hpp>
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
+#include <oclero/qlementine/utils/IconUtils.hpp>
 #include <oclero/qlementine/style/Delegates.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 #include <oclero/qlementine/widgets/RoundedFocusFrame.hpp>
@@ -52,11 +53,18 @@
 #include <QWindow>
 #include <QPlainTextEdit>
 #include <QTextEdit>
+#include <QSpinBox>
+#include <QFontComboBox>
 
 #include <cmath>
 #include <mutex>
 
 namespace oclero::qlementine {
+
+QlementineStyle* appStyle() {
+  return qobject_cast<QlementineStyle*>(qApp->style());
+}
+
 /// Used to initializeResources from .qrc only once.
 std::once_flag qlementineOnceFlag;
 
@@ -211,20 +219,42 @@ struct QlementineStyleImpl {
     return QMargins(paddingLeft, paddingTop, paddingRight, paddingBottom);
   }
 
+  /// Makes an IconTheme from the Theme.
+  IconTheme iconThemeFromTheme(ColorRole role = ColorRole::Secondary) const {
+    switch (role) {
+      case ColorRole::Primary:
+        return {
+          owner.iconForegroundColor(MouseState::Normal, ColorRole::Primary),
+          owner.iconForegroundColor(MouseState::Hovered, ColorRole::Primary),
+          owner.iconForegroundColor(MouseState::Pressed, ColorRole::Primary),
+          owner.iconForegroundColor(MouseState::Disabled, ColorRole::Primary),
+        };
+      case ColorRole::Secondary:
+      default:
+        return {
+          owner.iconForegroundColor(MouseState::Normal, ColorRole::Secondary),
+          owner.iconForegroundColor(MouseState::Hovered, ColorRole::Secondary),
+          owner.iconForegroundColor(MouseState::Pressed, ColorRole::Secondary),
+          owner.iconForegroundColor(MouseState::Disabled, ColorRole::Secondary),
+        };
+    }
+  }
+
   QlementineStyle& owner;
-  Theme theme;
+  Theme theme{};
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
   WidgetAnimationManager animations;
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
   std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
-  bool useMenuForComboBoxPopup{ false };
   AutoIconColor autoIconColor{ AutoIconColor::None };
+  std::function<QString(QString)> iconPathFunc;
 };
 
 QlementineStyle::QlementineStyle(QObject* parent)
   : _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
+  triggerCompleteRepaint();
 }
 
 QlementineStyle::~QlementineStyle() = default;
@@ -243,8 +273,10 @@ void QlementineStyle::setTheme(Theme const& theme) {
 }
 
 void QlementineStyle::setThemeJsonPath(QString const& jsonPath) {
-  const auto theme = Theme(jsonPath);
-  setTheme(theme);
+  const auto themeOpt = Theme::fromJsonPath(jsonPath);
+  if (themeOpt.has_value()) {
+    setTheme(themeOpt.value());
+  }
 }
 
 bool QlementineStyle::animationsEnabled() const {
@@ -256,17 +288,6 @@ void QlementineStyle::setAnimationsEnabled(bool enabled) {
     _impl->animations.setEnabled(enabled);
     emit animationsEnabledChanged();
     triggerCompleteRepaint();
-  }
-}
-
-bool QlementineStyle::useMenuForComboBoxPopup() const {
-  return _impl->useMenuForComboBoxPopup;
-}
-
-void QlementineStyle::setUseMenuForComboBoxPopup(bool useMenu) {
-  if (useMenu != _impl->useMenuForComboBoxPopup) {
-    _impl->useMenuForComboBoxPopup = useMenu;
-    emit useMenuForComboBoxPopupChanged();
   }
 }
 
@@ -336,21 +357,22 @@ QPixmap QlementineStyle::getColorizedPixmap(
   return input;
 }
 
-QIcon QlementineStyle::makeIcon(const QString& svgPath) {
-  QIcon result;
-  QPixmap pixmap(svgPath);
+QIcon QlementineStyle::makeThemedIcon(const QString& svgPath, const QSize& size, ColorRole role) const {
+  const auto iconTheme = _impl->iconThemeFromTheme(role);
+  return makeIconFromSvg(svgPath, iconTheme, size);
+}
 
-  result.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
-  result.addPixmap(pixmap, QIcon::Disabled, QIcon::Off);
-  result.addPixmap(pixmap, QIcon::Active, QIcon::Off);
-  result.addPixmap(pixmap, QIcon::Selected, QIcon::Off);
+QIcon QlementineStyle::makeThemedIconFromName(const QString& name, const QSize& size, ColorRole role) const {
+  if (_impl->iconPathFunc) {
+    const auto iconPath = _impl->iconPathFunc(name);
+    return makeThemedIcon(iconPath, size, role);
+  } else {
+    return QIcon::fromTheme(name);
+  }
+}
 
-  result.addPixmap(pixmap, QIcon::Normal, QIcon::On);
-  result.addPixmap(pixmap, QIcon::Disabled, QIcon::On);
-  result.addPixmap(pixmap, QIcon::Active, QIcon::On);
-  result.addPixmap(pixmap, QIcon::Selected, QIcon::On);
-
-  return result;
+void QlementineStyle::setIconPathGetter(const std::function<QString(QString)>& func) {
+  _impl->iconPathFunc = func;
 }
 
 /* QStyle overrides. */
@@ -405,8 +427,17 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameMenu:
       return; // Let PE_PanelMenu do the drawing.
-    case PE_FrameStatusBarItem:
-      break;
+    case PE_FrameStatusBarItem: {
+      const auto rect = opt->rect;
+      const auto penColor = _impl->theme.borderColor;
+      const auto penWidth = _impl->theme.borderWidth;
+      const auto p1 = QPoint{ rect.x() + 1 + penWidth, rect.y() + rect.x() };
+      const auto p2 = QPoint{ rect.x() + 1 + penWidth, rect.y() + rect.height() };
+      p->setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+      p->setBrush(Qt::NoBrush);
+      p->drawLine(p1, p2);
+    }
+      return;
     case PE_FrameTabWidget: {
       // QTabWidget.cpp, line 1296, in QTabWidget::paintEvent():
       // The widget does not draw the Tab bar background unless it's in
@@ -417,8 +448,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto* tabBar = tabWidget ? tabWidget->tabBar() : nullptr;
       if (!documentMode && tabBar) {
         // Draw a border around the content.
+        const auto mouse = getMouseState(opt->state);
         const auto radius = _impl->theme.borderRadius * 1.5;
-        const auto& borderColor = tabBarBackgroundColor();
+        const auto borderColor = tabBarBackgroundColor(mouse);
         const auto borderW = _impl->theme.borderWidth;
         drawRoundedRectBorder(
           p, opt->rect.adjusted(0, -borderW, 0, 0), borderColor, borderW, RadiusesF(0., 0., radius, radius));
@@ -458,11 +490,13 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     }
     case PE_FrameTabBarBase:
       if (const auto* optTabBar = qstyleoption_cast<const QStyleOptionTabBarBase*>(opt)) {
+        const auto mouse = getMouseState(opt->state);
+        const auto& bgColor = tabBarBackgroundColor(mouse);
         if (optTabBar->documentMode) {
-          p->fillRect(opt->rect, tabBarBackgroundColor());
+          p->fillRect(opt->rect, bgColor);
         } else {
           const auto radius = _impl->theme.borderRadius * 1.5;
-          drawRoundedRect(p, opt->rect, tabBarBackgroundColor(), RadiusesF(radius, radius, 0., 0.));
+          drawRoundedRect(p, opt->rect, bgColor, RadiusesF(radius, radius, 0., 0.));
         }
       }
       return;
@@ -798,7 +832,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
       // Filled rectangle below scroll buttons.
       // We need to fill the whole surface to ensure tabs are not visible below.
-      const auto& tabBarBgColor = tabBarBackgroundColor();
+      const auto mouse = getMouseState(opt->state);
+      const auto& tabBarBgColor = tabBarBackgroundColor(mouse);
       const auto filledRect = QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
       drawRoundedRect(p, filledRect, tabBarBgColor, documentMode ? 0. : RadiusesF(0., radius, 0., 0.));
     }
@@ -1399,6 +1434,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           }
 
           // Icon.
+          const auto iconSpace = optMenuItem->maxIconWidth > 0 ? optMenuItem->maxIconWidth + spacing : 0;
           const auto pixmap = getPixmap(optMenuItem->icon, _impl->theme.iconSize, mouse, checkState, w);
           if (!pixmap.isNull()) {
             const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor);
@@ -1409,11 +1445,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto pixmapY = fgRect.y() + (fgRect.height() - pixmapH) / 2;
             const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
             p->drawPixmap(pixmapRect, colorizedPixmap);
-
-            const auto taken = pixmapW + spacing;
-            availableW -= taken;
-            availableX += taken;
           }
+          availableW -= iconSpace;
+          availableX += iconSpace;
 
           // Shortcut text.
           if (!shortcut.isEmpty()) {
@@ -1789,33 +1823,39 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       break;
     case CE_SizeGrip:
       break;
-    case CE_Splitter:
-      break;
-    case CE_RubberBand:
-      break;
-    case CE_DockWidgetTitle:
-      break;
-    case CE_ScrollBarAddLine:
-      // TODO
-      break;
-    case CE_ScrollBarSubLine:
-      // TODO
-      break;
-    case CE_ScrollBarAddPage:
-      // TODO
-      break;
-    case CE_ScrollBarSubPage:
-      // TODO
-      break;
-    case CE_ScrollBarSlider:
-      // TODO
-      break;
-    case CE_ScrollBarFirst:
-      // TODO
-      break;
-    case CE_ScrollBarLast:
-      // TODO
-      break;
+    case CE_Splitter: {
+      const auto mouse = getMouseState(opt->state);
+      const auto& lineColor = splitterColor(mouse);
+      // const auto currentLineColor = _impl->animations.animateBackgroundColor(w, lineColor, _impl->theme.animationDuration);
+      const auto line_rect = opt->rect.adjusted(-1, 0, 1, 0);
+      p->fillRect(line_rect, lineColor);
+    }
+      return;
+    // case CE_RubberBand:
+    //   break;
+    // case CE_DockWidgetTitle:
+    //   break;
+    // case CE_ScrollBarAddLine:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarSubLine:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarAddPage:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarSubPage:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarSlider:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarFirst:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarLast:
+    //   // TODO
+    //   break;
     case CE_FocusFrame:
       if (const auto* focusFrame = qobject_cast<const QFocusFrame*>(w)) {
         const auto* monitoredWidget = focusFrame->widget();
@@ -2828,11 +2868,13 @@ void QlementineStyle::drawComplexControl(
 
             // Draw an opaque background to hide tabs below.
             const auto isLeftButton = toolbuttonOpt->arrowType == Qt::ArrowType::LeftArrow;
+            const auto tabBarState = parentTabBar->isEnabled() ? MouseState::Normal : MouseState::Disabled;
             if (parentTabBar->documentMode() || isLeftButton) {
-              p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor());
+              p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor(tabBarState));
             } else {
               const auto bgRadius = _impl->theme.borderRadius * 1.5;
-              drawRoundedRect(p, toolbuttonOpt->rect, tabBarBackgroundColor(), RadiusesF(0., bgRadius, 0., 0.));
+              drawRoundedRect(
+                p, toolbuttonOpt->rect, tabBarBackgroundColor(tabBarState), RadiusesF(0., bgRadius, 0., 0.));
             }
 
             // Rect.
@@ -3261,7 +3303,9 @@ QRect QlementineStyle::subControlRect(
             if (comboBoxOpt->editable) {
               const auto indicatorSize = _impl->theme.iconSize;
               const auto spacing = _impl->theme.spacing;
-              if (qobject_cast<const QComboBox*>(w) != nullptr) {
+              const auto isBasicComboBox =
+                qobject_cast<const QComboBox*>(w) != nullptr && qobject_cast<const QFontComboBox*>(w) == nullptr;
+              if (isBasicComboBox) {
                 // Strange hack to place the QLineEdit correctly.
                 const auto indicatorButtonW = spacing * 2 + indicatorSize.width();
                 const auto shiftX = static_cast<int>(spacing * 2.5);
@@ -3284,8 +3328,17 @@ QRect QlementineStyle::subControlRect(
             const auto frameY = comboBoxOpt->rect.y() + (comboBoxOpt->rect.height() - frameH) / 2;
             return QRect{ frameX, frameY, frameW, frameH };
           } break;
-          case SC_ComboBoxListBoxPopup:
-            return opt->rect;
+          case SC_ComboBoxListBoxPopup: {
+            const auto contentMarginH = pixelMetric(PM_MenuHMargin);
+            const auto contentMarginV = pixelMetric(PM_MenuVMargin);
+            const auto shadowWidth = _impl->theme.spacing;
+            const auto borderWidth = _impl->theme.borderWidth;
+            const auto width = std::max(opt->rect.width(), w->width());
+            const auto height = opt->rect.height() + 12; // Not possible to change height here.
+            const auto x = opt->rect.x() - shadowWidth - borderWidth - contentMarginH;
+            const auto y = opt->rect.y() - shadowWidth - borderWidth - contentMarginV / 2; // TODO remove hardcoded
+            return { x, y, width, height };
+          } break;
           default:
             break;
         }
@@ -3858,10 +3911,12 @@ QSize QlementineStyle::sizeFromContents(
       break;
     case CT_SpinBox:
       if (const auto* optSpinbox = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
+        const auto isDateTimeEdit = qobject_cast<const QDateTimeEdit*>(widget) != nullptr;
         const auto hasButtons = optSpinbox->buttonSymbols != QAbstractSpinBox::NoButtons;
-        const auto buttonW = hasButtons ? _impl->theme.controlHeightLarge : 0;
+        const auto buttonW = isDateTimeEdit || hasButtons ? _impl->theme.controlHeightLarge : 0;
+        const auto dateTimeWidth = isDateTimeEdit ? _impl->theme.iconSize.width() : 0;
         const auto borderW = optSpinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, opt, widget) : 0;
-        return QSize{ contentSize.width() + buttonW + 2 * borderW, _impl->theme.controlHeightLarge };
+        return QSize{ contentSize.width() + buttonW + dateTimeWidth + 2 * borderW, _impl->theme.controlHeightLarge };
       }
       break;
     case CT_SizeGrip:
@@ -4039,8 +4094,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // Splitter.
     case PM_SplitterWidth:
-      break;
-
+      return 1;
     // TitleBar.
     case PM_TitleBarHeight:
       break;
@@ -4054,9 +4108,11 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
       // Scroller is the part where the user can click to scroll the menu when it is too big.
       return _impl->theme.controlHeightSmall;
     case PM_MenuHMargin:
-    case PM_MenuVMargin:
+    case PM_MenuVMargin: {
       // Keep some space between the items and the frame.
-      return _impl->theme.spacing;
+      const auto borderW = qobject_cast<const QMenu*>(w) ? 1 : 0;
+      return _impl->theme.spacing / 2 + borderW;
+    }
     case PM_MenuPanelWidth:
       // Keep some space for drop shadow.
       return _impl->theme.spacing;
@@ -4337,17 +4393,13 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_ComboBox_ListMouseTracking:
       return true;
     case SH_ComboBox_Popup:
-      // This changes the way the dropdown popup behaves.
-      // A different QItemDelegate will be used to size/draw the items.
-      // - true: not animated, uses QComboBoxMenuDelegate, that calls QStyle::drawControl(CE_MenuItem)
-      // - false: animated, uses QComboBoxDelegate, that just calls QItemDelegate::sizeHint()/paint()
-      return _impl->useMenuForComboBoxPopup;
+      return true;
     case SH_ComboBox_LayoutDirection:
       break;
     case SH_ComboBox_PopupFrameStyle:
       return QFrame::StyledPanel | QFrame::Plain;
-    case SH_ComboBox_UseNativePopup: // Only on MacOS.
-      return true;
+    case SH_ComboBox_UseNativePopup:
+      return false;
     case SH_ComboBox_AllowWheelScrolling:
       return false;
 
@@ -4455,7 +4507,7 @@ int QlementineStyle::styleHint(StyleHint sh, const QStyleOption* opt, const QWid
     case SH_LineEdit_PasswordCharacter:
       return QChar(0x2022).unicode(); // Bullet.
     case SH_LineEdit_PasswordMaskDelay:
-      return 200;
+      return 0;
 
     // FocusFrame
     case SH_FocusFrame_AboveWidget:
@@ -4530,144 +4582,6 @@ QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, 
     case SP_ArrowRight:
     case SP_LineEditClearButton:
       return _impl->getStandardIcon(sp, _impl->theme.iconSize);
-      //    case SP_TitleBarMenuButton:
-      //      break;
-      //    case SP_TitleBarMinButton:
-      //      break;
-      //    case SP_TitleBarMaxButton:
-      //      break;
-      //    case SP_TitleBarCloseButton:
-      //      break;
-      //    case SP_TitleBarNormalButton:
-      //      break;
-      //    case SP_TitleBarShadeButton:
-      //      break;
-      //    case SP_TitleBarUnshadeButton:
-      //      break;
-      //    case SP_TitleBarContextHelpButton:
-      //      break;
-      //    case SP_DockWidgetCloseButton:
-      //      break;
-      //    case SP_DesktopIcon:
-      //      break;
-      //    case SP_TrashIcon:
-      //      break;
-      //    case SP_ComputerIcon:
-      //      break;
-      //    case SP_DriveFDIcon:
-      //      break;
-      //    case SP_DriveHDIcon:
-      //      break;
-      //    case SP_DriveCDIcon:
-      //      break;
-      //    case SP_DriveDVDIcon:
-      //      break;
-      //    case SP_DriveNetIcon:
-      //      break;
-      //    case SP_DirOpenIcon:
-      //      break;
-      //    case SP_DirClosedIcon:
-      //      break;
-      //    case SP_DirLinkIcon:
-      //      break;
-      //    case SP_DirLinkOpenIcon:
-      //      break;
-      //    case SP_FileIcon:
-      //      break;
-      //    case SP_FileLinkIcon:
-      //      break;
-      //    case SP_FileDialogStart:
-      //      break;
-      //    case SP_FileDialogEnd:
-      //      break;
-      //    case SP_FileDialogToParent:
-      //      break;
-      //    case SP_FileDialogNewFolder:
-      //      break;
-      //    case SP_FileDialogDetailedView:
-      //      break;
-      //    case SP_FileDialogInfoView:
-      //      break;
-      //    case SP_FileDialogContentsView:
-      //      break;
-      //    case SP_FileDialogListView:
-      //      break;
-      //    case SP_FileDialogBack:
-      //      break;
-      //    case SP_DirIcon:
-      //      break;
-      //    case SP_DialogOkButton:
-      //      break;
-      //    case SP_DialogCancelButton:
-      //      break;
-      //    case SP_DialogHelpButton:
-      //      break;
-      //    case SP_DialogOpenButton:
-      //      break;
-      //    case SP_DialogSaveButton:
-      //      break;
-      //    case SP_DialogCloseButton:
-      //      break;
-      //    case SP_DialogApplyButton:
-      //      break;
-      //    case SP_DialogResetButton:
-      //      break;
-      //    case SP_DialogDiscardButton:
-      //      break;
-      //    case SP_DialogYesButton:
-      //      break;
-      //    case SP_DialogNoButton:
-      //      break;
-      //    case SP_DialogYesToAllButton:
-      //      break;
-      //    case SP_DialogNoToAllButton:
-      //      break;
-      //    case SP_DialogSaveAllButton:
-      //      break;
-      //    case SP_DialogAbortButton:
-      //      break;
-      //    case SP_DialogRetryButton:
-      //      break;
-      //    case SP_DialogIgnoreButton:
-      //      break;
-      //    case SP_ArrowUp:
-      //      break;
-      //    case SP_ArrowDown:
-      //      break;
-      //    case SP_ArrowBack:
-      //      break;
-      //    case SP_ArrowForward:
-      //      break;
-      //    case SP_DirHomeIcon:
-      //      break;
-      //    case SP_CommandLink:
-      //      break;
-      //    case SP_VistaShield:
-      //      break;
-      //    case SP_BrowserReload:
-      //      break;
-      //    case SP_BrowserStop:
-      //      break;
-      //    case SP_MediaPlay:
-      //      break;
-      //    case SP_MediaStop:
-      //      break;
-      //    case SP_MediaPause:
-      //      break;
-      //    case SP_MediaSkipForward:
-      //      break;
-      //    case SP_MediaSkipBackward:
-      //      break;
-      //    case SP_MediaSeekForward:
-      //      break;
-      //    case SP_MediaSeekBackward:
-      //      break;
-      //    case SP_MediaVolume:
-      //      break;
-      //    case SP_MediaVolumeMuted:
-      //      break;
-      //    case SP_RestoreDefaultsButton:
-      //      break;
     default:
       break;
   }
@@ -4700,6 +4614,8 @@ void QlementineStyle::polish(QApplication* app) {
   QCommonStyle::polish(app);
   app->setFont(_impl->theme.fontRegular);
   //app->installEventFilter(new AppEventFilter(app));
+
+  QApplication::setAttribute(Qt::ApplicationAttribute::AA_DontShowIconsInMenus, false);
 }
 
 void QlementineStyle::unpolish(QApplication* app) {
@@ -4724,7 +4640,7 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Special case for the Qt-private buttons in a QLineEdit.
   if (w->inherits("QLineEditIconButton")) {
-    w->installEventFilter(new LineEditButtonEventFilter(*this, _impl->animations, qobject_cast<QToolButton*>(w)));
+    w->installEventFilter(new LineEditButtonEventFilter(this, _impl->animations, qobject_cast<QToolButton*>(w)));
     w->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     // Fix hardcoded width in qlineedit_p.cpp:493
     w->setFixedSize(_impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium);
@@ -4778,25 +4694,26 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   // Try to remove the background...
-  if (auto* itemView = qobject_cast<QAbstractItemView*>(w)) {
-    auto* parent = itemView->parentWidget();
-    auto isComboBoxPopupContainer = parent && parent->inherits("QComboBoxPrivateContainer");
+  if (auto* itemView = qobject_cast<QListView*>(w)) {
+    auto* popup = itemView->parentWidget();
+    auto isComboBoxPopupContainer = popup && popup->inherits("QComboBoxPrivateContainer");
     if (isComboBoxPopupContainer) {
-      itemView->setBackgroundRole(QPalette::NoRole);
-      itemView->viewport()->setBackgroundRole(QPalette::NoRole);
-      parent->setBackgroundRole(QPalette::NoRole);
-      parent->setAutoFillBackground(false);
-      parent->setAttribute(Qt::WA_TranslucentBackground, true);
-      parent->setAttribute(Qt::WA_OpaquePaintEvent, false);
-      parent->setAttribute(Qt::WA_NoSystemBackground, true);
-      itemView->installEventFilter(new ComboboxItemViewFilter(itemView));
-      if (auto* scrollArea = parent->findChild<QAbstractScrollArea*>()) {
-        scrollArea->setBackgroundRole(QPalette::NoRole);
-        scrollArea->setAutoFillBackground(false);
-        scrollArea->setAttribute(Qt::WA_TranslucentBackground, true);
-        scrollArea->setAttribute(Qt::WA_OpaquePaintEvent, false);
-        scrollArea->setAttribute(Qt::WA_NoSystemBackground, true);
-      }
+      popup->setAttribute(Qt::WA_TranslucentBackground, true);
+      popup->setAttribute(Qt::WA_OpaquePaintEvent, false);
+      popup->setAttribute(Qt::WA_NoSystemBackground, true);
+      popup->setWindowFlag(Qt::FramelessWindowHint, true);
+      popup->setWindowFlag(Qt::NoDropShadowWindowHint, true);
+      popup->setProperty("_q_windowsDropShadow", false);
+
+      // Same shadow as QMenu.
+      const auto shadowWidth = _impl->theme.spacing;
+      const auto borderWidth = _impl->theme.borderWidth;
+      const auto margin = shadowWidth + borderWidth;
+      popup->layout()->setContentsMargins(margin, margin, margin, margin);
+
+      itemView->viewport()->setAutoFillBackground(false);
+      auto* comboBox = findFirstParentOfType<QComboBox>(itemView);
+      itemView->installEventFilter(new ComboboxItemViewFilter(comboBox, itemView));
     }
   }
 
@@ -4860,6 +4777,12 @@ void QlementineStyle::polish(QWidget* w) {
     if (auto* viewport = textEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
       viewport->setAutoFillBackground(false);
     }
+  }
+
+  if (auto* lineEdit = qobject_cast<QLineEdit*>(w)) {
+    lineEdit->installEventFilter(new LineEditMenuEventFilter(lineEdit));
+  } else if (auto* spinBox = qobject_cast<QSpinBox*>(w)) {
+    spinBox->installEventFilter(new LineEditMenuEventFilter(spinBox));
   }
 }
 
@@ -5561,8 +5484,8 @@ QColor const& QlementineStyle::menuBarItemForegroundColor(MouseState const mouse
   }
 }
 
-QColor const& QlementineStyle::tabBarBackgroundColor() const {
-  return _impl->theme.backgroundColorMain3;
+QColor const& QlementineStyle::tabBarBackgroundColor(MouseState const mouse) const {
+  return mouse == MouseState::Disabled ? _impl->theme.backgroundColorMain3 : _impl->theme.backgroundColorTabBar;
 }
 
 QColor const& QlementineStyle::tabBarShadowColor() const {
@@ -5575,18 +5498,21 @@ QColor const& QlementineStyle::tabBarBottomShadowColor() const {
 
 QColor const& QlementineStyle::tabBackgroundColor(MouseState const mouse, SelectionState const selected) const {
   const auto isSelected = selected == SelectionState::Selected;
+  const auto& selectedTabColor = _impl->theme.backgroundColorMain2;
+  const auto& hoverTabColor = _impl->theme.neutralColor;
+  const auto& defaultTabColor = _impl->theme.backgroundColorMainTransparent;
 
   switch (mouse) {
     case MouseState::Hovered:
-      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.neutralColorPressed;
+      return isSelected ? selectedTabColor : hoverTabColor;
     case MouseState::Pressed:
-      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.secondaryColorPressed;
+      return _impl->theme.backgroundColorMain2;
     case MouseState::Normal:
-      return isSelected ? _impl->theme.backgroundColorMain2 : _impl->theme.neutralColorTransparent;
+      return isSelected ? selectedTabColor : defaultTabColor;
     case MouseState::Disabled:
     case MouseState::Transparent:
     default:
-      return _impl->theme.neutralColorTransparent;
+      return defaultTabColor;
   }
 }
 
@@ -5792,6 +5718,14 @@ QColor const& QlementineStyle::labelCaptionForegroundColor(MouseState const mous
     return _impl->theme.secondaryAlternativeColor;
 }
 
+QColor const& QlementineStyle::iconForegroundColor(MouseState const mouse, ColorRole const role) const {
+  if (mouse == MouseState::Disabled)
+    return role == ColorRole::Primary ? _impl->theme.primaryColorForegroundDisabled
+                                      : _impl->theme.secondaryColorForegroundDisabled;
+  else
+    return role == ColorRole::Primary ? _impl->theme.primaryColorForeground : _impl->theme.secondaryColorForeground;
+}
+
 QColor const& QlementineStyle::toolBarBackgroundColor() const {
   return _impl->theme.backgroundColorMain2;
 }
@@ -5855,8 +5789,13 @@ QColor const& QlementineStyle::groupBoxTitleColor(MouseState const mouse, const 
   return labelForegroundColor(mouse, w);
 }
 
-QColor const& QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
-  return mouse == MouseState::Disabled ? _impl->theme.neutralColorTransparent : _impl->theme.neutralColorDisabled;
+QColor QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
+  if (mouse == MouseState::Disabled) {
+    return _impl->theme.backgroundColorMainTransparent;
+  } else {
+    return getColorSourceOver(_impl->theme.backgroundColorMain2,
+      colorWithAlphaF(_impl->theme.backgroundColorMain3, _impl->theme.backgroundColorMain3.alphaF() * .75));
+  }
 }
 
 QColor const& QlementineStyle::groupBoxBorderColor(MouseState const mouse) const {
@@ -6089,5 +6028,19 @@ QColor const& QlementineStyle::statusBarBorderColor() const {
 
 QColor const& QlementineStyle::statusBarSeparatorColor() const {
   return _impl->theme.secondaryColorDisabled;
+}
+
+QColor const& QlementineStyle::splitterColor(const MouseState mouse) const {
+  switch (mouse) {
+    case MouseState::Normal:
+      return _impl->theme.borderColor;
+    case MouseState::Hovered:
+      return _impl->theme.primaryColor;
+    case MouseState::Pressed:
+      return _impl->theme.primaryColorPressed;
+    case MouseState::Disabled:
+    default:
+      return _impl->theme.borderColorTransparent;
+  }
 }
 } // namespace oclero::qlementine

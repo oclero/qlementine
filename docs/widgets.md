@@ -6,7 +6,7 @@ More information about them coming soon. You can check them in the Sandbox appli
 
 ## AbstractItemListWidget
 
-Base class for [`NavigationBar`](#navigation-bar) and [`SegmentedControl`](#segmented-control).
+Base class for [`NavigationBar`](#navigationbar) and [`SegmentedControl`](#segmentedcontrol).
 
 ## Action
 
@@ -80,13 +80,13 @@ Improves `QFocusFrame` by adding a corner radius property.
 
 A widget that allows to switch between a range of elements, such as seen on iOS or macOS.
 
-![SegmentedControl](assets/images/widgets/segmentedcontrol)
+![SegmentedControl](assets/images/widgets/segmentedcontrol.png)
 
 ## StatusBadgeWidget
 
 Widget to display a status icon: info, warning, error, success. Available in two standard sizes.
 
-![StatusBadgeWidget](assets/images/widgets/badges)
+![StatusBadgeWidget](assets/images/widgets/badges.png)
 
 ## Switch
 

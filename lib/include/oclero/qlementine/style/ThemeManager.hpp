@@ -29,6 +29,8 @@ public:
   const std::vector<Theme>& themes() const;
   void addTheme(const Theme& theme);
 
+  void loadDirectory(const QString& path);
+
   QString currentTheme() const;
   void setCurrentTheme(const QString& key);
   Q_SIGNAL void currentThemeChanged();
@@ -43,8 +45,6 @@ public:
 
   int currentThemeIndex() const;
   void setCurrentThemeIndex(int index);
-
-  QString getLocalizedThemeName(const QString& baseThemeName) const;
 
 private:
   void synchronizeThemeOnStyle();

@@ -7,15 +7,14 @@
 
 namespace oclero::qlementine {
 class QlementineStyle;
-}
+class ThemeManager;
+} // namespace oclero::qlementine
 
 namespace oclero::qlementine::sandbox {
 class SandboxWindow : public QMainWindow {
 public:
-  SandboxWindow(QWidget* parent = nullptr);
+  SandboxWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
   ~SandboxWindow();
-
-  void setCustomStyle(QlementineStyle* style);
 
   bool eventFilter(QObject* watched, QEvent* event) override;
 

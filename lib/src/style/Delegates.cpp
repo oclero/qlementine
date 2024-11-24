@@ -21,8 +21,11 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
   const auto& theme = _qlementineStyle ? _qlementineStyle->theme() : Theme{};
 
   const auto isSeparator = idx.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
+  const auto contentMargin = _qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
+  const auto contentRect = opt.rect.marginsRemoved({ contentMargin, 0, contentMargin, 0 });
+
   if (isSeparator) {
-    const auto& rect = opt.rect;
+    const auto& rect = contentRect;
     const auto& color =
       _qlementineStyle ? _qlementineStyle->toolBarSeparatorColor() : Theme().secondaryAlternativeColorDisabled;
     const auto lineW = theme.borderWidth;
@@ -37,11 +40,11 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto mouse = getMenuItemMouseState(opt.state);
 
     // Background.
+    const auto& bgRect = contentRect;
     const auto hPadding = theme.spacing;
-    const auto& bgRect = opt.rect;
     const auto& bgColor =
       _qlementineStyle ? _qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
-    constexpr auto radius = 0;
+    const auto radius = _qlementineStyle->theme().borderRadius - contentMargin / 2;
     p->setRenderHint(QPainter::Antialiasing, true);
     p->setPen(Qt::NoPen);
     p->setBrush(bgColor);
@@ -128,8 +131,9 @@ QSize ComboBoxDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIn
     const auto h = theme.spacing + theme.borderWidth;
     return QSize{ h, h };
   } else {
+    const auto contentMargin = _qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
     const auto hPadding = theme.spacing;
-    const auto vPadding = theme.spacing / 2;
+    const auto vPadding = theme.spacing;
     const auto iconSize = theme.iconSize;
     const auto spacing = theme.spacing;
     const auto& fm = opt.fontMetrics;
@@ -142,7 +146,7 @@ QSize ComboBoxDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIn
       iconVariant.isValid() && iconVariant.userType() == QMetaType::QIcon ? iconVariant.value<QIcon>() : QIcon{};
     const auto textW = qlementine::textWidth(fm, text);
     const auto iconW = !icon.isNull() ? iconSize.width() + spacing : 0;
-    const auto w = std::max(0, hPadding + iconW + textW + hPadding);
+    const auto w = std::max(0, contentMargin * 2 + hPadding + iconW + textW + hPadding);
     const auto h = std::max(theme.controlHeightMedium, std::max(iconSize.height(), vPadding) + vPadding);
     return QSize{ w, h };
   }

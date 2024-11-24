@@ -13,7 +13,9 @@
       "generator": "Xcode",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6"
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6",
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
       },
       "condition": {
         "type": "equals",
@@ -28,7 +30,9 @@
       "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2022_64"
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2022_64",
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
       },
       "condition": {
         "type": "equals",
@@ -42,6 +46,10 @@
       "description": "Makefile for Linux",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/_build",
+      "cacheVariables": {
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
+      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -54,9 +62,8 @@
       "name": "macos",
       "displayName": "macOS",
       "configurePreset": "macos",
-      "description": "Release build with Xcode for macOS",
+      "description": "Build with Xcode for macOS",
       "targets": ["qlementine"],
-      "configuration": "Release",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -67,9 +74,20 @@
       "name": "macos-sandbox",
       "displayName": "Sandbox for macOS",
       "configurePreset": "macos",
-      "description": "Sandbox - Release build with Xcode for macOS",
+      "description": "Sandbox - Build with Xcode for macOS",
       "targets": ["sandbox"],
-      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "macos-showcase",
+      "displayName": "Showcase for macOS",
+      "configurePreset": "macos",
+      "description": "Showcase - Build with Xcode for macOS",
+      "targets": ["showcase"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -80,9 +98,8 @@
       "name": "windows",
       "displayName": "Windows",
       "configurePreset": "windows",
-      "description": "Release build with Visual Studio for Windows",
+      "description": "Build with Visual Studio for Windows",
       "targets": ["qlementine"],
-      "configuration": "Release",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -93,9 +110,20 @@
       "name": "windows-sandbox",
       "displayName": "Sandbox for Windows",
       "configurePreset": "windows",
-      "description": "Sandbox - Release build with Visual Studio for Windows",
+      "description": "Sandbox - Build with Visual Studio for Windows",
       "targets": ["sandbox"],
-      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-showcase",
+      "displayName": "Showcase for Windows",
+      "configurePreset": "windows",
+      "description": "Showcase - Build with Visual Studio for Windows",
+      "targets": ["showcase"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -106,9 +134,8 @@
       "name": "linux",
       "displayName": "Linux",
       "configurePreset": "linux",
-      "description": "Release build for Linux",
+      "description": "Build for Linux",
       "targets": ["qlementine"],
-      "configuration": "Release",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -119,9 +146,20 @@
       "name": "linux-sandbox",
       "displayName": "Sandbox for Linux",
       "configurePreset": "linux",
-      "description": "Sandbox - Release build for Linux",
+      "description": "Sandbox - Build for Linux",
       "targets": ["sandbox"],
-      "configuration": "Release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-showcase",
+      "displayName": "Showcase for Linux",
+      "configurePreset": "linux",
+      "description": "Showcase - Build for Linux",
+      "targets": ["showcase"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",

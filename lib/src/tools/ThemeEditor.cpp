@@ -220,8 +220,12 @@ struct ThemeEditor::Impl {
         // Get theme from file and set it on the application.
         const auto fileName =
           QFileDialog::getOpenFileName(&owner, "Load JSON theme", previousPath, "JSON Files (*.json)");
-        const auto theme = Theme(fileName);
-        owner.setTheme(theme);
+        const auto themeOpt = Theme::fromJsonPath(fileName);
+        if (!themeOpt.has_value()) {
+          return;
+        }
+
+        owner.setTheme(themeOpt.value());
 
         // Save path to QSettings.
         settings.setValue(PREVIOUS_PATH_SETTINGS_KEY, fileName);

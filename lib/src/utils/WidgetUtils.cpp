@@ -61,18 +61,6 @@ void centerWidget(QWidget* widget, QWidget* host) {
   }
 }
 
-QMargins getDefaultMargins(const QStyle* style) {
-  if (!style)
-    return { 0, 0, 0, 0 };
-
-  const auto paddingLeft = style->pixelMetric(QStyle::PM_LayoutLeftMargin);
-  const auto paddingRight = style->pixelMetric(QStyle::PM_LayoutRightMargin);
-  const auto paddingTop = style->pixelMetric(QStyle::PM_LayoutTopMargin);
-  const auto paddingBottom = style->pixelMetric(QStyle::PM_LayoutBottomMargin);
-  const auto contentsMargins = QMargins{ paddingLeft, paddingTop, paddingRight, paddingBottom };
-  return contentsMargins;
-}
-
 qreal getDpi(const QWidget* widget) {
   if (widget) {
     if (const auto* screen = widget->screen()) {
@@ -89,22 +77,5 @@ QWindow* getWindow(const QWidget* widget) {
     }
   }
   return nullptr;
-}
-
-void clearLayout(QLayout* layout) {
-  if (!layout)
-    return;
-
-  QLayoutItem* item{};
-  while ((item = layout->takeAt(0))) {
-    if (item->layout()) {
-      clearLayout(item->layout());
-      delete item->layout();
-    }
-    if (item->widget()) {
-      delete item->widget();
-    }
-    delete item;
-  }
 }
 } // namespace oclero::qlementine

@@ -5,6 +5,7 @@
 
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
+#include <oclero/qlementine/utils/IconUtils.hpp>
 
 #include <QCommonStyle>
 
@@ -20,8 +21,6 @@ class QlementineStyle : public QCommonStyle {
   Q_OBJECT
 
   Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled NOTIFY animationsEnabledChanged)
-  Q_PROPERTY(bool useMenuForComboBoxPopup READ useMenuForComboBoxPopup WRITE setUseMenuForComboBoxPopup NOTIFY
-      useMenuForComboBoxPopupChanged)
 
 public:
   enum class StandardPixmapExt {
@@ -60,10 +59,6 @@ public:
   void setAnimationsEnabled(bool enabled);
   Q_SIGNAL void animationsEnabledChanged();
 
-  bool useMenuForComboBoxPopup() const;
-  void setUseMenuForComboBoxPopup(bool useMenu);
-  Q_SIGNAL void useMenuForComboBoxPopupChanged();
-
   void triggerCompleteRepaint();
 
   void setAutoIconColor(AutoIconColor autoIconColor);
@@ -74,7 +69,15 @@ public:
 
   QPixmap getColorizedPixmap(
     const QPixmap& input, AutoIconColor autoIconColor, const QColor& fgcolor, const QColor& textColor) const;
-  static QIcon makeIcon(const QString& svgPath);
+
+  QIcon makeThemedIcon(
+    const QString& svgPath, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
+
+  QIcon makeThemedIconFromName(
+    const QString& name, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
+
+  // Allows to customize quickly the way QlementineStyle gets its icons. SVG paths preferred.
+  void setIconPathGetter(const std::function<QString(QString)>& func);
 
 public: // QStyle overrides.
   void drawPrimitive(
@@ -204,7 +207,7 @@ public: // Theme-related methods.
   virtual QColor const& menuBarItemBackgroundColor(MouseState const mouse, SelectionState const selected) const;
   virtual QColor const& menuBarItemForegroundColor(MouseState const mouse, SelectionState const selected) const;
 
-  virtual QColor const& tabBarBackgroundColor() const;
+  virtual QColor const& tabBarBackgroundColor(MouseState const mouse) const;
   virtual QColor const& tabBarShadowColor() const;
   virtual QColor const& tabBarBottomShadowColor() const;
   virtual QColor const& tabBackgroundColor(MouseState const mouse, SelectionState const selected) const;
@@ -237,6 +240,8 @@ public: // Theme-related methods.
   virtual QColor const& labelForegroundColor(MouseState const mouse, const QWidget* w = nullptr) const;
   virtual QColor const& labelCaptionForegroundColor(MouseState const mouse) const;
 
+  virtual QColor const& iconForegroundColor(MouseState const mouse, ColorRole const role) const;
+
   virtual QColor const& toolBarBackgroundColor() const;
   virtual QColor const& toolBarBorderColor() const;
   virtual QColor const& toolBarSeparatorColor() const;
@@ -251,7 +256,7 @@ public: // Theme-related methods.
 
   virtual QColor const& groupBoxTitleColor(MouseState const mouse, const QWidget* w = nullptr) const;
   virtual QColor const& groupBoxBorderColor(MouseState const mouse) const;
-  virtual QColor const& groupBoxBackgroundColor(MouseState const mouse) const;
+  virtual QColor groupBoxBackgroundColor(MouseState const mouse) const;
 
   virtual QColor const& statusColor(Status const status, MouseState const mouse) const;
   virtual QColor focusBorderColor(Status status) const;
@@ -281,7 +286,11 @@ public: // Theme-related methods.
   virtual QColor const& statusBarBorderColor() const;
   virtual QColor const& statusBarSeparatorColor() const;
 
+  virtual QColor const& splitterColor(MouseState const mouse) const;
+
 private:
   std::unique_ptr<QlementineStyleImpl> _impl;
 };
+
+QlementineStyle* appStyle();
 } // namespace oclero::qlementine
