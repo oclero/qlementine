@@ -5,6 +5,7 @@
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/style/ThemeManager.hpp>
+#include <oclero/qlementine/icons/QlementineIcons.hpp>
 
 #include "ShowcaseWindow.hpp"
 
@@ -26,19 +27,19 @@ int main(int argc, char* argv[]) {
   QApplication::setWindowIcon(QIcon(QStringLiteral(":/showcase/qlementine_icon.ico")));
 
 #if USE_CUSTOM_STYLE
-  oclero::qlementine::ThemeManager* themeManager{ nullptr };
-
   // Custom QStyle.
   auto* style = new oclero::qlementine::QlementineStyle(&qApplication);
   style->setAnimationsEnabled(true);
   style->setAutoIconColor(oclero::qlementine::AutoIconColor::TextColor);
+  style->setIconPathGetter(oclero::qlementine::icons::fromFreeDesktop);
   qApplication.setStyle(style);
 
   // Custom icon theme.
+  oclero::qlementine::icons::initializeIconTheme();
   QIcon::setThemeName("qlementine");
 
   // Theme manager.
-  themeManager = new oclero::qlementine::ThemeManager(style);
+  auto* themeManager = new oclero::qlementine::ThemeManager(style);
   themeManager->loadDirectory(":/showcase/themes");
 
   // Define theme on QStyle.

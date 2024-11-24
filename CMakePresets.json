@@ -13,7 +13,9 @@
       "generator": "Xcode",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6"
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6",
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
       },
       "condition": {
         "type": "equals",
@@ -28,7 +30,9 @@
       "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2022_64"
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2022_64",
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
       },
       "condition": {
         "type": "equals",
@@ -42,6 +46,10 @@
       "description": "Makefile for Linux",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/_build",
+      "cacheVariables": {
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
+      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",

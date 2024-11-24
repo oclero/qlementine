@@ -12,6 +12,9 @@ ThemeManager::ThemeManager(QObject* parent)
 ThemeManager::ThemeManager(QlementineStyle* style, QObject* parent)
   : QObject(parent) {
   setStyle(style);
+  if (parent == nullptr) {
+    setParent(style);
+  }
 }
 
 QlementineStyle* ThemeManager::style() const {

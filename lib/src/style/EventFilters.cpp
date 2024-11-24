@@ -9,8 +9,6 @@
 #include <oclero/qlementine/utils/MenuUtils.hpp>
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
 
-#include <oclero/qlementine/icons/Icons16.hpp>
-
 #include <QMouseEvent>
 #include <QWidget>
 #include <QLineEdit>
@@ -522,45 +520,48 @@ class LineEditMenuIconsBehavior : public QObject {
   };
 
   static std::vector<QIcon> iconList(IconListMode mode) {
-    using Icons16 = icons::Icons16;
+    const auto* qlem = oclero::qlementine::appStyle();
+    if (!qlem)
+      return {};
+
     // The order follows the one defined QLineEdit.cpp and QSpinBox.cpp (Qt6).
     switch (mode) {
       case IconListMode::LineEdit:
         return {
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_Undo),
-          makeThemedIcon(Icons16::Action_Redo),
+          qlem->makeThemedIconFromName("edit-undo"),
+          qlem->makeThemedIconFromName("edit-redo"),
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_Cut),
-          makeThemedIcon(Icons16::Action_Copy),
-          makeThemedIcon(Icons16::Action_Paste),
-          makeThemedIcon(Icons16::Action_Erase),
+          qlem->makeThemedIconFromName("edit-cut"),
+          qlem->makeThemedIconFromName("edit-copy"),
+          qlem->makeThemedIconFromName("edit-paste"),
+          qlem->makeThemedIconFromName("edit-delete"),
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_SelectAll),
+          qlem->makeThemedIconFromName("edit-select-all"),
         };
       case IconListMode::ReadOnlyLineEdit:
         return {
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_Copy),
+          qlem->makeThemedIconFromName("edit-copy"),
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_SelectAll),
+          qlem->makeThemedIconFromName("edit-select-all"),
         };
       case IconListMode::SpinBox:
         return {
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_Undo),
-          makeThemedIcon(Icons16::Action_Redo),
+          qlem->makeThemedIconFromName("edit-undo"),
+          qlem->makeThemedIconFromName("edit-redo"),
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_Cut),
-          makeThemedIcon(Icons16::Action_Copy),
-          makeThemedIcon(Icons16::Action_Paste),
-          makeThemedIcon(Icons16::Action_Erase),
+          qlem->makeThemedIconFromName("edit-cut"),
+          qlem->makeThemedIconFromName("edit-copy"),
+          qlem->makeThemedIconFromName("edit-paste"),
+          qlem->makeThemedIconFromName("edit-delete"),
           QIcon(), // Separator
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Action_SelectAll),
+          qlem->makeThemedIconFromName("edit-select-all"),
           QIcon(), // Separator
-          makeThemedIcon(Icons16::Navigation_ChevronUp),
-          makeThemedIcon(Icons16::Navigation_ChevronDown),
+          qlem->makeThemedIconFromName("go-up"),
+          qlem->makeThemedIconFromName("go-down"),
         };
       default:
         return {};
@@ -582,12 +583,15 @@ class LineEditMenuIconsBehavior : public QObject {
     const auto actions = _menu->findChildren<QAction*>();
     if (!actions.empty()) {
       const auto icons = iconList(getMode(_menu));
-      for (auto i = 0; i < static_cast<int>(icons.size()) && i < static_cast<int>(actions.size()); ++i) {
-        if (auto* action = actions.at(i)) {
-          action->setIcon(icons.at(i));
+      if (!icons.empty()) {
+        for (auto i = 0; i < static_cast<int>(icons.size()) && i < static_cast<int>(actions.size()); ++i) {
+          if (auto* action = actions.at(i)) {
+            action->setIcon(icons.at(i));
+          }
         }
       }
     }
+    _menu->adjustSize();
   }
 
 public:

@@ -25,20 +25,15 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setApplicationVersion("1.0.0");
   QApplication::setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
 
-  // Set custom QStyle.
 #if USE_CUSTOM_STYLE
-  oclero::qlementine::ThemeManager* themeManager{ nullptr };
-
+  // Set custom QStyle.
   auto* style = new oclero::qlementine::QlementineStyle(&qApplication);
   style->setAnimationsEnabled(true);
   style->setAutoIconColor(oclero::qlementine::AutoIconColor::TextColor);
   qApplication.setStyle(style);
 
-  // Custom icon theme.
-  QIcon::setThemeName("qlementine");
-
   // Theme manager.
-  themeManager = new oclero::qlementine::ThemeManager(style);
+  auto* themeManager = new oclero::qlementine::ThemeManager(style);
   themeManager->loadDirectory(":/showcase/themes");
 
   // Define theme on QStyle.

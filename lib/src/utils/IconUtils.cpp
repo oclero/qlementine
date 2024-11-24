@@ -8,8 +8,6 @@
 #include <QSvgRenderer>
 #include <QPainter>
 
-#include <utility>
-
 namespace oclero::qlementine {
 IconTheme::IconTheme(const QColor& normal, const QColor& disabled, const QColor& checkedNormal, QColor checkedDisabled)
   : normal(normal)
@@ -93,13 +91,5 @@ QIcon makeIconFromSvg(const QString& svgPath, const IconTheme& iconTheme, const 
   }
 
   return icon;
-}
-
-QIcon makeIconFromSvg(icons::Icons16 id, const QSize& size) {
-  return makeIconFromSvg(icons::iconPath(id), size);
-}
-
-QIcon makeIconFromSvg(icons::Icons16 id, const IconTheme& iconTheme, const QSize& size) {
-  return makeIconFromSvg(icons::iconPath(id), iconTheme, size);
 }
 } // namespace oclero::qlementine

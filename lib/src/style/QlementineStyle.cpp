@@ -23,7 +23,6 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
-#include <oclero/qlementine/icons/QlementineIcons.hpp>
 
 #include "EventFilters.hpp"
 
@@ -64,14 +63,6 @@ namespace oclero::qlementine {
 
 QlementineStyle* appStyle() {
   return qobject_cast<QlementineStyle*>(qApp->style());
-}
-
-QIcon makeThemedIcon(icons::Icons16 id, const QSize& size, ColorRole role) {
-  if (const auto* style = appStyle()) {
-    return style->makeThemedIcon(id, size, role);
-  } else {
-    return makeIconFromSvg(id, size);
-  }
 }
 
 /// Used to initializeResources from .qrc only once.
@@ -256,13 +247,13 @@ struct QlementineStyleImpl {
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
   std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
   AutoIconColor autoIconColor{ AutoIconColor::None };
+  std::function<QString(QString)> iconPathFunc;
 };
 
 QlementineStyle::QlementineStyle(QObject* parent)
   : _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
-  oclero::qlementine::icons::initializeIconTheme();
   triggerCompleteRepaint();
 }
 
@@ -371,9 +362,17 @@ QIcon QlementineStyle::makeThemedIcon(const QString& svgPath, const QSize& size,
   return makeIconFromSvg(svgPath, iconTheme, size);
 }
 
-QIcon QlementineStyle::makeThemedIcon(icons::Icons16 id, const QSize& size, ColorRole role) const {
-  const auto iconTheme = _impl->iconThemeFromTheme(role);
-  return makeIconFromSvg(id, iconTheme, size);
+QIcon QlementineStyle::makeThemedIconFromName(const QString& name, const QSize& size, ColorRole role) const {
+  if (_impl->iconPathFunc) {
+    const auto iconPath = _impl->iconPathFunc(name);
+    return makeThemedIcon(iconPath, size, role);
+  } else {
+    return QIcon::fromTheme(name);
+  }
+}
+
+void QlementineStyle::setIconPathGetter(const std::function<QString(QString)>& func) {
+  _impl->iconPathFunc = func;
 }
 
 /* QStyle overrides. */
@@ -1832,31 +1831,31 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       p->fillRect(line_rect, lineColor);
     }
       return;
-    case CE_RubberBand:
-      break;
-    case CE_DockWidgetTitle:
-      break;
-    case CE_ScrollBarAddLine:
-      // TODO
-      break;
-    case CE_ScrollBarSubLine:
-      // TODO
-      break;
-    case CE_ScrollBarAddPage:
-      // TODO
-      break;
-    case CE_ScrollBarSubPage:
-      // TODO
-      break;
-    case CE_ScrollBarSlider:
-      // TODO
-      break;
-    case CE_ScrollBarFirst:
-      // TODO
-      break;
-    case CE_ScrollBarLast:
-      // TODO
-      break;
+    // case CE_RubberBand:
+    //   break;
+    // case CE_DockWidgetTitle:
+    //   break;
+    // case CE_ScrollBarAddLine:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarSubLine:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarAddPage:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarSubPage:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarSlider:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarFirst:
+    //   // TODO
+    //   break;
+    // case CE_ScrollBarLast:
+    //   // TODO
+    //   break;
     case CE_FocusFrame:
       if (const auto* focusFrame = qobject_cast<const QFocusFrame*>(w)) {
         const auto* monitoredWidget = focusFrame->widget();
@@ -4583,144 +4582,6 @@ QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, 
     case SP_ArrowRight:
     case SP_LineEditClearButton:
       return _impl->getStandardIcon(sp, _impl->theme.iconSize);
-      //    case SP_TitleBarMenuButton:
-      //      break;
-      //    case SP_TitleBarMinButton:
-      //      break;
-      //    case SP_TitleBarMaxButton:
-      //      break;
-      //    case SP_TitleBarCloseButton:
-      //      break;
-      //    case SP_TitleBarNormalButton:
-      //      break;
-      //    case SP_TitleBarShadeButton:
-      //      break;
-      //    case SP_TitleBarUnshadeButton:
-      //      break;
-      //    case SP_TitleBarContextHelpButton:
-      //      break;
-      //    case SP_DockWidgetCloseButton:
-      //      break;
-      //    case SP_DesktopIcon:
-      //      break;
-    case SP_TrashIcon:
-      return makeIconFromSvg(icons::Icons16::Action_Trash, _impl->iconThemeFromTheme(), _impl->theme.iconSize);
-      //    case SP_ComputerIcon:
-      //      break;
-      //    case SP_DriveFDIcon:
-      //      break;
-      //    case SP_DriveHDIcon:
-      //      break;
-      //    case SP_DriveCDIcon:
-      //      break;
-      //    case SP_DriveDVDIcon:
-      //      break;
-      //    case SP_DriveNetIcon:
-      //      break;
-      //    case SP_DirOpenIcon:
-      //      break;
-      //    case SP_DirClosedIcon:
-      //      break;
-      //    case SP_DirLinkIcon:
-      //      break;
-      //    case SP_DirLinkOpenIcon:
-      //      break;
-      //    case SP_FileIcon:
-      //      break;
-      //    case SP_FileLinkIcon:
-      //      break;
-      //    case SP_FileDialogStart:
-      //      break;
-      //    case SP_FileDialogEnd:
-      //      break;
-      //    case SP_FileDialogToParent:
-      //      break;
-      //    case SP_FileDialogNewFolder:
-      //      break;
-      //    case SP_FileDialogDetailedView:
-      //      break;
-      //    case SP_FileDialogInfoView:
-      //      break;
-      //    case SP_FileDialogContentsView:
-      //      break;
-      //    case SP_FileDialogListView:
-      //      break;
-      //    case SP_FileDialogBack:
-      //      break;
-      //    case SP_DirIcon:
-      //      break;
-      //    case SP_DialogOkButton:
-      //      break;
-      //    case SP_DialogCancelButton:
-      //      break;
-      //    case SP_DialogHelpButton:
-      //      break;
-      //    case SP_DialogOpenButton:
-      //      break;
-      //    case SP_DialogSaveButton:
-      //      break;
-      //    case SP_DialogCloseButton:
-      //      break;
-      //    case SP_DialogApplyButton:
-      //      break;
-      //    case SP_DialogResetButton:
-      //      break;
-      //    case SP_DialogDiscardButton:
-      //      break;
-      //    case SP_DialogYesButton:
-      //      break;
-      //    case SP_DialogNoButton:
-      //      break;
-      //    case SP_DialogYesToAllButton:
-      //      break;
-      //    case SP_DialogNoToAllButton:
-      //      break;
-      //    case SP_DialogSaveAllButton:
-      //      break;
-      //    case SP_DialogAbortButton:
-      //      break;
-      //    case SP_DialogRetryButton:
-      //      break;
-      //    case SP_DialogIgnoreButton:
-      //      break;
-      //    case SP_ArrowUp:
-      //      break;
-      //    case SP_ArrowDown:
-      //      break;
-      //    case SP_ArrowBack:
-      //      break;
-      //    case SP_ArrowForward:
-      //      break;
-      //    case SP_DirHomeIcon:
-      //      break;
-      //    case SP_CommandLink:
-      //      break;
-      //    case SP_VistaShield:
-      //      break;
-      //    case SP_BrowserReload:
-      //      break;
-      //    case SP_BrowserStop:
-      //      break;
-      //    case SP_MediaPlay:
-      //      break;
-      //    case SP_MediaStop:
-      //      break;
-      //    case SP_MediaPause:
-      //      break;
-      //    case SP_MediaSkipForward:
-      //      break;
-      //    case SP_MediaSkipBackward:
-      //      break;
-      //    case SP_MediaSeekForward:
-      //      break;
-      //    case SP_MediaSeekBackward:
-      //      break;
-      //    case SP_MediaVolume:
-      //      break;
-      //    case SP_MediaVolumeMuted:
-      //      break;
-      //    case SP_RestoreDefaultsButton:
-      //      break;
     default:
       break;
   }

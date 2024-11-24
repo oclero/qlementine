@@ -72,8 +72,12 @@ public:
 
   QIcon makeThemedIcon(
     const QString& svgPath, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
-  QIcon makeThemedIcon(
-    icons::Icons16 id, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
+
+  QIcon makeThemedIconFromName(
+    const QString& name, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
+
+  // Allows to customize quickly the way QlementineStyle gets its icons. SVG paths preferred.
+  void setIconPathGetter(const std::function<QString(QString)>& func);
 
 public: // QStyle overrides.
   void drawPrimitive(
@@ -289,7 +293,4 @@ private:
 };
 
 QlementineStyle* appStyle();
-
-QIcon makeThemedIcon(icons::Icons16 id, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary);
-
 } // namespace oclero::qlementine

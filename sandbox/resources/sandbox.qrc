@@ -4,10 +4,9 @@
     <file>themes/light.json</file>
     <file>qlementine_icon.ico</file>
     <file>qlementine_icon.icns</file>
-    <file>plus_24.svg</file>
     <file>test_image_16x16.png</file>
-    <file>scene_light.svg</file>
-    <file>scene_material.svg</file>
-    <file>scene_object.svg</file>
+    <file>test_image_16x16.svg</file>
+    <file>test_image_24x24.svg</file>
+    <file>test_image_color_16x16.svg</file>
   </qresource>
 </RCC>

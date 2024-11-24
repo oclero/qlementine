@@ -41,13 +41,14 @@ endif()
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Svg)
 qt_standard_project_setup()
 
-# include(DeployQt)
-
 # The library.
 add_subdirectory(lib)
 
-# Sandbox.
-if(${PROJECT_IS_TOP_LEVEL})
+# Example apps using the lib.
+if(QLEMENTINE_SANDBOX)
   add_subdirectory(sandbox)
+endif()
+
+if(QLEMENTINE_SHOWCASE)
   add_subdirectory(showcase)
 endif()
