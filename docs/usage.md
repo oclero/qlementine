@@ -26,6 +26,26 @@ Define the `QStyle` on your `QApplication`.
 QApplication app(argc, argv);
 
 auto* style = new oclero::qlementine::QlementineStyle(&app);
-style->setThemeJsonPath(":/light.json");
 QApplication::setStyle(style);
+```
+
+## Themes
+
+You may want to use your own JSON theme.
+
+```c++
+style->setThemeJsonPath(":/path/to/your/theme.json");
+```
+
+Additionnally, you can also use `ThemeManager` to handle that for you.
+
+```c++
+// Link a ThemeManager to a QlementineStyle.
+auto* themeManager = new oclero::qlementine::ThemeManager(style);
+
+// Load the directory where you store your own JSON themes.
+themeManager->loadDirectory(":/themes");
+
+// Define theme on QStyle.
+themeManager->setCurrentTheme("Light");
 ```
