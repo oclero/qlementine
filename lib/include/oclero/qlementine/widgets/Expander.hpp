@@ -52,5 +52,6 @@ private:
   Qt::Orientation _orientation{ Qt::Orientation::Vertical };
   QVariantAnimation _animation;
   QPointer<QWidget> _content{ nullptr };
+  QHash<QWidget*, Qt::FocusPolicy> _focusPolicies;
 };
 } // namespace oclero::qlementine
