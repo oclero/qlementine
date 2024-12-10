@@ -72,13 +72,14 @@ bool LineEditButtonEventFilter::eventFilter(QObject* watchedObject, QEvent* evt)
     const auto mouse = getMouseState(pressed, hovered, enabled);
     const auto& theme = _style ? _style->theme() : Theme{};
     const auto rect = _button->rect();
+    const auto palette = _button->style()->standardPalette();
 
     const auto& bgColor =
       _style ? _style->toolButtonBackgroundColor(mouse, ColorRole::Secondary)
-             : _button->style()->standardPalette().color(getPaletteColorGroup(mouse), QPalette::ColorRole::ButtonText);
+             : palette.color(getPaletteColorGroup(mouse), QPalette::ColorRole::ButtonText);
     const auto& fgColor =
       _style ? _style->toolButtonForegroundColor(mouse, ColorRole::Secondary)
-             : _button->style()->standardPalette().color(getPaletteColorGroup(mouse), QPalette::ColorRole::Button);
+             : palette.color(getPaletteColorGroup(mouse), QPalette::ColorRole::Button);
     const auto animationDuration = _style ? _style->theme().animationDuration : 0;
     const auto& currentBgColor = _animManager.animateBackgroundColor(_button, bgColor, animationDuration);
     const auto& currentFgColor = _animManager.animateForegroundColor(_button, fgColor, animationDuration);
