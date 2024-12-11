@@ -109,6 +109,20 @@ void Expander::setExpanded(bool expanded) {
       emit aboutToShrink();
     }
 
+    for (auto* widget : findChildren<QWidget*>()) {
+      if (!_expanded) {
+        _focusPolicies.insert(widget, widget->focusPolicy());
+        widget->setFocusPolicy(Qt::NoFocus);
+        widget->clearFocus();
+      } else if (_focusPolicies.contains(widget)) {
+        widget->setFocusPolicy(_focusPolicies[widget]);
+      }
+    }
+
+    if (_expanded) {
+      _focusPolicies.clear();
+    }
+
     const auto isVertical = _orientation == Qt::Orientation::Vertical;
     const auto current = isVertical ? height() : width();
     const auto contentSizeHint = _content->sizeHint();
@@ -155,6 +169,7 @@ void Expander::setContent(QWidget* content) {
   if (content != _content) {
     if (_content) {
       _content->removeEventFilter(this);
+      _focusPolicies.clear();
       delete _content;
     }
 
@@ -169,6 +184,14 @@ void Expander::setContent(QWidget* content) {
       _content->setParent(this);
       _content->installEventFilter(this);
       _content->setVisible(_expanded);
+
+      if (!_expanded) {
+        for (auto* widget : findChildren<QWidget*>()) {
+          _focusPolicies.insert(widget, widget->focusPolicy());
+          widget->setFocusPolicy(Qt::NoFocus);
+          widget->clearFocus();
+        }
+      }
     }
     updateGeometry();
     emit contentChanged();
