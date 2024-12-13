@@ -383,7 +383,8 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* view)
   : QObject(view)
   , _comboBox(comboBox)
-  , _view(view) {
+  , _view(view)
+  , _initialMaxHeight(view->maximumHeight()) {
   _view->installEventFilter(this);
 
   auto* comboBoxPopup = _view->parentWidget();
@@ -435,11 +436,10 @@ QSize ComboboxItemViewFilter::viewMinimumSizeHint() const {
   // QListView::minimumSizeHint() doesn't give the correct minimumHeight,
   // so we have to compute it.
   const auto rowCount = _view->model()->rowCount();
-  const auto maxHeight = _view->maximumHeight();
   auto height = 0;
-  for (auto i = 0; i < rowCount && height <= maxHeight; ++i) {
+  for (auto i = 0; i < rowCount && height <= _initialMaxHeight; ++i) {
     const auto rowSizeHint = _view->sizeHintForRow(i);
-    height = std::min(maxHeight, height + rowSizeHint);
+    height = std::min(_initialMaxHeight, height + rowSizeHint);
   }
   // It looks like it is OK for the width, though.
   const auto width = _view->sizeHintForColumn(0);

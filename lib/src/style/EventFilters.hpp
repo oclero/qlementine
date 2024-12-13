@@ -84,6 +84,7 @@ private:
   QSize viewMinimumSizeHint() const;
   QComboBox* _comboBox{ nullptr };
   QListView* _view{ nullptr };
+  int _initialMaxHeight{ 0 };
 };
 
 // Works for both QTextEdit and QPlainTextEdit
