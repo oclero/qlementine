@@ -390,6 +390,7 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* v
   auto* comboBoxPopup = _view->parentWidget();
   comboBoxPopup->installEventFilter(this);
 
+  /*
   const auto childWidgets = comboBoxPopup->findChildren<QWidget*>();
   for (auto* child : childWidgets) {
     if (child->inherits("QComboBoxPrivateScroller")) {
@@ -397,6 +398,7 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* v
       child->setVisible(false);
     }
   }
+*/
 
   _comboBox->installEventFilter(this);
 }
@@ -426,7 +428,7 @@ void ComboboxItemViewFilter::fixViewGeometry() {
   const auto borderWidth = qlementineStyle->theme().borderWidth;
   const auto width =
     std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + hMargin * 2 + borderWidth * 2;
-  const auto height = viewMinimumSizeHint().height();
+  const auto height = std::min(800, viewMinimumSizeHint().height());
   _view->setFixedWidth(width);
   _view->setFixedHeight(height);
   _view->parentWidget()->adjustSize();
