@@ -71,6 +71,9 @@ public:
 
 private:
   QMenu* _menu{ nullptr };
+
+  // this is roughly copied from how QMenuPrivate::mouseDown detects whether the mouse is down
+  bool _mousePressed{ false };
 };
 
 class ComboboxItemViewFilter : public QObject {

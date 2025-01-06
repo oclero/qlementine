@@ -312,6 +312,8 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
   switch (type) {
     case QEvent::Type::Show: {
+      _mousePressed = false;
+
       // Place the QMenu correctly by making up for the drop shadow margins.
       // It'll be reset before every show, so we can safely move it every time.
       // Submenus should already be placed correctly, so there's no need to translate their geometry.
@@ -338,7 +340,14 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         });
       }
     } break;
+    case QEvent::Type::MouseMove: {
+      if (static_cast<QMouseEvent*>(evt)->buttons()) {
+        _mousePressed = true;
+      }
+    }
+    break;
     case QEvent::Type::MouseButtonPress: {
+      _mousePressed = true;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
       const auto mousePos = mouseEvt->pos();
       if (const auto* action = _menu->actionAt(mousePos)) {
@@ -350,6 +359,10 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
       }
     } break;
     case QEvent::Type::MouseButtonRelease: {
+      if (!_mousePressed) {
+        return true; // ignore
+      }
+      _mousePressed = false;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
       const auto mousePos = mouseEvt->pos();
       if (auto* action = _menu->actionAt(mousePos)) {
