@@ -13,7 +13,7 @@ struct IconTheme {
   QColor checkedNormal;
   QColor checkedDisabled;
 
-  IconTheme(const QColor& normal);
+  explicit IconTheme(const QColor& normal);
   IconTheme(const QColor& normal, const QColor& disabled);
   IconTheme(const QColor& normal, const QColor& disabled, const QColor& checkedNormal, QColor checkedDisabled);
 

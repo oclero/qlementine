@@ -15,7 +15,7 @@ class PlainTextEdit : public QPlainTextEdit {
   Q_PROPERTY(Status status READ status WRITE setStatus NOTIFY statusChanged)
 
 public:
-  PlainTextEdit(QWidget* parent = nullptr);
+  explicit PlainTextEdit(QWidget* parent = nullptr);
 
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;

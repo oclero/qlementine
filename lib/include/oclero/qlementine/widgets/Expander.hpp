@@ -17,7 +17,7 @@ class Expander : public QWidget {
   Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
 
 public:
-  Expander(QWidget* parent = nullptr);
+  explicit Expander(QWidget* parent = nullptr);
 
   bool expanded() const;
   Q_SLOT void setExpanded(bool expanded);

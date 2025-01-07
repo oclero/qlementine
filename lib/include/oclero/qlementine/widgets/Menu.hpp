@@ -20,7 +20,9 @@ public:
 
   void updateEnabled();
   void updateVisible();
-  void update();
+
+  /// Updates visible and enabled properties by calling corresponding predicates.
+  void updateProps();
 
 private:
   std::function<bool()> _updateEnabledCb;

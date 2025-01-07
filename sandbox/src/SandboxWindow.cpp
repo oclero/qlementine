@@ -313,43 +313,43 @@ struct SandboxWindow::Impl {
   void setupUI_label() {
     {
       auto* label = new Label(windowContent);
-      label->setText("Headline 1");
+      label->setText(QStringLiteral("Headline 1"));
       label->setRole(TextRole::H1);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setText("Headline 2");
+      label->setText(QStringLiteral("Headline 2"));
       label->setRole(TextRole::H2);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setText("Headline 3");
+      label->setText(QStringLiteral("Headline 3"));
       label->setRole(TextRole::H3);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setText("Headline 4");
+      label->setText(QStringLiteral("Headline 4"));
       label->setRole(TextRole::H4);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setText("Headline 5");
+      label->setText(QStringLiteral("Headline 5"));
       label->setRole(TextRole::H5);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setText("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme.");
+      label->setText(QStringLiteral("Press CTRL+E to enable/disable widgets, and CTRL+T to change theme."));
       label->setRole(TextRole::Default);
       windowContentLayout->addWidget(label);
     }
     {
       auto* label = new Label(windowContent);
-      label->setText("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets.");
+      label->setText(QStringLiteral("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets."));
       label->setRole(TextRole::Caption);
       windowContentLayout->addWidget(label);
     }
@@ -357,7 +357,7 @@ struct SandboxWindow::Impl {
 
   void setupUI_button() {
     auto* button = new QPushButton(windowContent);
-    button->setText("Button with a very long text that can be elided");
+    button->setText(QStringLiteral("Button with a very long text that can be elided"));
     button->setIcon(getTestQIcon());
     button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     button->setDefault(true);
@@ -368,7 +368,7 @@ struct SandboxWindow::Impl {
     {
       // Text, fixed size
       auto* button = new QPushButton(windowContent);
-      button->setText("Button");
+      button->setText(QStringLiteral("Button"));
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       button->setDefault(true); // Only one can be the default button, so we choose the first.
       windowContentLayout->addWidget(button);
@@ -383,7 +383,7 @@ struct SandboxWindow::Impl {
     {
       // Text+Icon, fixed size
       auto* button = new QPushButton(windowContent);
-      button->setText("Button");
+      button->setText(QStringLiteral("Button"));
       button->setIcon(getTestQIcon());
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       windowContentLayout->addWidget(button);
@@ -391,7 +391,7 @@ struct SandboxWindow::Impl {
     {
       // Text+Icon+Menu, fixed size
       auto* button = new QPushButton(windowContent);
-      button->setText("Button");
+      button->setText(QStringLiteral("Button"));
       button->setIcon(getTestQIcon());
       button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -406,7 +406,7 @@ struct SandboxWindow::Impl {
     {
       // Text, expanding size.
       auto* button = new QPushButton(windowContent);
-      button->setText("Button");
+      button->setText(QStringLiteral("Button"));
       windowContentLayout->addWidget(button);
     }
     {
@@ -418,14 +418,14 @@ struct SandboxWindow::Impl {
     {
       // Text+Icon, expanding size.
       auto* button = new QPushButton(windowContent);
-      button->setText("Button");
+      button->setText(QStringLiteral("Button"));
       button->setIcon(getTestQIcon());
       windowContentLayout->addWidget(button);
     }
     {
       // Text+Icon+Menu, expanding size
       auto* button = new QPushButton(windowContent);
-      button->setText("Button");
+      button->setText(QStringLiteral("Button"));
       button->setIcon(getTestQIcon());
 
       auto* menu = new QMenu("ButtonMenu");
@@ -469,8 +469,8 @@ struct SandboxWindow::Impl {
   void setupUI_commandLinkButton() {
     {
       auto* button = new CommandLinkButton(windowContent);
-      button->setText("First Line with a very long text that should be cropped");
-      button->setDescription("Second Line that could be very long and should be cropped");
+      button->setText(QStringLiteral("First Line with a very long text that should be cropped"));
+      button->setDescription(QStringLiteral("Second Line that could be very long and should be cropped"));
       button->setIcon(getTestQIcon({ 24, 24 }));
       button->setDefault(true);
       button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
@@ -478,8 +478,8 @@ struct SandboxWindow::Impl {
     }
     {
       auto* button = new CommandLinkButton(windowContent);
-      button->setText("First Line with a very long text that should be cropped");
-      button->setDescription("Second Line that could be very long and should be cropped");
+      button->setText(QStringLiteral("First Line with a very long text that should be cropped"));
+      button->setDescription(QStringLiteral("Second Line that could be very long and should be cropped"));
       button->setIcon(getTestQIcon({ 24, 24 }));
       button->setDefault(false);
       button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
@@ -530,8 +530,8 @@ struct SandboxWindow::Impl {
 
   void setupUI_lineEdit() {
     auto* lineEdit = new QLineEdit(windowContent);
-    lineEdit->setText("Text");
-    lineEdit->setPlaceholderText("Placeholder");
+    lineEdit->setText(QStringLiteral("Text"));
+    lineEdit->setPlaceholderText(QStringLiteral("Placeholder"));
     lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     windowContentLayout->addWidget(lineEdit);
     lineEdit->setClearButtonEnabled(true);
@@ -540,10 +540,10 @@ struct SandboxWindow::Impl {
   void setupUI_textEdit() {
     auto* textEdit = new QTextEdit(windowContent);
     textEdit->setTabChangesFocus(true);
-    const auto text =
-      R"(Lorem ipsum <b>dolor sit amet</b>, consectetur <i>adipiscing elit</i>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)";
+    const auto text = QStringLiteral(
+      R"(Lorem ipsum <b>dolor sit amet</b>, consectetur <i>adipiscing elit</i>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)");
     textEdit->append(text);
-    textEdit->setPlaceholderText("Placeholder");
+    textEdit->setPlaceholderText(QStringLiteral("Placeholder"));
     textEdit->setFixedHeight(84);
 
     windowContentLayout->addWidget(textEdit);
@@ -553,10 +553,10 @@ struct SandboxWindow::Impl {
     auto* plainTextEdit = new PlainTextEdit(windowContent); // Also PlainTextEdit
     plainTextEdit->setTabChangesFocus(true);
     plainTextEdit->setFixedHeight(84);
-    const auto text =
-      R"(Lorem ipsum <b>dolor sit amet</b>, consectetur <i>adipiscing elit</i>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)";
+    const auto text = QStringLiteral(
+      R"(Lorem ipsum <b>dolor sit amet</b>, consectetur <i>adipiscing elit</i>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)");
     plainTextEdit->appendHtml(text);
-    plainTextEdit->setPlaceholderText("Placeholder");
+    plainTextEdit->setPlaceholderText(QStringLiteral("Placeholder"));
 
     // Use QFrame::Shape::StyledPanel if you want the default look (borders, corner radiuses).
     // Use QFrame::Shape::Panel if you don't want borders neither corner radiuses.
@@ -591,8 +591,8 @@ struct SandboxWindow::Impl {
     spinbox->setMaximum(100);
     spinbox->setValue(50);
     spinbox->setSingleStep(1);
-    spinbox->setSuffix("km/h");
-    spinbox->setPrefix("$");
+    spinbox->setSuffix(QStringLiteral("km/h"));
+    spinbox->setPrefix(QStringLiteral("$"));
     spinbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     windowContentLayout->addWidget(spinbox);
   }
@@ -804,17 +804,17 @@ struct SandboxWindow::Impl {
   void setupUI_toolButton() {
     auto* toolButton = new QToolButton(toolbar);
     toolButton->setIcon(getTestQIcon());
-    toolButton->setText(QString("Button with a very long text that can be elided"));
+    toolButton->setText(QStringLiteral("Button with a very long text that can be elided"));
     toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     toolButton->setCheckable(false);
     toolButton->setChecked(false);
 
     {
       const auto icon = getTestQIcon();
-      auto* subMenu = new QMenu("Menu title", toolButton);
+      auto* subMenu = new QMenu(QStringLiteral("Menu title"), toolButton);
       toolButton->setMenu(subMenu);
-      subMenu->addAction(icon, "Sub Action 1");
-      subMenu->addAction(icon, "Sub Action 2");
+      subMenu->addAction(icon, QStringLiteral("Sub Action 1"));
+      subMenu->addAction(icon, QStringLiteral("Sub Action 2"));
       toolButton->setMenu(subMenu);
       toolButton->setPopupMode(QToolButton::ToolButtonPopupMode::MenuButtonPopup);
     }
@@ -826,7 +826,7 @@ struct SandboxWindow::Impl {
   void setupUI_toolButtonsVariants() {
     const auto icon = getTestQIcon();
 
-    toolbar = owner.addToolBar("ToolBar name");
+    toolbar = owner.addToolBar(QStringLiteral("ToolBar name"));
     //toolbar->set
     toolbar->setAllowedAreas(Qt::ToolBarArea::TopToolBarArea);
     toolbar->setMovable(false);
@@ -838,7 +838,7 @@ struct SandboxWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
-      toolButton->setText(QString("Button"));
+      toolButton->setText(QStringLiteral("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
       toolbar->addWidget(toolButton);
     }
@@ -846,7 +846,7 @@ struct SandboxWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
-      toolButton->setText(QString("Button"));
+      toolButton->setText(QStringLiteral("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
       toolbar->addWidget(toolButton);
     }
@@ -854,7 +854,7 @@ struct SandboxWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
-      toolButton->setText(QString("Button"));
+      toolButton->setText(QStringLiteral("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
       toolbar->addWidget(toolButton);
     }
@@ -862,7 +862,7 @@ struct SandboxWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
-      toolButton->setText(QString("Button"));
+      toolButton->setText(QStringLiteral("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
       toolButton->setCheckable(true);
       toolButton->setChecked(true);
@@ -872,7 +872,7 @@ struct SandboxWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
-      toolButton->setText(QString("Button"));
+      toolButton->setText(QStringLiteral("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
       auto* subMenu = new QMenu("Menu title", toolButton);
       toolButton->setMenu(subMenu);
@@ -885,13 +885,13 @@ struct SandboxWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
-      toolButton->setText(QString("Button"));
+      toolButton->setText(QStringLiteral("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
       toolButton->setPopupMode(QToolButton::InstantPopup);
-      auto* subMenu = new QMenu("Menu title", toolButton);
+      auto* subMenu = new QMenu(QStringLiteral("Menu title"), toolButton);
       toolButton->setMenu(subMenu);
-      subMenu->addAction(icon, "Sub Action 1");
-      subMenu->addAction(icon, "Sub Action 2");
+      subMenu->addAction(icon, QStringLiteral("Sub Action 1"));
+      subMenu->addAction(icon, QStringLiteral("Sub Action 2"));
       toolbar->addWidget(toolButton);
     }
 
@@ -899,13 +899,13 @@ struct SandboxWindow::Impl {
     {
       auto* toolButton = new QToolButton(toolbar);
       toolButton->setIcon(icon);
-      toolButton->setText(QString("Button"));
+      toolButton->setText(QStringLiteral("Button"));
       toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
       toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-      auto* subMenu = new QMenu("Menu title", toolButton);
+      auto* subMenu = new QMenu(QStringLiteral("Menu title"), toolButton);
       toolButton->setMenu(subMenu);
-      subMenu->addAction(icon, "Sub Action 1");
-      subMenu->addAction(icon, "Sub Action 2");
+      subMenu->addAction(icon, QStringLiteral("Sub Action 1"));
+      subMenu->addAction(icon, QStringLiteral("Sub Action 2"));
       toolbar->addWidget(toolButton);
     }
   }
@@ -980,7 +980,7 @@ struct SandboxWindow::Impl {
 
       // Dummy tab content.
       for (auto j = 0; j < (i + 1); ++j) {
-        tabContentLayout->addWidget(new QPushButton("Button", tabContent));
+        tabContentLayout->addWidget(new QPushButton(QStringLiteral("Button"), tabContent));
       }
       tabContentLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
@@ -1007,18 +1007,18 @@ struct SandboxWindow::Impl {
 
       auto* radioGroup = new QButtonGroup(groupBox);
 
-      auto* radio1 = new QRadioButton("Radio button 1");
+      auto* radio1 = new QRadioButton(QStringLiteral("Radio button 1"));
       radio1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       radioGroup->addButton(radio1);
 
-      auto* radio2 = new QRadioButton("Radio button 2");
+      auto* radio2 = new QRadioButton(QStringLiteral("Radio button 2"));
       radio2->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       radioGroup->addButton(radio2);
 
-      auto* button1 = new QPushButton("Button 1");
+      auto* button1 = new QPushButton(QStringLiteral("Button 1"));
       button1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-      auto* button2 = new QPushButton("Button 2");
+      auto* button2 = new QPushButton(QStringLiteral("Button 2"));
       button2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
       radio1->setChecked(true);
@@ -1046,17 +1046,17 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_messageBox() {
-    const auto title = "Title of the QMessageBox";
-    const auto text =
-      R"(Lorem ipsum dolor sit amet, consectetur <a href="#">adipiscing elit</a>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)";
-    const auto informativeText =
+    const auto title = QStringLiteral("Title of the QMessageBox");
+    const auto text = QStringLiteral(
+      R"(Lorem ipsum dolor sit amet, consectetur <a href="#">adipiscing elit</a>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.)");
+    const auto informativeText = QStringLiteral(
       R"(Vitae ut et dolorem eum. Rerum aut aut quis <a href="#">dolorum facere</a> quod veniam accusantium.
-Accusamus quidem sed possimus aut consequatur soluta ut. Soluta ut enim quo reiciendis a tempora dolorum min…)";
-    const auto detailedText =
+Accusamus quidem sed possimus aut consequatur soluta ut. Soluta ut enim quo reiciendis a tempora dolorum min…)");
+    const auto detailedText = QStringLiteral(
       R"(Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum)";
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum)");
     const auto buttons = QMessageBox::StandardButton::Ok | QMessageBox::StandardButton::Cancel;
     auto* qMessageBox = new QMessageBox(QMessageBox::Icon::Information, title, text, buttons, &owner);
     qMessageBox->setInformativeText(informativeText);
@@ -1146,7 +1146,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       tableView->setColumnCount(columnCount);
       tableView->setRowCount(rowCount);
       auto icon = getTestQIcon();
-      auto* headerItem = new QTableWidgetItem(icon, "A veeeeeery long header label");
+      auto* headerItem = new QTableWidgetItem(icon, QStringLiteral("A veeeeeery long header label"));
       tableView->setHorizontalHeaderItem(0, headerItem);
       tableView->setSelectionBehavior(QTableView::SelectionBehavior::SelectRows);
       //tableView->verticalHeader()->hide();
@@ -1191,7 +1191,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       expanderContent->showBounds = true;
       expander->setContent(expanderContent);
 
-      auto* checkBox = new QCheckBox("Expanded", container);
+      auto* checkBox = new QCheckBox(QStringLiteral("Expanded"), container);
       checkBox->setChecked(expander->expanded());
       QObject::connect(checkBox, &QCheckBox::toggled, &owner, [expander](bool checked) {
         expander->setExpanded(checked);
@@ -1200,7 +1200,8 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       auto* vLayout = new QVBoxLayout();
       auto* buttonGroup = new QButtonGroup(windowContent);
       for (auto orientation : { Qt::Vertical, Qt::Horizontal }) {
-        auto* radioButton = new QRadioButton(orientation == Qt::Vertical ? "Vertical" : "Horizontal", container);
+        auto* radioButton = new QRadioButton(
+          orientation == Qt::Vertical ? QStringLiteral("Vertical") : QStringLiteral("Horizontal"), container);
         radioButton->setChecked(orientation == expander->orientation());
         buttonGroup->addButton(radioButton);
         vLayout->addWidget(radioButton);
@@ -1211,7 +1212,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
         });
       }
 
-      auto* button = new QPushButton("Increase content animated dimension", container);
+      auto* button = new QPushButton(QStringLiteral("Increase content animated dimension"), container);
       QObject::connect(button, &QPushButton::clicked, &owner, [expanderContent, expander]() {
         if (expander->orientation() == Qt::Vertical) {
           expanderContent->customSizeHint.rheight() += 20;
@@ -1232,7 +1233,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
   void setupUI_popover() {
 #if 0
-    auto* popoverButton = new PopoverButton("Open popup", windowContent);
+    auto* popoverButton = new PopoverButton(QStringLiteral("Open popup"), windowContent);
     popoverButton->popover()->setPreferredPosition(Popover::Position::Top);
     popoverButton->popover()->setPreferredAlignment(Popover::Alignment::Center);
     popoverButton->popover()->setVerticalSpacing(10);
@@ -1245,7 +1246,8 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     return;
 #endif
 
-    auto* anchorLabel = new QLabel("The popover positions itself relatively to this widget:", windowContent);
+    auto* anchorLabel =
+      new QLabel(QStringLiteral("The popover positions itself relatively to this widget:"), windowContent);
     anchorLabel->setWordWrap(true);
     windowContentLayout->addWidget(anchorLabel);
 
@@ -1256,26 +1258,26 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     anchorWidget->bgColor = Qt::blue;
     windowContentLayout->addWidget(anchorWidget, 1, Qt::AlignCenter);
 
-    auto* popoverCheckBox = new QCheckBox("Popup is opened", windowContent);
+    auto* popoverCheckBox = new QCheckBox(QStringLiteral("Popup is opened"), windowContent);
     windowContentLayout->addWidget(popoverCheckBox, 0, Qt::AlignBottom);
 
-    auto* positionLabel = new QLabel("Position:", windowContent);
+    auto* positionLabel = new QLabel(QStringLiteral("Position:"), windowContent);
     windowContentLayout->addWidget(positionLabel);
 
     auto* comboBoxPosition = new QComboBox(&owner);
-    comboBoxPosition->addItem("Left", static_cast<int>(Popover::Position::Left));
-    comboBoxPosition->addItem("Right", static_cast<int>(Popover::Position::Right));
-    comboBoxPosition->addItem("Top", static_cast<int>(Popover::Position::Top));
-    comboBoxPosition->addItem("Bottom", static_cast<int>(Popover::Position::Bottom));
+    comboBoxPosition->addItem(QStringLiteral("Left"), static_cast<int>(Popover::Position::Left));
+    comboBoxPosition->addItem(QStringLiteral("Right"), static_cast<int>(Popover::Position::Right));
+    comboBoxPosition->addItem(QStringLiteral("Top"), static_cast<int>(Popover::Position::Top));
+    comboBoxPosition->addItem(QStringLiteral("Bottom"), static_cast<int>(Popover::Position::Bottom));
     windowContentLayout->addWidget(comboBoxPosition);
 
     auto* alignmentLabel = new QLabel("Alignment:", windowContent);
     windowContentLayout->addWidget(alignmentLabel);
 
     auto* comboBoxAlignment = new QComboBox(&owner);
-    comboBoxAlignment->addItem("Begin", static_cast<int>(Popover::Alignment::Begin));
-    comboBoxAlignment->addItem("Center", static_cast<int>(Popover::Alignment::Center));
-    comboBoxAlignment->addItem("End", static_cast<int>(Popover::Alignment::End));
+    comboBoxAlignment->addItem(QStringLiteral("Begin"), static_cast<int>(Popover::Alignment::Begin));
+    comboBoxAlignment->addItem(QStringLiteral("Center"), static_cast<int>(Popover::Alignment::Center));
+    comboBoxAlignment->addItem(QStringLiteral("End"), static_cast<int>(Popover::Alignment::End));
     windowContentLayout->addWidget(comboBoxAlignment);
 
     auto* popover = new Popover(anchorWidget);
@@ -1283,14 +1285,14 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     popover->setHorizontalSpacing(0);
     popover->setVerticalSpacing(0);
 
-    auto* hSpacingLabel = new QLabel("Horizontal Spacing:", windowContent);
+    auto* hSpacingLabel = new QLabel(QStringLiteral("Horizontal Spacing:"), windowContent);
     windowContentLayout->addWidget(hSpacingLabel);
 
     auto* hSpacingSpinBox = new QSpinBox(&owner);
     hSpacingSpinBox->setRange(-100, 100);
     windowContentLayout->addWidget(hSpacingSpinBox);
 
-    auto* vSpacingLabel = new QLabel("Vertical Spacing:", windowContent);
+    auto* vSpacingLabel = new QLabel(QStringLiteral("Vertical Spacing:"), windowContent);
     windowContentLayout->addWidget(vSpacingLabel);
 
     auto* vSpacingSpinBox = new QSpinBox(&owner);
@@ -1388,7 +1390,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   void setupUI_switch() {
     const auto dummyIcon = getTestQIcon();
     auto* switchWidget = new Switch(windowContent);
-    switchWidget->setText("Label of the Switch");
+    switchWidget->setText(QStringLiteral("Label of the Switch"));
     switchWidget->setIcon(dummyIcon);
     switchWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     windowContentLayout->addWidget(switchWidget);
@@ -1447,12 +1449,12 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
   }
 
   void setupUI_focus() {
-    auto* button1 = new QPushButton("Button 1");
-    button1->setObjectName("button1");
+    auto* button1 = new QPushButton(QStringLiteral("Button 1"));
+    button1->setObjectName(QStringLiteral("button1"));
     windowContentLayout->addWidget(button1);
 
-    auto* button2 = new QPushButton("Button 2");
-    button2->setObjectName("button2");
+    auto* button2 = new QPushButton(QStringLiteral("Button 2"));
+    button2->setObjectName(QStringLiteral("button2"));
     windowContentLayout->addWidget(button2);
   }
 
@@ -1488,18 +1490,18 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     const auto dummyIcon = getTestQIcon();
 
     auto* lineEdit = new LineEdit(windowContent);
-    lineEdit->setText("Label of the Switch");
+    lineEdit->setText(QStringLiteral("Label of the Switch"));
     lineEdit->setIcon(dummyIcon);
     lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     lineEdit->setClearButtonEnabled(true);
     windowContentLayout->addWidget(lineEdit);
 
     auto* comboBoxStatus = new QComboBox(&owner);
-    comboBoxStatus->addItem("Default", static_cast<int>(Status::Default));
-    comboBoxStatus->addItem("Info", static_cast<int>(Status::Info));
-    comboBoxStatus->addItem("Success", static_cast<int>(Status::Success));
-    comboBoxStatus->addItem("Warning", static_cast<int>(Status::Warning));
-    comboBoxStatus->addItem("Error", static_cast<int>(Status::Error));
+    comboBoxStatus->addItem(QStringLiteral("Default"), static_cast<int>(Status::Default));
+    comboBoxStatus->addItem(QStringLiteral("Info"), static_cast<int>(Status::Info));
+    comboBoxStatus->addItem(QStringLiteral("Success"), static_cast<int>(Status::Success));
+    comboBoxStatus->addItem(QStringLiteral("Warning"), static_cast<int>(Status::Warning));
+    comboBoxStatus->addItem(QStringLiteral("Error"), static_cast<int>(Status::Error));
     windowContentLayout->addWidget(comboBoxStatus);
     QObject::connect(
       comboBoxStatus, qOverload<int>(&QComboBox::currentIndexChanged), &owner, [comboBoxStatus, lineEdit](int index) {
@@ -1548,7 +1550,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     auto* dateTimeEdit = new QDateTimeEdit(windowContent);
     dateTimeEdit->setMinimumDate(QDate::currentDate().addDays(-365));
     dateTimeEdit->setMaximumDate(QDate::currentDate().addDays(365));
-    dateTimeEdit->setDisplayFormat("yyyy.MM.dd");
+    dateTimeEdit->setDisplayFormat(QStringLiteral("yyyy.MM.dd"));
     dateTimeEdit->setCalendarPopup(true);
 
     windowContentLayout->addWidget(dateTimeEdit);
@@ -1588,7 +1590,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
           textList.append("A");
         }
 
-        menu.addAction(textList.join("") + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, cb);
+        menu.addAction(textList.join(QString()) + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, cb);
       }
 
       // Show menu.

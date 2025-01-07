@@ -15,7 +15,7 @@ class IconWidget : public QWidget {
   Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
 
 public:
-  IconWidget(QWidget* parent = nullptr);
+  explicit IconWidget(QWidget* parent = nullptr);
   IconWidget(const QIcon& icon, QWidget* parent = nullptr);
   IconWidget(const QIcon& icon, const QSize& size, QWidget* parent = nullptr);
 

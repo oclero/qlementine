@@ -19,7 +19,7 @@ class ColorEditor : public QWidget {
   Q_PROPERTY(ColorMode colorMode READ colorMode WRITE setColorMode NOTIFY colorModeChanged)
 
 public:
-  ColorEditor(QWidget* parent = nullptr);
+  explicit ColorEditor(QWidget* parent = nullptr);
   ColorEditor(const QColor& color, QWidget* parent = nullptr);
 
   const QColor& color() const;

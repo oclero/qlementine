@@ -143,7 +143,7 @@ protected:
   MouseState getItemMouseState(int index, const Item& item) const;
   std::tuple<QColor, QColor, QColor, QColor> getItemBgAndFgColor(int index, MouseState mouse) const;
   const QColor& getCurrentItemIndicatorColor() const;
-  const QColor& getBgColor() const;
+  virtual const QColor& getBgColor() const;
   QRect getCurrentItemRect() const;
   QRect getFocusedItemRect() const;
   QRect getAnimatedCurrentItemRect() const;

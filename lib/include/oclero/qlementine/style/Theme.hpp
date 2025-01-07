@@ -39,7 +39,7 @@ public: // Ctor.
   static std::optional<Theme> fromJsonDoc(const QJsonDocument& jsonDoc);
 
   Theme(Theme const& other) = default;
-  Theme(Theme&& other) = default;
+  Theme(Theme&& other) noexcept = default;
   virtual ~Theme() = default;
 
 public: // Operators.

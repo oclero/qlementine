@@ -19,7 +19,7 @@ class ThemeManager : public QObject {
   Q_PROPERTY(int themeCount READ themeCount NOTIFY themeCountChanged)
 
 public:
-  ThemeManager(QObject* parent = nullptr);
+  explicit ThemeManager(QObject* parent = nullptr);
   ThemeManager(QlementineStyle* style, QObject* parent = nullptr);
   ~ThemeManager() override = default;
 

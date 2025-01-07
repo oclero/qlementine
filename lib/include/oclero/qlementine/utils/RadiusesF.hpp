@@ -14,10 +14,10 @@ struct RadiusesF {
   double bottomLeft{ 0. };
 
   RadiusesF() = default;
-  RadiusesF(int radius);
+  explicit RadiusesF(int radius);
   RadiusesF(int left, int right);
   RadiusesF(int topLeft, int topRight, int bottomRight, int bottomLeft);
-  RadiusesF(double radius);
+  explicit RadiusesF(double radius);
   RadiusesF(double left, double right);
   RadiusesF(double topLeft, double topRight, double bottomRight, double bottomLeft);
 

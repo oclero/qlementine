@@ -13,7 +13,7 @@ class StatusBadgeWidget : public QWidget {
   Q_OBJECT
 
 public:
-  StatusBadgeWidget(QWidget* parent = nullptr);
+  explicit StatusBadgeWidget(QWidget* parent = nullptr);
   StatusBadgeWidget(StatusBadge badge, QWidget* parent = nullptr);
   StatusBadgeWidget(StatusBadge badge, StatusBadgeSize badgeSize, QWidget* parent = nullptr);
 

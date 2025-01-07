@@ -13,7 +13,7 @@ class PopoverButton : public QPushButton {
   Q_OBJECT
 
 public:
-  PopoverButton(QWidget* parent = nullptr);
+  explicit PopoverButton(QWidget* parent = nullptr);
   PopoverButton(const QString& text, QWidget* parent = nullptr);
   PopoverButton(const QString& text, const QIcon& icon, QWidget* parent = nullptr);
 

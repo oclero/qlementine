@@ -186,7 +186,9 @@ struct ShowcaseWindow::Impl {
 
   void setupMenuBar() {
     menuBar = new QMenuBar(nullptr);
-    const auto cb = []() {};
+    const auto cb = []() {
+      // Just for the example.
+    };
 
     {
       auto* menu = menuBar->addMenu("File");
@@ -316,6 +318,8 @@ struct ShowcaseWindow::Impl {
   }
 
   void setupToolBar() {
+    const auto defaultIconSize = owner.style()->pixelMetric(QStyle::PM_SmallIconSize);
+
     toolBar = new QToolBar("App ToolBar", &owner);
     toolBar->setBackgroundRole(QPalette::ColorRole::Window);
     toolBar->setAutoFillBackground(false);
@@ -323,6 +327,7 @@ struct ShowcaseWindow::Impl {
     toolBar->setMovable(false);
     toolBar->setFloatable(false);
     toolBar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonFollowStyle);
+    toolBar->setIconSize(QSize(defaultIconSize, defaultIconSize));
 
     const auto addButton = [this](const Icons16 icon, const QString& tooltip, const QString& text = {}) {
       auto* toolButton = new QToolButton(toolBar);

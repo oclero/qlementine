@@ -43,7 +43,7 @@ private:
 
 class MouseWheelBlockerEventFilter : public QObject {
 public:
-  MouseWheelBlockerEventFilter(QWidget* widget);
+  explicit MouseWheelBlockerEventFilter(QWidget* widget);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
@@ -65,7 +65,7 @@ private:
 
 class MenuEventFilter : public QObject {
 public:
-  MenuEventFilter(QMenu* menu);
+  explicit MenuEventFilter(QMenu* menu);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
@@ -89,7 +89,7 @@ private:
 // Works for both QTextEdit and QPlainTextEdit
 class TextEditEventFilter : public QObject {
 public:
-  TextEditEventFilter(QAbstractScrollArea* textEdit);
+  explicit TextEditEventFilter(QAbstractScrollArea* textEdit);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
@@ -100,7 +100,7 @@ private:
 class WidgetWithFocusFrameEventFilter : public QObject {
   Q_OBJECT
 public:
-  WidgetWithFocusFrameEventFilter(QWidget* widget);
+  explicit WidgetWithFocusFrameEventFilter(QWidget* widget);
 
   bool eventFilter(QObject* obj, QEvent* event) override;
 
@@ -111,7 +111,7 @@ private:
 
 class LineEditMenuEventFilter : public QObject {
 public:
-  LineEditMenuEventFilter(QWidget* parent);
+  explicit LineEditMenuEventFilter(QWidget* parent);
 
 protected:
   virtual bool eventFilter(QObject* obj, QEvent* evt) override;

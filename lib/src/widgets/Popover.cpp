@@ -20,7 +20,7 @@ class PopoverFrame : public QWidget {
 public:
   QVBoxLayout* _layout;
 
-  PopoverFrame(QWidget* parent)
+  explicit PopoverFrame(QWidget* parent)
     : QWidget(parent) {
     // Transparent background.
     setAutoFillBackground(false);

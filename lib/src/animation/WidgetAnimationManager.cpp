@@ -27,7 +27,10 @@ const WidgetAnimator* WidgetAnimationManager::getAnimator(const QWidget* w) cons
 WidgetAnimator* WidgetAnimationManager::getOrCreateAnimator(const QWidget* w) {
   auto* animator = findWidget(w);
   if (!animator) {
-    animator = new WidgetAnimator(const_cast<QWidget*>(w));
+    // The widget given by the QStyle is a const pointer, so we unfortunately need
+    // this const_cast.
+    auto* parentWidget = const_cast<QWidget*>(w);
+    animator = new WidgetAnimator(parentWidget);
     addWidget(w, animator);
   }
   return animator;

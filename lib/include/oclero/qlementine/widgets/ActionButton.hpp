@@ -11,7 +11,7 @@ class ActionButton : public QPushButton {
   Q_OBJECT
 
 public:
-  ActionButton(QWidget* parent = nullptr);
+  explicit ActionButton(QWidget* parent = nullptr);
   ~ActionButton() override;
 
 public:
