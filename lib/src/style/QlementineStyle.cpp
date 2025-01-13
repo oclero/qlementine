@@ -924,8 +924,13 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto& color = listItemRowBackgroundColor(mouse, alternate);
         p->fillRect(optItem->rect, color);
 
-        // Draw selection color in the arrow area.
-        drawPrimitive(PE_PanelItemViewItem, opt, p, w);
+        // Draw selection color in the arrow area,
+        // except in comboboxes as selection drawing is handled by the delegate already.
+        const auto* popup = w->parentWidget();
+        const auto isComboBoxPopupContainer = popup != nullptr && popup->inherits("QComboBoxPrivateContainer");
+        if (!isComboBoxPopupContainer) {
+          drawPrimitive(PE_PanelItemViewItem, opt, p, w);
+        }
       }
       return;
     case PE_PanelStatusBar: {
