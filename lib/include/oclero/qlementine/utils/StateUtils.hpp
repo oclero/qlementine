@@ -13,6 +13,7 @@ MouseState getMouseState(QStyle::State const& state);
 MouseState getMouseState(bool const pressed, bool const hovered, bool const enabled);
 MouseState getToolButtonMouseState(QStyle::State const& state);
 MouseState getMenuItemMouseState(QStyle::State const& state);
+MouseState getComboBoxItemMouseState(QStyle::State const& state);
 MouseState getTabItemMouseState(QStyle::State const& state, const bool tabIsHovered);
 ColorRole getColorRole(QStyle::State const& state, bool const isDefault);
 ColorRole getColorRole(bool checked, bool const isDefault);
