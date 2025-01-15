@@ -19,7 +19,7 @@ class LineEdit : public QLineEdit {
   Q_PROPERTY(Status status READ status WRITE setStatus NOTIFY statusChanged)
 
 public:
-  LineEdit(QWidget* parent = nullptr);
+  explicit LineEdit(QWidget* parent = nullptr);
 
   const QIcon& icon() const;
   Q_SLOT void setIcon(const QIcon& icon);

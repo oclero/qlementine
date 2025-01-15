@@ -27,7 +27,7 @@ void Menu::updateVisible() {
   }
 }
 
-void Menu::update() {
+void Menu::updateProps() {
   updateEnabled();
   updateVisible();
 }

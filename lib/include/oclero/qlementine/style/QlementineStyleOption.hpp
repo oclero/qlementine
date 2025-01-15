@@ -32,6 +32,8 @@ public:
   }
 
   QStyleOptionFocusRoundedRect& operator=(const QStyleOptionFocusRoundedRect&) = default;
+
+  virtual ~QStyleOptionFocusRoundedRect() = default;
 };
 
 /// Allows to customize the radius of a button.
@@ -53,6 +55,8 @@ public:
   }
 
   QStyleOptionRoundedButton& operator=(const QStyleOptionRoundedButton&) = default;
+
+  virtual ~QStyleOptionRoundedButton() = default;
 };
 
 /// Adds the ability to transition from one visual position to another.
@@ -70,6 +74,8 @@ public:
   }
 
   QStyleOptionSliderF& operator=(const QStyleOptionSliderF&) = default;
+
+  virtual ~QStyleOptionSliderF() = default;
 };
 
 /// Adds the ability to have a second line of text in the button.

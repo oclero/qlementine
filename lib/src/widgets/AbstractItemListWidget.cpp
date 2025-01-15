@@ -29,7 +29,7 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   // Focus frame.
   _focusFrame = new RoundedFocusFrame(this);
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  _focusFrame->setRadiuses(qlementineStyle ? qlementineStyle->theme().borderRadius : 0);
+  _focusFrame->setRadiuses(RadiusesF{ qlementineStyle ? qlementineStyle->theme().borderRadius : 0. });
   _focusFrame->setWidget(this);
 
   // Badge.

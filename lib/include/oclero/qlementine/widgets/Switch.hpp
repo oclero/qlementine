@@ -16,7 +16,7 @@ class Switch : public QAbstractButton {
   Q_OBJECT
 
 public:
-  Switch(QWidget* parent = nullptr);
+  explicit Switch(QWidget* parent = nullptr);
 
   QSize sizeHint() const override;
 

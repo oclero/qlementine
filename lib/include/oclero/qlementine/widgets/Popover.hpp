@@ -40,7 +40,7 @@ public:
   Q_ENUM(Alignment)
 
 public:
-  Popover(QWidget* parent = nullptr);
+  explicit Popover(QWidget* parent = nullptr);
 
 public:
   Position preferredPosition() const;

@@ -66,7 +66,7 @@ QlementineStyle* appStyle() {
 }
 
 /// Used to initializeResources from .qrc only once.
-std::once_flag qlementineOnceFlag;
+static std::once_flag qlementineOnceFlag;
 
 constexpr auto hardcodedButtonSpacing = 4; // qpushbutton.cpp line 410, qcombobox.cpp line 418/437
 //constexpr auto hardcodedLineEditVMargin = 1; // qlinedit_p.cpp line 68
@@ -80,7 +80,7 @@ constexpr auto iconPenWidth = 1.01;
 constexpr auto Property_AutoIconColor = "autoIconColor";
 
 struct QlementineStyleImpl {
-  QlementineStyleImpl(QlementineStyle& o)
+  explicit QlementineStyleImpl(QlementineStyle& o)
     : owner(o) {
     updatePalette();
     std::call_once(qlementineOnceFlag, qlementine::resources::initializeResources);
@@ -803,7 +803,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto compModeBackup = p->compositionMode();
       p->setCompositionMode(QPainter::CompositionMode_Multiply);
 
-      drawRoundedRect(p, rect, gradient, documentMode ? 0. : RadiusesF(radius, 0., 0., 0.));
+      drawRoundedRect(p, rect, gradient, documentMode ? RadiusesF(0.) : RadiusesF(radius, 0., 0., 0.));
       p->setCompositionMode(compModeBackup);
     }
       return;
@@ -827,7 +827,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto compModeBackup = p->compositionMode();
       p->setCompositionMode(QPainter::CompositionMode_Multiply);
       const auto radius = _impl->theme.borderRadius * 1.5;
-      drawRoundedRect(p, rect, gradient, documentMode ? 0. : RadiusesF(0., radius, 0., 0.));
+      drawRoundedRect(p, rect, gradient, documentMode ? RadiusesF(0.) : RadiusesF(0., radius, 0., 0.));
       p->setCompositionMode(compModeBackup);
 
       // Filled rectangle below scroll buttons.
@@ -835,7 +835,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto mouse = getMouseState(opt->state);
       const auto& tabBarBgColor = tabBarBackgroundColor(mouse);
       const auto filledRect = QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
-      drawRoundedRect(p, filledRect, tabBarBgColor, documentMode ? 0. : RadiusesF(0., radius, 0., 0.));
+      drawRoundedRect(p, filledRect, tabBarBgColor, documentMode ? RadiusesF(0.) : RadiusesF(0., radius, 0., 0.));
     }
       return;
     case PE_PanelScrollAreaCorner:
@@ -2032,7 +2032,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
                                               .marginsAdded(QMargins(borderW, borderW, borderW, borderW))
                                           : QRect();
 
-          optFocus.radiuses = customRadius >= 0 ? customRadius : _impl->theme.borderRadius;
+          optFocus.radiuses = customRadius >= 0 ? customRadius : RadiusesF(_impl->theme.borderRadius);
         }
 
         // Draw the focus border.
@@ -2667,7 +2667,7 @@ void QlementineStyle::drawComplexControl(
           buttonOpt.state = comboBoxOpt->state;
           buttonOpt.state.setFlag(QStyle::StateFlag::State_On, false);
           buttonOpt.features.setFlag(QStyleOptionButton::Flat, !comboBoxOpt->frame);
-          buttonOpt.radiuses = isTabCellEditor ? 0. : RadiusesF{ _impl->theme.borderRadius };
+          buttonOpt.radiuses = RadiusesF{ isTabCellEditor ? 0. : _impl->theme.borderRadius };
           drawControl(CE_PushButtonBevel, &buttonOpt, p, w);
         }
       }

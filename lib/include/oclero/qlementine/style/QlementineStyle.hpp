@@ -59,7 +59,7 @@ public:
   void setAnimationsEnabled(bool enabled);
   Q_SIGNAL void animationsEnabledChanged();
 
-  void triggerCompleteRepaint();
+  virtual void triggerCompleteRepaint();
 
   void setAutoIconColor(AutoIconColor autoIconColor);
   AutoIconColor autoIconColor() const;

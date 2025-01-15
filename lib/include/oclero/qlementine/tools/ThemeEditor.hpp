@@ -13,7 +13,7 @@ class ThemeEditor : public QWidget {
   Q_OBJECT
 
 public:
-  ThemeEditor(QWidget* parent = nullptr);
+  explicit ThemeEditor(QWidget* parent = nullptr);
   ~ThemeEditor() override;
 
 public:

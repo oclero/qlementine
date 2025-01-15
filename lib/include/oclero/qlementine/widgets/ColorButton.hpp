@@ -16,7 +16,7 @@ class ColorButton : public QAbstractButton {
   Q_PROPERTY(ColorMode colorMode READ colorMode WRITE setColorMode NOTIFY colorModeChanged)
 
 public:
-  ColorButton(QWidget* parent = nullptr);
+  explicit ColorButton(QWidget* parent = nullptr);
   ColorButton(const QColor& color, QWidget* parent = nullptr);
   ColorButton(const QColor& color, ColorMode mode, QWidget* parent = nullptr);
 

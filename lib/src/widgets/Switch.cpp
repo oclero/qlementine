@@ -29,7 +29,7 @@ Switch::Switch(QWidget* parent)
 
   // Focus frame.
   _focusFrame = new RoundedFocusFrame(this);
-  _focusFrame->setRadiuses(qlementineStyle ? qlementineStyle->theme().borderRadius : 0);
+  _focusFrame->setRadiuses(RadiusesF{ qlementineStyle ? qlementineStyle->theme().borderRadius : 0. });
   _focusFrame->setWidget(this);
 }
 
