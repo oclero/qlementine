@@ -74,6 +74,7 @@ private:
 
   // this is roughly copied from how QMenuPrivate::mouseDown detects whether the mouse is down
   bool _mousePressed{ false };
+  QEvent *_mouseEventToNotFilter{}; // please do not dereference it, this is just to close properly the QMenu
 };
 
 class ComboboxItemViewFilter : public QObject {
