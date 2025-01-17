@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <oclero/qlementine/widgets/Expander.hpp>
+#include <oclero/qlementine/utils/WidgetUtils.hpp>
 
 #include <QStyle>
 #include <QEvent>
@@ -106,6 +107,7 @@ void Expander::setExpanded(bool expanded) {
     if (_expanded) {
       emit aboutToExpand();
     } else {
+      oclero::qlementine::clearFocus(this, true);
       emit aboutToShrink();
     }
 
