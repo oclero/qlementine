@@ -38,6 +38,7 @@ protected:
       if (_onAnimationFinished) {
         _onAnimationFinished();
       }
+      deleteLater();
     }
   }
 
