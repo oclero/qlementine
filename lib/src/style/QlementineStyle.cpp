@@ -3958,8 +3958,7 @@ QSize QlementineStyle::sizeFromContents(
         }
         const auto lineW = _impl->theme.borderWidth;
         const auto iconExtent = pixelMetric(PM_SmallIconSize, opt);
-        const auto fm = QFontMetrics(font);
-        const auto textW = qlementine::textWidth(fm, optHeader->text);
+        const QSize textSize = optHeader->fontMetrics.size(0, optHeader->text);
         const auto& icon = optHeader->icon;
         const auto hasIcon = !icon.isNull();
         const auto iconW = hasIcon ? iconExtent + spacing : 0;
@@ -3967,9 +3966,8 @@ QSize QlementineStyle::sizeFromContents(
         const auto arrowW = hasArrow ? iconExtent + spacing : 0;
         const auto paddingH = pixelMetric(PM_HeaderMargin);
         const auto paddingV = paddingH / 2;
-        const auto textH = fm.height();
-        const auto w = lineW + paddingH + iconW + textW + arrowW + paddingH + lineW;
-        const auto h = lineW + paddingV + std::max(iconExtent, textH) + paddingV + lineW;
+        const auto w = lineW + paddingH + iconW + textSize.width() + arrowW + paddingH + lineW;
+        const auto h = lineW + paddingV + std::max(iconExtent, textSize.height()) + paddingV + lineW;
         return QSize{ w, h };
       }
       break;
@@ -4005,19 +4003,18 @@ QSize QlementineStyle::sizeFromContents(
         const auto& iconSize = hasIcon ? optItem->decorationSize : QSize{ 0, 0 };
 
         const auto hasText = features.testFlag(QStyleOptionViewItem::HasDisplay) && !optItem->text.isEmpty();
-        const auto textH = hasText ? optItem->fontMetrics.height() : 0;
+        QSize textSize(0,0);
+        if (hasText) {
+          textSize = optItem->fontMetrics.size(0, optItem->text);
+        }
 
         const auto hasCheck = features.testFlag(QStyleOptionViewItem::HasCheckIndicator);
         const auto& checkSize = hasCheck ? _impl->theme.iconSize : QSize{ 0, 0 };
 
-        auto font = QFont(widget->font());
-        const auto fm = QFontMetrics(font);
-        const auto textW = qlementine::textWidth(fm, optItem->text);
-
-        const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0)
+        const auto w = textSize.width() + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0)
                        + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;
-        const auto h = std::max({ iconSize.height() + spacing, textH + spacing, defaultH });
+        const auto h = std::max({ iconSize.height() + spacing, textSize.height() + spacing, defaultH });
         return QSize{ w, h };
       }
       break;
