@@ -861,8 +861,31 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto focus =
           widgetHasFocus && selection == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
         const auto active = getActiveState(itemState);
-        const auto& color = listItemBackgroundColor(mouse, selection, focus, active, optItem->index, w);
-        p->fillRect(rect, color);
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
+            QPalette::ColorGroup cg = (w ? w->isEnabled() : (vopt->state & QStyle::State_Enabled))
+                                      ? QPalette::Normal : QPalette::Disabled;
+            if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+                cg = QPalette::Inactive;
+
+            if (vopt->showDecorationSelected && (vopt->state & QStyle::State_Selected)) {
+                p->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::Highlight));
+            } else {
+                if (vopt->backgroundBrush.style() != Qt::NoBrush) {
+                    QPointF oldBO = p->brushOrigin();
+                    p->setBrushOrigin(vopt->rect.topLeft());
+                    p->fillRect(vopt->rect, vopt->backgroundBrush);
+                    p->setBrushOrigin(oldBO);
+                }
+
+                if (vopt->state & QStyle::State_Selected) {
+                    QRect textRect = subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+                    p->fillRect(textRect, vopt->palette.brush(cg, QPalette::Highlight));
+                }
+            }
+        } else {
+            const auto &color = listItemBackgroundColor(mouse, selection, focus, active, optItem->index, w);
+            p->fillRect(rect, color);
+        }
 
         // Border on the left if necessary.
         if (column == 0) {
