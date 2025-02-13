@@ -246,17 +246,10 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         return true;
       }
     }
-
-    // Hack!
-    // QTabBar.cpp, line 1478
-    // We need the QTabBar to set d->layoutDirty to true. The only we I found was to
-    // call QTabBar::setIconSize() because it doesn't check if the icon size is different
-    // before forcing a whole refresh.
-    _tabBar->setIconSize(_tabBar->iconSize());
   } else if (type == QEvent::Wheel) {
     const auto* wheelEvent = static_cast<QWheelEvent*>(evt);
 
-    // Block non-horizontal scorll.
+    // Block non-horizontal scroll.
     const bool wheelVertical = qAbs(wheelEvent->angleDelta().y()) > qAbs(wheelEvent->angleDelta().x());
     if (wheelVertical) {
       evt->ignore();
