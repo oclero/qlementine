@@ -4613,9 +4613,15 @@ void QlementineStyle::polish(QPalette& palette) {
 void QlementineStyle::polish(QApplication* app) {
   QCommonStyle::polish(app);
   app->setFont(_impl->theme.fontRegular);
-  //app->installEventFilter(new AppEventFilter(app));
 
-  QApplication::setAttribute(Qt::ApplicationAttribute::AA_DontShowIconsInMenus, false);
+  QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus, false);
+  QCoreApplication::setAttribute(Qt::AA_DontShowShortcutsInContextMenus, false);
+
+  QApplication::setEffectEnabled(Qt::UIEffect::UI_AnimateMenu, true);
+  QApplication::setEffectEnabled(Qt::UIEffect::UI_FadeMenu, true);
+  QApplication::setEffectEnabled(Qt::UIEffect::UI_AnimateCombo, true);
+  QApplication::setEffectEnabled(Qt::UIEffect::UI_AnimateTooltip, true);
+  QApplication::setEffectEnabled(Qt::UIEffect::UI_FadeTooltip, true);
 }
 
 void QlementineStyle::unpolish(QApplication* app) {
