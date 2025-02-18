@@ -24,7 +24,7 @@ public:
 
   Popover* popover() const;
 
-public slots:
+public Q_SLOTS
   void setPopoverOpened(bool opened);
 
 Q_SIGNALS:

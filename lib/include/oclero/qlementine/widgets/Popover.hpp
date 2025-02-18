@@ -79,7 +79,7 @@ public:
   void setHorizontalSpacing(int spacing);
   Q_SIGNAL void horizontalSpacingChanged();
 
-public slots:
+public Q_SLOTS
   void openPopover();
   void closePopover();
 
