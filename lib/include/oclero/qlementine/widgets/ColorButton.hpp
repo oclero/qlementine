@@ -28,7 +28,7 @@ public:
 
   QSize sizeHint() const override;
 
-signals:
+Q_SIGNALS:
   void colorChanged();
   void colorModeChanged();
 

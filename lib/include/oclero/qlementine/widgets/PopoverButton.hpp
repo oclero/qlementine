@@ -27,7 +27,7 @@ public:
 public slots:
   void setPopoverOpened(bool opened);
 
-signals:
+Q_SIGNALS:
   void popoverOpenedChanged(bool opened);
 
 protected:

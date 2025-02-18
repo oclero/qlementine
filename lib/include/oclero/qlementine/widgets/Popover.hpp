@@ -83,7 +83,7 @@ public slots:
   void openPopover();
   void closePopover();
 
-signals:
+Q_SIGNALS:
   void aboutToOpen();
   void aboutToClose();
   void opened();
