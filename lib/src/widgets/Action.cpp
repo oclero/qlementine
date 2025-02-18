@@ -115,8 +115,8 @@ bool Action::shortcutEditable() const {
 void Action::setShortcutEditable(bool editable) {
   if (editable != _shortcutEditable) {
     _shortcutEditable = editable;
-    emit shortcutEditableChanged();
-    emit changed();
+    Q_EMIT shortcutEditableChanged();
+    Q_EMIT changed();
   }
 }
 
@@ -130,7 +130,7 @@ void Action::setUserShortcut(const QKeySequence& shortcut) {
       //  Save the default shortcut.
       _defaultShortcut = this->shortcut();
       _shortcutEditedByUser = true;
-      emit shortcutEditedByUserChanged();
+      Q_EMIT shortcutEditedByUserChanged();
     }
 
     _userShortcut = shortcut;
@@ -138,7 +138,7 @@ void Action::setUserShortcut(const QKeySequence& shortcut) {
     // Set the new shortcut on the action.
     setShortcut(_userShortcut);
 
-    emit userShortcutChanged();
+    Q_EMIT userShortcutChanged();
   }
 }
 
@@ -147,8 +147,8 @@ void Action::resetShortcut() {
     _userShortcut = {};
     _shortcutEditedByUser = false;
 
-    emit userShortcutChanged();
-    emit shortcutEditedByUserChanged();
+    Q_EMIT userShortcutChanged();
+    Q_EMIT shortcutEditedByUserChanged();
     setShortcut(_defaultShortcut);
   }
 }
@@ -164,8 +164,8 @@ const QString& Action::description() const {
 void Action::setDescription(const QString& description) {
   if (description != _description) {
     _description = description;
-    emit descriptionChanged();
-    emit changed();
+    Q_EMIT descriptionChanged();
+    Q_EMIT changed();
   }
 }
 } // namespace oclero::qlementine

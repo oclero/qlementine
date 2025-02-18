@@ -61,7 +61,7 @@ void ColorButton::setColor(const QColor& color) {
   if (newColor != _color) {
     _color = newColor;
     update();
-    emit colorChanged();
+    Q_EMIT colorChanged();
   }
 }
 
@@ -72,7 +72,7 @@ ColorMode ColorButton::colorMode() const {
 void ColorButton::setColorMode(ColorMode mode) {
   if (mode != _colorMode) {
     _colorMode = mode;
-    emit colorModeChanged();
+    Q_EMIT colorModeChanged();
     setColor(adaptColorToMode(_color));
   }
 }

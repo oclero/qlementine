@@ -38,7 +38,7 @@ void Label::setRole(TextRole role) {
     _role = role;
     // Change text font, size and color.
     updatePaletteFromTheme();
-    emit roleChanged();
+    Q_EMIT roleChanged();
   }
 }
 

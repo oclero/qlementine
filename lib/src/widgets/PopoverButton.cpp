@@ -24,10 +24,10 @@ PopoverButton::PopoverButton(const QString& text, const QIcon& icon, QWidget* pa
   });
   QObject::connect(_popover, &Popover::openedChanged, this, [this]() {
     update();
-    emit popoverOpenedChanged(_popover->isOpened());
+    Q_EMIT popoverOpenedChanged(_popover->isOpened());
   });
   QObject::connect(_popover, &Popover::contentWidgetChanged, this, [this]() {
-    emit popoverContentWidgetChanged();
+    Q_EMIT popoverContentWidgetChanged();
   });
 }
 

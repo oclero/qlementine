@@ -25,8 +25,8 @@ void ThemeManager::setStyle(QlementineStyle* style) {
   if (style != _style) {
     _style = style;
     synchronizeThemeOnStyle();
-    emit currentThemeChanged();
-    emit themeCountChanged();
+    Q_EMIT currentThemeChanged();
+    Q_EMIT themeCountChanged();
   }
 }
 
@@ -36,7 +36,7 @@ const std::vector<Theme>& ThemeManager::themes() const {
 
 void ThemeManager::addTheme(const Theme& theme) {
   _themes.emplace_back(theme);
-  emit themeCountChanged();
+  Q_EMIT themeCountChanged();
   if (_currentIndex < 0) {
     setCurrentThemeIndex(0);
   }
@@ -82,7 +82,7 @@ void ThemeManager::setCurrentThemeIndex(int index) {
     if (index != _currentIndex) {
       _currentIndex = index;
       synchronizeThemeOnStyle();
-      emit currentThemeChanged();
+      Q_EMIT currentThemeChanged();
     }
   }
 }

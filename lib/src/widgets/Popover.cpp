@@ -106,10 +106,10 @@ Popover::Popover(QWidget* parent)
   });
   QObject::connect(&_opacityAnimation, &QVariantAnimation::finished, this, [this]() {
     if (_opened) {
-      emit opened();
+      Q_EMIT opened();
     } else {
       _mousePressWasOnAnchor = false;
-      emit closed();
+      Q_EMIT closed();
       hide();
     }
   });
@@ -125,7 +125,7 @@ void Popover::setPreferredPosition(Position position) {
     if (isVisible()) {
       updatePopoverGeometry();
     }
-    emit preferredPositionChanged();
+    Q_EMIT preferredPositionChanged();
   }
 }
 
@@ -140,7 +140,7 @@ void Popover::setPreferredAlignment(Alignment alignment) {
     if (isVisible()) {
       updatePopoverGeometry();
     }
-    emit preferredAlignmentChanged();
+    Q_EMIT preferredAlignmentChanged();
   }
 }
 
@@ -171,7 +171,7 @@ void Popover::setContentWidget(QWidget* widget) {
     if (isVisible()) {
       updatePopoverGeometry();
     }
-    emit contentWidgetChanged();
+    Q_EMIT contentWidgetChanged();
   }
 }
 
@@ -183,16 +183,16 @@ void Popover::setOpened(bool opened) {
   if (opened != _opened) {
     _opened = opened;
     if (_opened) {
-      emit aboutToOpen();
+      Q_EMIT aboutToOpen();
       updatePopoverGeometry();
       show();
       startAnimation();
     } else {
-      emit aboutToClose();
+      Q_EMIT aboutToClose();
       startAnimation();
     }
 
-    emit openedChanged();
+    Q_EMIT openedChanged();
   }
 }
 
@@ -203,7 +203,7 @@ QMargins Popover::padding() const {
 void Popover::setPadding(const QMargins& padding) {
   if (padding != _frameLayout->contentsMargins()) {
     _frameLayout->setContentsMargins(padding);
-    emit paddingChanged();
+    Q_EMIT paddingChanged();
   }
 }
 
@@ -244,7 +244,7 @@ void Popover::setAnchorWidget(QWidget* widget) {
     if (isVisible()) {
       updatePopoverGeometry();
     }
-    emit anchorWidgetChanged();
+    Q_EMIT anchorWidgetChanged();
   }
 }
 
@@ -258,7 +258,7 @@ void Popover::setVerticalSpacing(int spacing) {
     if (isVisible()) {
       updatePopoverGeometry();
     }
-    emit verticalSpacingChanged();
+    Q_EMIT verticalSpacingChanged();
   }
 }
 
@@ -272,7 +272,7 @@ void Popover::setHorizontalSpacing(int spacing) {
     if (isVisible()) {
       updatePopoverGeometry();
     }
-    emit horizontalSpacingChanged();
+    Q_EMIT horizontalSpacingChanged();
   }
 }
 
