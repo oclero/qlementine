@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.21.0)
 
-# Custom CMake modules.
-# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 # Enable parallel build (not enabled by default on Windows).
 set(CMAKE_BUILD_PARALLEL_LEVEL $ENV{NUMBER_OF_PROCESSORS})
 
@@ -13,7 +10,6 @@ project("qlementine"
   DESCRIPTION "Modern QStyle for desktop Qt applications."
 )
 set(PROJECT_COPYRIGHT "© Olivier Cléro, MIT License.")
-set(PROJECT_NAMESPACE "oclero")
 
 # Temporary hack to make it work with Qt6 <6.4.2 && >6.4.2 With Qt5, it was
 # "path/to/Qt/6.7.0/msvc2019_64/lib/cmake/Qt6", but with Qt6, it is now
@@ -36,6 +32,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
   set(CMAKE_OSX_DEPLOYMENT_TARGET "13.6")
 endif()
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 # Find Qt.
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Svg)

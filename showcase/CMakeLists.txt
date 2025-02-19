@@ -34,7 +34,7 @@ qt_add_executable(${SHOWCASE_NAME}
 
 target_link_libraries(${SHOWCASE_NAME}
   PUBLIC
-    oclero::qlementine
+    qlementine
     oclero::qlementine_icons
 )
 
