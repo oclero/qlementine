@@ -89,11 +89,7 @@ struct QlementineStyleImpl {
 
   /// Registers all the theme fonts to Qt's font database.
   void installFonts() {
-#if defined(_WIN32)
-    const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.ttf");
-#else
     const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.otf");
-#endif
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Regular")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Italic")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Bold")));
