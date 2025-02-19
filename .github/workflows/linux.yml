@@ -28,7 +28,7 @@ jobs:
 
       - name: Build the library.
         run: |
-          cmake --preset linux
+          cmake --preset linux -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
           cmake --build --preset linux --target install
 
       - name: Build the Sandbox app.
