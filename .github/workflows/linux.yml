@@ -26,6 +26,11 @@ jobs:
           target: desktop
           arch: linux_gcc_64
 
+      - name: Setup directories.
+        run: |
+          mkdir build_lib
+          mkdir build_sandbox
+
       - name: Build the library.
         working-directory: ${{github.workspace}}/build_lib
         run: |
