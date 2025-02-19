@@ -113,9 +113,6 @@ qt_add_library(${PROJECT_NAME} STATIC
   ${SOURCES}
   ${RESOURCES}
 )
-
-# Create a target alias.
-add_library(${PROJECT_NAME})
 include(CMakePackageConfigHelpers)
 
 target_include_directories(${PROJECT_NAME}
