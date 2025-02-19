@@ -142,6 +142,8 @@ public: // Values.
   QColor semiTransparentColor4{ QRgba64::fromArgb32(0x28000000) };
   QColor semiTransparentColorTransparent{ QRgba64::fromArgb32(0x00000000) };
 
+  bool useSystemFont{ false };
+
   int fontSize{ 12 };
   int fontSizeMonospace{ 13 };
   int fontSizeH1{ 34 };
@@ -199,6 +201,7 @@ public: // Values.
   QPalette palette;
 
 public:
+  void setUseSystemFont(bool use);
   QJsonDocument toJson() const;
 
 private:

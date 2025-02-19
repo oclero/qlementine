@@ -18,10 +18,12 @@
 namespace oclero::qlementine {
 namespace {
 #define TRY_GET_COLOR_ATTRIBUTE(JSON_OBJ, NAME) tryGetColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define TRY_GET_BOOL_ATTRIBUTE(JSON_OBJ, NAME) tryGetBool(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define TRY_GET_INT_ATTRIBUTE(JSON_OBJ, NAME) tryGetInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define TRY_GET_DOUBLE_ATTRIBUTE(JSON_OBJ, NAME) tryGetDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
 
 #define SET_COLOR(JSON_OBJ, NAME) setColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define SET_BOOL(JSON_OBJ, NAME) setBool(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define SET_INT(JSON_OBJ, NAME) setInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define SET_DOUBLE(JSON_OBJ, NAME) setDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
 
@@ -61,6 +63,32 @@ QString tryGetString(QJsonObject const& jsonObj, QString const& key, QString con
     }
   }
   return defaultValue;
+}
+
+std::optional<bool> tryGetBoolRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
+  if (jsonObj.contains(key)) {
+    const auto variant = jsonObj.value(key).toVariant();
+
+    // Check if the value is a reference to another value.
+    if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
+      const auto variantString = variant.toString();
+      if (variantString != key) {
+        return tryGetBoolRecursive(jsonObj, variantString, --maxRecursiveCalls);
+      }
+    }
+
+    // Try parse a bool.
+    if (variant.isValid() && variant.canConvert<bool>()) {
+      return variant.toBool();
+    }
+  }
+  return {};
+}
+
+void tryGetBool(QJsonObject const& jsonObj, QString const& key, bool& target) {
+  if (const auto opt = tryGetBoolRecursive(jsonObj, key)) {
+    target = opt.value();
+  }
 }
 
 std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
@@ -133,6 +161,10 @@ void setColor(QJsonObject& jsonObj, const QString& key, const QColor& value) {
   jsonObj.insert(key, toHexRGBA(value));
 }
 
+void setBool(QJsonObject& jsonObj, const QString& key, bool value) {
+  jsonObj.insert(key, value);
+}
+
 void setInt(QJsonObject& jsonObj, const QString& key, int value) {
   jsonObj.insert(key, value);
 }
@@ -175,8 +207,8 @@ std::optional<Theme> Theme::fromJsonDoc(const QJsonDocument& jsonDoc) {
 
 void Theme::initializeFonts() {
   // Fonts.
-  const auto defaultFont = QFont(QStringLiteral("Inter"));
-  const auto fixedFont = QFont(QStringLiteral("Roboto Mono"));
+  const auto defaultFont = useSystemFont ? QFont() : QFont(QStringLiteral("Inter"));
+  const auto fixedFont = useSystemFont ? QFont() : QFont(QStringLiteral("Roboto Mono"));
   const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
   fontRegular = defaultFont;
   fontRegular.setWeight(QFont::Weight::Normal);
@@ -383,6 +415,8 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor3);
     shadowColorTransparent = colorWithAlpha(shadowColor1, 0);
 
+    TRY_GET_BOOL_ATTRIBUTE(jsonObj, useSystemFont);
+
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
@@ -437,6 +471,11 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
   }
 
   return true;
+}
+
+void Theme::setUseSystemFont(bool use) {
+  useSystemFont = use;
+  initializeFonts();
 }
 
 QJsonDocument Theme::toJson() const {
@@ -528,6 +567,8 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, semiTransparentColor2);
   SET_COLOR(jsonObj, semiTransparentColor3);
   SET_COLOR(jsonObj, semiTransparentColor4);
+
+  SET_BOOL(jsonObj, useSystemFont);
 
   SET_INT(jsonObj, fontSize);
   SET_INT(jsonObj, fontSizeMonospace);
@@ -654,6 +695,8 @@ bool Theme::operator==(const Theme& other) const {
     && borderColorHovered == other.borderColorHovered
     && borderColorPressed == other.borderColorPressed
     && borderColorDisabled == other.borderColorDisabled
+
+    && useSystemFont == other.useSystemFont
 
     && animationDuration == other.animationDuration
     && focusAnimationDuration == other.focusAnimationDuration
