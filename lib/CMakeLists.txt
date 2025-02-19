@@ -98,14 +98,14 @@ set(RESOURCES
 )
 
 # Create target.
-qt_add_library(${PROJECT_NAME} STATIC
+qt_add_library(${CMAKE_PROJECT_NAME} STATIC
   ${HEADERS}
   ${SOURCES}
   ${RESOURCES}
 )
 include(CMakePackageConfigHelpers)
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(${CMAKE_PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -113,17 +113,17 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${CMAKE_PROJECT_NAME}
   PUBLIC
     Qt::Core
     Qt::Widgets
     Qt::Svg
 )
 
-set_target_properties(${PROJECT_NAME}
+set_target_properties(${CMAKE_PROJECT_NAME}
   PROPERTIES
-    OUTPUT_NAME ${PROJECT_NAME}
-    PROJECT_LABEL ${PROJECT_NAME}
+    OUTPUT_NAME ${CMAKE_PROJECT_NAME}
+    PROJECT_LABEL ${CMAKE_PROJECT_NAME}
     FOLDER lib
     SOVERSION ${PROJECT_VERSION_MAJOR}
     VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -133,7 +133,7 @@ set_target_properties(${PROJECT_NAME}
     CMAKE_AUTOUIC ON
 )
 
-target_compile_options(${PROJECT_NAME}
+target_compile_options(${CMAKE_PROJECT_NAME}
   PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/MP /WX /W4>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
@@ -148,20 +148,20 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
 
 # Select correct startup project in Visual Studio.
 if(WIN32)
-  set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+  set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${CMAKE_PROJECT_NAME})
 endif()
 
 # Install target
 configure_package_config_file("${CMAKE_SOURCE_DIR}/cmake/config.cmake.in"
-  "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+  "${CMAKE_BINARY_DIR}/cmake/${CMAKE_PROJECT_NAME}Config.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}")
 
-write_basic_package_version_file("${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+write_basic_package_version_file("${CMAKE_BINARY_DIR}/cmake/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
   VERSION "${PROJECT_VERSION}"
   COMPATIBILITY AnyNewerVersion)
 
-install(TARGETS ${PROJECT_NAME}
-  EXPORT "${PROJECT_NAME}Targets"
+install(TARGETS ${CMAKE_PROJECT_NAME}
+  EXPORT "${CMAKE_PROJECT_NAME}Targets"
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
@@ -170,16 +170,16 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/")
 
-install(EXPORT "${PROJECT_NAME}Targets"
-  FILE "${PROJECT_NAME}Targets.cmake"
-  NAMESPACE ${PROJECT_NAME}::
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+install(EXPORT "${CMAKE_PROJECT_NAME}Targets"
+  FILE "${CMAKE_PROJECT_NAME}Targets.cmake"
+  NAMESPACE ${CMAKE_PROJECT_NAME}::
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}")
 
 install(FILES
-  "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
-  "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+  "${CMAKE_BINARY_DIR}/cmake/${CMAKE_PROJECT_NAME}Config.cmake"
+  "${CMAKE_BINARY_DIR}/cmake/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}")
 
-export(EXPORT "${PROJECT_NAME}Targets"
-  FILE "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Targets.cmake"
-  NAMESPACE ${PROJECT_NAME}::)
+export(EXPORT "${CMAKE_PROJECT_NAME}Targets"
+  FILE "${CMAKE_BINARY_DIR}/cmake/${CMAKE_PROJECT_NAME}Targets.cmake"
+  NAMESPACE ${CMAKE_PROJECT_NAME}::)
