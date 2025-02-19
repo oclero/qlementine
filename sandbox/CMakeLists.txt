@@ -17,7 +17,7 @@ qt_add_executable(${SANDBOX_NAME} WIN32 MACOSX_BUNDLE
 )
 
 target_link_libraries(${SANDBOX_NAME} PUBLIC
-  oclero::qlementine
+  qlementine
 )
 
 install(

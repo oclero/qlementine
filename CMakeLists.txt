@@ -13,7 +13,6 @@ project("qlementine"
   DESCRIPTION "Modern QStyle for desktop Qt applications."
 )
 set(PROJECT_COPYRIGHT "© Olivier Cléro, MIT License.")
-set(PROJECT_NAMESPACE "oclero")
 
 # Temporary hack to make it work with Qt6 <6.4.2 && >6.4.2 With Qt5, it was
 # "path/to/Qt/6.7.0/msvc2019_64/lib/cmake/Qt6", but with Qt6, it is now
