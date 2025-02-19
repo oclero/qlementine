@@ -26,20 +26,13 @@ jobs:
           target: desktop
           arch: win64_msvc2022_64
 
-      - name: Setup directories.
-        run: |
-          mkdir build_lib
-          mkdir build_sandbox
-
       - name: Build the library.
-        working-directory: ${{github.workspace}}/build_lib
         run: |
-          cmake .. --preset windows
-          cmake --build .
-          cmake --install .
+          cmake --preset windows
+          cmake --build --preset windows
+          cmake --install _build
 
       - name: Build the Sandbox app.
-        working-directory: ${{github.workspace}}/build_sandbox
         run: |
-          cmake .. --preset windows-sandbox
-          cmake --build .
+          cmake --preset windows-sandbox
+          cmake --build --preset windows-sandbox

@@ -26,20 +26,13 @@ jobs:
           target: desktop
           arch: linux_gcc_64
 
-      - name: Setup directories.
-        run: |
-          mkdir build_lib
-          mkdir build_sandbox
-
       - name: Build the library.
-        working-directory: ${{github.workspace}}/build_lib
         run: |
-          cmake .. --preset linux
-          cmake --build .
-          cmake --install .
+          cmake --preset linux
+          cmake --build --preset linux
+          cmake --install _build
 
       - name: Build the Sandbox app.
-        working-directory: ${{github.workspace}}/build_sandbox
         run: |
-          cmake .. --preset linux-sandbox
-          cmake --build .
+          cmake --preset linux-sandbox
+          cmake --build --preset linux-sandbox

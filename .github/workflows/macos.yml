@@ -26,20 +26,13 @@ jobs:
           target: desktop
           arch: clang_64
 
-      - name: Setup directories.
-        run: |
-          mkdir build_lib
-          mkdir build_sandbox
-
       - name: Build the library.
-        working-directory: ${{github.workspace}}/build_lib
         run: |
-          cmake .. --preset macos
-          cmake --build .
-          cmake --install .
+          cmake --preset macos
+          cmake --build --preset macos
+          cmake --install _build
 
       - name: Build the Sandbox app.
-        working-directory: ${{github.workspace}}/build_sandbox
         run: |
-          cmake .. --preset macos-sandbox
-          cmake --build .
+          cmake --preset macos-sandbox
+          cmake --build --preset macos-sandbox
