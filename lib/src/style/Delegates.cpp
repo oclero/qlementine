@@ -37,7 +37,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     p->setPen(QPen(color, lineW, Qt::SolidLine, Qt::FlatCap));
     p->drawLine(QPointF{ x, y1 }, QPointF{ x, y2 });
   } else {
-    const auto mouse = getMenuItemMouseState(opt.state);
+    const auto mouse = getComboBoxItemMouseState(opt.state);
 
     // Background.
     const auto& bgRect = contentRect;

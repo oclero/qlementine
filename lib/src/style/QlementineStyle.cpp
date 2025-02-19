@@ -924,8 +924,13 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto& color = listItemRowBackgroundColor(mouse, alternate);
         p->fillRect(optItem->rect, color);
 
-        // Draw selection color in the arrow area.
-        drawPrimitive(PE_PanelItemViewItem, opt, p, w);
+        // Draw selection color in the arrow area,
+        // except in comboboxes as selection drawing is handled by the delegate already.
+        const auto* popup = w->parentWidget();
+        const auto isComboBoxPopupContainer = popup != nullptr && popup->inherits("QComboBoxPrivateContainer");
+        if (!isComboBoxPopupContainer) {
+          drawPrimitive(PE_PanelItemViewItem, opt, p, w);
+        }
       }
       return;
     case PE_PanelStatusBar: {
@@ -1434,7 +1439,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           }
 
           // Icon.
-          const auto iconSpace = optMenuItem->maxIconWidth > 0 ? optMenuItem->maxIconWidth + spacing : 0;
+          const auto iconSpace = !QCoreApplication::testAttribute(Qt::AA_DontShowIconsInMenus) && optMenuItem->maxIconWidth > 0 ? optMenuItem->maxIconWidth + spacing : 0;
           const auto pixmap = getPixmap(optMenuItem->icon, _impl->theme.iconSize, mouse, checkState, w);
           if (!pixmap.isNull()) {
             const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor);
@@ -3812,8 +3817,7 @@ QSize QlementineStyle::sizeFromContents(
           const auto shortcutW = hasShortcut ? 3 * spacing - reservedShortcutW : 0;
 
           // Icon.
-          const auto hasIcon = !optMenuItem->icon.isNull();
-          const auto iconW = hasIcon ? iconSize.width() + spacing : 0;
+          const auto iconW = !QCoreApplication::testAttribute(Qt::AA_DontShowIconsInMenus) && optMenuItem->maxIconWidth > 0 ? optMenuItem->maxIconWidth + spacing : 0;
 
           // Check or Radio.
           const auto hasCheck =
