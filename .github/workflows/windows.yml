@@ -32,6 +32,4 @@ jobs:
           cmake --build --preset windows --target install
 
       - name: Build the Sandbox app.
-        run: |
-          cmake --preset windows-sandbox
-          cmake --build --preset windows-sandbox
+        run: cmake --build --preset windows-sandbox

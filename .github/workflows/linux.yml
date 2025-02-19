@@ -32,6 +32,4 @@ jobs:
           cmake --build --preset linux --target install
 
       - name: Build the Sandbox app.
-        run: |
-          cmake --preset linux-sandbox
-          cmake --build --preset linux-sandbox
+        run: cmake --build --preset linux-sandbox

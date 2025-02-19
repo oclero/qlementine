@@ -33,6 +33,4 @@ jobs:
           cmake --install _build
 
       - name: Build the Sandbox app.
-        run: |
-          cmake --preset macos-sandbox
-          cmake --build --preset macos-sandbox
+        run: cmake --build --preset macos-sandbox
