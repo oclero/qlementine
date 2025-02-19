@@ -30,7 +30,6 @@ jobs:
         run: |
           cmake --preset macos -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
           cmake --build --preset macos --target install
-          cmake --install _build
 
       - name: Build the Sandbox app.
         run: cmake --build --preset macos-sandbox
