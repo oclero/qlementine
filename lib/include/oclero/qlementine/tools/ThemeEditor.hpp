@@ -20,7 +20,7 @@ public:
   const Theme& theme() const;
   void setTheme(const Theme& theme);
 
-signals:
+Q_SIGNALS:
   void themeChanged(const oclero::qlementine::Theme& theme);
 
 private:

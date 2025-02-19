@@ -24,10 +24,10 @@ public:
 
   Popover* popover() const;
 
-public slots:
+public Q_SLOTS:
   void setPopoverOpened(bool opened);
 
-signals:
+Q_SIGNALS:
   void popoverOpenedChanged(bool opened);
 
 protected:

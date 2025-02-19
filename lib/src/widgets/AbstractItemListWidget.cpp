@@ -55,7 +55,7 @@ void AbstractItemListWidget::setCurrentIndex(int index) {
     update();
     updateCurrentIndexAnimation();
     updateItemsAnimations();
-    emit currentIndexChanged();
+    Q_EMIT currentIndexChanged();
   }
 }
 
@@ -124,8 +124,8 @@ int AbstractItemListWidget::addItem(
   updateGeometry();
   updateItemsAnimations();
   updateCurrentIndexAnimation();
-  emit itemCountChanged();
-  emit currentIndexChanged();
+  Q_EMIT itemCountChanged();
+  Q_EMIT currentIndexChanged();
 
   const auto [bgColor, fgColor, badgeBgColor, badgeFgColor] = getItemBgAndFgColor(itemCount(), MouseState::Normal);
   bgColorAnimation->setDuration(animDuration);
@@ -168,7 +168,7 @@ void AbstractItemListWidget::removeItem(int index) {
       setCurrentIndex(std::max(-1, index - 1));
     }
 
-    emit itemCountChanged();
+    Q_EMIT itemCountChanged();
   }
 }
 
@@ -272,7 +272,7 @@ void AbstractItemListWidget::setIconSize(const QSize& size) {
     _iconSize = size;
     updateGeometry();
     update();
-    emit iconSizeChanged();
+    Q_EMIT iconSizeChanged();
   }
 }
 
@@ -288,7 +288,7 @@ void AbstractItemListWidget::setItemsShouldExpand(bool expand) {
     updateCurrentIndexAnimation(true);
     _focusFrame->update();
     _focusFrame->updateGeometry();
-    emit itemsShouldExpandChanged();
+    Q_EMIT itemsShouldExpandChanged();
   }
 }
 

@@ -28,7 +28,7 @@ public:
   ColorMode colorMode() const;
   void setColorMode(ColorMode mode);
 
-signals:
+Q_SIGNALS:
   void colorChanged();
   void colorModeChanged();
 

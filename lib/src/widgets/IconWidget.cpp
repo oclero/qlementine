@@ -52,7 +52,7 @@ const QSize& IconWidget::iconSize() const {
 void IconWidget::setIconSize(const QSize& iconSize) {
   if (iconSize != _iconSize) {
     _iconSize = iconSize;
-    emit iconSizeChanged();
+    Q_EMIT iconSizeChanged();
     updateGeometry();
     update();
   }

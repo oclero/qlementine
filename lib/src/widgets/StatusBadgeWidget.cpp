@@ -27,7 +27,7 @@ void StatusBadgeWidget::setBadge(StatusBadge badge) {
   if (badge != _badge) {
     _badge = badge;
     update();
-    emit badgeChanged();
+    Q_EMIT badgeChanged();
   }
 }
 
@@ -40,7 +40,7 @@ void StatusBadgeWidget::setBadgeSize(StatusBadgeSize size) {
     _badgeSize = size;
     updateGeometry();
     update();
-    emit badgeSizeChanged();
+    Q_EMIT badgeSizeChanged();
   }
 }
 
