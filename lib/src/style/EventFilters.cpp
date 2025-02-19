@@ -311,6 +311,8 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
   switch (type) {
     case QEvent::Type::Show: {
+      _mousePressed = false;
+
       // Place the QMenu correctly by making up for the drop shadow margins.
       // It'll be reset before every show, so we can safely move it every time.
       // Submenus should already be placed correctly, so there's no need to translate their geometry.
@@ -337,7 +339,14 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         });
       }
     } break;
+    case QEvent::Type::MouseMove: {
+      if (static_cast<QMouseEvent*>(evt)->buttons()) {
+        _mousePressed = true;
+      }
+    }
+    break;
     case QEvent::Type::MouseButtonPress: {
+      _mousePressed = true;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
       const auto mousePos = mouseEvt->pos();
       if (const auto* action = _menu->actionAt(mousePos)) {
@@ -349,6 +358,10 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
       }
     } break;
     case QEvent::Type::MouseButtonRelease: {
+      if (!_mousePressed) {
+        return true; // ignore
+      }
+      _mousePressed = false;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
       const auto mousePos = mouseEvt->pos();
       if (auto* action = _menu->actionAt(mousePos)) {
@@ -382,12 +395,14 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* view)
   : QObject(view)
   , _comboBox(comboBox)
-  , _view(view) {
+  , _view(view)
+  , _initialMaxHeight(view->maximumHeight()) {
   _view->installEventFilter(this);
 
   auto* comboBoxPopup = _view->parentWidget();
   comboBoxPopup->installEventFilter(this);
 
+  /*
   const auto childWidgets = comboBoxPopup->findChildren<QWidget*>();
   for (auto* child : childWidgets) {
     if (child->inherits("QComboBoxPrivateScroller")) {
@@ -395,6 +410,7 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* v
       child->setVisible(false);
     }
   }
+*/
 
   _comboBox->installEventFilter(this);
 }
@@ -424,7 +440,7 @@ void ComboboxItemViewFilter::fixViewGeometry() {
   const auto borderWidth = qlementineStyle->theme().borderWidth;
   const auto width =
     std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + hMargin * 2 + borderWidth * 2;
-  const auto height = viewMinimumSizeHint().height();
+  const auto height = std::min(800, viewMinimumSizeHint().height());
   _view->setFixedWidth(width);
   _view->setFixedHeight(height);
   _view->parentWidget()->adjustSize();
@@ -434,11 +450,10 @@ QSize ComboboxItemViewFilter::viewMinimumSizeHint() const {
   // QListView::minimumSizeHint() doesn't give the correct minimumHeight,
   // so we have to compute it.
   const auto rowCount = _view->model()->rowCount();
-  const auto maxHeight = _view->maximumHeight();
   auto height = 0;
-  for (auto i = 0; i < rowCount && height <= maxHeight; ++i) {
+  for (auto i = 0; i < rowCount && height <= _initialMaxHeight; ++i) {
     const auto rowSizeHint = _view->sizeHintForRow(i);
-    height = std::min(maxHeight, height + rowSizeHint);
+    height = std::min(_initialMaxHeight, height + rowSizeHint);
   }
   // It looks like it is OK for the width, though.
   const auto width = _view->sizeHintForColumn(0);
