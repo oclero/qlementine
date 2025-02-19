@@ -19,22 +19,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          aqtversion: "==3.1.*"
           version: "6.8.0"
           host: windows
           target: desktop
           arch: win64_msvc2022_64
 
-      - name: Configure CMake
-        run: cmake --preset windows
-
       - name: Build the library.
-        run: cmake --build --preset windows
-
-      - name: Install the library.
-        run: cmake --install .
+        working-directory: ${{github.workspace}}/build_lib
+        run: |
+          cmake .. --preset windows
+          cmake --build .
+          cmake --install .
 
       - name: Build the Sandbox app.
-        run: cmake --build --preset windows-sandbox
+        working-directory: ${{github.workspace}}/build_sandbox
+        run: |
+          cmake .. --preset windows-sandbox
+          cmake --build .

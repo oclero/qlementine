@@ -19,22 +19,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          aqtversion: "==3.1.*"
           version: "6.8.0"
           host: mac
           target: desktop
           arch: clang_64
 
-      - name: Configure CMake
-        run: cmake --preset macos
-
       - name: Build the library.
-        run: cmake --build --preset macos
-
-      - name: Install the library.
-        run: cmake --install .
+        working-directory: ${{github.workspace}}/build_lib
+        run: |
+          cmake .. --preset macos
+          cmake --build .
+          cmake --install .
 
       - name: Build the Sandbox app.
-        run: cmake --build --preset macos-sandbox
+        working-directory: ${{github.workspace}}/build_sandbox
+        run: |
+          cmake .. --preset macos-sandbox
+          cmake --build .

@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.21.0)
 
-# Custom CMake modules.
-# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 # Enable parallel build (not enabled by default on Windows).
 set(CMAKE_BUILD_PARALLEL_LEVEL $ENV{NUMBER_OF_PROCESSORS})
 
