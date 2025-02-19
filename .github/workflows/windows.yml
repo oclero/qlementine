@@ -34,7 +34,7 @@ jobs:
         run: cmake --build --preset windows
 
       - name: Install the library.
-        run: cmake --install
+        run: cmake --install .
 
       - name: Build the Sandbox app.
         run: cmake --build --preset windows-sandbox
