@@ -13,7 +13,7 @@
 2. Link with the library in CMake.
 
    ```cmake
-   target_link_libraries(your_project oclero::qlementine)
+   target_link_libraries(your_project qlementine)
    ```
 
 ## Usage in code
