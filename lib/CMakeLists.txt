@@ -152,7 +152,7 @@ if(WIN32)
 endif()
 
 # Install target
-configure_package_config_file("${CMAKE_SOURCE_DIR}/cmake/config.cmake.in"
+configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/config.cmake.in"
   "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
