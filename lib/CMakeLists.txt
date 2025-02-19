@@ -15,6 +15,7 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/BadgeUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ColorUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FontUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/GeometryUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/IconUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ImageUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/LayoutUtils.cpp
@@ -61,6 +62,7 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/BadgeUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ColorUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/FontUtils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/GeometryUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/IconUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ImageUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/LayoutUtils.hpp
