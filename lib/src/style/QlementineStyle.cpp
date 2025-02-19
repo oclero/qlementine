@@ -266,7 +266,7 @@ Theme const& QlementineStyle::theme() const {
 void QlementineStyle::setTheme(Theme const& theme) {
   if (_impl->theme != theme) {
     _impl->theme = theme;
-    emit themeChanged();
+    Q_EMIT themeChanged();
 
     triggerCompleteRepaint();
   }
@@ -286,7 +286,7 @@ bool QlementineStyle::animationsEnabled() const {
 void QlementineStyle::setAnimationsEnabled(bool enabled) {
   if (enabled != _impl->animations.enabled()) {
     _impl->animations.setEnabled(enabled);
-    emit animationsEnabledChanged();
+    Q_EMIT animationsEnabledChanged();
     triggerCompleteRepaint();
   }
 }

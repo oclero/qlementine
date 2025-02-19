@@ -30,7 +30,7 @@
   { \
     const auto pair = makeColorEditorAndLabel(#NAME, DESCRIPTION, &owner, theme.NAME, [this](const QColor& c) { \
       theme.NAME = c; \
-      emit owner.themeChanged(theme); \
+      Q_EMIT owner.themeChanged(theme); \
     }); \
     this->NAME##Editor = pair.second; \
     formLayout->addRow(pair.first, pair.second); \
@@ -40,7 +40,7 @@
   { \
     const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, [this](const QString& s) { \
       theme.meta.NAME = s; \
-      emit owner.themeChanged(theme); \
+      Q_EMIT owner.themeChanged(theme); \
     }); \
     this->NAME##Editor = pair.second; \
     formLayout->addRow(pair.first, pair.second); \
@@ -516,7 +516,7 @@ void ThemeEditor::setTheme(const Theme& theme) {
   if (theme != _impl->theme) {
     _impl->theme = theme;
     _impl->updateUi();
-    emit themeChanged(_impl->theme);
+    Q_EMIT themeChanged(_impl->theme);
   }
 }
 } // namespace oclero::qlementine

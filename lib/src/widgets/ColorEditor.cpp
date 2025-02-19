@@ -44,12 +44,12 @@ void ColorEditor::setup(const QColor& initialColor) {
   // Connect widgets together.
   QObject::connect(_colorButton, &ColorButton::colorChanged, this, [this]() {
     syncLineEditFromButton();
-    emit colorChanged();
+    Q_EMIT colorChanged();
   });
 
   QObject::connect(_colorButton, &ColorButton::colorModeChanged, this, [this]() {
     syncLineEditFromButton();
-    emit colorModeChanged();
+    Q_EMIT colorModeChanged();
   });
 
 

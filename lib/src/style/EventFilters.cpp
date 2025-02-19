@@ -233,7 +233,7 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
       const auto tabIndex = _tabBar->tabAt(mouseEvent->pos());
       if (tabIndex != -1 && _tabBar->isTabVisible(tabIndex)) {
         evt->accept();
-        emit _tabBar->tabCloseRequested(tabIndex);
+        Q_EMIT _tabBar->tabCloseRequested(tabIndex);
         return true;
       }
     } else if (mouseEvent->button() == Qt::MouseButton::RightButton) {
@@ -241,7 +241,7 @@ bool TabBarEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
       const auto tabIndex = _tabBar->tabAt(mouseEvent->pos());
       if (tabIndex != -1 && _tabBar->isTabVisible(tabIndex)) {
         evt->accept();
-        emit _tabBar->customContextMenuRequested(mouseEvent->pos());
+        Q_EMIT _tabBar->customContextMenuRequested(mouseEvent->pos());
         return true;
       }
     }

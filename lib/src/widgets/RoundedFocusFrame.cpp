@@ -11,7 +11,7 @@ const RadiusesF& RoundedFocusFrame::radiuses() const {
 void RoundedFocusFrame::setRadiuses(const RadiusesF& radiuses) {
   if (radiuses != _radiuses) {
     _radiuses = radiuses;
-    emit radiusesChanged();
+    Q_EMIT radiusesChanged();
     update();
   }
 }

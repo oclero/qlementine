@@ -41,7 +41,7 @@ void PlainTextEdit::setStatus(Status status) {
   if (status != _status) {
     _status = status;
     update();
-    emit statusChanged();
+    Q_EMIT statusChanged();
   }
 }
 
