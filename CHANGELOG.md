@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.2
+
+- Fix relative path in CMake.
+
 ## v1.0.1
 
 - The lib can now be installed properly!
