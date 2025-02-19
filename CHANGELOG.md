@@ -3,6 +3,7 @@
 ## v1.0.2
 
 - Fix relative path in CMake.
+- Update Inter fonts to v4.1.
 
 ## v1.0.1
 
