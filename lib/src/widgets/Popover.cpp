@@ -6,97 +6,116 @@
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
+#include <oclero/qlementine/utils/GeometryUtils.hpp>
 
-#include <QPainter>
-#include <QMouseEvent>
-#include <QBitmap>
-#include <QScreen>
 #include <QApplication>
+#include <QBitmap>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QScreen>
+#include <QStyle>
+#include <QStylePainter>
+#include <QTimer>
 
 #include <array>
 
 namespace oclero::qlementine {
-class PopoverFrame : public QWidget {
-public:
-  QVBoxLayout* _layout;
+// Values taken arbitrarly, to make it feel smooth and natural.
+constexpr auto openAnimationDurationFactor = .75;
+constexpr auto closeAnimationDurationFactor = .9;
 
+constexpr auto defaultFramePadding = 16;
+
+#ifdef __APPLE
+const bool Popover::_shouldDrawDropShadow = false;
+#else
+const bool Popover::_shouldDrawDropShadow = true;
+#endif
+
+// Sert de conteneur au contenu du Popover.
+class Popover::PopoverFrame : public QWidget {
+private:
+  std::function<void()> _onResize;
+
+public:
   explicit PopoverFrame(QWidget* parent)
     : QWidget(parent) {
     // Transparent background.
-    setAutoFillBackground(false);
     setAttribute(Qt::WA_TranslucentBackground);
+    setAutoFillBackground(false);
     setBackgroundRole(QPalette::NoRole);
 
     // Layout where the content will be.
-    _layout = new QVBoxLayout(this);
-    _layout->setSpacing(0);
-    _layout->setContentsMargins(0, 0, 0, 0);
-    setLayout(_layout);
+    auto* layout = new QVBoxLayout(this);
+    layout->setSpacing(0);
+    layout->setContentsMargins(defaultFramePadding, defaultFramePadding, defaultFramePadding, defaultFramePadding);
+    setLayout(layout);
+  }
 
-    // Mask to have rounded corners on content.
-    // NB: There won't be any antialiasing because this is a limitation of Qt.
-    updateMask();
+  void onResize(const std::function<void()>&& cb) {
+    _onResize = cb;
+    if (_onResize) {
+      _onResize();
+    }
   }
 
   void resizeEvent(QResizeEvent* e) override {
     QWidget::resizeEvent(e);
-    updateMask();
-  }
-
-  QPixmap getMask() const {
-    const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(this->style());
-    const auto radius = qlementineStyle ? qlementineStyle->theme().borderRadius : 0;
-    const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
-    const auto totalRect = rect();
-    const auto innerRect = totalRect.marginsRemoved({ borderWidth, borderWidth, borderWidth, borderWidth });
-    QPixmap mask(size());
-    mask.fill(Qt::white);
-    QPainter p(&mask);
-    p.setRenderHint(QPainter::Antialiasing, true);
-    drawRoundedRect(&p, innerRect, Qt::black, radius);
-    return mask;
-  }
-
-  void updateMask() {
-    const auto mask = getMask();
-    const auto maskPixmap = QBitmap::fromPixmap(mask);
-    setMask(maskPixmap);
+    if (_onResize) {
+      _onResize();
+    }
   }
 };
 
 Popover::Popover(QWidget* parent)
   : QWidget(parent) {
-  setWindowFlag(Qt::WindowType::Tool, true);
-  setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
-  setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, true);
-  setBackgroundRole(QPalette::NoRole);
-  setAutoFillBackground(false);
   setAttribute(Qt::WA_TranslucentBackground, true);
   setAttribute(Qt::WA_OpaquePaintEvent, false);
   setAttribute(Qt::WA_NoSystemBackground, true);
+
+  setWindowFlag(Qt::WindowType::Popup, true);
+  setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
+  if (_shouldDrawDropShadow) {
+    setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, true);
+  } else {
+    setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, false);
+  }
+
+  setBackgroundRole(QPalette::NoRole);
+  setAutoFillBackground(false);
+  // Semble n'avoir aucun effet avec Qt::WindowType::Popup.
   setWindowModality(Qt::WindowModality::NonModal);
+  setFocusPolicy(Qt::FocusPolicy::NoFocus);
+
+  const auto& palette = this->palette();
+  _backgroundColor = palette.color(QPalette::ColorGroup::Current, QPalette::ColorRole::Window);
+  _borderColor = palette.color(QPalette::ColorGroup::Current, QPalette::ColorRole::Button);
 
   const auto* style = this->style();
 
   // Popover layout, used to place the content and keep space for the drop shadow.
-  const auto dropShadowYOffset = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing) / 2;
-  const auto dropShadowBlurRadius = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
-
   auto* popoverLayout = new QVBoxLayout(this);
   popoverLayout->setSpacing(0);
-  popoverLayout->setContentsMargins(dropShadowBlurRadius * 2, dropShadowBlurRadius * 2, dropShadowBlurRadius * 2,
-    dropShadowYOffset + dropShadowBlurRadius * 2);
+  popoverLayout->setContentsMargins(0, 0, 0, 0);
+  setLayout(popoverLayout);
+  updateDropShadowMargins();
 
   // Layout.
-  auto* frame = new PopoverFrame(this);
-  _frame = frame;
-  _frameLayout = frame->_layout;
-  popoverLayout->addWidget(frame);
+  _frame = new Popover::PopoverFrame(this);
+  _frame->onResize([this]() {
+    // Permet d'éviter que des widgets débordent dans les coins arrondis.
+    const auto mask = getFrameMask();
+    _frame->setMask(mask);
+  });
+  _frameLayout = static_cast<QVBoxLayout*>(_frame->layout());
+  popoverLayout->addWidget(_frame);
 
   // Opacity animation.
-  _opacityAnimation.setDuration(style->styleHint(QStyle::SH_Widget_Animation_Duration));
+  const auto opacityAnimDuration =
+    _animated ? style->styleHint(QStyle::SH_Widget_Animation_Duration) * openAnimationDurationFactor : 0;
   constexpr auto startOpacity = 0.;
   const auto startOpacityVar = QVariant::fromValue<double>(startOpacity);
+  _opacityAnimation.setDuration(opacityAnimDuration);
   _opacityAnimation.setStartValue(startOpacityVar);
   _opacityAnimation.setEndValue(startOpacityVar);
   setWindowOpacity(startOpacity);
@@ -108,12 +127,20 @@ Popover::Popover(QWidget* parent)
     if (_opened) {
       Q_EMIT opened();
     } else {
-      _mousePressWasOnAnchor = false;
       Q_EMIT closed();
       hide();
     }
   });
+
+  // Timer to prevent the popup to re-open again and again when clicking on the anchor widget.
+  _clickTimer.setSingleShot(true);
+  _clickTimer.setInterval(style->styleHint(QStyle::SH_Widget_Animation_Duration) * closeAnimationDurationFactor);
+
+  // Allows to define properties with CSS.
+  ensurePolished();
 }
+
+Popover::~Popover() {}
 
 Popover::Position Popover::preferredPosition() const {
   return _preferredPosition;
@@ -128,7 +155,6 @@ void Popover::setPreferredPosition(Position position) {
     Q_EMIT preferredPositionChanged();
   }
 }
-
 
 Popover::Alignment Popover::preferredAlignment() const {
   return _preferredAlignment;
@@ -150,6 +176,12 @@ QWidget* Popover::contentWidget() const {
 
 void Popover::setContentWidget(QWidget* widget) {
   if (widget != _content) {
+    // Check if there is no parenting issues.
+    if (_anchorWidget && widget->isAncestorOf(_anchorWidget)) {
+      qWarning() << "The Popover's anchor widget cannot be a child of the Popover's content widget.";
+      return;
+    }
+
     if (_content) {
       _content = nullptr;
 
@@ -163,7 +195,7 @@ void Popover::setContentWidget(QWidget* widget) {
     _content = widget;
 
     if (_content) {
-      _content->setParent(this);
+      _content->setParent(_frame);
       _content->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
       _frameLayout->addWidget(_content);
     }
@@ -213,6 +245,7 @@ QMargins Popover::screenPadding() const {
 
 void Popover::setScreenPadding(const QMargins& padding) {
   if (padding != _screenPadding) {
+    _screenPadding = padding;
     if (isVisible()) {
       updatePopoverGeometry();
     }
@@ -220,27 +253,13 @@ void Popover::setScreenPadding(const QMargins& padding) {
 }
 
 QWidget* Popover::anchorWidget() const {
-  return _anchor;
+  return _anchorWidget;
 }
 
 void Popover::setAnchorWidget(QWidget* widget) {
-  if (widget != _anchor) {
-    if (_anchor) {
-      _anchor->removeEventFilter(this);
-    }
-
-    _anchor = widget;
-
-    if (_anchor) {
-      // Move the popup when the anchor moves.
-      _anchor->installEventFilter(this);
-
-      // Move the popup when the anchor's window moves.
-      if (auto* anchorWindow = _anchor->window(); anchorWindow != _anchor) {
-        anchorWindow->installEventFilter(this);
-      }
-    }
-
+  if (widget != _anchorWidget) {
+    // Register to new anchor widget.
+    _anchorWidget = widget;
     if (isVisible()) {
       updatePopoverGeometry();
     }
@@ -276,6 +295,93 @@ void Popover::setHorizontalSpacing(int spacing) {
   }
 }
 
+const QColor& Popover::dropShadowColor() const {
+  return _dropShadowColor;
+}
+
+void Popover::setDropShadowColor(const QColor& color) {
+  if (color != _dropShadowColor) {
+    _dropShadowColor = color;
+    updateDropShadowCache();
+    Q_EMIT dropShadowColorChanged();
+    update();
+  }
+}
+
+qreal Popover::radius() const {
+  return _radius;
+}
+
+void Popover::setRadius(qreal radius) {
+  if (radius != _radius) {
+    _radius = radius;
+    Q_EMIT radiusChanged();
+    updateGeometry();
+    update();
+  }
+}
+
+qreal Popover::borderWidth() const {
+  return _borderWidth;
+}
+
+void Popover::setBorderWidth(qreal value) {
+  if (value != _borderWidth) {
+    _borderWidth = value;
+    Q_EMIT borderWidthChanged();
+    update();
+  }
+}
+
+qreal Popover::dropShadowRadius() const {
+  return _dropShadowRadius;
+}
+
+void Popover::setDropShadowRadius(qreal radius) {
+  if (radius != _dropShadowRadius) {
+    _dropShadowRadius = radius;
+    Q_EMIT dropShadowRadiusChanged();
+    updateGeometry();
+    update();
+  }
+}
+
+bool Popover::canBeOverAnchor() const {
+  return _canBeOverAnchor;
+}
+
+void Popover::setCanBeOverAnchor(bool value) {
+  if (value != _canBeOverAnchor) {
+    _canBeOverAnchor = value;
+    Q_EMIT canBeOverAnchorChanged();
+    updateGeometry();
+  }
+}
+
+const QColor& Popover::backgroundColor() const {
+  return _backgroundColor;
+}
+
+void Popover::setBackgroundColor(const QColor& color) {
+  if (color != _backgroundColor) {
+    _backgroundColor = color;
+    Q_EMIT backgroundColorChanged();
+    update();
+  }
+}
+
+const QColor& Popover::borderColor() const {
+  return _borderColor;
+}
+
+void Popover::setBorderColor(const QColor& color) {
+  if (color != _borderColor) {
+    _borderColor = color;
+    Q_EMIT borderColorChanged();
+    update();
+  }
+}
+
 void Popover::openPopover() {
   setOpened(true);
 }
@@ -284,60 +390,69 @@ void Popover::closePopover() {
   setOpened(false);
 }
 
-void Popover::paintEvent(QPaintEvent*) {
-  const auto* style = this->style();
-  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
+void Popover::togglePopover() {
+  if (isOpened()) {
+    closePopover();
+  } else {
+    openPopover();
+  }
+}
 
+void Popover::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
 
   // Drop shadow.
-  {
+  if (_shouldDrawDropShadow) {
     // Update cache if necessary.
-    if (_dropShadowCacheSize != size()) {
-      const auto dropShadowBlurRadius = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
-      const auto& dropShadowColor = qlementineStyle ? qlementineStyle->theme().shadowColor1 : QColor(0, 0, 0, 64);
-      const auto framePixmap = getFrameShape();
-      _dropShadowCache = qlementine::getDropShadowPixmap(framePixmap, dropShadowBlurRadius, dropShadowColor);
-      _dropShadowCacheSize = size();
+    if (_dropShadowCache.size != size()) {
+      updateDropShadowCache();
     }
-    const auto dropShadowYOffset = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing) / 2;
-    const auto dropShadowX = _frame->x() + (_frame->width() - _dropShadowCache.width()) / 2;
-    const auto dropShadowY = _frame->y() + (_frame->height() - _dropShadowCache.height()) / 2 + dropShadowYOffset;
+    const auto dropShadowYOffset = _dropShadowRadius / 2.;
+    const auto dropShadowX = _frame->x() + (_frame->width() - _dropShadowCache.size.width()) / 2;
+    const auto dropShadowY = _frame->y() + (_frame->height() - _dropShadowCache.size.height()) / 2 + dropShadowYOffset;
 
     const auto compModeBackup = p.compositionMode();
     p.setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
-    p.drawPixmap(dropShadowX, dropShadowY, _dropShadowCache);
+    p.drawPixmap(dropShadowX, dropShadowY, _dropShadowCache.pixmap);
     p.setCompositionMode(compModeBackup);
   }
 
   // Frame.
   {
-    const auto radius = qlementineStyle ? qlementineStyle->theme().borderRadius : 0;
-    const auto& bgColor = palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Window);
-    const auto& borderColor = qlementineStyle ? qlementineStyle->frameBorderColor()
-                                              : palette().color(QPalette::ColorGroup::Normal, QPalette::ColorRole::Mid);
-    const auto borderWidth = qlementineStyle ? qlementineStyle->theme().borderWidth : 1;
-    const auto bgRect = _frame->rect().translated(_frame->mapTo(this, QPoint(0, 0)));
+    const auto bgRect = _frame->rect().translated(_frame->mapTo(this, QPoint{ 0, 0 }));
+    p.setPen(Qt::NoPen);
+    p.setBrush(_backgroundColor);
+    p.drawRoundedRect(bgRect, _radius, _radius);
 
-    drawRoundedRect(&p, bgRect, bgColor, radius);
-    drawRoundedRectBorder(&p, bgRect, borderColor, borderWidth, radius);
+    const auto half_border = _borderWidth / 2.;
+    const auto border_rect = bgRect.toRectF().adjusted(half_border, half_border, -half_border, -half_border);
+    const auto border_radius = _radius - half_border;
+    p.setPen(QPen{ _borderColor, _borderWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+    p.setBrush(Qt::NoBrush);
+    p.drawRoundedRect(border_rect, border_radius, border_radius);
   }
 }
 
 void Popover::mousePressEvent(QMouseEvent* e) {
-  const auto clickPos = mapToGlobal(e->pos());
-  _mousePressWasOnAnchor = _anchor ? _anchor->rect().contains(_anchor->mapFromGlobal(clickPos)) : false;
-  if (!rect().contains(e->pos())) {
-    setOpened(false);
+  QWidget::mousePressEvent(e);
+
+  if (hitboxContainsPoint(e->position())) {
+    Q_EMIT pressed();
+  } else {
+    e->ignore();
+    closePopover();
   }
 }
 
 void Popover::mouseReleaseEvent(QMouseEvent* e) {
-  QWidget::mousePressEvent(e);
-  const auto& frameRect = _frame->geometry();
-  if (!frameRect.contains(e->pos())) {
-    setOpened(false);
+  QWidget::mouseReleaseEvent(e);
+
+  if (hitboxContainsPoint(e->position())) {
+    Q_EMIT released();
+  } else {
+    e->ignore();
+    closePopover();
   }
 }
 
@@ -349,70 +464,43 @@ void Popover::hideEvent(QHideEvent* e) {
 void Popover::showEvent(QShowEvent* e) {
   QWidget::showEvent(e);
   setOpened(true);
-  setFocus(Qt::FocusReason::ActiveWindowFocusReason);
-}
 
-bool Popover::event(QEvent* e) {
-  const auto type = e->type();
-
-  // Close popup with animation when Escape is pressed.
-  if (type == QEvent::KeyPress || type == QEvent::KeyRelease) {
-    const auto* keyEvent = static_cast<QKeyEvent*>(e);
-    const auto key = keyEvent->key();
-    if (key == Qt::Key_Escape) {
-      setOpened(false);
-      e->accept();
-      return true;
-    }
-  } else if (e->spontaneous() && type == QEvent::ShortcutOverride) {
-    const auto* keyEvent = static_cast<QKeyEvent*>(e);
-    const auto key = keyEvent->key();
-    if (key == Qt::Key_Escape) {
-      setOpened(false);
-      e->accept();
-      return true;
-    }
-  } else if (e->spontaneous() && type == QEvent::Shortcut) {
-    const auto* shortcutEvent = static_cast<QShortcutEvent*>(e);
-    const auto& key = shortcutEvent->key();
-    if (key == Qt::Key_Escape) {
-      setOpened(false);
-      e->accept();
-      return true;
-    }
+  if (_anchorWidget) {
+    // Qt bug: the widget stays in hover state.
+    QEvent leaveEvent(QEvent::Type::Leave);
+    QApplication::sendEvent(_anchorWidget, &leaveEvent);
+    _anchorWidget->update();
   }
-
-  return QWidget::event(e);
 }
 
-bool Popover::eventFilter(QObject*, QEvent* e) {
-  const auto type = e->type();
-  if (type == QEvent::Type::MouseButtonRelease) {
-    const auto* mouseEvent = static_cast<QMouseEvent*>(e);
-    const auto mouseReleaseIsOnAnchor = _anchor ? _anchor->rect().contains(mouseEvent->pos()) : false;
-    const auto tmp = _mousePressWasOnAnchor;
-    _mousePressWasOnAnchor = false;
-    if (tmp && mouseReleaseIsOnAnchor) {
-      e->accept();
-      return true;
-    }
-  } else if (type == QEvent::Type::Resize || type == QEvent::Type::Move) {
-    if (isVisible()) {
-      updatePopoverGeometry();
-    }
+QMargins Popover::dropShadowMargins() const {
+  return layout()->contentsMargins();
+}
+
+void Popover::updateDropShadowMargins() {
+  if (_shouldDrawDropShadow) {
+    const auto dropShadowYOffset = _dropShadowRadius / 2.;
+    const auto spaceForShadow = _dropShadowRadius * 2.;
+    layout()->setContentsMargins(spaceForShadow, spaceForShadow, spaceForShadow, spaceForShadow + dropShadowYOffset);
+  } else {
+    layout()->setContentsMargins(0, 0, 0, 0);
   }
-  return false;
 }
 
-void Popover::focusOutEvent(QFocusEvent* e) {
-  QWidget::focusOutEvent(e);
-  if (auto* focusWidget = QApplication::focusWidget(); !isAncestorOf(focusWidget)) {
-    setOpened(false);
+void Popover::updateDropShadowCache() {
+  if (_shouldDrawDropShadow) {
+    const auto framePixmap = getFrameShape();
+    _dropShadowCache.size = size();
+    _dropShadowCache.pixmap = qlementine::getDropShadowPixmap(framePixmap, _dropShadowRadius, _dropShadowColor);
+  } else {
+    _dropShadowCache.size = { 0, 0 };
+    _dropShadowCache.pixmap = {};
   }
 }
 
 void Popover::updatePopoverGeometry() {
   // First of all, ensure the popup fits its content.
+  _frame->adjustSize();
   adjustSize();
 
   // Check if the preferred position fits entirely on screen, or try another position until it works.
@@ -423,10 +511,12 @@ void Popover::updatePopoverGeometry() {
 
     // Success: the popup fits on screen.
     const auto aboveAnchor =
-      _anchor ? _anchor->rect().translated(_anchor->mapToGlobal(QPoint{ 0, 0 })).intersects(geometry) : false;
-    if (screenGeometry.contains(geometry) && !aboveAnchor) {
+      _anchorWidget ? _anchorWidget->rect().translated(_anchorWidget->mapToGlobal(QPoint{ 0, 0 })).intersects(geometry)
+                    : false;
+    const auto allowed = aboveAnchor ? _canBeOverAnchor : true;
+    if (screenGeometry.contains(geometry) && allowed) {
       // Now, translate it to include the drop shadow.
-      const auto dropShadowMargins = layout()->contentsMargins();
+      const auto dropShadowMargins = this->dropShadowMargins();
       geometry.translate(-dropShadowMargins.left(), -dropShadowMargins.top());
       setGeometry(geometry);
       return;
@@ -470,25 +560,25 @@ QRect Popover::getGeometryForPosition(Position const position, Alignment const a
   };
   QRect result;
 
-  if (_anchor) {
+  if (_anchorWidget) {
     QPoint topLeft;
     switch (position) {
       case Position::Left: {
         switch (alignment) {
           case Alignment::Begin: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ 0, 0 });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ 0, 0 });
             const auto x = anchorPoint.x() - _horizontalSpacing - popoverFittedSize.width();
             const auto y = anchorPoint.y() + _verticalSpacing;
             topLeft = { x, y };
           } break;
           case Alignment::Center: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ 0, _anchor->height() / 2 });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ 0, _anchorWidget->height() / 2 });
             const auto x = anchorPoint.x() - _horizontalSpacing - popoverFittedSize.width();
             const auto y = anchorPoint.y() - popoverSize.height() / 2;
             topLeft = { x, y };
           } break;
           case Alignment::End: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ 0, _anchor->height() });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ 0, _anchorWidget->height() });
             const auto x = anchorPoint.x() - _horizontalSpacing - popoverFittedSize.width();
             const auto y = anchorPoint.y() - popoverSize.height() + _verticalSpacing;
             topLeft = { x, y };
@@ -500,19 +590,21 @@ QRect Popover::getGeometryForPosition(Position const position, Alignment const a
       case Position::Right: {
         switch (alignment) {
           case Alignment::Begin: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ _anchor->width(), 0 });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ _anchorWidget->width(), 0 });
             const auto x = anchorPoint.x() + _horizontalSpacing;
             const auto y = anchorPoint.y() + _verticalSpacing;
             topLeft = { x, y };
           } break;
           case Alignment::Center: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ _anchor->width(), _anchor->height() / 2 });
+            const auto anchorPoint =
+              _anchorWidget->mapToGlobal(QPoint{ _anchorWidget->width(), _anchorWidget->height() / 2 });
             const auto x = anchorPoint.x() + _horizontalSpacing;
             const auto y = anchorPoint.y() - popoverSize.height() / 2;
             topLeft = { x, y };
           } break;
           case Alignment::End: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ _anchor->width(), _anchor->height() });
+            const auto anchorPoint =
+              _anchorWidget->mapToGlobal(QPoint{ _anchorWidget->width(), _anchorWidget->height() });
             const auto x = anchorPoint.x() + _horizontalSpacing;
             const auto y = anchorPoint.y() - popoverSize.height() + _verticalSpacing;
             topLeft = { x, y };
@@ -524,19 +616,19 @@ QRect Popover::getGeometryForPosition(Position const position, Alignment const a
       case Position::Top: {
         switch (alignment) {
           case Alignment::Begin: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ 0, 0 });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ 0, 0 });
             const auto x = anchorPoint.x() + _horizontalSpacing;
             const auto y = anchorPoint.y() - _verticalSpacing - popoverFittedSize.height();
             topLeft = { x, y };
           } break;
           case Alignment::Center: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ _anchor->width() / 2, 0 });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ _anchorWidget->width() / 2, 0 });
             const auto x = anchorPoint.x() - popoverFittedSize.width() / 2;
             const auto y = anchorPoint.y() - _verticalSpacing - popoverFittedSize.height();
             topLeft = { x, y };
           } break;
           case Alignment::End: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ _anchor->width(), 0 });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ _anchorWidget->width(), 0 });
             const auto x = anchorPoint.x() + _horizontalSpacing;
             const auto y = anchorPoint.y() - _verticalSpacing - popoverFittedSize.height();
             topLeft = { x, y };
@@ -548,19 +640,21 @@ QRect Popover::getGeometryForPosition(Position const position, Alignment const a
       case Position::Bottom: {
         switch (alignment) {
           case Alignment::Begin: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ 0, _anchor->height() });
+            const auto anchorPoint = _anchorWidget->mapToGlobal(QPoint{ 0, _anchorWidget->height() });
             const auto x = anchorPoint.x() + _horizontalSpacing;
             const auto y = anchorPoint.y() + _verticalSpacing;
             topLeft = { x, y };
           } break;
           case Alignment::Center: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ _anchor->width() / 2, _anchor->height() });
+            const auto anchorPoint =
+              _anchorWidget->mapToGlobal(QPoint{ _anchorWidget->width() / 2, _anchorWidget->height() });
             const auto x = anchorPoint.x() - popoverFittedSize.width() / 2;
             const auto y = anchorPoint.y() + _verticalSpacing;
             topLeft = { x, y };
           } break;
           case Alignment::End: {
-            const auto anchorPoint = _anchor->mapToGlobal(QPoint{ _anchor->width(), _anchor->height() });
+            const auto anchorPoint =
+              _anchorWidget->mapToGlobal(QPoint{ _anchorWidget->width(), _anchorWidget->height() });
             const auto x = anchorPoint.x() + _horizontalSpacing;
             const auto y = anchorPoint.y() + _verticalSpacing;
             topLeft = { x, y };
@@ -614,18 +708,48 @@ QRect Popover::getFallbackGeometry() const {
 void Popover::startAnimation() {
   const auto currentOpacity = _opacityAnimation.currentValue();
   _opacityAnimation.stop();
+  const auto duration = _animated ? style()->styleHint(QStyle::SH_Widget_Animation_Duration)
+                                      * (_opened ? openAnimationDurationFactor : closeAnimationDurationFactor)
+                                  : 0;
+  _opacityAnimation.setDuration(duration);
   _opacityAnimation.setStartValue(currentOpacity);
   _opacityAnimation.setEndValue(QVariant::fromValue<double>(_opened ? 1. : 0.));
   _opacityAnimation.start();
 }
 
 QPixmap Popover::getFrameShape() const {
-  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(this->style());
-  const auto radius = qlementineStyle ? qlementineStyle->theme().borderRadius : 0;
+  const auto rect = QRect{ QPoint{ 0, 0 }, _frame->size() };
+
   QPixmap result(_frame->size());
   result.fill(Qt::transparent);
   QPainter p(&result);
-  drawRoundedRect(&p, QRect{ QPoint(0, 0), _frame->size() }, Qt::black, radius);
+  p.setRenderHint(QPainter::RenderHint::Antialiasing, true);
+  p.setPen(Qt::NoPen);
+  p.setBrush(Qt::black);
+  p.drawRoundedRect(rect, _radius, _radius);
+
   return result;
+}
+
+QBitmap Popover::getFrameMask() const {
+  const auto totalRect = _frame->rect().toRectF();
+  const auto innerRect = totalRect.marginsRemoved({ _borderWidth, _borderWidth, _borderWidth, _borderWidth });
+  QPixmap mask(_frame->size());
+  mask.fill(Qt::white);
+  QPainter p(&mask);
+  p.setRenderHint(QPainter::Antialiasing, true);
+  p.setPen(Qt::NoPen);
+  p.setBrush(Qt::black);
+  p.drawRoundedRect(innerRect, _radius, _radius);
+
+  // Mask to get nice rounded corners on content.
+  // NB: There won't be any antialiasing because this is a limitation of Qt.
+  const auto bitmap = QBitmap::fromPixmap(mask);
+  return bitmap;
+}
+
+bool Popover::hitboxContainsPoint(const QPointF& pos) const {
+  const auto& frameRect = _frame->geometry().toRectF();
+  return qlementine::isPointInRoundedRect(pos, frameRect, _radius);
 }
 } // namespace oclero::qlementine

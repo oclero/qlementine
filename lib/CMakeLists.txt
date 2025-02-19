@@ -2,11 +2,6 @@
 set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimationManager.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/FramelessWindow.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/FramelessWindowBehavior.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleBar.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleBarButton.cpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/src/csd/WindowsTitleMenuBarProxyStyle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/ResourceInitialization.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/Delegates.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/EventFilters.cpp
@@ -18,6 +13,7 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/BadgeUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ColorUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FontUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/GeometryUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/IconUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ImageUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/LayoutUtils.cpp
@@ -53,12 +49,6 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/animation/WidgetAnimation.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/animation/WidgetAnimator.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/animation/WidgetAnimationManager.hpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/FramelessWindow.hpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/FramelessWindowBehavior.hpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBar.hpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBarButton.hpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleBarCommon.hpp
-  # ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/csd/WindowsTitleMenuBarProxyStyle.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/resources/ResourceInitialization.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/style/Delegates.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/style/QlementineStyle.hpp
@@ -70,6 +60,7 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/BadgeUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ColorUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/FontUtils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/GeometryUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/IconUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/ImageUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/LayoutUtils.hpp
