@@ -2,7 +2,7 @@
 
 ## Installation
 
-1. Add the library as a dependency with CMake FetchContent.
+1. Add the library as a dependency. Here is an example with CMake FetchContent. You may add it with another way such as vcpkg or from a regular installation.
 
    ```bash
    include(FetchContent)
