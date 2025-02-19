@@ -17,6 +17,8 @@ qreal getDpi(const QWidget* widget);
 
 QWindow* getWindow(const QWidget* widget);
 
+void clearFocus(QWidget* widget, bool recursive);
+
 template<class T>
 T* findFirstParentOfType(QWidget* child) {
   auto* parent = child;

@@ -78,4 +78,17 @@ QWindow* getWindow(const QWidget* widget) {
   }
   return nullptr;
 }
+
+void clearFocus(QWidget* widget, bool recursive) {
+  if (widget) {
+    widget->clearFocus();
+
+    if (recursive) {
+      const auto children = widget->findChildren<QWidget*>();
+      for (auto* child : children) {
+        clearFocus(child, recursive);
+      }
+    }
+  }
+}
 } // namespace oclero::qlementine
