@@ -6,11 +6,12 @@
 #include <oclero/qlementine/utils/FontUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
 
+#include <QColor>
+#include <QFile>
+#include <QFontDatabase>
 #include <QGuiApplication>
 #include <QJsonObject>
-#include <QFile>
 #include <QScreen>
-#include <QColor>
 #include <QVector>
 
 #include <optional>
@@ -207,8 +208,9 @@ std::optional<Theme> Theme::fromJsonDoc(const QJsonDocument& jsonDoc) {
 
 void Theme::initializeFonts() {
   // Fonts.
-  const auto defaultFont = useSystemFont ? QFont() : QFont(QStringLiteral("Inter"));
-  const auto fixedFont = useSystemFont ? QFont() : QFont(QStringLiteral("Roboto Mono"));
+  const auto defaultFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : QFont(QStringLiteral("Inter"));
+  const auto fixedFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont(QStringLiteral("Roboto Mono"));
+  const auto titleFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
   const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
   fontRegular = defaultFont;
   fontRegular.setWeight(QFont::Weight::Normal);
@@ -218,23 +220,23 @@ void Theme::initializeFonts() {
   fontBold.setWeight(QFont::Weight::Bold);
   fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
 
-  fontH1 = defaultFont;
+  fontH1 = titleFont;
   fontH1.setWeight(QFont::Weight::Bold);
   fontH1.setPointSizeF(pixelSizeToPointSize(fontSizeH1, dpi));
 
-  fontH2 = defaultFont;
+  fontH2 = titleFont;
   fontH2.setWeight(QFont::Weight::Bold);
   fontH2.setPointSizeF(pixelSizeToPointSize(fontSizeH2, dpi));
 
-  fontH3 = defaultFont;
+  fontH3 = titleFont;
   fontH3.setWeight(QFont::Weight::Bold);
   fontH3.setPointSizeF(pixelSizeToPointSize(fontSizeH3, dpi));
 
-  fontH4 = defaultFont;
+  fontH4 = titleFont;
   fontH4.setWeight(QFont::Weight::Bold);
   fontH4.setPointSizeF(pixelSizeToPointSize(fontSizeH4, dpi));
 
-  fontH5 = defaultFont;
+  fontH5 = titleFont;
   fontH5.setWeight(QFont::Weight::Bold);
   fontH5.setPointSizeF(pixelSizeToPointSize(fontSizeH5, dpi));
 
@@ -471,11 +473,6 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
   }
 
   return true;
-}
-
-void Theme::setUseSystemFont(bool use) {
-  useSystemFont = use;
-  initializeFonts();
 }
 
 QJsonDocument Theme::toJson() const {

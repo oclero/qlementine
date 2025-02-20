@@ -201,7 +201,6 @@ public: // Values.
   QPalette palette;
 
 public:
-  void setUseSystemFont(bool use);
   QJsonDocument toJson() const;
 
 private:
