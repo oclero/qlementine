@@ -207,19 +207,19 @@ std::optional<Theme> Theme::fromJsonDoc(const QJsonDocument& jsonDoc) {
 
 void Theme::initializeFonts() {
   // Fonts.
-  const auto defaultFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : QFont(QStringLiteral("Inter"));
-  const auto fixedFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont(QStringLiteral("Roboto Mono"));
-  const auto titleFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
+  const auto defaultFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : QFont(QStringLiteral("Inter"));
+  const auto fixedFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont(QStringLiteral("Roboto Mono"));
+  const auto titleFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
 
   fontRegular = defaultFont;
-  if(!useSystemFont) {
+  if(!useSystemFonts) {
     fontRegular.setWeight(QFont::Weight::Normal);
     fontRegular.setPointSizeF(fontSize);
   }
 
   fontBold = defaultFont;
   fontBold.setWeight(QFont::Weight::Bold);
-  if(!useSystemFont) {
+  if(!useSystemFonts) {
     fontBold.setPointSizeF(fontSize);
   }
 
@@ -248,7 +248,7 @@ void Theme::initializeFonts() {
   fontCaption.setPointSizeF(fontSizeS1);
 
   fontMonospace = fixedFont;
-  if(!useSystemFont) {
+  if(!useSystemFonts) {
     fontMonospace.setWeight(QFont::Weight::Normal);
     fontMonospace.setPointSizeF(fontSizeMonospace);
   }
@@ -422,7 +422,7 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor3);
     shadowColorTransparent = colorWithAlpha(shadowColor1, 0);
 
-    TRY_GET_BOOL_ATTRIBUTE(jsonObj, useSystemFont);
+    TRY_GET_BOOL_ATTRIBUTE(jsonObj, useSystemFonts);
 
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeMonospace);
@@ -571,7 +571,7 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, semiTransparentColor3);
   SET_COLOR(jsonObj, semiTransparentColor4);
 
-  SET_BOOL(jsonObj, useSystemFont);
+  SET_BOOL(jsonObj, useSystemFonts);
 
   SET_INT(jsonObj, fontSize);
   SET_INT(jsonObj, fontSizeMonospace);
@@ -699,7 +699,7 @@ bool Theme::operator==(const Theme& other) const {
     && borderColorPressed == other.borderColorPressed
     && borderColorDisabled == other.borderColorDisabled
 
-    && useSystemFont == other.useSystemFont
+    && useSystemFonts == other.useSystemFonts
 
     && animationDuration == other.animationDuration
     && focusAnimationDuration == other.focusAnimationDuration

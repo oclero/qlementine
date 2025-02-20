@@ -142,7 +142,7 @@ public: // Values.
   QColor semiTransparentColor4{ QRgba64::fromArgb32(0x28000000) };
   QColor semiTransparentColorTransparent{ QRgba64::fromArgb32(0x00000000) };
 
-  bool useSystemFont{ false };
+  bool useSystemFonts{ false };
 
   int fontSize{ 12 };
   int fontSizeMonospace{ 13 };
