@@ -102,10 +102,10 @@ struct QlementineStyleImpl {
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-BoldItalic")));
 
     const auto titleFontPath = QString(":/qlementine/resources/fonts/inter/%1.otf");
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("InterDisplay-Regular")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("InterDisplay-Italic")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("InterDisplay-Bold")));
-    QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("InterDisplay-BoldItalic")));
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-Regular")));
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-Italic")));
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-Bold")));
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-BoldItalic")));
   }
 
   /// Some widgets need to have a QPalette explicitely set.
