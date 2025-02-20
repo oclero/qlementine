@@ -4,5 +4,9 @@
     <file>fonts/inter/Inter-BoldItalic.otf</file>
     <file>fonts/inter/Inter-Regular.otf</file>
     <file>fonts/inter/Inter-Italic.otf</file>
+    <file>fonts/inter/InterDisplay-Bold.otf</file>
+    <file>fonts/inter/InterDisplay-BoldItalic.otf</file>
+    <file>fonts/inter/InterDisplay-Regular.otf</file>
+    <file>fonts/inter/InterDisplay-Italic.otf</file>
   </qresource>
 </RCC>
