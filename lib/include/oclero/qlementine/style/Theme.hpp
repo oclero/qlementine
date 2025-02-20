@@ -203,14 +203,6 @@ public:
   QJsonDocument toJson() const;
 
 private:
-  bool specifiedFontSize{ false };
-  bool specifiedFontSizeMonospace{ false };
-  bool specifiedFontSizeH1{ false };
-  bool specifiedFontSizeH2{ false };
-  bool specifiedFontSizeH3{ false };
-  bool specifiedFontSizeH4{ false };
-  bool specifiedFontSizeH5{ false };
-  bool specifiedFontSizeS1{ false };
   void initializeFonts();
   void initializePalette();
   bool initializeFromJson(QJsonDocument const& jsonDoc);

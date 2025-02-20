@@ -49,12 +49,10 @@ std::optional<QColor> tryGetColorRecursive(QJsonObject const& jsonObj, QString c
   return {};
 }
 
-bool tryGetColor(QJsonObject const& jsonObj, QString const& key, QColor& target) {
+void tryGetColor(QJsonObject const& jsonObj, QString const& key, QColor& target) {
   if (const auto opt = tryGetColorRecursive(jsonObj, key)) {
     target = opt.value();
-    return true;
   }
-  return false;
 }
 
 QString tryGetString(QJsonObject const& jsonObj, QString const& key, QString const& defaultValue) {
@@ -87,12 +85,10 @@ std::optional<bool> tryGetBoolRecursive(QJsonObject const& jsonObj, QString cons
   return {};
 }
 
-bool tryGetBool(QJsonObject const& jsonObj, QString const& key, bool& target) {
+void tryGetBool(QJsonObject const& jsonObj, QString const& key, bool& target) {
   if (const auto opt = tryGetBoolRecursive(jsonObj, key)) {
     target = opt.value();
-    return true;
   }
-  return false;
 }
 
 std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
@@ -115,12 +111,10 @@ std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const&
   return {};
 }
 
-bool tryGetInt(QJsonObject const& jsonObj, QString const& key, int& target) {
+void tryGetInt(QJsonObject const& jsonObj, QString const& key, int& target) {
   if (const auto opt = tryGetIntRecursive(jsonObj, key)) {
     target = opt.value();
-    return true;
   }
-  return false;
 }
 
 std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
@@ -143,12 +137,10 @@ std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString 
   return {};
 }
 
-bool tryGetDouble(QJsonObject const& jsonObj, QString const& key, double& target) {
+void tryGetDouble(QJsonObject const& jsonObj, QString const& key, double& target) {
   if (const auto opt = tryGetDoubleRecursive(jsonObj, key)) {
     target = opt.value();
-    return true;
   }
-  return false;
 }
 
 QJsonDocument readJsonDoc(QString const& jsonPath) {
@@ -220,40 +212,46 @@ void Theme::initializeFonts() {
   const auto titleFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
 
   fontRegular = defaultFont;
-  fontRegular.setWeight(QFont::Weight::Normal);
-  fontRegular.setPointSize(useSystemFont && !specifiedFontSize ? defaultFont.pointSize() : fontSize);
+  if(!useSystemFont) {
+    fontRegular.setWeight(QFont::Weight::Normal);
+    fontRegular.setPointSizeF(fontSize);
+  }
 
   fontBold = defaultFont;
   fontBold.setWeight(QFont::Weight::Bold);
-  fontBold.setPointSize(useSystemFont && !specifiedFontSize ? defaultFont.pointSize() : fontSize);
+  if(!useSystemFont) {
+    fontBold.setPointSizeF(fontSize);
+  }
 
   fontH1 = titleFont;
   fontH1.setWeight(QFont::Weight::Bold);
-  fontH1.setPointSize(useSystemFont && !specifiedFontSizeH1 ? titleFont.pointSize() : fontSizeH1);
+  fontH1.setPointSizeF(fontSizeH1);
 
   fontH2 = titleFont;
   fontH2.setWeight(QFont::Weight::Bold);
-  fontH2.setPointSize(useSystemFont && !specifiedFontSizeH2 ? titleFont.pointSize() : fontSizeH2);
+  fontH2.setPointSizeF(fontSizeH2);
 
   fontH3 = titleFont;
   fontH3.setWeight(QFont::Weight::Bold);
-  fontH3.setPointSize(useSystemFont && !specifiedFontSizeH3 ? titleFont.pointSize() : fontSizeH3);
+  fontH3.setPointSizeF(fontSizeH3);
 
   fontH4 = titleFont;
   fontH4.setWeight(QFont::Weight::Bold);
-  fontH4.setPointSize(useSystemFont && !specifiedFontSizeH4 ? titleFont.pointSize() : fontSizeH4);
+  fontH4.setPointSizeF(fontSizeH4);
 
   fontH5 = titleFont;
   fontH5.setWeight(QFont::Weight::Bold);
-  fontH5.setPointSize(useSystemFont && !specifiedFontSizeH5 ? titleFont.pointSize() : fontSizeH5);
+  fontH5.setPointSizeF(fontSizeH5);
 
   fontCaption = defaultFont;
   fontCaption.setWeight(QFont::Weight::Normal);
-  fontCaption.setPointSize(useSystemFont && !specifiedFontSizeS1 ? defaultFont.pointSize() : fontSizeS1);
+  fontCaption.setPointSizeF(fontSizeS1);
 
   fontMonospace = fixedFont;
-  fontMonospace.setWeight(QFont::Weight::Normal);
-  fontMonospace.setPointSize(useSystemFont && !specifiedFontSizeMonospace ? fixedFont.pointSize() : fontSizeMonospace);
+  if(!useSystemFont) {
+    fontMonospace.setWeight(QFont::Weight::Normal);
+    fontMonospace.setPointSizeF(fontSizeMonospace);
+  }
 }
 
 void Theme::initializePalette() {
@@ -426,14 +424,14 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
 
     TRY_GET_BOOL_ATTRIBUTE(jsonObj, useSystemFont);
 
-    specifiedFontSize = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
-    specifiedFontSizeMonospace = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeMonospace);
-    specifiedFontSizeH1 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
-    specifiedFontSizeH2 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
-    specifiedFontSizeH3 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH3);
-    specifiedFontSizeH4 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH4);
-    specifiedFontSizeH5 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH5);
-    specifiedFontSizeS1 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeS1);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeMonospace);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH3);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH4);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH5);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeS1);
     TRY_GET_INT_ATTRIBUTE(jsonObj, animationDuration);
     TRY_GET_INT_ATTRIBUTE(jsonObj, focusAnimationDuration);
     TRY_GET_INT_ATTRIBUTE(jsonObj, sliderAnimationDuration);
