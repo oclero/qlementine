@@ -305,10 +305,8 @@ void QlementineStyle::triggerCompleteRepaint() {
   const auto palette = standardPalette();
   QApplication::setPalette(palette);
 
-  // Update the theme for every animator.
-  /*_impl->animatorMap.forEarch([this](const QWidget* w, WidgetAnimator* a) {
-
-});*/
+  // Update the application font.
+  QApplication::setFont(_impl->theme.fontRegular);
 
   // Repaint all top-level widgets.
   const auto topLevelWidgets = QApplication::topLevelWidgets();

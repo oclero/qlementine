@@ -9,7 +9,6 @@
 #include <QColor>
 #include <QFile>
 #include <QFontDatabase>
-#include <QGuiApplication>
 #include <QJsonObject>
 #include <QScreen>
 #include <QVector>
@@ -50,10 +49,12 @@ std::optional<QColor> tryGetColorRecursive(QJsonObject const& jsonObj, QString c
   return {};
 }
 
-void tryGetColor(QJsonObject const& jsonObj, QString const& key, QColor& target) {
+bool tryGetColor(QJsonObject const& jsonObj, QString const& key, QColor& target) {
   if (const auto opt = tryGetColorRecursive(jsonObj, key)) {
     target = opt.value();
+    return true;
   }
+  return false;
 }
 
 QString tryGetString(QJsonObject const& jsonObj, QString const& key, QString const& defaultValue) {
@@ -86,10 +87,12 @@ std::optional<bool> tryGetBoolRecursive(QJsonObject const& jsonObj, QString cons
   return {};
 }
 
-void tryGetBool(QJsonObject const& jsonObj, QString const& key, bool& target) {
+bool tryGetBool(QJsonObject const& jsonObj, QString const& key, bool& target) {
   if (const auto opt = tryGetBoolRecursive(jsonObj, key)) {
     target = opt.value();
+    return true;
   }
+  return false;
 }
 
 std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
@@ -112,10 +115,12 @@ std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const&
   return {};
 }
 
-void tryGetInt(QJsonObject const& jsonObj, QString const& key, int& target) {
+bool tryGetInt(QJsonObject const& jsonObj, QString const& key, int& target) {
   if (const auto opt = tryGetIntRecursive(jsonObj, key)) {
     target = opt.value();
+    return true;
   }
+  return false;
 }
 
 std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
@@ -138,10 +143,12 @@ std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString 
   return {};
 }
 
-void tryGetDouble(QJsonObject const& jsonObj, QString const& key, double& target) {
+bool tryGetDouble(QJsonObject const& jsonObj, QString const& key, double& target) {
   if (const auto opt = tryGetDoubleRecursive(jsonObj, key)) {
     target = opt.value();
+    return true;
   }
+  return false;
 }
 
 QJsonDocument readJsonDoc(QString const& jsonPath) {
@@ -211,42 +218,42 @@ void Theme::initializeFonts() {
   const auto defaultFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : QFont(QStringLiteral("Inter"));
   const auto fixedFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont(QStringLiteral("Roboto Mono"));
   const auto titleFont = useSystemFont ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
-  const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
+
   fontRegular = defaultFont;
   fontRegular.setWeight(QFont::Weight::Normal);
-  fontRegular.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
+  fontRegular.setPointSize(useSystemFont && !specifiedFontSize ? defaultFont.pointSize() : fontSize);
 
   fontBold = defaultFont;
   fontBold.setWeight(QFont::Weight::Bold);
-  fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
+  fontBold.setPointSize(useSystemFont && !specifiedFontSize ? defaultFont.pointSize() : fontSize);
 
   fontH1 = titleFont;
   fontH1.setWeight(QFont::Weight::Bold);
-  fontH1.setPointSizeF(pixelSizeToPointSize(fontSizeH1, dpi));
+  fontH1.setPointSize(useSystemFont && !specifiedFontSizeH1 ? titleFont.pointSize() : fontSizeH1);
 
   fontH2 = titleFont;
   fontH2.setWeight(QFont::Weight::Bold);
-  fontH2.setPointSizeF(pixelSizeToPointSize(fontSizeH2, dpi));
+  fontH2.setPointSize(useSystemFont && !specifiedFontSizeH2 ? titleFont.pointSize() : fontSizeH2);
 
   fontH3 = titleFont;
   fontH3.setWeight(QFont::Weight::Bold);
-  fontH3.setPointSizeF(pixelSizeToPointSize(fontSizeH3, dpi));
+  fontH3.setPointSize(useSystemFont && !specifiedFontSizeH3 ? titleFont.pointSize() : fontSizeH3);
 
   fontH4 = titleFont;
   fontH4.setWeight(QFont::Weight::Bold);
-  fontH4.setPointSizeF(pixelSizeToPointSize(fontSizeH4, dpi));
+  fontH4.setPointSize(useSystemFont && !specifiedFontSizeH4 ? titleFont.pointSize() : fontSizeH4);
 
   fontH5 = titleFont;
   fontH5.setWeight(QFont::Weight::Bold);
-  fontH5.setPointSizeF(pixelSizeToPointSize(fontSizeH5, dpi));
+  fontH5.setPointSize(useSystemFont && !specifiedFontSizeH5 ? titleFont.pointSize() : fontSizeH5);
 
   fontCaption = defaultFont;
   fontCaption.setWeight(QFont::Weight::Normal);
-  fontCaption.setPointSizeF(pixelSizeToPointSize(fontSizeS1, dpi));
+  fontCaption.setPointSize(useSystemFont && !specifiedFontSizeS1 ? defaultFont.pointSize() : fontSizeS1);
 
   fontMonospace = fixedFont;
   fontMonospace.setWeight(QFont::Weight::Normal);
-  fontMonospace.setPointSizeF(pixelSizeToPointSize(fontSizeMonospace, dpi));
+  fontMonospace.setPointSize(useSystemFont && !specifiedFontSizeMonospace ? fixedFont.pointSize() : fontSizeMonospace);
 }
 
 void Theme::initializePalette() {
@@ -419,13 +426,14 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
 
     TRY_GET_BOOL_ATTRIBUTE(jsonObj, useSystemFont);
 
-    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
-    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
-    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
-    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH3);
-    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH4);
-    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH5);
-    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeS1);
+    specifiedFontSize = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
+    specifiedFontSizeMonospace = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeMonospace);
+    specifiedFontSizeH1 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
+    specifiedFontSizeH2 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
+    specifiedFontSizeH3 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH3);
+    specifiedFontSizeH4 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH4);
+    specifiedFontSizeH5 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH5);
+    specifiedFontSizeS1 = TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeS1);
     TRY_GET_INT_ATTRIBUTE(jsonObj, animationDuration);
     TRY_GET_INT_ATTRIBUTE(jsonObj, focusAnimationDuration);
     TRY_GET_INT_ATTRIBUTE(jsonObj, sliderAnimationDuration);
