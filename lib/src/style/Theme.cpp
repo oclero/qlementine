@@ -212,7 +212,9 @@ void Theme::initializeFonts() {
   const auto titleFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
 
   fontRegular = defaultFont;
-  if(!useSystemFonts) {
+  if(useSystemFonts) {
+    fontSize = defaultFont.pointSize();
+  } else {
     fontRegular.setWeight(QFont::Weight::Normal);
     fontRegular.setPointSizeF(fontSize);
   }
@@ -244,11 +246,17 @@ void Theme::initializeFonts() {
   fontH5.setPointSizeF(fontSizeH5);
 
   fontCaption = defaultFont;
-  fontCaption.setWeight(QFont::Weight::Normal);
-  fontCaption.setPointSizeF(fontSizeS1);
+  if(useSystemFonts) {
+    fontSizeS1 = defaultFont.pointSize();
+  } else {
+    fontCaption.setWeight(QFont::Weight::Normal);
+    fontCaption.setPointSizeF(fontSizeS1);
+  }
 
   fontMonospace = fixedFont;
-  if(!useSystemFonts) {
+  if(useSystemFonts) {
+    fontSizeMonospace = fixedFont.pointSize();
+  } else {
     fontMonospace.setWeight(QFont::Weight::Normal);
     fontMonospace.setPointSizeF(fontSizeMonospace);
   }
