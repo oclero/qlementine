@@ -434,16 +434,17 @@ bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
 void ComboboxItemViewFilter::fixViewGeometry() {
   const auto* comboBox = findFirstParentOfType<QComboBox>(_view);
-  const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style());
-  const auto hMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
-  const auto shadowWidth = qlementineStyle->theme().spacing;
-  const auto borderWidth = qlementineStyle->theme().borderWidth;
-  const auto width =
-    std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + hMargin * 2 + borderWidth * 2;
-  const auto height = std::min(800, viewMinimumSizeHint().height());
-  _view->setFixedWidth(width);
-  _view->setFixedHeight(height);
-  _view->parentWidget()->adjustSize();
+  if(const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style())) {
+    const auto hMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
+    const auto shadowWidth = qlementineStyle->theme().spacing;
+    const auto borderWidth = qlementineStyle->theme().borderWidth;
+    const auto width =
+      std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + hMargin * 2 + borderWidth * 2;
+    const auto height = std::min(800, viewMinimumSizeHint().height());
+    _view->setFixedWidth(width);
+    _view->setFixedHeight(height);
+    _view->parentWidget()->adjustSize();
+  }
 }
 
 QSize ComboboxItemViewFilter::viewMinimumSizeHint() const {
