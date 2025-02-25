@@ -140,8 +140,26 @@ void Switch::focusOutEvent(QFocusEvent* e) {
 }
 
 void Switch::checkStateSet() {
-  QAbstractButton::checkStateSet();
+  if (_blockRefresh) {
+    return;
+  }
+  _intermediate = false;
+  const auto state = checkState();
+  if (state != _publishedState) {
+    _publishedState = state;
+    emit checkStateChanged(state);
+  }
   startAnimation();
+}
+
+void Switch::nextCheckState() {
+
+  if (_tristate) {
+    setCheckState(static_cast<Qt::CheckState>((checkState() + 1) % 3));
+  } else {
+    QAbstractButton::nextCheckState();
+    checkStateSet();
+  }
 }
 
 void Switch::startAnimation() {
@@ -169,10 +187,11 @@ void Switch::startAnimation() {
   _fgAnimation.start();
 
   const auto currentXRatio = _handleAnimation.currentValue();
+  const auto state = checkState();
   _handleAnimation.stop();
   _handleAnimation.setDuration(animationDuration);
   _handleAnimation.setStartValue(currentXRatio);
-  _handleAnimation.setEndValue(isChecked() ? 1. : 0.);
+  _handleAnimation.setEndValue(state == Qt::Checked ? 1. : (state == Qt::Unchecked ? 0. : 0.5));
   _handleAnimation.start();
 }
 
@@ -231,7 +250,7 @@ const QColor& Switch::getBgColor() const {
   const auto palette = style->standardPalette();
   const auto& bgColor = qlementineStyle
                           ? qlementineStyle->switchGrooveColor(
-                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(checkState()))
                           : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
                               QPalette::ColorRole::Button);
   return bgColor;
@@ -243,7 +262,7 @@ const QColor& Switch::getBorderColor() const {
   const auto palette = style->standardPalette();
   const auto& borderColor =
     qlementineStyle ? qlementineStyle->switchGrooveBorderColor(getMouseState(isDown(), _isMouseOver, isEnabled()),
-                        getFocusState(hasFocus()), getCheckState(isChecked()))
+                        getFocusState(hasFocus()), getCheckState(checkState()))
                     : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
                         QPalette::ColorRole::ButtonText);
   return borderColor;
@@ -255,7 +274,7 @@ const QColor& Switch::getFgColor() const {
   const auto palette = style->standardPalette();
   const auto& fgColor = qlementineStyle
                           ? qlementineStyle->switchHandleColor(
-                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(checkState()))
                           : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
                               QPalette::ColorRole::ButtonText);
   return fgColor;
@@ -298,4 +317,39 @@ void Switch::initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const {
   opt.rect = switchRect.marginsAdded({ deltaX / 2, deltaY / 2, deltaX / 2, deltaY / 2 }).translated(deltaX, deltaY);
   opt.radiuses = switchRect.height() / 2.;
 }
+
+void Switch::setTristate(bool tristate) {
+  _tristate = tristate;
+}
+
+bool Switch::isTristate() const {
+  return _tristate;
+}
+
+Qt::CheckState Switch::checkState() const {
+  if (_tristate && _intermediate) {
+    return Qt::PartiallyChecked;
+  }
+  return isChecked() ? Qt::Checked : Qt::Unchecked;
+}
+
+void Switch::setCheckState(Qt::CheckState state) {
+  // Heavily inspired from tristate QCheckBox code.
+  if (state == Qt::PartiallyChecked) {
+    _tristate = true;
+    _intermediate = true;
+  } else {
+    _intermediate = false;
+  }
+  _blockRefresh = true;
+  setChecked(state != Qt::Unchecked);
+  _blockRefresh = false;
+  update();
+
+  if (state != _publishedState) {
+    _publishedState = state;
+    emit checkStateChanged(state);
+  }
+}
+
 } // namespace oclero::qlementine

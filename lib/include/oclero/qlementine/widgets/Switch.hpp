@@ -22,6 +22,15 @@ public:
 
   void initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const;
 
+  void setTristate(bool);
+  bool isTristate() const;
+
+  Qt::CheckState checkState() const;
+  void setCheckState(Qt::CheckState state);
+
+Q_SIGNALS:
+  void checkStateChanged(int);
+
 protected:
   void paintEvent(QPaintEvent* e) override;
   void enterEvent(QEnterEvent* e) override;
@@ -30,6 +39,7 @@ protected:
   void focusInEvent(QFocusEvent* e) override;
   void focusOutEvent(QFocusEvent* e) override;
   void checkStateSet() override;
+  void nextCheckState() override;
 
 private:
   void setupAnimation();
@@ -44,6 +54,10 @@ private:
 private:
   int _handlePadding{ 2 };
   bool _isMouseOver{ false };
+  bool _tristate{ false };
+  bool _intermediate{ false };
+  bool _blockRefresh{ false };
+  Qt::CheckState _publishedState{ Qt::CheckState::Unchecked };
   QVariantAnimation _handleAnimation;
   QVariantAnimation _bgAnimation;
   QVariantAnimation _borderAnimation;
