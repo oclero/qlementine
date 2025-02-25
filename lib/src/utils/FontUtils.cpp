@@ -4,16 +4,6 @@
 #include <oclero/qlementine/utils/FontUtils.hpp>
 
 namespace oclero::qlementine {
-static constexpr auto STANDARD_DPI = 72.;
-
-double pointSizeToPixelSize(double pointSize, double dpi) {
-  return pointSize / STANDARD_DPI * dpi;
-}
-
-double pixelSizeToPointSize(double pixelSize, double dpi) {
-  return pixelSize * STANDARD_DPI / dpi;
-}
-
 int textWidth(const QFontMetrics& fm, const QString& text) {
   // After some tests, it looks like QFontMetrics::boundingRect() with these parameters
   // gives the correct results, and ensure the text isn't truncated.

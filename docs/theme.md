@@ -127,6 +127,19 @@ Example:
 | `semiTransparentColor3`             | color | Same as above but more contrast.                                                  |
 | `semiTransparentColor4`             | color | Same as above but more contrast.                                                  |
 
+### Boolean values
+Example:
+
+```json
+{
+  "useSystemFont": false
+}
+```
+
+| Key                                 | Type  | Role                                                                            |
+| :---------------------------------- | :---: | :------------------------------------------------------------------------------ |
+| `useSystemFont`                     | bool  | Whether or not to use the system's font instead of `qlementine` provided fonts  |
+
 ### Numeric Values
 
 Example:
@@ -274,6 +287,8 @@ Here is a full Qlementine theme in all its glory. Please note that every value i
   "statusColorWarningHovered": "#ffcf6c",
   "statusColorWarningPressed": "#ffd880",
   "statusColorWarningDisabled": "#feefd8",
+
+  "useSystemFont": false,
 
   "fontSize": 12,
   "fontSizeMonospace": 13,

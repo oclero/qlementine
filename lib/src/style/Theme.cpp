@@ -6,11 +6,11 @@
 #include <oclero/qlementine/utils/FontUtils.hpp>
 #include <oclero/qlementine/utils/ColorUtils.hpp>
 
-#include <QGuiApplication>
-#include <QJsonObject>
-#include <QFile>
-#include <QScreen>
 #include <QColor>
+#include <QFile>
+#include <QFontDatabase>
+#include <QJsonObject>
+#include <QScreen>
 #include <QVector>
 
 #include <optional>
@@ -18,10 +18,12 @@
 namespace oclero::qlementine {
 namespace {
 #define TRY_GET_COLOR_ATTRIBUTE(JSON_OBJ, NAME) tryGetColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define TRY_GET_BOOL_ATTRIBUTE(JSON_OBJ, NAME) tryGetBool(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define TRY_GET_INT_ATTRIBUTE(JSON_OBJ, NAME) tryGetInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define TRY_GET_DOUBLE_ATTRIBUTE(JSON_OBJ, NAME) tryGetDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
 
 #define SET_COLOR(JSON_OBJ, NAME) setColor(JSON_OBJ, QStringLiteral(#NAME), NAME)
+#define SET_BOOL(JSON_OBJ, NAME) setBool(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define SET_INT(JSON_OBJ, NAME) setInt(JSON_OBJ, QStringLiteral(#NAME), NAME)
 #define SET_DOUBLE(JSON_OBJ, NAME) setDouble(JSON_OBJ, QStringLiteral(#NAME), NAME)
 
@@ -61,6 +63,32 @@ QString tryGetString(QJsonObject const& jsonObj, QString const& key, QString con
     }
   }
   return defaultValue;
+}
+
+std::optional<bool> tryGetBoolRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
+  if (jsonObj.contains(key)) {
+    const auto variant = jsonObj.value(key).toVariant();
+
+    // Check if the value is a reference to another value.
+    if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
+      const auto variantString = variant.toString();
+      if (variantString != key) {
+        return tryGetBoolRecursive(jsonObj, variantString, --maxRecursiveCalls);
+      }
+    }
+
+    // Try parse a bool.
+    if (variant.isValid() && variant.canConvert<bool>()) {
+      return variant.toBool();
+    }
+  }
+  return {};
+}
+
+void tryGetBool(QJsonObject const& jsonObj, QString const& key, bool& target) {
+  if (const auto opt = tryGetBoolRecursive(jsonObj, key)) {
+    target = opt.value();
+  }
 }
 
 std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const& key, int maxRecursiveCalls = 1) {
@@ -133,6 +161,10 @@ void setColor(QJsonObject& jsonObj, const QString& key, const QColor& value) {
   jsonObj.insert(key, toHexRGBA(value));
 }
 
+void setBool(QJsonObject& jsonObj, const QString& key, bool value) {
+  jsonObj.insert(key, value);
+}
+
 void setInt(QJsonObject& jsonObj, const QString& key, int value) {
   jsonObj.insert(key, value);
 }
@@ -175,44 +207,59 @@ std::optional<Theme> Theme::fromJsonDoc(const QJsonDocument& jsonDoc) {
 
 void Theme::initializeFonts() {
   // Fonts.
-  const auto defaultFont = QFont(QStringLiteral("Inter"));
-  const auto fixedFont = QFont(QStringLiteral("Roboto Mono"));
-  const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
+  const auto defaultFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : QFont(QStringLiteral("Inter"));
+  const auto fixedFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont(QStringLiteral("Roboto Mono"));
+  const auto titleFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
+
   fontRegular = defaultFont;
-  fontRegular.setWeight(QFont::Weight::Normal);
-  fontRegular.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
+  if(useSystemFonts) {
+    fontSize = defaultFont.pointSize();
+  } else {
+    fontRegular.setWeight(QFont::Weight::Normal);
+    fontRegular.setPointSizeF(fontSize);
+  }
 
   fontBold = defaultFont;
   fontBold.setWeight(QFont::Weight::Bold);
-  fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
+  if(!useSystemFonts) {
+    fontBold.setPointSizeF(fontSize);
+  }
 
-  fontH1 = defaultFont;
+  fontH1 = titleFont;
   fontH1.setWeight(QFont::Weight::Bold);
-  fontH1.setPointSizeF(pixelSizeToPointSize(fontSizeH1, dpi));
+  fontH1.setPointSizeF(fontSizeH1);
 
-  fontH2 = defaultFont;
+  fontH2 = titleFont;
   fontH2.setWeight(QFont::Weight::Bold);
-  fontH2.setPointSizeF(pixelSizeToPointSize(fontSizeH2, dpi));
+  fontH2.setPointSizeF(fontSizeH2);
 
-  fontH3 = defaultFont;
+  fontH3 = titleFont;
   fontH3.setWeight(QFont::Weight::Bold);
-  fontH3.setPointSizeF(pixelSizeToPointSize(fontSizeH3, dpi));
+  fontH3.setPointSizeF(fontSizeH3);
 
-  fontH4 = defaultFont;
+  fontH4 = titleFont;
   fontH4.setWeight(QFont::Weight::Bold);
-  fontH4.setPointSizeF(pixelSizeToPointSize(fontSizeH4, dpi));
+  fontH4.setPointSizeF(fontSizeH4);
 
-  fontH5 = defaultFont;
+  fontH5 = titleFont;
   fontH5.setWeight(QFont::Weight::Bold);
-  fontH5.setPointSizeF(pixelSizeToPointSize(fontSizeH5, dpi));
+  fontH5.setPointSizeF(fontSizeH5);
 
   fontCaption = defaultFont;
-  fontCaption.setWeight(QFont::Weight::Normal);
-  fontCaption.setPointSizeF(pixelSizeToPointSize(fontSizeS1, dpi));
+  if(useSystemFonts) {
+    fontSizeS1 = defaultFont.pointSize();
+  } else {
+    fontCaption.setWeight(QFont::Weight::Normal);
+    fontCaption.setPointSizeF(fontSizeS1);
+  }
 
   fontMonospace = fixedFont;
-  fontMonospace.setWeight(QFont::Weight::Normal);
-  fontMonospace.setPointSizeF(pixelSizeToPointSize(fontSizeMonospace, dpi));
+  if(useSystemFonts) {
+    fontSizeMonospace = fixedFont.pointSize();
+  } else {
+    fontMonospace.setWeight(QFont::Weight::Normal);
+    fontMonospace.setPointSizeF(fontSizeMonospace);
+  }
 }
 
 void Theme::initializePalette() {
@@ -383,7 +430,10 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, shadowColor3);
     shadowColorTransparent = colorWithAlpha(shadowColor1, 0);
 
+    TRY_GET_BOOL_ATTRIBUTE(jsonObj, useSystemFonts);
+
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeMonospace);
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH1);
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH2);
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeH3);
@@ -529,6 +579,8 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, semiTransparentColor3);
   SET_COLOR(jsonObj, semiTransparentColor4);
 
+  SET_BOOL(jsonObj, useSystemFonts);
+
   SET_INT(jsonObj, fontSize);
   SET_INT(jsonObj, fontSizeMonospace);
   SET_INT(jsonObj, fontSizeH1);
@@ -654,6 +706,8 @@ bool Theme::operator==(const Theme& other) const {
     && borderColorHovered == other.borderColorHovered
     && borderColorPressed == other.borderColorPressed
     && borderColorDisabled == other.borderColorDisabled
+
+    && useSystemFonts == other.useSystemFonts
 
     && animationDuration == other.animationDuration
     && focusAnimationDuration == other.focusAnimationDuration

@@ -89,7 +89,7 @@ struct QlementineStyleImpl {
 
   /// Registers all the theme fonts to Qt's font database.
   void installFonts() {
-    const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.otf");
+    const auto regularFontPath = QString(":/qlementine/resources/fonts/inter/%1.ttf");
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Regular")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Italic")));
     QFontDatabase::addApplicationFont(regularFontPath.arg(QStringLiteral("Inter-Bold")));
@@ -100,6 +100,12 @@ struct QlementineStyleImpl {
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Italic")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-Bold")));
     QFontDatabase::addApplicationFont(fixedFontPath.arg(QStringLiteral("RobotoMono-BoldItalic")));
+
+    const auto titleFontPath = QString(":/qlementine/resources/fonts/inter/%1.ttf");
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-Regular")));
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-Italic")));
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-Bold")));
+    QFontDatabase::addApplicationFont(titleFontPath.arg(QStringLiteral("InterDisplay-BoldItalic")));
   }
 
   /// Some widgets need to have a QPalette explicitely set.
@@ -299,10 +305,8 @@ void QlementineStyle::triggerCompleteRepaint() {
   const auto palette = standardPalette();
   QApplication::setPalette(palette);
 
-  // Update the theme for every animator.
-  /*_impl->animatorMap.forEarch([this](const QWidget* w, WidgetAnimator* a) {
-
-});*/
+  // Update the application font.
+  QApplication::setFont(_impl->theme.fontRegular);
 
   // Repaint all top-level widgets.
   const auto topLevelWidgets = QApplication::topLevelWidgets();
