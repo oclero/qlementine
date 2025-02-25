@@ -1,12 +1,12 @@
 <RCC>
   <qresource prefix="/qlementine/resources">
-    <file>fonts/inter/Inter-Bold.otf</file>
-    <file>fonts/inter/Inter-BoldItalic.otf</file>
-    <file>fonts/inter/Inter-Regular.otf</file>
-    <file>fonts/inter/Inter-Italic.otf</file>
-    <file>fonts/inter/InterDisplay-Bold.otf</file>
-    <file>fonts/inter/InterDisplay-BoldItalic.otf</file>
-    <file>fonts/inter/InterDisplay-Regular.otf</file>
-    <file>fonts/inter/InterDisplay-Italic.otf</file>
+    <file>fonts/inter/Inter-Bold.ttf</file>
+    <file>fonts/inter/Inter-BoldItalic.ttf</file>
+    <file>fonts/inter/Inter-Regular.ttf</file>
+    <file>fonts/inter/Inter-Italic.ttf</file>
+    <file>fonts/inter/InterDisplay-Bold.ttf</file>
+    <file>fonts/inter/InterDisplay-BoldItalic.ttf</file>
+    <file>fonts/inter/InterDisplay-Regular.ttf</file>
+    <file>fonts/inter/InterDisplay-Italic.ttf</file>
   </qresource>
 </RCC>
