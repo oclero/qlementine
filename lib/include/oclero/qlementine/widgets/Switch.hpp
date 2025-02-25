@@ -52,13 +52,14 @@ private:
   const QColor& getTextColor() const;
 
 private:
-  int _handlePadding{ 2 };
+  double _fullHandlePadding { 2.0 };
   bool _isMouseOver{ false };
   bool _tristate{ false };
   bool _intermediate{ false };
   bool _blockRefresh{ false };
   Qt::CheckState _publishedState{ Qt::CheckState::Unchecked };
   QVariantAnimation _handleAnimation;
+  QVariantAnimation _handlePaddingAnimation;
   QVariantAnimation _bgAnimation;
   QVariantAnimation _borderAnimation;
   QVariantAnimation _fgAnimation;

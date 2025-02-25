@@ -25,7 +25,7 @@ Switch::Switch(QWidget* parent)
   setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  _handlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2;
+  _fullHandlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2;
 
   // Focus frame.
   _focusFrame = new RoundedFocusFrame(this);
@@ -73,10 +73,11 @@ void Switch::paintEvent(QPaintEvent*) {
 
   // Draw handle.
   const auto handleXRatio = _handleAnimation.currentValue().toDouble();
-  const auto handleDiameter = static_cast<double>(switchRect.height() - _handlePadding * 2);
-  const auto handleGrooveWidth = switchRect.width() - _handlePadding * 2 - handleDiameter;
-  const auto handleX = switchRect.x() + _handlePadding + handleGrooveWidth * handleXRatio;
-  const auto handleY = static_cast<double>(switchRect.y() + _handlePadding);
+  const auto handlePadding = _handlePaddingAnimation.currentValue().toInt();
+  const auto handleDiameter = static_cast<double>(switchRect.height() - handlePadding * 2);
+  const auto handleGrooveWidth = switchRect.width() - handlePadding * 2 - handleDiameter;
+  const auto handleX = switchRect.x() + handlePadding + handleGrooveWidth * handleXRatio;
+  const auto handleY = static_cast<double>(switchRect.y() + handlePadding);
   const auto handleRect = QRectF{ handleX, handleY, handleDiameter, handleDiameter };
   p.setPen(Qt::NoPen);
   p.setBrush(fgColor);
@@ -193,6 +194,13 @@ void Switch::startAnimation() {
   _handleAnimation.setStartValue(currentXRatio);
   _handleAnimation.setEndValue(state == Qt::Checked ? 1. : (state == Qt::Unchecked ? 0. : 0.5));
   _handleAnimation.start();
+
+  const auto currentPadding = _handlePaddingAnimation.currentValue();
+  _handlePaddingAnimation.stop();
+  _handlePaddingAnimation.setDuration(animationDuration);
+  _handlePaddingAnimation.setStartValue(currentPadding);
+  _handlePaddingAnimation.setEndValue(_fullHandlePadding * (state == Qt::PartiallyChecked ? 3. : 1.));
+  _handlePaddingAnimation.start();
 }
 
 void Switch::setupAnimation() {
@@ -241,6 +249,14 @@ void Switch::setupAnimation() {
   _handleAnimation.setEndValue(0.);
   QObject::connect(&_handleAnimation, &QVariantAnimation::valueChanged, this, [this]() {
     update();
+  });
+
+  _handlePaddingAnimation.setDuration(animationDuration);
+  _handlePaddingAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
+  _handlePaddingAnimation.setStartValue(_fullHandlePadding);
+  _handlePaddingAnimation.setEndValue(_fullHandlePadding);
+  QObject::connect(&_handlePaddingAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+      update();
   });
 }
 
