@@ -207,12 +207,15 @@ std::optional<Theme> Theme::fromJsonDoc(const QJsonDocument& jsonDoc) {
 
 void Theme::initializeFonts() {
   // Fonts.
-  const auto defaultFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : QFont(QStringLiteral("Inter"));
-  const auto fixedFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont(QStringLiteral("Roboto Mono"));
-  const auto titleFont = useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
+  const auto defaultFont =
+    useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : QFont(QStringLiteral("Inter"));
+  const auto fixedFont =
+    useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont(QStringLiteral("Roboto Mono"));
+  const auto titleFont =
+    useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("InterDisplay"));
 
   fontRegular = defaultFont;
-  if(useSystemFonts) {
+  if (useSystemFonts) {
     fontSize = defaultFont.pointSize();
   } else {
     fontRegular.setWeight(QFont::Weight::Normal);
@@ -221,7 +224,7 @@ void Theme::initializeFonts() {
 
   fontBold = defaultFont;
   fontBold.setWeight(QFont::Weight::Bold);
-  if(!useSystemFonts) {
+  if (!useSystemFonts) {
     fontBold.setPointSizeF(fontSize);
   }
 
@@ -246,7 +249,7 @@ void Theme::initializeFonts() {
   fontH5.setPointSizeF(fontSizeH5);
 
   fontCaption = defaultFont;
-  if(useSystemFonts) {
+  if (useSystemFonts) {
     fontSizeS1 = defaultFont.pointSize();
   } else {
     fontCaption.setWeight(QFont::Weight::Normal);
@@ -254,7 +257,7 @@ void Theme::initializeFonts() {
   }
 
   fontMonospace = fixedFont;
-  if(useSystemFonts) {
+  if (useSystemFonts) {
     fontSizeMonospace = fixedFont.pointSize();
   } else {
     fontMonospace.setWeight(QFont::Weight::Normal);

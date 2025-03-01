@@ -52,15 +52,15 @@ MouseState getMenuItemMouseState(QStyle::State const& state) {
 }
 
 MouseState getComboBoxItemMouseState(QStyle::State const& state) {
-    if (!state.testFlag(QStyle::State_Enabled)) {
-        return MouseState::Disabled;
-    } else if (state.testFlag(QStyle::State_Sunken)) {
-        return MouseState::Pressed;
-    } else if (state.testFlag(QStyle::State_Selected)) {
-        return MouseState::Hovered;
-    } else {
-        return MouseState::Transparent;
-    }
+  if (!state.testFlag(QStyle::State_Enabled)) {
+    return MouseState::Disabled;
+  } else if (state.testFlag(QStyle::State_Sunken)) {
+    return MouseState::Pressed;
+  } else if (state.testFlag(QStyle::State_Selected)) {
+    return MouseState::Hovered;
+  } else {
+    return MouseState::Transparent;
+  }
 }
 
 MouseState getTabItemMouseState(QStyle::State const& state, const bool tabIsHovered) {

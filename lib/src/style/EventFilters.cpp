@@ -343,8 +343,7 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
       if (static_cast<QMouseEvent*>(evt)->buttons()) {
         _mousePressed = true;
       }
-    }
-    break;
+    } break;
     case QEvent::Type::MouseButtonPress: {
       _mousePressed = true;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
@@ -434,7 +433,7 @@ bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
 void ComboboxItemViewFilter::fixViewGeometry() {
   const auto* comboBox = findFirstParentOfType<QComboBox>(_view);
-  if(const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style())) {
+  if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style())) {
     const auto hMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
     const auto shadowWidth = qlementineStyle->theme().spacing;
     const auto borderWidth = qlementineStyle->theme().borderWidth;
