@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.0
+
+- Add `LoadingSpinner` widget (#27).
+- Add `AboutDialog` widget (#90).
+- Showcase app uses Qlementine Icons 1.7.0.
+
 ## v1.0.3
 
 - Git tagging issue.
