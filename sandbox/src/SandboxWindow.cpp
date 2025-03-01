@@ -22,6 +22,7 @@
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
+#include <oclero/qlementine/widgets/LoadingSpinner.hpp>
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 #include <oclero/qlementine/tools/ThemeEditor.hpp>
@@ -1083,6 +1084,19 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     }
   }
 
+  void setupUI_loadingSpinner() {
+    auto* spinner = new LoadingSpinner(windowContent);
+    spinner->setSpinning(true);
+    windowContentLayout->addWidget(spinner);
+
+    auto* checkbox = new QCheckBox("Spinning", windowContent);
+    checkbox->setChecked(spinner->spinning());
+    windowContentLayout->addWidget(checkbox);
+    QObject::connect(checkbox, &QCheckBox::clicked, spinner, [spinner](bool checked) {
+      spinner->setSpinning(checked);
+    });
+  }
+
   void setupUI_treeView() {
     {
       auto* treeWidget = new QTreeWidget(windowContent);
@@ -1653,6 +1667,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_badge();
     // _impl->setupUI_colorButton();
     // _impl->setupUI_messageBoxIcons();
+    // _impl->setupUI_loadingSpinner();
 
     // _impl->setupUI_fontMetricsTests();
     // _impl->setupUI_blur();
