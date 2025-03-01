@@ -138,6 +138,11 @@ void AboutDialog::setupUi() {
     {
       websiteLabel = new oclero::qlementine::Label(this);
       websiteLabel->setAlignment(Qt::AlignCenter);
+      websiteLabel->setTextInteractionFlags(
+        Qt::TextInteractionFlag::LinksAccessibleByMouse | Qt::TextInteractionFlag::LinksAccessibleByKeyboard);
+      QObject::connect(websiteLabel, &QLabel::linkActivated, this, [](const QString& link) {
+        QDesktopServices::openUrl(QUrl(link));
+      });
 
       auto* licenseLabel = new oclero::qlementine::Label(this);
       this->licenseLabel = licenseLabel;
