@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.2
+
+- Fix compilation on Windows.
+
 ## v1.1.1
 
 - Fix click on website link in `AboutDialog`.
