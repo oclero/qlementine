@@ -6,7 +6,7 @@ set(CMAKE_BUILD_PARALLEL_LEVEL $ENV{NUMBER_OF_PROCESSORS})
 # Set project information.
 project("qlementine"
   LANGUAGES CXX
-  VERSION 1.1.0.0
+  VERSION 1.1.1.0
   DESCRIPTION "Modern QStyle for desktop Qt applications."
 )
 set(PROJECT_COPYRIGHT "© Olivier Cléro, MIT License.")

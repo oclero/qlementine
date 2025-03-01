@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.1
+
+- Fix click on website link in `AboutDialog`.
+
 ## v1.1.0
 
 - Add `LoadingSpinner` widget (#27).
