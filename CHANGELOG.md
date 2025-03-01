@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.3
+
+- Git tagging issue.
+
 ## v1.0.2
 
 - Fix relative path in CMake.
