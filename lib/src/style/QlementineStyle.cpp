@@ -770,14 +770,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_PanelTipLabel: {
       const auto& bgColor = toolTipBackgroundColor();
       const auto& borderColor = toolTipBorderColor();
-      // More investigation is needed to make rounded tooltips on Windows.
-      // Currently we only support this feature on MacOS.
-#ifdef _WIN32
-      constexpr auto radius = 0;
-#else
-      const auto radius = _impl->theme.borderRadius;
-#endif // _WIN32
-
+      constexpr auto radius = 0.;
       const auto borderW = _impl->theme.borderWidth;
       p->setRenderHint(QPainter::Antialiasing, true);
       p->setPen(Qt::NoPen);
