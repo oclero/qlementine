@@ -36,22 +36,22 @@ void AboutDialog::setWebsiteUrl(const QString& url) {
     prettyUrl.remove(0, 8);
   }
   if (prettyUrl.isEmpty()) {
-    websiteLabel->setText("");
-    websiteLabel->setVisible(false);
+    _websiteLabel->setText("");
+    _websiteLabel->setVisible(false);
   } else {
-    websiteLabel->setText(QString("<a href=\"%1\">%2</a>").arg(url, prettyUrl));
-    websiteLabel->setVisible(true);
+    _websiteLabel->setText(QString("<a href=\"%1\">%2</a>").arg(url, prettyUrl));
+    _websiteLabel->setVisible(true);
   }
 }
 
 void AboutDialog::setLicense(const QString& license) {
   const auto trimmed = license.trimmed();
-  licenseLabel->setText(trimmed);
-  licenseLabel->setVisible(!trimmed.isEmpty());
+  _licenseLabel->setText(trimmed);
+  _licenseLabel->setVisible(!trimmed.isEmpty());
 }
 
 void AboutDialog::setCopyright(const QString& copyright) {
-  copyrightLabel->setText(copyright);
+  _copyrightLabel->setText(copyright);
 }
 
 void AboutDialog::addSocialMediaLink(const QString& name, const QString& url, const QIcon& icon) {
@@ -66,7 +66,7 @@ void AboutDialog::addSocialMediaLink(const QString& name, const QString& url, co
   QObject::connect(button, &QPushButton::clicked, button, [button_url]() {
     QDesktopServices::openUrl(button_url);
   });
-  buttonsLayout->addWidget(button);
+  _buttonsLayout->addWidget(button);
 }
 
 void AboutDialog::setupUi() {
@@ -127,45 +127,43 @@ void AboutDialog::setupUi() {
 
   // Links to social media.
   {
-    buttonsLayout = new QHBoxLayout();
-    buttonsLayout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
-    buttonsLayout->setSpacing(4);
-    buttonsLayout->setContentsMargins(0, 0, 0, 0);
-    rootLayout->addLayout(buttonsLayout);
-    rootLayout->setAlignment(buttonsLayout, Qt::AlignHCenter);
+    _buttonsLayout = new QHBoxLayout();
+    _buttonsLayout->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
+    _buttonsLayout->setSpacing(4);
+    _buttonsLayout->setContentsMargins(0, 0, 0, 0);
+    rootLayout->addLayout(_buttonsLayout);
+    rootLayout->setAlignment(_buttonsLayout, Qt::AlignHCenter);
 
     // Legal information.
     {
-      websiteLabel = new oclero::qlementine::Label(this);
-      websiteLabel->setAlignment(Qt::AlignCenter);
-      websiteLabel->setTextInteractionFlags(
+      _websiteLabel = new oclero::qlementine::Label(this);
+      _websiteLabel->setAlignment(Qt::AlignCenter);
+      _websiteLabel->setTextInteractionFlags(
         Qt::TextInteractionFlag::LinksAccessibleByMouse | Qt::TextInteractionFlag::LinksAccessibleByKeyboard);
-      QObject::connect(websiteLabel, &QLabel::linkActivated, this, [](const QString& link) {
+      QObject::connect(_websiteLabel, &QLabel::linkActivated, this, [](const QString& link) {
         QDesktopServices::openUrl(QUrl(link));
       });
 
-      auto* licenseLabel = new oclero::qlementine::Label(this);
-      this->licenseLabel = licenseLabel;
-      licenseLabel->setRole(oclero::qlementine::TextRole::Caption);
-      licenseLabel->setText(QApplication::applicationDisplayName());
-      licenseLabel->setAlignment(Qt::AlignCenter);
+      _licenseLabel = new oclero::qlementine::Label(this);
+      _licenseLabel->setRole(oclero::qlementine::TextRole::Caption);
+      _licenseLabel->setText(QApplication::applicationDisplayName());
+      _licenseLabel->setAlignment(Qt::AlignCenter);
 
-      auto* copyrightLabel = new oclero::qlementine::Label(this);
-      this->copyrightLabel = copyrightLabel;
-      copyrightLabel->setRole(oclero::qlementine::TextRole::Caption);
-      copyrightLabel->setAlignment(Qt::AlignCenter);
+      _copyrightLabel = new oclero::qlementine::Label(this);
+      _copyrightLabel->setRole(oclero::qlementine::TextRole::Caption);
+      _copyrightLabel->setAlignment(Qt::AlignCenter);
 
       auto* smallTextsLayout = new QVBoxLayout();
       smallTextsLayout->setContentsMargins(0, 0, 0, 0);
       smallTextsLayout->setSpacing(2);
-      smallTextsLayout->addWidget(licenseLabel);
-      smallTextsLayout->setAlignment(licenseLabel, Qt::AlignHCenter);
+      smallTextsLayout->addWidget(_licenseLabel);
+      smallTextsLayout->setAlignment(_licenseLabel, Qt::AlignHCenter);
 
-      smallTextsLayout->addWidget(copyrightLabel);
-      smallTextsLayout->setAlignment(copyrightLabel, Qt::AlignHCenter);
+      smallTextsLayout->addWidget(_copyrightLabel);
+      smallTextsLayout->setAlignment(_copyrightLabel, Qt::AlignHCenter);
 
-      rootLayout->addWidget(websiteLabel);
-      rootLayout->setAlignment(websiteLabel, Qt::AlignHCenter);
+      rootLayout->addWidget(_websiteLabel);
+      rootLayout->setAlignment(_websiteLabel, Qt::AlignHCenter);
 
       rootLayout->addLayout(smallTextsLayout);
     }

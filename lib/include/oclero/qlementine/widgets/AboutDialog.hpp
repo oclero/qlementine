@@ -8,6 +8,8 @@ class QLabel;
 class QHBoxLayout;
 
 namespace oclero::qlementine {
+class Label;
+
 class AboutDialog : public QDialog {
   Q_OBJECT
 
@@ -26,9 +28,9 @@ private:
 
 private:
   QLabel* _appDescriptionLabel{ nullptr };
-  QLabel* websiteLabel{ nullptr };
-  QLabel* licenseLabel{ nullptr };
-  QLabel* copyrightLabel{ nullptr };
-  QHBoxLayout* buttonsLayout{ nullptr };
+  QLabel* _websiteLabel{ nullptr };
+  Label* _licenseLabel{ nullptr };
+  Label* _copyrightLabel{ nullptr };
+  QHBoxLayout* _buttonsLayout{ nullptr };
 };
 } // namespace oclero::qlementine
