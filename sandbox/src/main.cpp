@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setOrganizationName("oclero");
   QCoreApplication::setOrganizationDomain("olivierclero.com");
   QCoreApplication::setApplicationVersion("1.0.0");
-  QApplication::setWindowIcon(QIcon(QStringLiteral(":/qlementine_icon.ico")));
+  QApplication::setWindowIcon(QIcon(":/sandbox/qlementine_icon.ico"));
 
 #if USE_CUSTOM_STYLE
   // Set custom QStyle.

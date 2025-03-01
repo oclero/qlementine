@@ -23,6 +23,7 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StateUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StyleUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/WidgetUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/AboutDialog.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/AbstractItemListWidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Action.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ActionButton.cpp
@@ -71,6 +72,7 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/StateUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/StyleUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/utils/WidgetUtils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/AboutDialog.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/AbstractItemListWidget.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Action.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/ActionButton.hpp
