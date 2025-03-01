@@ -2,12 +2,12 @@ set(SHOWCASE_NAME "showcase")
 
 # Dependency: qlementine-icons
 include(FetchContent)
-FetchContent_Declare(qlementine_icons
+FetchContent_Declare(qlementine-icons
   GIT_REPOSITORY "https://github.com/oclero/qlementine-icons.git"
-  GIT_TAG 0a269d7c4eb77fdc8ca92a7fb2ceae1baae29727 #v1.5.0
+  GIT_TAG 4b582b20b3f9b39bb9889ad4bca680ba16357bc2 #v1.7.0
 )
-FetchContent_MakeAvailable(qlementine_icons)
-set_target_properties(qlementine_icons
+FetchContent_MakeAvailable(qlementine-icons)
+set_target_properties(qlementine-icons
   PROPERTIES
     FOLDER dependencies
 )
@@ -35,7 +35,7 @@ qt_add_executable(${SHOWCASE_NAME}
 target_link_libraries(${SHOWCASE_NAME}
   PUBLIC
     qlementine
-    oclero::qlementine_icons
+    qlementine-icons
 )
 
 install(
@@ -52,7 +52,7 @@ set_target_properties(${SHOWCASE_NAME}
     CMAKE_AUTOMOC ON
     CMAKE_AUTORCC ON
     CMAKE_AUTOUIC ON
-    MACOSX_BUNDLE_GUI_IDENTIFIER "oclero.qlementine.${SHOWCASE_NAME}"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "oclero.qlementine.icons.${SHOWCASE_NAME}"
     MACOSX_BUNDLE_BUNDLE_NAME "Showcase"
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
