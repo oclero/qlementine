@@ -578,14 +578,14 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_PanelLineEdit:
       if (const auto* optPanelLineEdit = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
-        const auto* parentWidget = w->parentWidget();
+        const auto* parentWidget = w ? w->parentWidget() : nullptr;
         const auto* parentParentWidget = parentWidget ? parentWidget->parentWidget() : nullptr;
         const auto isTabCellEditor =
           parentParentWidget && qobject_cast<const QAbstractItemView*>(parentParentWidget->parentWidget());
 
         const auto radiusF = static_cast<double>(_impl->theme.borderRadius);
         auto radiuses = RadiusesF{ radiusF };
-        if (isTabCellEditor || w->metaObject()->className() == QStringLiteral("QExpandingLineEdit")) {
+        if (isTabCellEditor || (w && w->metaObject()->className() == QStringLiteral("QExpandingLineEdit"))) {
           // The QExpandingLineEdit class is used by QStyleItemDelegate when the cell context type is text.
           radiuses.topRight = 0.;
           radiuses.bottomRight = 0.;
@@ -2544,7 +2544,7 @@ void QlementineStyle::drawComplexControl(
   switch (cc) {
     case CC_SpinBox:
       if (const auto* spinboxOpt = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
-        const auto* parentWidget = w->parentWidget();
+        const auto* parentWidget = w ? w->parentWidget() : nullptr;
         const auto isTabCellEditor =
           parentWidget && qobject_cast<const QAbstractItemView*>(parentWidget->parentWidget());
 
@@ -2656,7 +2656,7 @@ void QlementineStyle::drawComplexControl(
             }
           }
         } else {
-          const auto* parentWidget = w->parentWidget();
+          const auto* parentWidget = w ? w->parentWidget() : nullptr;
           const auto isTabCellEditor =
             parentWidget && qobject_cast<const QAbstractItemView*>(parentWidget->parentWidget());
 
@@ -3733,7 +3733,7 @@ QSize QlementineStyle::sizeFromContents(
     case CT_ComboBox:
       if (const auto* optComboBox = qstyleoption_cast<const QStyleOptionComboBox*>(opt)) {
         // Check if the ComboBox is inside a QTableView/QTreeView.
-        const auto* parentWidget = widget->parentWidget();
+        const auto* parentWidget = widget ? widget->parentWidget() : nullptr;
         const auto* parentParentWidget = parentWidget ? parentWidget->parentWidget() : nullptr;
         const auto isTabCellEditor = qobject_cast<const QAbstractItemView*>(parentParentWidget) != nullptr;
 
