@@ -3302,22 +3302,14 @@ QRect QlementineStyle::subControlRect(
           } break;
           case SC_ComboBoxEditField: {
             if (comboBoxOpt->editable) {
+              const auto hasIcon = !comboBoxOpt->currentIcon.isNull();
               const auto indicatorSize = _impl->theme.iconSize;
               const auto spacing = _impl->theme.spacing;
-              const auto isBasicComboBox =
-                qobject_cast<const QComboBox*>(w) != nullptr && qobject_cast<const QFontComboBox*>(w) == nullptr;
-              if (isBasicComboBox) {
-                // Strange hack to place the QLineEdit correctly.
-                const auto indicatorButtonW = spacing * 2 + indicatorSize.width();
-                const auto shiftX = static_cast<int>(spacing * 2.5);
-                const auto editFieldW = comboBoxOpt->rect.width() - indicatorButtonW + shiftX;
-                return QRect{ comboBoxOpt->rect.x() - shiftX, comboBoxOpt->rect.y(), editFieldW,
-                  comboBoxOpt->rect.height() };
-              } else {
-                const auto indicatorButtonW = spacing * 2 + indicatorSize.width();
-                const auto editFieldW = comboBoxOpt->rect.width() - indicatorButtonW;
-                return QRect{ comboBoxOpt->rect.x(), comboBoxOpt->rect.y(), editFieldW, comboBoxOpt->rect.height() };
-              }
+              const auto shiftX = hasIcon ? static_cast<int>(spacing * 2.5) : 0;
+              const auto indicatorButtonW = spacing * 2 + indicatorSize.width();
+              const auto editFieldW = comboBoxOpt->rect.width() - indicatorButtonW + shiftX;
+              return QRect{ comboBoxOpt->rect.x() - shiftX, comboBoxOpt->rect.y(), editFieldW,
+                comboBoxOpt->rect.height() };
             } else {
               return QRect{};
             }

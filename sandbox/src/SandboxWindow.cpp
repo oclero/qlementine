@@ -600,15 +600,27 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_comboBox() {
-    // Editable.
-    {
+    struct ComboBoxTestData {
+      bool hasIcons{ false };
+      bool isEditable{ false };
+    };
+
+    for (const auto& data : std::vector<ComboBoxTestData>{
+           { false, false },
+           { false, true },
+           { true, false },
+           { true, true },
+         }) {
       auto* combobox = new QComboBox(windowContent);
       combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      // combobox->setIconSize(QSize(8, 8));
-      combobox->setEditable(true);
+      combobox->setEditable(data.isEditable);
 
       for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(getTestQIcon(), QString("Editable comboBox item %1").arg(i));
+        if (data.hasIcons) {
+          combobox->addItem(getTestQIcon(), QString("ComboBox item %1").arg(i));
+        } else {
+          combobox->addItem(QString("ComboBox item %1").arg(i));
+        }
       }
       auto* model = qobject_cast<QStandardItemModel*>(combobox->model());
       auto* item = model->item(2);
@@ -616,23 +628,11 @@ struct SandboxWindow::Impl {
 
       windowContentLayout->addWidget(combobox);
     }
-    // Non-editable
-    {
-      auto* combobox = new QComboBox(windowContent);
-      combobox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-      combobox->setFocusPolicy(Qt::StrongFocus);
-
-      for (auto i = 0; i < 4; ++i) {
-        combobox->addItem(getTestQIcon(), QString("ComboBox item %1").arg(i));
-      }
-
-      windowContentLayout->addWidget(combobox);
-    }
   }
 
   void setupUI_fontComboBox() {
     auto* combobox = new QFontComboBox(windowContent);
-    combobox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     combobox->setFocusPolicy(Qt::StrongFocus);
     windowContentLayout->addWidget(combobox);
   }
@@ -1657,6 +1657,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_dial();
     // _impl->setupUI_spinBox();
     // _impl->setupUI_comboBox();
+    // _impl->setupUI_fontComboBox();
     // _impl->setupUI_listView();
     // _impl->setupUI_treeWidget();
     // _impl->setupUI_table();
@@ -1672,7 +1673,6 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_lineEditStatus();
     // _impl->setupUI_dateTimeEdit();
     // _impl->setupUI_contextMenu();
-    // _impl->setupUI_fontComboBox();
 
     // _impl->setupUI_switch();
     // _impl->setupUI_expander();
