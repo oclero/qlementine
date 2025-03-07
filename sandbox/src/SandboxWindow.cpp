@@ -1227,6 +1227,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
       auto* vLayout = new QVBoxLayout();
       auto* buttonGroup = new QButtonGroup(windowContent);
+      buttonGroup->setParent(windowContent); // to make clang-analyzer happy.
       for (auto orientation : { Qt::Vertical, Qt::Horizontal }) {
         auto* radioButton = new QRadioButton(
           orientation == Qt::Vertical ? QStringLiteral("Vertical") : QStringLiteral("Horizontal"), container);
@@ -1608,7 +1609,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
       const auto& clickPos = e->pos();
       const auto clickPosStr = QString("(%1, %2)").arg(clickPos.x()).arg(clickPos.y());
 
-      menu.addAction(QString("Pos: %1").arg(clickPosStr), Qt::CTRL | Qt::Key_A, cb);
+      menu.addAction(QString("Pos: %1").arg(clickPosStr), Qt::CTRL | Qt::Key_A, &menu, cb);
 
       const auto randomCount = getRandomInt(1, 10);
       for (auto i = 0; i < randomCount; ++i) {
@@ -1618,7 +1619,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
           textList.append("A");
         }
 
-        menu.addAction(textList.join(QString()) + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, cb);
+        menu.addAction(textList.join(QString()) + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, &menu, cb);
       }
 
       // Show menu.
