@@ -4632,6 +4632,9 @@ void QlementineStyle::unpolish(QApplication* app) {
 }
 
 void QlementineStyle::polish(QWidget* w) {
+  if (!w)
+    return;
+
   QCommonStyle::polish(w);
 
 // Currently we only support tooltips with rounded corners on MacOS.
@@ -4656,8 +4659,8 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   // Prevent the following warning:
-  // QWidget::setMinimumSize: (/QTableCornerButton) Negative sizes (0,-1) are not possible
-  if (w->inherits("QTableCornerButton")) {
+  // QWidget::setMinimumSize: (/QAbstractButton) Negative sizes (0,-1) are not possible
+  if (qobject_cast<QAbstractButton*>(w)) {
     w->setMinimumSize(0, 1);
   }
 
