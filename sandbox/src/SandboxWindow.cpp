@@ -1682,7 +1682,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_colorButton();
     // _impl->setupUI_messageBoxIcons();
     // _impl->setupUI_loadingSpinner();
-    _impl->setupUI_aboutDialog();
+    // _impl->setupUI_aboutDialog();
 
     // _impl->setupUI_fontMetricsTests();
     // _impl->setupUI_blur();
