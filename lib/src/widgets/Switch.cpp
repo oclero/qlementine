@@ -336,6 +336,7 @@ void Switch::initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const {
 
 void Switch::setTristate(bool tristate) {
   _tristate = tristate;
+  update();
 }
 
 bool Switch::isTristate() const {
