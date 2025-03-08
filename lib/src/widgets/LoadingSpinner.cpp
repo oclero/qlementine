@@ -35,6 +35,7 @@ void LoadingSpinner::setSpinning(bool spinning) {
       _timerId = startTimer(128);
     } else {
       killTimer(_timerId);
+      _timerId = -1;
       _i = 0;
     }
 
@@ -90,8 +91,24 @@ void LoadingSpinner::paintEvent(QPaintEvent*) {
   }
 }
 
-void LoadingSpinner::timerEvent(QTimerEvent*) {
-  _i = (_i + 1) % 12;
-  update();
+void LoadingSpinner::timerEvent(QTimerEvent* evt) {
+  if (evt->timerId() == _timerId) {
+    _i = (_i + 1) % 12;
+    update();
+  }
+}
+
+void LoadingSpinner::showEvent(QShowEvent* evt) {
+  QWidget::showEvent(evt);
+  if (_spinning) {
+    _timerId = startTimer(128);
+  }
+}
+
+void LoadingSpinner::hideEvent(QHideEvent* evt) {
+  QWidget::hideEvent(evt);
+  killTimer(_timerId);
+  _timerId = -1;
+  _i = 0;
 }
 } // namespace oclero::qlementine

@@ -30,6 +30,8 @@ public:
 protected:
   void paintEvent(QPaintEvent* evt) override;
   void timerEvent(QTimerEvent* evt) override;
+  void showEvent(QShowEvent* evt) override;
+  void hideEvent(QHideEvent* evt) override;
 
 private:
   int _timerId{ -1 };

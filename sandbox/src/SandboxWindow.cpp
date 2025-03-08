@@ -1096,6 +1096,13 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     QObject::connect(checkbox, &QCheckBox::clicked, spinner, [spinner](bool checked) {
       spinner->setSpinning(checked);
     });
+
+    auto* checkbox2 = new QCheckBox("Visible", windowContent);
+    checkbox2->setChecked(spinner->isVisibleTo(windowContent));
+    windowContentLayout->addWidget(checkbox2);
+    QObject::connect(checkbox2, &QCheckBox::clicked, spinner, [spinner](bool checked) {
+      spinner->setVisible(checked);
+    });
   }
 
   void setupUI_aboutDialog() {
@@ -1619,7 +1626,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
           textList.append("A");
         }
 
-        menu.addAction(textList.join(QString()) + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, &menu, cb);
+        menu.addAction(textList.join("") + QString(" %1").arg(i), Qt::ALT | Qt::SHIFT | Qt::Key_0 + i, &menu, cb);
       }
 
       // Show menu.
