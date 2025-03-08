@@ -31,7 +31,7 @@ void LoadingSpinner::setSpinning(bool spinning) {
   if (spinning != _spinning) {
     _spinning = spinning;
 
-    if (_spinning) {
+    if (_spinning && isVisible()) {
       _timerId = startTimer(128);
     } else {
       killTimer(_timerId);
@@ -40,7 +40,9 @@ void LoadingSpinner::setSpinning(bool spinning) {
     }
 
     emit spinningChanged();
-    update();
+    if (isVisible()) {
+      update();
+    }
   }
 }
 
@@ -94,7 +96,9 @@ void LoadingSpinner::paintEvent(QPaintEvent*) {
 void LoadingSpinner::timerEvent(QTimerEvent* evt) {
   if (evt->timerId() == _timerId) {
     _i = (_i + 1) % 12;
-    update();
+    if (isVisible()) {
+      update();
+    }
   }
 }
 
