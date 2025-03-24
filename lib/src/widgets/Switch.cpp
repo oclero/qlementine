@@ -42,9 +42,15 @@ QSize Switch::sizeHint() const {
   const auto textH = fm.height();
   const auto spacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
   const auto switchRect = getSwitchRect();
-  const auto w = (textW > 0 ? textW + spacing : 0) + switchRect.width();
+  auto w = (textW > 0 ? textW + spacing : 0) + switchRect.width();
+  const auto iconSize = this->iconSize();
+  const auto hasIcon = !icon().isNull() || iconSize.isEmpty();
+  const auto iconH = hasIcon ? iconSize.height() : 0;
+  if (hasIcon) {
+      w += iconSize.width() + spacing;
+  }
   const auto defaultH = qlementineStyle ? qlementineStyle->theme().controlHeightMedium : 0;
-  const auto h = std::max({ textH, switchRect.height(), defaultH });
+  const auto h = std::max({ textH, switchRect.height(), iconH, defaultH });
   return { w, h };
 }
 
@@ -90,7 +96,10 @@ void Switch::paintEvent(QPaintEvent*) {
   if (hasIcon && availableW >= extent) {
     const auto pixmap =
       qlementine::getPixmap(icon(), { extent, extent }, MouseState::Normal, CheckState::Checked, this);
-    const auto coloredPixmap = getColorizedPixmap(pixmap, textColor);
+    const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
+    const auto coloredPixmap = qlementineStyle ?
+        qlementineStyle->getColorizedPixmap(pixmap, qlementineStyle->autoIconColor(this), textColor, textColor) :
+        pixmap;
     const auto iconX = availableX;
     const auto iconY = contentRect.y() + (contentRect.height() - extent) / 2;
     const auto iconRect = QRect{ iconX, iconY, extent, extent };
