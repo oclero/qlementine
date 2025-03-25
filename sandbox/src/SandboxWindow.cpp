@@ -789,11 +789,11 @@ struct SandboxWindow::Impl {
           action->setCheckable(true);
           action->setChecked(true);
         } else if (j % 2 == 0) {
-          const auto keyNumber = (Qt::Key)(Qt::Key_0 + j);
+          const auto keyNumber = (Qt::Key) (Qt::Key_0 + j);
           const auto keySeq = QKeySequence(Qt::CTRL | (Qt::Key_0 + keyNumber));
           action->setShortcut(keySeq);
         } else if (j % 3 == 0) {
-          const auto keyNumber = (Qt::Key)(Qt::Key_0 + j);
+          const auto keyNumber = (Qt::Key) (Qt::Key_0 + j);
           const auto keySeq = QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::ALT | (Qt::Key_0 + keyNumber));
           action->setShortcut(keySeq);
         } else if (j % 5 == 0) {
