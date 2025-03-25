@@ -1825,11 +1825,19 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_SizeGrip:
       break;
     case CE_Splitter: {
+      constexpr auto maxSplitterThickness = 2;
+      constexpr auto minSplitterThickness = 1;
+      const auto& rect = opt->rect;
       const auto mouse = getMouseState(opt->state);
       const auto& lineColor = splitterColor(mouse);
-      // const auto currentLineColor = _impl->animations.animateBackgroundColor(w, lineColor, _impl->theme.animationDuration);
-      const auto line_rect = opt->rect.adjusted(-1, 0, 1, 0);
-      p->fillRect(line_rect, lineColor);
+      const auto isHorizontal = opt->state.testFlag(QStyle::State_Horizontal);
+      const auto lineThickness = std::clamp(isHorizontal ? rect.width() : rect.height(), minSplitterThickness, maxSplitterThickness);
+      const auto lineW = isHorizontal ? lineThickness : rect.width();
+      const auto lineH = isHorizontal ? rect.height() : lineThickness;
+      const auto lineX = isHorizontal ? rect.x() + (rect.width() - lineThickness) / 2 : rect.x();
+      const auto lineY = isHorizontal ? rect.y() : rect.y() + (rect.height() - lineThickness) / 2;
+      const auto lineRect = QRect(lineX, lineY, lineW, lineH);
+      p->fillRect(lineRect, lineColor);
     }
       return;
     // case CE_RubberBand:
