@@ -582,10 +582,12 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto* parentParentWidget = parentWidget ? parentWidget->parentWidget() : nullptr;
         const auto isTabCellEditor =
           parentParentWidget && qobject_cast<const QAbstractItemView*>(parentParentWidget->parentWidget());
+        const auto isPlainLineEdit = optPanelLineEdit->lineWidth == 0;
 
         const auto radiusF = static_cast<double>(_impl->theme.borderRadius);
         auto radiuses = RadiusesF{ radiusF };
-        if (isTabCellEditor || (w && w->metaObject()->className() == QStringLiteral("QExpandingLineEdit"))) {
+        if (isPlainLineEdit || isTabCellEditor
+            || (w && w->metaObject()->className() == QStringLiteral("QExpandingLineEdit"))) {
           // The QExpandingLineEdit class is used by QStyleItemDelegate when the cell context type is text.
           radiuses.topRight = 0.;
           radiuses.bottomRight = 0.;
@@ -613,7 +615,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
         // Background.
         drawRoundedRect(p, rect, bgColor, radiuses);
-        drawRoundedRectBorder(p, rect, currentBorderColor, borderW, radiuses);
+        if (!plainLineEdit) {
+          drawRoundedRectBorder(p, rect, currentBorderColor, borderW, radiuses);
+        }
       }
       return;
     case PE_IndicatorArrowDown:
@@ -1831,7 +1835,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       const auto mouse = getMouseState(opt->state);
       const auto& lineColor = splitterColor(mouse);
       const auto isHorizontal = opt->state.testFlag(QStyle::State_Horizontal);
-      const auto lineThickness = std::clamp(isHorizontal ? rect.width() : rect.height(), minSplitterThickness, maxSplitterThickness);
+      const auto lineThickness =
+        std::clamp(isHorizontal ? rect.width() : rect.height(), minSplitterThickness, maxSplitterThickness);
       const auto lineW = isHorizontal ? lineThickness : rect.width();
       const auto lineH = isHorizontal ? rect.height() : lineThickness;
       const auto lineX = isHorizontal ? rect.x() + (rect.width() - lineThickness) / 2 : rect.x();
@@ -1962,10 +1967,13 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           // Dial: placed around the handle.
           optFocus.rect = subElementRect(SE_SliderFocusRect, &optDial, dial);
           optFocus.radiuses = optFocus.rect.height() / 2.;
-        } else if (qobject_cast<const QLineEdit*>(monitoredWidget)) {
+        } else if (const auto* lineEdit = qobject_cast<const QLineEdit*>(monitoredWidget)) {
           // LineEdit: placed around the whole text field.
           const auto* parentWidget = monitoredWidget ? monitoredWidget->parentWidget() : nullptr;
           const auto* parentParentWidget = parentWidget ? parentWidget->parentWidget() : nullptr;
+
+          // Check if the QLineEdit should have radiuses.
+          const auto isPlainLineEdit = !lineEdit->hasFrame();
 
           // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
           const auto isTabCellEditor =
@@ -1976,13 +1984,13 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto* parentSpinbox = qobject_cast<const QAbstractSpinBox*>(parentWidget);
           const auto* parentCombobox = qobject_cast<const QComboBox*>(parentWidget);
 
-          const auto margin = borderW;
+          const auto margin = isPlainLineEdit ? borderW * 2 : borderW;
           optFocus.rect = optFocus.rect.marginsRemoved(QMargins(margin, margin, margin, margin));
           optFocus.radiuses = _impl->theme.borderRadius;
 
           // Check if the QLineEdit is inside a QSpinBox and +/- buttons are visible,
           // or inside an editable QComboBox.
-          if (isTabCellEditor) {
+          if (isPlainLineEdit || isTabCellEditor) {
             optFocus.radiuses.topRight = 0.;
             optFocus.radiuses.topLeft = 0.;
             optFocus.radiuses.bottomRight = 0.;
@@ -4030,6 +4038,11 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // Frame.
     case PM_DefaultFrameWidth:
+      // Hack for QLineEdit. This is the only way to know if we have to draw a border or not.
+      // See: https://github.com/qt/qtbase/blob/dev/src/widgets/widgets/qlineedit.cpp#L81C65-L81C85
+      if (qobject_cast<const QLineEdit*>(w)) {
+        return 1;
+      }
       // Prevent QWidgets that contain or inherit QFrame to have a border.
       return 0;
 
