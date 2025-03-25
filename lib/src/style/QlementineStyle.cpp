@@ -615,7 +615,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
         // Background.
         drawRoundedRect(p, rect, bgColor, radiuses);
-        if (!plainLineEdit) {
+        if (!isPlainLineEdit) {
           drawRoundedRectBorder(p, rect, currentBorderColor, borderW, radiuses);
         }
       }
