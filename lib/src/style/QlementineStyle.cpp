@@ -480,7 +480,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
         const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
         const auto role = getColorRole(opt->state, isDefault);
-        const auto& bgColor = buttonBackgroundColor(mouse, role, w);
+        const auto& bgColor =  isFlat ? toolButtonBackgroundColor(mouse, role) : buttonBackgroundColor(mouse, role, w);
         const auto& currentBgColor =
           _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         const auto radiuses = optRoundedButton ? optRoundedButton->radiuses : RadiusesF{ _impl->theme.borderRadius };

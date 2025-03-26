@@ -406,6 +406,47 @@ struct SandboxWindow::Impl {
     }
     // ------
     {
+      // Text, flat.
+      auto* button = new QPushButton(windowContent);
+      button->setText(QStringLiteral("Button"));
+      button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      button->setFlat(true);
+      windowContentLayout->addWidget(button);
+    }
+    {
+      // Icon, flat.
+      auto* button = new QPushButton(windowContent);
+      button->setIcon(getTestQIcon());
+      button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      button->setFlat(true);
+      windowContentLayout->addWidget(button);
+    }
+    {
+      // Text+Icon, flat.
+      auto* button = new QPushButton(windowContent);
+      button->setText(QStringLiteral("Button"));
+      button->setIcon(getTestQIcon());
+      button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      button->setFlat(true);
+      windowContentLayout->addWidget(button);
+    }
+    {
+      // Text+Icon+Menu, flat.
+      auto* button = new QPushButton(windowContent);
+      button->setText(QStringLiteral("Button"));
+      button->setIcon(getTestQIcon());
+      button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      button->setFlat(true);
+
+      auto* menu = new QMenu(button);
+      for (auto i = 0; i < 3; ++i) {
+        menu->addAction(new QAction(QString("Action %1").arg(i), menu));
+      }
+      button->setMenu(menu);
+      windowContentLayout->addWidget(button);
+    }
+    // ------
+    {
       // Text, expanding size.
       auto* button = new QPushButton(windowContent);
       button->setText(QStringLiteral("Button"));
@@ -1653,7 +1694,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // Uncomment the line to show the corresponding widget.
     // _impl->setupUI_label();
     // _impl->setupUI_button();
-    // _impl->setupUI_buttonVariants();
+    _impl->setupUI_buttonVariants();
     // _impl->setupUI_checkbox();
     // _impl->setupUI_radioButton();
     // _impl->setupUI_commandLinkButton();
@@ -1671,7 +1712,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_table();
     // _impl->setupUI_menuBar();
     // _impl->setupUI_toolButton();
-    // _impl->setupUI_toolButtonsVariants();
+    _impl->setupUI_toolButtonsVariants();
     // _impl->setupUI_tabBar();
     // _impl->setupUI_tabWidget();
     // _impl->setupUI_groupBox();
