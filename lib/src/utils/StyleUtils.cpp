@@ -41,15 +41,23 @@ bool shouldHaveBoldFont(const QWidget* w) {
 }
 
 bool shouldHaveExternalFocusFrame(const QWidget* w) {
-  // Special case for all widgets inheriting QAbstractScrollArea.
+  // Special case for QPlainTextEdit. Need to be handled before QAbstractScrollArea.
+  if (const auto* plainTextEdit = qobject_cast<const QPlainTextEdit*>(w)) {
+    return plainTextEdit->focusPolicy() != Qt::NoFocus && plainTextEdit->frameShape() == QFrame::StyledPanel
+           && plainTextEdit->frameShadow() != QFrame::Plain;
+  }
+  if (const auto* textEdit = qobject_cast<const QTextEdit*>(w)) {
+    return textEdit->focusPolicy() != Qt::NoFocus && textEdit->frameShape() == QFrame::StyledPanel
+           && textEdit->frameShadow() != QFrame::Plain;
+  }
+
+  // Special case for all other widgets inheriting QAbstractScrollArea.
   if (qobject_cast<const QAbstractScrollArea*>(w)) {
     return false;
   }
 
-  // Special case for QPlainTextEdit and QTextEdit.
-  // NB: they are QAbstractScrollAreas so need to be handled after.
-  if (auto* frame = qobject_cast<const QFrame*>(w)) {
-    return frame->focusPolicy() != Qt::NoFocus && frame->frameShape() == QFrame::StyledPanel;
+  if (const auto* lineEdit = qobject_cast<const QLineEdit*>(w)) {
+    return lineEdit->focusPolicy() != Qt::NoFocus && lineEdit->hasFrame();
   }
 
   return (w && qobject_cast<const QAbstractButton*>(w) && !qobject_cast<const QTabBar*>(w->parentWidget()))

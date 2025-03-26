@@ -583,12 +583,15 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto* parentParentWidget = parentWidget ? parentWidget->parentWidget() : nullptr;
         const auto isTabCellEditor =
           parentParentWidget && qobject_cast<const QAbstractItemView*>(parentParentWidget->parentWidget());
-        const auto isPlainLineEdit = optPanelLineEdit->lineWidth == 0;
+
+        const auto qPlainTextEdit = qobject_cast<const QPlainTextEdit*>(w);
+        const auto isPlainQPlainTextEdit = qPlainTextEdit && qPlainTextEdit->frameShadow() == QFrame::Shadow::Plain;
+        const auto isPlainLineEdit = !qPlainTextEdit && optPanelLineEdit->lineWidth == 0;
+        const auto isPlain = isPlainQPlainTextEdit || isPlainLineEdit;
 
         const auto radiusF = static_cast<double>(_impl->theme.borderRadius);
         auto radiuses = RadiusesF{ radiusF };
-        if (isPlainLineEdit || isTabCellEditor
-            || (w && w->metaObject()->className() == QStringLiteral("QExpandingLineEdit"))) {
+        if (isPlain || isTabCellEditor || (w && w->metaObject()->className() == QStringLiteral("QExpandingLineEdit"))) {
           // The QExpandingLineEdit class is used by QStyleItemDelegate when the cell context type is text.
           radiuses.topRight = 0.;
           radiuses.bottomRight = 0.;

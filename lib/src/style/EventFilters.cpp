@@ -506,8 +506,10 @@ bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent
       if (_focusFrame == nullptr) {
         // Create the focus frame as late as possible to give
         // more chances to any parent scroll area to already exist.
-        _focusFrame = new QFocusFrame(_widget);
-        _focusFrame->setWidget(_widget);
+        QTimer::singleShot(0, this, [this]() {
+          _focusFrame = new QFocusFrame(_widget);
+          _focusFrame->setWidget(_widget);
+        });
       }
     }
   }
