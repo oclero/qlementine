@@ -55,6 +55,7 @@
 #include <QTextEdit>
 #include <QSpinBox>
 #include <QFontComboBox>
+#include <QTreeView>
 
 #include <cmath>
 #include <mutex>
@@ -480,7 +481,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
         const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
         const auto role = getColorRole(opt->state, isDefault);
-        const auto& bgColor =  isFlat ? toolButtonBackgroundColor(mouse, role) : buttonBackgroundColor(mouse, role, w);
+        const auto& bgColor = isFlat ? toolButtonBackgroundColor(mouse, role) : buttonBackgroundColor(mouse, role, w);
         const auto& currentBgColor =
           _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         const auto radiuses = optRoundedButton ? optRoundedButton->radiuses : RadiusesF{ _impl->theme.borderRadius };
@@ -1687,8 +1688,25 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_HeaderSection:
       if (const auto* optHeader = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
-        const auto* tableView = (w ? qobject_cast<const QTableView*>(w->parentWidget()) : nullptr);
+        const auto* wParent = w ? w->parentWidget() : nullptr;
+        const auto* tableView = qobject_cast<const QTableView*>(wParent);
+        const auto* treeView = qobject_cast<const QTreeView*>(wParent);
+        const auto* horizontalHeader = tableView  ? tableView->horizontalHeader()
+                                       : treeView ? treeView->header()
+                                                  : nullptr;
+        const auto* verticalHeader = tableView ? tableView->verticalHeader() : nullptr;
+
         const auto& rect = opt->rect;
+
+        const auto objName = w->objectName();
+        // Sometimes, we don't want external borders, for aesthetics purposes.
+        // Example: a QTreeView beside a QSplitter. We want to avoid the splitter's separator and the
+        // header's borders being side to side, because it'll look like a larger ugly border.
+        const auto shadow = tableView  ? tableView->frameShadow()
+                            : treeView ? treeView->frameShadow()
+                                       : QFrame::Shadow::Sunken;
+        const auto drawTableExternalBorders = shadow != QFrame::Plain;
+
         // Background.
         const auto mouse = getMouseState(opt->state);
         const auto checked = getCheckState(opt->state);
@@ -1703,7 +1721,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         p->setPen(QPen(lineColor, lineW));
 
         // Line on the right.
-        /*if (optHeader->position != QStyleOptionHeader::SectionPosition::OnlyOneSection)*/ {
+        /*if (optHeader->position != QStyleOptionHeader::SectionPosition::OnlyOneSection) {*/
+        const auto drawRightBorder =
+          optHeader->position != QStyleOptionHeader::SectionPosition::End || drawTableExternalBorders;
+        if (drawRightBorder) {
           const auto p1 = QPointF(rect.x() + rect.width() - lineW * .5, rect.y());
           const auto p2 = QPointF(rect.x() + rect.width() - lineW * .5, rect.y() + rect.height());
           p->drawLine(p1, p2);
@@ -1717,22 +1738,28 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         }
 
         // Line at the top.
-        const auto horizontalHeaderHidden = tableView ? tableView->horizontalHeader()->isHidden() : true;
-        if (optHeader->orientation == Qt::Horizontal
-            || (horizontalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
-          const auto p1 = QPointF(rect.x(), rect.y() + lineW * .5);
-          const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + lineW * .5);
-          p->drawLine(p1, p2);
+        if (drawTableExternalBorders) {
+          const auto horizontalHeaderHidden = horizontalHeader ? horizontalHeader->isHidden() : true;
+          if (optHeader->orientation == Qt::Horizontal
+              || (horizontalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
+            const auto p1 = QPointF(rect.x(), rect.y() + lineW * .5);
+            const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + lineW * .5);
+            p->drawLine(p1, p2);
+          }
         }
 
         // Line at the left.
-        const auto verticalHeaderHidden = tableView ? tableView->verticalHeader()->isHidden() : true;
-        if (optHeader->orientation == Qt::Vertical
-            || (optHeader->orientation == Qt::Horizontal && optHeader->position == QStyleOptionHeader::OnlyOneSection)
-            || (verticalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
-          const auto p1 = QPointF(rect.x() + lineW * .5, rect.y());
-          const auto p2 = QPointF(rect.x() + lineW * .5, rect.y() + rect.height());
-          p->drawLine(p1, p2);
+        const auto drawLeftBorder =
+          optHeader->position != QStyleOptionHeader::SectionPosition::Beginning || drawTableExternalBorders;
+        if (!drawLeftBorder) {
+          const auto verticalHeaderHidden = verticalHeader ? verticalHeader->isHidden() : true;
+          if (optHeader->orientation == Qt::Vertical
+              || (optHeader->orientation == Qt::Horizontal && optHeader->position == QStyleOptionHeader::OnlyOneSection)
+              || (verticalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
+            const auto p1 = QPointF(rect.x() + lineW * .5, rect.y());
+            const auto p2 = QPointF(rect.x() + lineW * .5, rect.y() + rect.height());
+            p->drawLine(p1, p2);
+          }
         }
       }
       return;
@@ -5978,15 +6005,15 @@ QColor const& QlementineStyle::tableHeaderBgColor(MouseState const mouse, CheckS
 
   switch (mouse) {
     case MouseState::Pressed:
-      return _impl->theme.neutralColorPressed;
-    case MouseState::Hovered:
       return _impl->theme.neutralColorHovered;
+    case MouseState::Hovered:
+      return _impl->theme.neutralColor;
     case MouseState::Disabled:
       return _impl->theme.neutralColor;
     case MouseState::Transparent:
     case MouseState::Normal:
     default:
-      return _impl->theme.neutralColor;
+      return _impl->theme.backgroundColorMain3;
   }
 }
 
@@ -6000,7 +6027,7 @@ QColor const& QlementineStyle::tableHeaderFgColor(MouseState const mouse, CheckS
 }
 
 QColor const& QlementineStyle::tableLineColor() const {
-  return _impl->theme.secondaryAlternativeColor;
+  return _impl->theme.borderColor;
 }
 
 QColor const& QlementineStyle::colorForTextRole(TextRole role, MouseState const mouse) const {
