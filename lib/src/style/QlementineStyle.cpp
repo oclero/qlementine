@@ -4036,6 +4036,12 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
     case PM_ButtonIconSize:
       return _impl->theme.iconSize.height();
 
+    // LineEdit.
+    case PM_LineEditIconMargin:
+      return _impl->theme.spacing;
+    case PM_LineEditIconSize:
+      return _impl->theme.iconSize.height();
+
     // Frame.
     case PM_DefaultFrameWidth:
       // Hack for QLineEdit. This is the only way to know if we have to draw a border or not.
@@ -4182,6 +4188,8 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
       return _impl->theme.spacing * 2;
     case PM_ToolBarExtensionExtent:
       return _impl->theme.iconSize.height() + _impl->theme.spacing;
+    case PM_ToolBarIconSize:
+      return _impl->theme.iconSize.height();
 
     // SpinBox.
     case PM_SpinBoxSliderHeight:
@@ -4191,7 +4199,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
     case PM_IconViewIconSize:
       return pixelMetric(PM_LargeIconSize, opt, w);
     case PM_ListViewIconSize:
-      return _impl->theme.iconSize.height();
+      return pixelMetric(PM_SmallIconSize, opt, w);
     case PM_HeaderDefaultSectionSizeHorizontal:
       return static_cast<int>(_impl->theme.controlDefaultWidth * 1.5);
     case PM_HeaderDefaultSectionSizeVertical:
