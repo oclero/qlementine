@@ -3738,9 +3738,8 @@ QSize QlementineStyle::sizeFromContents(
 
         const auto separatorW = menuIsOnSeparateButton ? _impl->theme.borderWidth : 0;
         const auto menuIndicatorW = hasMenu ? separatorW + iconSize.width() + spacing / 2 : 0;
-        const auto h = iconSize.height() < _impl->theme.controlHeightLarge
-                                                        ? _impl->theme.controlHeightLarge
-                                                        : iconSize.height() + _impl->theme.spacing;
+        const auto h = iconSize.height() < _impl->theme.controlHeightLarge ? _impl->theme.controlHeightLarge
+                                                                           : iconSize.height() + _impl->theme.spacing;
 
         switch (buttonStyle) {
           case Qt::ToolButtonStyle::ToolButtonTextOnly: {
@@ -3852,7 +3851,8 @@ QSize QlementineStyle::sizeFromContents(
           // Shortcut. NB: Some difficulties to understand what's going on. Qt changes the width so here's a hack.
           const auto hasShortcut = shortcut.length() > 0;
           const auto reservedShortcutW = optMenuItem->reservedShortcutWidth;
-          const auto shortcutW = hasShortcut ? 3 * spacing - reservedShortcutW : 0;
+          const auto shortcutTextWidth = hasShortcut ? fm.boundingRect(shortcut).width() : 0;
+          const auto shortcutW = std::max(reservedShortcutW, shortcutTextWidth);
 
           // Icon.
           const auto iconW =
