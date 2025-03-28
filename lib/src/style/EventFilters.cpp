@@ -3,6 +3,7 @@
 
 #include "EventFilters.hpp"
 
+#include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
@@ -620,9 +621,11 @@ public:
 LineEditMenuEventFilter::LineEditMenuEventFilter(QWidget* parent)
   : QObject(parent) {
   assert(parent);
+  // Might be a menu's submenu.
   if (auto* menu = qobject_cast<QMenu*>(parent)) {
     new LineEditMenuIconsBehavior(menu);
   } else {
+    // The QLineEdit.
     parent->installEventFilter(this);
   }
 }
@@ -631,10 +634,18 @@ bool LineEditMenuEventFilter::eventFilter(QObject*, QEvent* evt) {
   const auto type = evt->type();
   if (type == QEvent::ChildPolished) {
     auto* child = static_cast<QChildEvent*>(evt)->child();
-    if (auto* lineedit = qobject_cast<QLineEdit*>(child)) {
-      lineedit->installEventFilter(this);
+    if (auto* lineEdit = qobject_cast<QLineEdit*>(child)) {
+      lineEdit->installEventFilter(this);
     } else if (auto* menu = qobject_cast<QMenu*>(child)) {
       new LineEditMenuIconsBehavior(menu);
+
+      // Forward auto icon color mode from parent to the menu.
+      if (const auto* menuParent = menu->parentWidget()) {
+        if (const auto* style = qobject_cast<oclero::qlementine::QlementineStyle*>(menuParent->style())) {
+          const auto autoIconColor = style->autoIconColor(menuParent);
+          QlementineStyle::setAutoIconColor(menu, autoIconColor);
+        }
+      }
     }
   }
 
