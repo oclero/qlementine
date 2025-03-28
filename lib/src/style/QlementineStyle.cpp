@@ -584,9 +584,10 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isTabCellEditor =
           parentParentWidget && qobject_cast<const QAbstractItemView*>(parentParentWidget->parentWidget());
 
+        const auto isComboBoxLineEdit = qobject_cast<const QComboBox*>(w->parentWidget());
         const auto qPlainTextEdit = qobject_cast<const QPlainTextEdit*>(w);
         const auto isPlainQPlainTextEdit = qPlainTextEdit && qPlainTextEdit->frameShadow() == QFrame::Shadow::Plain;
-        const auto isPlainLineEdit = !qPlainTextEdit && optPanelLineEdit->lineWidth == 0;
+        const auto isPlainLineEdit = !isComboBoxLineEdit && !qPlainTextEdit && optPanelLineEdit->lineWidth == 0;
         const auto isPlain = isPlainQPlainTextEdit || isPlainLineEdit;
 
         const auto radiusF = static_cast<double>(_impl->theme.borderRadius);
@@ -2003,7 +2004,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto* parentParentWidget = parentWidget ? parentWidget->parentWidget() : nullptr;
 
           // Check if the QLineEdit should have radiuses.
-          const auto isPlainLineEdit = !lineEdit->hasFrame();
+          const auto isComboBoxLineEdit = qobject_cast<const QComboBox*>(lineEdit->parentWidget()) != nullptr;
+          const auto isPlainLineEdit = !isComboBoxLineEdit && !lineEdit->hasFrame();
 
           // Check if the QLineEdit is a cell editor of a QTableView or equivalent.
           const auto isTabCellEditor =

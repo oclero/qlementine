@@ -57,7 +57,8 @@ bool shouldHaveExternalFocusFrame(const QWidget* w) {
   }
 
   if (const auto* lineEdit = qobject_cast<const QLineEdit*>(w)) {
-    return lineEdit->focusPolicy() != Qt::NoFocus && lineEdit->hasFrame();
+    return lineEdit->focusPolicy() != Qt::NoFocus
+           && (lineEdit->hasFrame() || qobject_cast<QComboBox*>(lineEdit->parentWidget()) != nullptr);
   }
 
   return (w && qobject_cast<const QAbstractButton*>(w) && !qobject_cast<const QTabBar*>(w->parentWidget()))

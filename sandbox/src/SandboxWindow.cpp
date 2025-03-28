@@ -641,6 +641,16 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_comboBox() {
+    auto* combobox = new QComboBox(windowContent);
+    combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    combobox->setEditable(true);
+    for (auto i = 0; i < 4; ++i) {
+      combobox->addItem(getTestQIcon(), QString("ComboBox item %1").arg(i));
+    }
+    windowContentLayout->addWidget(combobox);
+  }
+
+  void setupUI_comboBoxVariants() {
     struct ComboBoxTestData {
       bool hasIcons{ false };
       bool isEditable{ false };
@@ -1694,7 +1704,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // Uncomment the line to show the corresponding widget.
     // _impl->setupUI_label();
     // _impl->setupUI_button();
-    _impl->setupUI_buttonVariants();
+    // _impl->setupUI_buttonVariants();
     // _impl->setupUI_checkbox();
     // _impl->setupUI_radioButton();
     // _impl->setupUI_commandLinkButton();
@@ -1705,14 +1715,15 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_plainTextEdit();
     // _impl->setupUI_dial();
     // _impl->setupUI_spinBox();
-    // _impl->setupUI_comboBox();
+    _impl->setupUI_comboBox();
+    // _impl->setupUI_comboBoxVariants();
     // _impl->setupUI_fontComboBox();
     // _impl->setupUI_listView();
     // _impl->setupUI_treeWidget();
     // _impl->setupUI_table();
     // _impl->setupUI_menuBar();
     // _impl->setupUI_toolButton();
-    _impl->setupUI_toolButtonsVariants();
+    // _impl->setupUI_toolButtonsVariants();
     // _impl->setupUI_tabBar();
     // _impl->setupUI_tabWidget();
     // _impl->setupUI_groupBox();
