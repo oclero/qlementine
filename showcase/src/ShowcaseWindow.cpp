@@ -53,6 +53,7 @@
 #include <QProgressBar>
 #include <QActionGroup>
 #include <QApplication>
+#include <QPlainTextEdit>
 
 #include <random>
 
@@ -698,6 +699,12 @@ struct ShowcaseWindow::Impl {
             groupBoxLayout->addRow(getDummyText(1, 1) + ":", slider);
           }
           contentLayout->addRow(groupBox);
+        }
+        {
+          auto* plainTextEdit = new QPlainTextEdit(content);
+          plainTextEdit->setFrameShape(QFrame::StyledPanel);
+          plainTextEdit->setFrameShadow(QFrame::Shadow::Raised);
+          contentLayout->addRow(plainTextEdit);
         }
       }
     }

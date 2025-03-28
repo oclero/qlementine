@@ -4850,6 +4850,8 @@ void QlementineStyle::polish(QWidget* w) {
     lineEdit->installEventFilter(new LineEditMenuEventFilter(lineEdit));
   } else if (auto* spinBox = qobject_cast<QSpinBox*>(w)) {
     spinBox->installEventFilter(new LineEditMenuEventFilter(spinBox));
+  } else if (auto* plainTextEdit = qobject_cast<QPlainTextEdit*>(w)) {
+    plainTextEdit->installEventFilter(new LineEditMenuEventFilter(plainTextEdit));
   }
 }
 
