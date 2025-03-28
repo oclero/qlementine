@@ -3499,7 +3499,7 @@ QRect QlementineStyle::subControlRect(
         const auto menuIsOnSeparateButton =
           toolButtonOpt->features.testFlag(QStyleOptionToolButton::ToolButtonFeature::MenuButtonPopup);
 
-        const auto& iconSize = _impl->theme.iconSize;
+        const auto& iconSize = toolButtonOpt->iconSize;
         const auto separatorW = _impl->theme.borderWidth;
         const auto spacing = _impl->theme.spacing;
         const auto menuButtonW =
@@ -3715,11 +3715,11 @@ QSize QlementineStyle::sizeFromContents(
     case CT_ToolButton:
       if (const auto* optToolButton = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
         const auto spacing = _impl->theme.spacing;
-        const auto& iconSize = _impl->theme.iconSize;
+        const auto& iconSize = optToolButton->iconSize;
 
         // Special cases.
         if (widget->inherits("QLineEditIconButton")) {
-          return iconSize;
+          return _impl->theme.iconSize;
         } else if (widget->inherits("QMenuBarExtension")) {
           const auto extent = pixelMetric(PM_ToolBarExtensionExtent);
           return QSize{ extent, extent };
@@ -3736,7 +3736,9 @@ QSize QlementineStyle::sizeFromContents(
 
         const auto separatorW = menuIsOnSeparateButton ? _impl->theme.borderWidth : 0;
         const auto menuIndicatorW = hasMenu ? separatorW + iconSize.width() + spacing / 2 : 0;
-        const auto h = _impl->theme.controlHeightLarge;
+        const auto h = iconSize.height() < _impl->theme.controlHeightLarge
+                                                        ? _impl->theme.controlHeightLarge
+                                                        : iconSize.height() + _impl->theme.spacing;
 
         switch (buttonStyle) {
           case Qt::ToolButtonStyle::ToolButtonTextOnly: {
