@@ -1699,10 +1699,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
                                        : treeView ? treeView->header()
                                                   : nullptr;
         const auto* verticalHeader = tableView ? tableView->verticalHeader() : nullptr;
-
+        const auto isVertical = optHeader->orientation == Qt::Vertical;
+        const auto isHorizontal = optHeader->orientation == Qt::Horizontal;
         const auto& rect = opt->rect;
 
-        const auto objName = w->objectName();
         // Sometimes, we don't want external borders, for aesthetics purposes.
         // Example: a QTreeView beside a QSplitter. We want to avoid the splitter's separator and the
         // header's borders being side to side, because it'll look like a larger ugly border.
@@ -1724,25 +1724,12 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         p->setBrush(Qt::NoBrush);
         p->setPen(QPen(lineColor, lineW));
 
-        // Line on the right.
-        /*if (optHeader->position != QStyleOptionHeader::SectionPosition::OnlyOneSection) {*/
-        const auto drawRightBorder =
-          optHeader->position != QStyleOptionHeader::SectionPosition::End || drawTableExternalBorders;
-        if (drawRightBorder) {
-          const auto p1 = QPointF(rect.x() + rect.width() - lineW * .5, rect.y());
-          const auto p2 = QPointF(rect.x() + rect.width() - lineW * .5, rect.y() + rect.height());
-          p->drawLine(p1, p2);
-        }
-
-        // Line below.
-        {
-          const auto p1 = QPointF(rect.x(), rect.y() + rect.height() - lineW * .5);
-          const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + rect.height() - lineW * .5);
-          p->drawLine(p1, p2);
-        }
-
         // Line at the top.
-        if (drawTableExternalBorders) {
+        const auto drawTopBorder =
+          drawTableExternalBorders
+          || (isVertical && optHeader->position == QStyleOptionHeader::SectionPosition::Beginning)
+          || (isHorizontal && optHeader->position != QStyleOptionHeader::SectionPosition::Beginning);
+        if (drawTopBorder) {
           const auto horizontalHeaderHidden = horizontalHeader ? horizontalHeader->isHidden() : true;
           if (optHeader->orientation == Qt::Horizontal
               || (horizontalHeaderHidden && optHeader->position == QStyleOptionHeader::Beginning)) {
@@ -1752,10 +1739,31 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           }
         }
 
+        // Line on the right.
+        const auto drawRightBorder =
+          drawTableExternalBorders || isVertical
+          || (isHorizontal && optHeader->position == QStyleOptionHeader::SectionPosition::End);
+        if (drawRightBorder) {
+          const auto p1 = QPointF(rect.x() + rect.width() - lineW * .5, rect.y());
+          const auto p2 = QPointF(rect.x() + rect.width() - lineW * .5, rect.y() + rect.height());
+          p->drawLine(p1, p2);
+        }
+
+        // Line at the bottom.
+        const auto drawBottomBorder = drawTableExternalBorders
+                                      || (isVertical && optHeader->position != QStyleOptionHeader::SectionPosition::End)
+                                      || isHorizontal;
+        if (drawBottomBorder) {
+          const auto p1 = QPointF(rect.x(), rect.y() + rect.height() - lineW * .5);
+          const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + rect.height() - lineW * .5);
+          p->drawLine(p1, p2);
+        }
+
         // Line at the left.
         const auto drawLeftBorder =
-          optHeader->position != QStyleOptionHeader::SectionPosition::Beginning || drawTableExternalBorders;
-        if (!drawLeftBorder) {
+          drawTableExternalBorders
+          || (isHorizontal && optHeader->position == QStyleOptionHeader::SectionPosition::Beginning);
+        if (drawLeftBorder) {
           const auto verticalHeaderHidden = verticalHeader ? verticalHeader->isHidden() : true;
           if (optHeader->orientation == Qt::Vertical
               || (optHeader->orientation == Qt::Horizontal && optHeader->position == QStyleOptionHeader::OnlyOneSection)
