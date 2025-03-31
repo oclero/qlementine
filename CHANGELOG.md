@@ -4,6 +4,7 @@
 
 The lib is now used by two more apps: Solarus Launcher and Solarus Editor!
 
+- Fix tab bar scroll buttons enabled state.
 - Improve Popover widget.
 - Fix Font not found "InterDisplay" (#96).
 - Fix Warning about negative minimum sizes (0,-1) (#98).
