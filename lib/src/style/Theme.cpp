@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QScreen>
 #include <QVector>
+#include <QGuiApplication>
 
 #include <optional>
 
