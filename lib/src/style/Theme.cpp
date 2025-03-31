@@ -214,46 +214,48 @@ void Theme::initializeFonts() {
   const auto titleFont =
     useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("Inter Display"));
 
+  const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
+
   fontRegular = defaultFont;
   if (useSystemFonts) {
     fontSize = defaultFont.pointSize();
   } else {
     fontRegular.setWeight(QFont::Weight::Normal);
-    fontRegular.setPointSizeF(fontSize);
+    fontRegular.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
   }
 
   fontBold = defaultFont;
   fontBold.setWeight(QFont::Weight::Bold);
   if (!useSystemFonts) {
-    fontBold.setPointSizeF(fontSize);
+    fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
   }
 
   fontH1 = titleFont;
   fontH1.setWeight(QFont::Weight::Bold);
-  fontH1.setPointSizeF(fontSizeH1);
+  fontH1.setPointSizeF(pixelSizeToPointSize(fontSizeH1, dpi));
 
   fontH2 = titleFont;
   fontH2.setWeight(QFont::Weight::Bold);
-  fontH2.setPointSizeF(fontSizeH2);
+  fontH2.setPointSizeF(pixelSizeToPointSize(fontSizeH2, dpi));
 
   fontH3 = titleFont;
   fontH3.setWeight(QFont::Weight::Bold);
-  fontH3.setPointSizeF(fontSizeH3);
+  fontH3.setPointSizeF(pixelSizeToPointSize(fontSizeH3, dpi));
 
   fontH4 = titleFont;
   fontH4.setWeight(QFont::Weight::Bold);
-  fontH4.setPointSizeF(fontSizeH4);
+  fontH4.setPointSizeF(pixelSizeToPointSize(fontSizeH4, dpi));
 
   fontH5 = titleFont;
   fontH5.setWeight(QFont::Weight::Bold);
-  fontH5.setPointSizeF(fontSizeH5);
+  fontH5.setPointSizeF(pixelSizeToPointSize(fontSizeH5, dpi));
 
   fontCaption = defaultFont;
   if (useSystemFonts) {
     fontSizeS1 = defaultFont.pointSize();
   } else {
     fontCaption.setWeight(QFont::Weight::Normal);
-    fontCaption.setPointSizeF(fontSizeS1);
+    fontCaption.setPointSizeF(pixelSizeToPointSize(fontSizeS1, dpi));
   }
 
   fontMonospace = fixedFont;
@@ -261,7 +263,7 @@ void Theme::initializeFonts() {
     fontSizeMonospace = fixedFont.pointSize();
   } else {
     fontMonospace.setWeight(QFont::Weight::Normal);
-    fontMonospace.setPointSizeF(fontSizeMonospace);
+    fontMonospace.setPointSizeF(pixelSizeToPointSize(fontSizeMonospace, dpi));
   }
 }
 
