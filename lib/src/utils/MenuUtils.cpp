@@ -27,7 +27,10 @@ protected:
       const auto* currentActiveAction = _menu->activeAction();
       _menu->setActiveAction(currentActiveAction == nullptr ? _action : nullptr);
     } else {
-      killTimer(_timerId);
+      if (_timerId != -1) {
+        killTimer(_timerId);
+      }
+
       if (_menu) {
         if (_action) {
           _menu->setActiveAction(_action);

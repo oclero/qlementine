@@ -34,7 +34,9 @@ void LoadingSpinner::setSpinning(bool spinning) {
     if (_spinning && isVisible()) {
       _timerId = startTimer(128);
     } else {
-      killTimer(_timerId);
+      if (_timerId != -1) {
+        killTimer(_timerId);
+      }
       _timerId = -1;
       _i = 0;
     }
@@ -111,7 +113,9 @@ void LoadingSpinner::showEvent(QShowEvent* evt) {
 
 void LoadingSpinner::hideEvent(QHideEvent* evt) {
   QWidget::hideEvent(evt);
-  killTimer(_timerId);
+  if (_timerId != -1) {
+    killTimer(_timerId);
+  }
   _timerId = -1;
   _i = 0;
 }
