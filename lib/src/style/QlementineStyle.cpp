@@ -4789,8 +4789,11 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   // Ensure widgets are not compressed vertically.
+  // Some widgets like QCheckBox or QLineEdit are compressed when added to
+  // QFormLayout.
   if (shouldNotBeVerticallyCompressed(w)) {
-    if (0 == w->minimumHeight()) {
+    const auto minHeight = w->minimumHeight();
+    if (minHeight == 0 || minHeight == 1) {
       w->setMinimumHeight(w->sizeHint().height());
     }
   }

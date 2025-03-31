@@ -74,7 +74,8 @@ bool shouldHaveTabFocus(const QWidget* w) {
 
 bool shouldNotBeVerticallyCompressed(const QWidget* w) {
   return qobject_cast<const QAbstractButton*>(w) || qobject_cast<const QComboBox*>(w)
-         || qobject_cast<const QLineEdit*>(w) || qobject_cast<const QAbstractSpinBox*>(w);
+         || qobject_cast<const QLineEdit*>(w) || qobject_cast<const QAbstractSpinBox*>(w)
+         || qobject_cast<const QCheckBox*>(w);
 }
 
 std::tuple<int, int> getHPaddings(const bool hasIcon, const bool hasText, const bool hasIndicator, const int padding) {
