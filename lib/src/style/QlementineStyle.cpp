@@ -4715,7 +4715,7 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Prevent the following warning:
   // QWidget::setMinimumSize: (/QAbstractButton) Negative sizes (0,-1) are not possible
-  if (qobject_cast<QAbstractButton*>(w)) {
+  if (qobject_cast<QAbstractButton*>(w) && w->minimumSize() == QSize(0, -1)) {
     w->setMinimumSize(0, 1);
   }
 
@@ -4794,7 +4794,10 @@ void QlementineStyle::polish(QWidget* w) {
   if (shouldNotBeVerticallyCompressed(w)) {
     const auto minHeight = w->minimumHeight();
     if (minHeight == 0 || minHeight == 1) {
-      w->setMinimumHeight(w->sizeHint().height());
+      const auto heightHint = w->sizeHint().height();
+      if (heightHint > 0) {
+        w->setMinimumHeight(w->sizeHint().height());
+      }
     }
   }
 
