@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.2.0
+
+The lib is now used by two more apps: Solarus Launcher and Solarus Editor!
+
+- Fix tab bar scroll buttons enabled state.
+- Improve Popover widget.
+- Fix Font not found "InterDisplay" (#96).
+- Fix Warning about negative minimum sizes (0,-1) (#98).
+- Add missing widgets in docs (#95).
+- Fix QLineEdit position in editable QComboBox (#63).
+- Make clang-analyzer happy.
+- Fix LoadingSpinner when not visible.
+- QSplitter: don't draw too large lines in splitters
+- Add support for QLineEdit without borders.
+- Add new Qt6 PixelMetric sizes.
+- Fix flat QPushButton background color.
+- Improve QTableView/QTreeView headers aesthetics.
+- Fix QToolButton icon size: it now uses the set size.
+- Fix forwarding the AutoIconColor property to QMenu's child menus.
+- Customize QPlainTextEdit's standard context menu icons.
+- Fix compressed QCheckBox in QFormLayout.
+- Fix huge fonts on Windows.
+
 ## v1.1.2
 
 - Fix compilation on Windows.

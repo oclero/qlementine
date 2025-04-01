@@ -11,11 +11,14 @@
 #include <QVariantAnimation>
 #include <QWidget>
 
+#include <functional>
+
 namespace oclero::qlementine {
-/// A MacOS-like popover.
+// A MacOS-like popover.
 class Popover : public QWidget {
   Q_OBJECT
 
+  Q_PROPERTY(bool manualPositioning READ manualPositioning WRITE setManualPositioning NOTIFY manualPositioningChanged)
   Q_PROPERTY(oclero::qlementine::Popover::Position preferredPosition READ preferredPosition WRITE setPreferredPosition
       NOTIFY preferredPositionChanged)
   Q_PROPERTY(oclero::qlementine::Popover::Alignment preferredAlignment READ preferredAlignment WRITE
@@ -30,6 +33,8 @@ class Popover : public QWidget {
   Q_PROPERTY(qreal borderWidth READ borderWidth WRITE setBorderWidth NOTIFY borderWidthChanged)
   Q_PROPERTY(qreal dropShadowRadius READ dropShadowRadius WRITE setDropShadowRadius NOTIFY dropShadowRadiusChanged)
   Q_PROPERTY(bool canBeOverAnchor READ canBeOverAnchor WRITE setCanBeOverAnchor NOTIFY canBeOverAnchorChanged)
+  Q_PROPERTY(bool deleteContentAfterClosing READ deleteContentAfterClosing WRITE setDeleteContentAfterClosing NOTIFY
+      deleteContentAfterClosingChanged)
   Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
   Q_PROPERTY(QColor borderColor READ borderColor WRITE setBorderColor NOTIFY borderColorChanged)
 
@@ -54,6 +59,11 @@ public:
   virtual ~Popover();
 
 public:
+  bool manualPositioning() const;
+  void setManualPositioning(bool manual);
+  void setManualPositioningCallback(const std::function<QPoint()>& cb);
+  Q_SIGNAL void manualPositioningChanged();
+
   Position preferredPosition() const;
   void setPreferredPosition(Position position);
   Q_SIGNAL void preferredPositionChanged();
@@ -110,6 +120,10 @@ public:
   void setCanBeOverAnchor(bool value);
   Q_SIGNAL void canBeOverAnchorChanged();
 
+  bool deleteContentAfterClosing() const;
+  void setDeleteContentAfterClosing(bool);
+  Q_SIGNAL void deleteContentAfterClosingChanged();
+
   const QColor& backgroundColor() const;
   void setBackgroundColor(const QColor&);
   Q_SIGNAL void backgroundColorChanged();
@@ -131,6 +145,10 @@ Q_SIGNALS:
   void pressed();
   void released();
 
+  /// Triggered when manualPositionning is true and the Popover's position needs to be updated
+  /// for whatever reason (show, content size changed, ect.).
+  void manualPositionRequested();
+
 protected:
   void paintEvent(QPaintEvent* e) override;
   void mousePressEvent(QMouseEvent* e) override;
@@ -139,6 +157,7 @@ protected:
   void showEvent(QShowEvent* e) override;
 
 private:
+  void adjustSizeToContent();
   QMargins dropShadowMargins() const;
   void updateDropShadowMargins();
   void updateDropShadowCache();
@@ -154,9 +173,10 @@ private:
   void clearAnchorWidget();
 
 private:
+  bool _manualPositioning{ false };
   Position _preferredPosition{ Position::Left };
   Alignment _preferredAlignment{ Alignment::Begin };
-  QWidget* _content{ nullptr };
+  QPointer<QWidget> _content{ nullptr };
   bool _opened{ false };
   class PopoverFrame;
   PopoverFrame* _frame{ nullptr };
@@ -171,6 +191,7 @@ private:
     QPixmap pixmap;
   } _dropShadowCache;
   bool _canBeOverAnchor{ true };
+  bool _deleteContentAfterClosing{ false };
   bool _animated{ true };
   QTimer _clickTimer;
   QColor _dropShadowColor{ QColor(0, 0, 0, 144) };
@@ -179,6 +200,7 @@ private:
   qreal _radius{ 8. };
   QColor _backgroundColor{};
   QColor _borderColor{};
+  std::function<QPoint()> _manualPositioningCb;
   static const bool _shouldDrawDropShadow;
 };
 } // namespace oclero::qlementine
