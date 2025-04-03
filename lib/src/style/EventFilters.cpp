@@ -334,11 +334,6 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         });
       }
     } break;
-    case QEvent::Type::MouseMove: {
-      if (static_cast<QMouseEvent*>(evt)->buttons()) {
-        _mousePressed = true;
-      }
-    } break;
     case QEvent::Type::MouseButtonPress: {
       _mousePressed = true;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
