@@ -1715,7 +1715,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_plainTextEdit();
     // _impl->setupUI_dial();
     // _impl->setupUI_spinBox();
-    _impl->setupUI_comboBox();
+    // _impl->setupUI_comboBox();
     // _impl->setupUI_comboBoxVariants();
     // _impl->setupUI_fontComboBox();
     // _impl->setupUI_listView();
