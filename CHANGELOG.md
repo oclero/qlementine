@@ -1,5 +1,7 @@
 # Changelog
 
+## v1.2.1
+
 ## v1.2.0
 
 The lib is now used by two more apps: Solarus Launcher and Solarus Editor!
