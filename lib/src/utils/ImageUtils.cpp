@@ -13,8 +13,6 @@
 #include <QSvgRenderer>
 #include <QImageReader>
 
-#include <array>
-
 namespace qtprivate {
 // Taken from qpixmapfilter.cpp, line 946, Qt 5.15.2
 // Grayscales the image to dest (could be same). If rect isn't defined
@@ -70,7 +68,6 @@ QImage colorizeImage(QPixmap const& input, QColor const& color) {
 
   // Create output QImage with same format and size as input QImage.
   auto outputImage = QImage(imageSize, inputImage.format());
-  outputImage.setDevicePixelRatio(inputImage.devicePixelRatioF());
   const auto outputRgb = color.rgba();
   const auto outputR = qRed(outputRgb);
   const auto outputG = qGreen(outputRgb);
@@ -87,6 +84,8 @@ QImage colorizeImage(QPixmap const& input, QColor const& color) {
       outputImage.setPixel(x, y, outputPixel);
     }
   }
+  // Set the pixel ratio.
+  outputImage.setDevicePixelRatio(inputImage.devicePixelRatioF());
 
   return outputImage;
 }
@@ -254,40 +253,53 @@ double getImageAspectRatio(QString const& path) {
 }
 
 QImage getExtendedImage(QPixmap const& input, int padding) {
-  if (input.isNull())
-    return {};
-
-  const auto extendedSize = QSize(input.width() + padding, input.height() + padding);
-  QImage inputImage(extendedSize, QImage::Format_ARGB32_Premultiplied);
-  inputImage.fill(Qt::transparent);
-  {
-    QPainter p(&inputImage);
-    p.setRenderHint(QPainter::Antialiasing, true);
-    const auto x = (extendedSize.width() - input.width()) / 2;
-    const auto y = (extendedSize.height() - input.height()) / 2;
-    p.drawPixmap(x, y, input);
-  }
-  return inputImage;
+  return getExtendedImage(input.toImage(), padding);
 }
 
 QImage getExtendedImage(QImage const& input, int padding) {
   if (input.isNull())
     return {};
-
-  const auto extendedSize = QSize(input.width() + padding, input.height() + padding);
+  const auto pxRatio = input.devicePixelRatioF();
+  // The padding is in logical pixels, so we need to convert it to physical pixels.
+  const auto actualPadding = static_cast<int>(std::ceil(std::max(padding, 0) * pxRatio));
+  const auto actualExtension = 2 * actualPadding;
+  const auto actualSize = input.size();
+  const auto extendedSize = QSize(actualSize.width() + actualExtension, actualSize.height() + actualExtension);
+  // Compute the extended image.
   QImage inputImage(extendedSize, QImage::Format_ARGB32_Premultiplied);
-  inputImage.fill(Qt::transparent);
   {
-    QPainter p(&inputImage);
-    p.setRenderHint(QPainter::Antialiasing, true);
-    const auto x = (extendedSize.width() - input.width()) / 2;
-    const auto y = (extendedSize.height() - input.height()) / 2;
-    p.drawImage(x, y, input);
+    const auto start = actualPadding;
+    const auto endWidth = extendedSize.width() - actualPadding;
+    const auto endHeight = extendedSize.height() - actualPadding;
+    for (auto i = 0; i < extendedSize.width(); ++i) {
+      for (auto j = 0; j < extendedSize.height(); ++j) {
+        if (i < start || i >= endWidth || j < start || j >= endHeight) {
+          // Set pixel to transparent.
+          inputImage.setPixel(i, j, qRgba(0, 0, 0, 0));
+        } else {
+          // Copy pixel from input image over the tranparent pixel.
+          const auto pixel = input.pixel(i - actualPadding, j - actualPadding);
+          if (input.format() == QImage::Format_ARGB32_Premultiplied) {
+            // If the input image is already premultiplied, just copy the pixel.
+            inputImage.setPixel(i, j, pixel);
+          } else {
+            // If the input image is not premultiplied, we need to premultiply it.
+            const auto alpha = qAlpha(pixel);
+            const auto red = qRed(pixel);
+            const auto green = qGreen(pixel);
+            const auto blue = qBlue(pixel);
+            const auto premultipliedPixel = qRgba(red * alpha / 255, green * alpha / 255, blue * alpha / 255, alpha);
+            inputImage.setPixel(i, j, premultipliedPixel);
+          }
+        }
+      }
+    }
   }
+  inputImage.setDevicePixelRatio(pxRatio);
   return inputImage;
 }
 
-QImage getBlurredImage(const QImage& inputImage, double sigma) {
+QImage getBlurredImage(const QImage& inputImage, double blurRadius) {
   if (inputImage.isNull())
     return {};
 
@@ -296,39 +308,36 @@ QImage getBlurredImage(const QImage& inputImage, double sigma) {
   auto* inputData = input.bits();
   auto* outputData = output.bits();
   constexpr auto channelCount = 4; // ARGB
-  fast_gaussian_blur(inputData, outputData, input.width(), input.height(), channelCount, sigma);
+  const auto sigma = blurRadius * inputImage.devicePixelRatioF() / pixelToSigma;
   // Since fast_gaussian_blur does an unnecessary std::swap, the actual result is in input.
+  fast_gaussian_blur(inputData, outputData, input.width(), input.height(), channelCount, sigma);
+  input.setDevicePixelRatio(inputImage.devicePixelRatioF());
   return input;
 }
 
-QPixmap getBlurredPixmap(QPixmap const& input, double blurRadius, bool const extend) {
+QPixmap getBlurredPixmap(QPixmap const& input, double blurRadius) {
   if (input.isNull())
     return {};
 
-  blurRadius /= pixelToSigma;
-
-  if (blurRadius < 1) {
-    return input;
-  }
-
-  const auto padding = static_cast<int>(std::ceil(blurRadius * 4));
-  const auto& inputImage = extend ? getExtendedImage(input, padding) : input.toImage();
-  const auto outputImage = getBlurredImage(inputImage, blurRadius);
-  return QPixmap::fromImage(outputImage);
+  const auto inputImage = input.toImage();
+  return QPixmap::fromImage(getBlurredImage(inputImage, blurRadius));
 }
 
 QPixmap getDropShadowPixmap(QPixmap const& input, double blurRadius, QColor const& color) {
   if (input.isNull())
     return {};
 
-  if (blurRadius <= 0) {
+  if (blurRadius < .5) {
     QPixmap result(input.size());
     result.fill(Qt::transparent);
+    result.setDevicePixelRatio(input.devicePixelRatioF());
     return result;
   }
 
+  // Create a colorized version of the input pixmap.
   const auto colorizedImage = colorizeImage(input, color);
-  const auto padding = static_cast<int>(std::ceil(blurRadius * 4));
+  // Create a blurred version of the colorized image.
+  const auto padding = blurRadiusNecessarySpace(blurRadius) * 2; // Each side. Logical pixels.
   const auto extendedImage = getExtendedImage(colorizedImage, padding);
   const auto shadowImage = getBlurredImage(extendedImage, blurRadius);
   return QPixmap::fromImage(shadowImage);
@@ -338,11 +347,23 @@ QPixmap getDropShadowPixmap(QSize const& size, double borderRadius, double blurR
   if (size.isEmpty())
     return {};
 
+  // Create a pixmap with the same size as the input.
+  // The pixmap is already colorized with the desired color.
   QPixmap input(size);
+  input.fill(Qt::transparent);
   {
     QPainter p(&input);
     drawRoundedRect(&p, QRect{ QPoint(0, 0), size }, color, borderRadius);
   }
-  return getDropShadowPixmap(input, blurRadius, color);
+
+  // Create a blurred version of the colorized image.
+  const auto padding = blurRadiusNecessarySpace(blurRadius) * 2;
+  const auto extendedImage = getExtendedImage(input, padding);
+  const auto shadowImage = getBlurredImage(extendedImage, blurRadius);
+  return QPixmap::fromImage(shadowImage);
+}
+
+int blurRadiusNecessarySpace(const double blurRadius) {
+  return static_cast<int>(std::ceil(blurRadius));
 }
 } // namespace oclero::qlementine
