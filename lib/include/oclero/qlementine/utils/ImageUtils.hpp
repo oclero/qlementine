@@ -111,13 +111,16 @@ QImage getExtendedImage(QPixmap const& input, int padding);
 QImage getExtendedImage(QImage const& input, int padding);
 
 /// Gets a blurred version of the input pixmap
-QPixmap getBlurredPixmap(QPixmap const& input, double blurRadius, bool const extend);
+QPixmap getBlurredPixmap(QPixmap const& input, double blurRadius);
 
 /// Gets a drop shadow for the input pixmap (i.e. a blurred colorized version).
 QPixmap getDropShadowPixmap(QPixmap const& input, double blurRadius, QColor const& color = Qt::black);
 
 /// Gets a drop shadow for a QRect.
 QPixmap getDropShadowPixmap(QSize const& size, double borderRadius, double blurRadius, QColor const& color = Qt::black);
+
+/// Calculates the necessary space for a blurred image.
+int blurRadiusNecessarySpace(const double blurRadius);
 } // namespace oclero::qlementine
 
 Q_DECLARE_METATYPE(oclero::qlementine::AutoIconColor);

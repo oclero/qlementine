@@ -1184,7 +1184,7 @@ void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, cons
   }
 
   // Get the blurred version of the temporary buffer.
-  constexpr auto blurRadius = 2;
+  constexpr auto blurRadius = 4.;
   constexpr auto shadowX = 0;
   constexpr auto shadowY = blurRadius / 2;
   const auto shadowPixmap = getDropShadowPixmap(pathPixmap, blurRadius, color);

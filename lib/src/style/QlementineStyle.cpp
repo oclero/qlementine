@@ -999,10 +999,10 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto totalRect = opt->rect;
       const auto shadowPadding = pixelMetric(PM_MenuPanelWidth);
       const auto frameRect = totalRect.marginsRemoved({ shadowPadding, shadowPadding, shadowPadding, shadowPadding });
-      const auto dropShadowRadius = shadowPadding / 3.;
-      const auto dropShadowOffsetY = shadowPadding / 4;
+      const auto dropShadowRadius = _impl->theme.spacing;
+      const auto dropShadowOffsetY = shadowPadding / 3;
       const auto dropShadowPixmap =
-        getDropShadowPixmap(frameRect.size(), radius * 2, dropShadowRadius, _impl->theme.shadowColor1);
+        getDropShadowPixmap(frameRect.size(), radius, dropShadowRadius, _impl->theme.shadowColor1);
       const auto dropShadowX = frameRect.x() + (frameRect.width() - dropShadowPixmap.width()) / 2;
       const auto dropShadowY = frameRect.y() + (frameRect.height() - dropShadowPixmap.height()) / 2 + dropShadowOffsetY;
 
@@ -2864,7 +2864,7 @@ void QlementineStyle::drawComplexControl(
               tmpPainter.setBrush(Qt::black);
               tmpPainter.drawEllipse(QRect{ QPoint{ 0, 0 }, handleRect.size() });
             }
-            constexpr auto dropShadowBlurRadius = 1.;
+            constexpr auto dropShadowBlurRadius = 2.;
             dropShadowPixmap =
               qlementine::getDropShadowPixmap(inputPixmap, dropShadowBlurRadius, _impl->theme.shadowColor3);
           }
@@ -4179,7 +4179,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
     }
     case PM_MenuPanelWidth:
       // Keep some space for drop shadow.
-      return _impl->theme.spacing;
+      return blurRadiusNecessarySpace(_impl->theme.spacing);
     case PM_MenuTearoffHeight:
       // Tear off is the part of the menu that is clickable to detach the menu.
       return _impl->theme.controlHeightSmall;
