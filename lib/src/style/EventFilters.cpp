@@ -500,19 +500,24 @@ bool TextEditEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
 WidgetWithFocusFrameEventFilter::WidgetWithFocusFrameEventFilter(QWidget* widget)
   : QObject(widget)
-  , _widget(widget) {}
+  , _widget(widget) {
+  _focusFrame = new QFocusFrame(_widget);
+}
 
 bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
-  if (watchedObject == _widget) {
-    if (evt->type() == QEvent::Show) {
-      if (_focusFrame == nullptr) {
-        // Create the focus frame as late as possible to give
-        // more chances to any parent scroll area to already exist.
-        QTimer::singleShot(0, this, [this]() {
-          _focusFrame = new QFocusFrame(_widget);
+  if (!_added && watchedObject == _widget) {
+    const auto type = evt->type();
+    // Create the focus frame as late as possible to give
+    // more chances to any parent (e.g. scrollarea) to already exist.
+    // QEvent::Show isn't sufficient. We need to delay even more, so
+    // waiting for the first QEvent::Paint is our only solution.
+    if (type == QEvent::Paint) {
+      QTimer::singleShot(0, this, [this]() {
+        if (!_added) {
+          _added = true;
           _focusFrame->setWidget(_widget);
-        });
-      }
+        }
+      });
     }
   }
 
