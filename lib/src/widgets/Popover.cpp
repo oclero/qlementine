@@ -75,8 +75,10 @@ Popover::Popover(QWidget* parent)
   setWindowFlag(Qt::WindowType::Popup, true);
   setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
   if (_shouldDrawDropShadow) {
+    // We draw the drop shadow ourselves.
     setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, true);
   } else {
+    // Let the system draw the drop shadow.
     setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, false);
   }
 
@@ -256,6 +258,9 @@ void Popover::setPadding(const QMargins& padding) {
   if (padding != _frameLayout->contentsMargins()) {
     _frameLayout->setContentsMargins(padding);
     Q_EMIT paddingChanged();
+    if (isVisible()) {
+      updatePopoverGeometry();
+    }
   }
 }
 
@@ -361,6 +366,29 @@ void Popover::setDropShadowRadius(qreal radius) {
   if (radius != _dropShadowRadius) {
     _dropShadowRadius = radius;
     Q_EMIT dropShadowRadiusChanged();
+    // Reset the cache.
+    _dropShadowCache.frameSize = {};
+    _dropShadowCache.shadowPixmap = {};
+    // Update everything.
+    updateDropShadowMargins();
+    updateGeometry();
+    update();
+  }
+}
+
+const QPointF& Popover::dropShadowOffset() const {
+  return _dropShadowOffset;
+}
+
+void Popover::setDropShadowOffset(const QPointF& offset) {
+  if (offset != _dropShadowOffset) {
+    _dropShadowOffset = offset;
+    Q_EMIT dropShadowOffsetChanged();
+    // Reset the cache.
+    _dropShadowCache.frameSize = {};
+    _dropShadowCache.shadowPixmap = {};
+    // Update everything.
+    updateDropShadowMargins();
     updateGeometry();
     update();
   }
@@ -432,9 +460,9 @@ void Popover::togglePopover() {
 
 void Popover::adjustSizeToContent() {
   if (_content) {
+    _content->ensurePolished();
     _content->updateGeometry();
   }
-
   _frame->adjustSize();
   adjustSize();
 }
@@ -446,16 +474,16 @@ void Popover::paintEvent(QPaintEvent*) {
   // Drop shadow.
   if (_shouldDrawDropShadow) {
     // Update cache if necessary.
-    if (_dropShadowCache.size != size()) {
+    if (_dropShadowCache.frameSize != size()) {
       updateDropShadowCache();
     }
-    const auto dropShadowYOffset = _dropShadowRadius / 2.;
-    const auto dropShadowX = _frame->x() + (_frame->width() - _dropShadowCache.size.width()) / 2;
-    const auto dropShadowY = _frame->y() + (_frame->height() - _dropShadowCache.size.height()) / 2 + dropShadowYOffset;
+    const auto dropShadowSize = _dropShadowCache.shadowPixmap.size();
+    const auto dropShadowX = _frame->x() + (_frame->width() - dropShadowSize.width()) / 2 + _dropShadowOffset.x();
+    const auto dropShadowY = _frame->y() + (_frame->height() - dropShadowSize.height()) / 2 + _dropShadowOffset.y();
 
     const auto compModeBackup = p.compositionMode();
     p.setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
-    p.drawPixmap(dropShadowX, dropShadowY, _dropShadowCache.pixmap);
+    p.drawPixmap(dropShadowX, dropShadowY, _dropShadowCache.shadowPixmap);
     p.setCompositionMode(compModeBackup);
   }
 
@@ -524,9 +552,14 @@ QMargins Popover::dropShadowMargins() const {
 
 void Popover::updateDropShadowMargins() {
   if (_shouldDrawDropShadow) {
-    const auto dropShadowYOffset = _dropShadowRadius / 2.;
-    const auto spaceForShadow = _dropShadowRadius * 2.;
-    layout()->setContentsMargins(spaceForShadow, spaceForShadow, spaceForShadow, spaceForShadow + dropShadowYOffset);
+    const auto spaceForShadow = qlementine::blurRadiusNecessarySpace(_dropShadowRadius);
+    const auto margins = QMargins{
+      static_cast<int>(std::ceil(spaceForShadow - _dropShadowOffset.x())), // left
+      static_cast<int>(std::ceil(spaceForShadow - _dropShadowOffset.y())), // top
+      static_cast<int>(std::ceil(spaceForShadow + _dropShadowOffset.x())), // right
+      static_cast<int>(std::ceil(spaceForShadow + _dropShadowOffset.y())), // bottom
+    };
+    layout()->setContentsMargins(margins);
   } else {
     layout()->setContentsMargins(0, 0, 0, 0);
   }
@@ -535,11 +568,11 @@ void Popover::updateDropShadowMargins() {
 void Popover::updateDropShadowCache() {
   if (_shouldDrawDropShadow) {
     const auto framePixmap = getFrameShape();
-    _dropShadowCache.size = size();
-    _dropShadowCache.pixmap = qlementine::getDropShadowPixmap(framePixmap, _dropShadowRadius, _dropShadowColor);
+    _dropShadowCache.frameSize = size();
+    _dropShadowCache.shadowPixmap = qlementine::getDropShadowPixmap(framePixmap, _dropShadowRadius, _dropShadowColor);
   } else {
-    _dropShadowCache.size = { 0, 0 };
-    _dropShadowCache.pixmap = {};
+    _dropShadowCache.frameSize = { 0, 0 };
+    _dropShadowCache.shadowPixmap = {};
   }
 }
 
@@ -557,6 +590,8 @@ void Popover::updatePopoverGeometry() {
     auto topLeft = geometry().topLeft();
     if (_manualPositioningCb) {
       topLeft = _manualPositioningCb();
+      topLeft.rx() += dropShadowMargins.left();
+      topLeft.ry() += dropShadowMargins.top();
     }
     const auto geometry = QRect(topLeft, popoverTotalSize);
     setGeometry(geometry);
@@ -780,8 +815,14 @@ void Popover::startAnimation() {
 QPixmap Popover::getFrameShape() const {
   const auto rect = QRect{ QPoint{ 0, 0 }, _frame->size() };
 
-  QPixmap result(_frame->size());
+  // Ensure the pixmap is the same size as the widget.
+  const auto pixmapDeviceRatio = _frame->devicePixelRatioF();
+  const auto pixmapDeviceIndependentSize = _frame->size() * pixmapDeviceRatio;
+  QPixmap result(pixmapDeviceIndependentSize);
+  result.setDevicePixelRatio(pixmapDeviceRatio);
   result.fill(Qt::transparent);
+
+  // Draw the frame.
   QPainter p(&result);
   p.setRenderHint(QPainter::RenderHint::Antialiasing, true);
   p.setPen(Qt::NoPen);
@@ -794,8 +835,15 @@ QPixmap Popover::getFrameShape() const {
 QBitmap Popover::getFrameMask() const {
   const auto totalRect = _frame->rect().toRectF();
   const auto innerRect = totalRect.marginsRemoved({ _borderWidth, _borderWidth, _borderWidth, _borderWidth });
-  QPixmap mask(_frame->size());
+
+  // Ensure the pixmap is the same size as the widget.
+  const auto pixmapDeviceRatio = _frame->devicePixelRatioF();
+  const auto pixmapDeviceIndependentSize = _frame->size() * pixmapDeviceRatio;
+  QPixmap mask(pixmapDeviceIndependentSize);
+  mask.setDevicePixelRatio(pixmapDeviceRatio);
   mask.fill(Qt::white);
+
+  // Draw the mask.
   QPainter p(&mask);
   p.setRenderHint(QPainter::Antialiasing, true);
   p.setPen(Qt::NoPen);

@@ -32,6 +32,7 @@ class Popover : public QWidget {
   Q_PROPERTY(qreal radius READ radius WRITE setRadius NOTIFY radiusChanged)
   Q_PROPERTY(qreal borderWidth READ borderWidth WRITE setBorderWidth NOTIFY borderWidthChanged)
   Q_PROPERTY(qreal dropShadowRadius READ dropShadowRadius WRITE setDropShadowRadius NOTIFY dropShadowRadiusChanged)
+  Q_PROPERTY(QPointF dropShadowOffset READ dropShadowOffset WRITE setDropShadowOffset NOTIFY dropShadowOffsetChanged)
   Q_PROPERTY(bool canBeOverAnchor READ canBeOverAnchor WRITE setCanBeOverAnchor NOTIFY canBeOverAnchorChanged)
   Q_PROPERTY(bool deleteContentAfterClosing READ deleteContentAfterClosing WRITE setDeleteContentAfterClosing NOTIFY
       deleteContentAfterClosingChanged)
@@ -116,6 +117,10 @@ public:
   void setDropShadowRadius(qreal radius);
   Q_SIGNAL void dropShadowRadiusChanged();
 
+  const QPointF& dropShadowOffset() const;
+  void setDropShadowOffset(const QPointF& offset);
+  Q_SIGNAL void dropShadowOffsetChanged();
+
   bool canBeOverAnchor() const;
   void setCanBeOverAnchor(bool value);
   Q_SIGNAL void canBeOverAnchorChanged();
@@ -145,8 +150,8 @@ Q_SIGNALS:
   void pressed();
   void released();
 
-  /// Triggered when manualPositionning is true and the Popover's position needs to be updated
-  /// for whatever reason (show, content size changed, ect.).
+  // Triggered when manualPositionning is true and the Popover's position needs to be updated
+  // for whatever reason (show, content size changed, ect.).
   void manualPositionRequested();
 
 protected:
@@ -170,7 +175,6 @@ private:
   QPixmap getFrameShape() const;
   QBitmap getFrameMask() const;
   bool hitboxContainsPoint(const QPointF& pos) const;
-  void clearAnchorWidget();
 
 private:
   bool _manualPositioning{ false };
@@ -187,15 +191,18 @@ private:
   QVariantAnimation _opacityAnimation;
   QMargins _screenPadding{ 10, 10, 10, 10 };
   struct {
-    QSize size;
-    QPixmap pixmap;
+    // Size in device-independent pixels.
+    QSize frameSize;
+    // Pixmap with the correct device pixel ratio.
+    QPixmap shadowPixmap;
   } _dropShadowCache;
   bool _canBeOverAnchor{ true };
   bool _deleteContentAfterClosing{ false };
   bool _animated{ true };
   QTimer _clickTimer;
-  QColor _dropShadowColor{ QColor(0, 0, 0, 144) };
-  qreal _dropShadowRadius{ 24. };
+  QColor _dropShadowColor{ QColor(0, 0, 0, 76) };
+  qreal _dropShadowRadius{ 12. };
+  QPointF _dropShadowOffset{ 0., 4. };
   qreal _borderWidth{ 1. };
   qreal _radius{ 8. };
   QColor _backgroundColor{};
