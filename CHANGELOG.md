@@ -2,6 +2,10 @@
 
 ## v1.2.1
 
+- Fix the drop shadows: they now use correctly the device pixel ratio.
+- Delay even more the creation of `QFocusFrame`.
+- Add methods to customize `AboutDialog`.
+
 ## v1.2.0
 
 The lib is now used by two more apps: Solarus Launcher and Solarus Editor!
