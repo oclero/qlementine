@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.2
+
+- Fix installing includes with double-slashes
+
 ## v1.2.1
 
 - Fix the drop shadows: they now use correctly the device pixel ratio.
