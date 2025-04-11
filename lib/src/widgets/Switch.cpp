@@ -22,7 +22,7 @@ Switch::Switch(QWidget* parent)
   setChecked(false);
   setAutoRepeat(false);
   setupAnimation();
-  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);  // Like QCheckBox
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
   _fullHandlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2;
@@ -346,6 +346,7 @@ void Switch::initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const {
 void Switch::setTristate(bool tristate) {
   _tristate = tristate;
   update();
+  tristateChanged(tristate);
 }
 
 bool Switch::isTristate() const {

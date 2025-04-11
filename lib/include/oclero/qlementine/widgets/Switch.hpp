@@ -15,6 +15,8 @@ class QStyleOptionFocusRoundedRect;
 class Switch : public QAbstractButton {
   Q_OBJECT
 
+  Q_PROPERTY(bool tristate READ isTristate WRITE setTristate NOTIFY tristateChanged)
+
 public:
   explicit Switch(QWidget* parent = nullptr);
 
@@ -30,6 +32,7 @@ public:
 
 Q_SIGNALS:
   void checkStateChanged(int);
+  void tristateChanged(bool);
 
 protected:
   void paintEvent(QPaintEvent* e) override;
