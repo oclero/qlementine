@@ -111,6 +111,7 @@ public:
 private:
   QWidget* _widget{ nullptr };
   QFocusFrame* _focusFrame{ nullptr };
+  bool _added{ false };
 };
 
 class LineEditMenuEventFilter : public QObject {

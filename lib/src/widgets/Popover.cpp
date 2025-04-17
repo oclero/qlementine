@@ -26,7 +26,7 @@ constexpr auto closeAnimationDurationFactor = .9;
 
 constexpr auto defaultFramePadding = 16;
 
-#ifdef __APPLE
+#ifdef __APPLE__
 const bool Popover::_shouldDrawDropShadow = false;
 #else
 const bool Popover::_shouldDrawDropShadow = true;
@@ -72,18 +72,19 @@ Popover::Popover(QWidget* parent)
   setAttribute(Qt::WA_TranslucentBackground, true);
   setAttribute(Qt::WA_OpaquePaintEvent, false);
   setAttribute(Qt::WA_NoSystemBackground, true);
-
   setWindowFlag(Qt::WindowType::Popup, true);
   setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
   if (_shouldDrawDropShadow) {
+    // We draw the drop shadow ourselves.
     setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, true);
   } else {
+    // Let the system draw the drop shadow.
     setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, false);
   }
 
   setBackgroundRole(QPalette::NoRole);
   setAutoFillBackground(false);
-  // Semble n'avoir aucun effet avec Qt::WindowType::Popup.
+  // Seems to have no effect with Qt::WindowType::Popup.
   setWindowModality(Qt::WindowModality::NonModal);
   setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
@@ -103,7 +104,7 @@ Popover::Popover(QWidget* parent)
   // Layout.
   _frame = new Popover::PopoverFrame(this);
   _frame->onResize([this]() {
-    // Permet d'éviter que des widgets débordent dans les coins arrondis.
+    // Prevents widgets from overflowing into rounded corners.
     const auto mask = getFrameMask();
     _frame->setMask(mask);
   });
@@ -141,6 +142,27 @@ Popover::Popover(QWidget* parent)
 }
 
 Popover::~Popover() {}
+
+bool Popover::manualPositioning() const {
+  return _manualPositioning;
+}
+
+void Popover::setManualPositioning(bool value) {
+  if (value != _manualPositioning) {
+    _manualPositioning = value;
+    if (isVisible()) {
+      updatePopoverGeometry();
+    }
+    Q_EMIT manualPositioningChanged();
+  }
+}
+
+void Popover::setManualPositioningCallback(const std::function<QPoint()>& cb) {
+  _manualPositioningCb = cb;
+  if (isVisible()) {
+    updatePopoverGeometry();
+  }
+}
 
 Popover::Position Popover::preferredPosition() const {
   return _preferredPosition;
@@ -196,7 +218,7 @@ void Popover::setContentWidget(QWidget* widget) {
 
     if (_content) {
       _content->setParent(_frame);
-      _content->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+      _content->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       _frameLayout->addWidget(_content);
     }
 
@@ -236,6 +258,9 @@ void Popover::setPadding(const QMargins& padding) {
   if (padding != _frameLayout->contentsMargins()) {
     _frameLayout->setContentsMargins(padding);
     Q_EMIT paddingChanged();
+    if (isVisible()) {
+      updatePopoverGeometry();
+    }
   }
 }
 
@@ -341,6 +366,29 @@ void Popover::setDropShadowRadius(qreal radius) {
   if (radius != _dropShadowRadius) {
     _dropShadowRadius = radius;
     Q_EMIT dropShadowRadiusChanged();
+    // Reset the cache.
+    _dropShadowCache.frameSize = {};
+    _dropShadowCache.shadowPixmap = {};
+    // Update everything.
+    updateDropShadowMargins();
+    updateGeometry();
+    update();
+  }
+}
+
+const QPointF& Popover::dropShadowOffset() const {
+  return _dropShadowOffset;
+}
+
+void Popover::setDropShadowOffset(const QPointF& offset) {
+  if (offset != _dropShadowOffset) {
+    _dropShadowOffset = offset;
+    Q_EMIT dropShadowOffsetChanged();
+    // Reset the cache.
+    _dropShadowCache.frameSize = {};
+    _dropShadowCache.shadowPixmap = {};
+    // Update everything.
+    updateDropShadowMargins();
     updateGeometry();
     update();
   }
@@ -355,6 +403,17 @@ void Popover::setCanBeOverAnchor(bool value) {
     _canBeOverAnchor = value;
     Q_EMIT canBeOverAnchorChanged();
     updateGeometry();
+  }
+}
+
+bool Popover::deleteContentAfterClosing() const {
+  return _deleteContentAfterClosing;
+}
+
+void Popover::setDeleteContentAfterClosing(bool value) {
+  if (value != _deleteContentAfterClosing) {
+    _deleteContentAfterClosing = value;
+    Q_EMIT deleteContentAfterClosingChanged();
   }
 }
 
@@ -384,6 +443,7 @@ void Popover::setBorderColor(const QColor& color) {
 
 void Popover::openPopover() {
   setOpened(true);
+  updatePopoverGeometry();
 }
 
 void Popover::closePopover() {
@@ -398,6 +458,15 @@ void Popover::togglePopover() {
   }
 }
 
+void Popover::adjustSizeToContent() {
+  if (_content) {
+    _content->ensurePolished();
+    _content->updateGeometry();
+  }
+  _frame->adjustSize();
+  adjustSize();
+}
+
 void Popover::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
@@ -405,16 +474,16 @@ void Popover::paintEvent(QPaintEvent*) {
   // Drop shadow.
   if (_shouldDrawDropShadow) {
     // Update cache if necessary.
-    if (_dropShadowCache.size != size()) {
+    if (_dropShadowCache.frameSize != size()) {
       updateDropShadowCache();
     }
-    const auto dropShadowYOffset = _dropShadowRadius / 2.;
-    const auto dropShadowX = _frame->x() + (_frame->width() - _dropShadowCache.size.width()) / 2;
-    const auto dropShadowY = _frame->y() + (_frame->height() - _dropShadowCache.size.height()) / 2 + dropShadowYOffset;
+    const auto dropShadowSize = _dropShadowCache.shadowPixmap.size();
+    const auto dropShadowX = _frame->x() + (_frame->width() - dropShadowSize.width()) / 2 + _dropShadowOffset.x();
+    const auto dropShadowY = _frame->y() + (_frame->height() - dropShadowSize.height()) / 2 + _dropShadowOffset.y();
 
     const auto compModeBackup = p.compositionMode();
     p.setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
-    p.drawPixmap(dropShadowX, dropShadowY, _dropShadowCache.pixmap);
+    p.drawPixmap(dropShadowX, dropShadowY, _dropShadowCache.shadowPixmap);
     p.setCompositionMode(compModeBackup);
   }
 
@@ -459,6 +528,10 @@ void Popover::mouseReleaseEvent(QMouseEvent* e) {
 void Popover::hideEvent(QHideEvent* e) {
   QWidget::hideEvent(e);
   setOpened(false);
+  if (_deleteContentAfterClosing && _content) {
+    _content->deleteLater();
+    _content = nullptr;
+  }
 }
 
 void Popover::showEvent(QShowEvent* e) {
@@ -479,9 +552,14 @@ QMargins Popover::dropShadowMargins() const {
 
 void Popover::updateDropShadowMargins() {
   if (_shouldDrawDropShadow) {
-    const auto dropShadowYOffset = _dropShadowRadius / 2.;
-    const auto spaceForShadow = _dropShadowRadius * 2.;
-    layout()->setContentsMargins(spaceForShadow, spaceForShadow, spaceForShadow, spaceForShadow + dropShadowYOffset);
+    const auto spaceForShadow = qlementine::blurRadiusNecessarySpace(_dropShadowRadius);
+    const auto margins = QMargins{
+      static_cast<int>(std::ceil(spaceForShadow - _dropShadowOffset.x())), // left
+      static_cast<int>(std::ceil(spaceForShadow - _dropShadowOffset.y())), // top
+      static_cast<int>(std::ceil(spaceForShadow + _dropShadowOffset.x())), // right
+      static_cast<int>(std::ceil(spaceForShadow + _dropShadowOffset.y())), // bottom
+    };
+    layout()->setContentsMargins(margins);
   } else {
     layout()->setContentsMargins(0, 0, 0, 0);
   }
@@ -490,42 +568,59 @@ void Popover::updateDropShadowMargins() {
 void Popover::updateDropShadowCache() {
   if (_shouldDrawDropShadow) {
     const auto framePixmap = getFrameShape();
-    _dropShadowCache.size = size();
-    _dropShadowCache.pixmap = qlementine::getDropShadowPixmap(framePixmap, _dropShadowRadius, _dropShadowColor);
+    _dropShadowCache.frameSize = size();
+    _dropShadowCache.shadowPixmap = qlementine::getDropShadowPixmap(framePixmap, _dropShadowRadius, _dropShadowColor);
   } else {
-    _dropShadowCache.size = { 0, 0 };
-    _dropShadowCache.pixmap = {};
+    _dropShadowCache.frameSize = { 0, 0 };
+    _dropShadowCache.shadowPixmap = {};
   }
 }
 
 void Popover::updatePopoverGeometry() {
   // First of all, ensure the popup fits its content.
-  _frame->adjustSize();
-  adjustSize();
+  adjustSizeToContent();
 
-  // Check if the preferred position fits entirely on screen, or try another position until it works.
-  const auto& priority = positionPriority(_preferredPosition);
-  const auto screenGeometry = screen()->availableGeometry();
-  for (const auto position : priority) {
-    auto geometry = getGeometryForPosition(position, _preferredAlignment);
-
-    // Success: the popup fits on screen.
-    const auto aboveAnchor =
-      _anchorWidget ? _anchorWidget->rect().translated(_anchorWidget->mapToGlobal(QPoint{ 0, 0 })).intersects(geometry)
-                    : false;
-    const auto allowed = aboveAnchor ? _canBeOverAnchor : true;
-    if (screenGeometry.contains(geometry) && allowed) {
-      // Now, translate it to include the drop shadow.
-      const auto dropShadowMargins = this->dropShadowMargins();
-      geometry.translate(-dropShadowMargins.left(), -dropShadowMargins.top());
-      setGeometry(geometry);
-      return;
+  if (_manualPositioning) {
+    // Only resizing, no positioning.
+    const auto popoverFrameSize = _frame->sizeHint();
+    const auto dropShadowMargins = this->dropShadowMargins();
+    const auto popoverTotalSize = QSize(popoverFrameSize.width() + dropShadowMargins.left() + dropShadowMargins.right(),
+      popoverFrameSize.height() + dropShadowMargins.top() + dropShadowMargins.bottom());
+    Q_EMIT manualPositionRequested();
+    auto topLeft = geometry().topLeft();
+    if (_manualPositioningCb) {
+      topLeft = _manualPositioningCb();
+      topLeft.rx() += dropShadowMargins.left();
+      topLeft.ry() += dropShadowMargins.top();
     }
-  }
+    const auto geometry = QRect(topLeft, popoverTotalSize);
+    setGeometry(geometry);
+  } else {
+    // Check if the preferred position fits entirely on screen, or try another position until it works.
+    const auto& priority = positionPriority(_preferredPosition);
+    const auto screenGeometry = screen()->availableGeometry();
+    for (const auto position : priority) {
+      auto geometry = getGeometryForPosition(position, _preferredAlignment);
 
-  // If it is impossible to respect any position, show it centered on screen.
-  const auto geometry = getFallbackGeometry();
-  setGeometry(geometry);
+      // Success: the popup fits on screen.
+      const auto aboveAnchor =
+        _anchorWidget
+          ? _anchorWidget->rect().translated(_anchorWidget->mapToGlobal(QPoint{ 0, 0 })).intersects(geometry)
+          : false;
+      const auto allowed = aboveAnchor ? _canBeOverAnchor : true;
+      if (screenGeometry.contains(geometry) && allowed) {
+        // Now, translate it to include the drop shadow.
+        const auto dropShadowMargins = this->dropShadowMargins();
+        geometry.translate(-dropShadowMargins.left(), -dropShadowMargins.top());
+        setGeometry(geometry);
+        return;
+      }
+    }
+
+    // If it is impossible to respect any position, show it centered on screen.
+    const auto geometry = getFallbackGeometry();
+    setGeometry(geometry);
+  }
 }
 
 const std::array<Popover::Position, 4>& Popover::positionPriority(Position const position) {
@@ -706,13 +801,13 @@ QRect Popover::getFallbackGeometry() const {
 }
 
 void Popover::startAnimation() {
-  const auto currentOpacity = _opacityAnimation.currentValue();
+  const auto currentOpacity = _opacityAnimation.currentValue().toDouble();
   _opacityAnimation.stop();
   const auto duration = _animated ? style()->styleHint(QStyle::SH_Widget_Animation_Duration)
                                       * (_opened ? openAnimationDurationFactor : closeAnimationDurationFactor)
                                   : 0;
   _opacityAnimation.setDuration(duration);
-  _opacityAnimation.setStartValue(currentOpacity);
+  _opacityAnimation.setStartValue(QVariant::fromValue<double>(currentOpacity));
   _opacityAnimation.setEndValue(QVariant::fromValue<double>(_opened ? 1. : 0.));
   _opacityAnimation.start();
 }
@@ -720,8 +815,14 @@ void Popover::startAnimation() {
 QPixmap Popover::getFrameShape() const {
   const auto rect = QRect{ QPoint{ 0, 0 }, _frame->size() };
 
-  QPixmap result(_frame->size());
+  // Ensure the pixmap is the same size as the widget.
+  const auto pixmapDeviceRatio = _frame->devicePixelRatioF();
+  const auto pixmapDeviceIndependentSize = _frame->size() * pixmapDeviceRatio;
+  QPixmap result(pixmapDeviceIndependentSize);
+  result.setDevicePixelRatio(pixmapDeviceRatio);
   result.fill(Qt::transparent);
+
+  // Draw the frame.
   QPainter p(&result);
   p.setRenderHint(QPainter::RenderHint::Antialiasing, true);
   p.setPen(Qt::NoPen);
@@ -734,8 +835,15 @@ QPixmap Popover::getFrameShape() const {
 QBitmap Popover::getFrameMask() const {
   const auto totalRect = _frame->rect().toRectF();
   const auto innerRect = totalRect.marginsRemoved({ _borderWidth, _borderWidth, _borderWidth, _borderWidth });
-  QPixmap mask(_frame->size());
+
+  // Ensure the pixmap is the same size as the widget.
+  const auto pixmapDeviceRatio = _frame->devicePixelRatioF();
+  const auto pixmapDeviceIndependentSize = _frame->size() * pixmapDeviceRatio;
+  QPixmap mask(pixmapDeviceIndependentSize);
+  mask.setDevicePixelRatio(pixmapDeviceRatio);
   mask.fill(Qt::white);
+
+  // Draw the mask.
   QPainter p(&mask);
   p.setRenderHint(QPainter::Antialiasing, true);
   p.setPen(Qt::NoPen);

@@ -7,6 +7,11 @@
 #include <QFontMetrics>
 
 namespace oclero::qlementine {
+
+double pointSizeToPixelSize(double pointSize, double dpi);
+
+double pixelSizeToPointSize(double pixelSize, double dpi);
+
 /**
  * @brief An utility to centralize the calls to QFontMetrics.
  * @param fm The current QFontMetrics to use.

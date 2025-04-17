@@ -30,7 +30,7 @@
       "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2022_64",
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.2/msvc2022_64",
         "QLEMENTINE_SANDBOX": true,
         "QLEMENTINE_SHOWCASE": true
       },

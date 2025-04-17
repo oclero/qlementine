@@ -3,6 +3,7 @@
 
 #include "EventFilters.hpp"
 
+#include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/utils/StateUtils.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
@@ -23,6 +24,7 @@
 #include <QComboBox>
 #include <QListView>
 #include <QLayout>
+#include <QPlainTextEdit>
 
 namespace oclero::qlementine {
 LineEditButtonEventFilter::LineEditButtonEventFilter(
@@ -332,11 +334,6 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         });
       }
     } break;
-    case QEvent::Type::MouseMove: {
-      if (static_cast<QMouseEvent*>(evt)->buttons()) {
-        _mousePressed = true;
-      }
-    } break;
     case QEvent::Type::MouseButtonPress: {
       _mousePressed = true;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
@@ -498,17 +495,24 @@ bool TextEditEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
 WidgetWithFocusFrameEventFilter::WidgetWithFocusFrameEventFilter(QWidget* widget)
   : QObject(widget)
-  , _widget(widget) {}
+  , _widget(widget) {
+  _focusFrame = new QFocusFrame(_widget);
+}
 
 bool WidgetWithFocusFrameEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
-  if (watchedObject == _widget) {
-    if (evt->type() == QEvent::Show) {
-      if (_focusFrame == nullptr) {
-        // Create the focus frame as late as possible to give
-        // more chances to any parent scroll area to already exist.
-        _focusFrame = new QFocusFrame(_widget);
-        _focusFrame->setWidget(_widget);
-      }
+  if (!_added && watchedObject == _widget) {
+    const auto type = evt->type();
+    // Create the focus frame as late as possible to give
+    // more chances to any parent (e.g. scrollarea) to already exist.
+    // QEvent::Show isn't sufficient. We need to delay even more, so
+    // waiting for the first QEvent::Paint is our only solution.
+    if (type == QEvent::Paint) {
+      QTimer::singleShot(0, this, [this]() {
+        if (!_added) {
+          _added = true;
+          _focusFrame->setWidget(_widget);
+        }
+      });
     }
   }
 
@@ -521,7 +525,7 @@ class LineEditMenuIconsBehavior : public QObject {
 
   enum class IconListMode {
     None,
-    LineEdit,
+    LineEdit, // Use of QLineEdit and QPlainTextEdit.
     ReadOnlyLineEdit,
     SpinBox,
   };
@@ -576,11 +580,15 @@ class LineEditMenuIconsBehavior : public QObject {
   }
 
   static IconListMode getMode(const QMenu* menu) {
-    if (const auto* menu_parent = menu->parent()) {
-      if (qobject_cast<const QAbstractSpinBox*>(menu_parent->parent())) {
+    if (const auto* menuParent = menu->parent()) {
+      if (qobject_cast<const QAbstractSpinBox*>(menuParent->parent())) {
         return IconListMode::SpinBox;
-      } else if (const auto* line_edit = qobject_cast<const QLineEdit*>(menu_parent)) {
+      } else if (const auto* line_edit = qobject_cast<const QLineEdit*>(menuParent)) {
         return line_edit->isReadOnly() ? IconListMode::ReadOnlyLineEdit : IconListMode::LineEdit;
+      } else if (const auto* menuParentParent = menuParent ? menuParent->parent() : nullptr) {
+        if (const auto* plainTextEdit = qobject_cast<const QPlainTextEdit*>(menuParentParent)) {
+          return plainTextEdit->isReadOnly() ? IconListMode::ReadOnlyLineEdit : IconListMode::LineEdit;
+        }
       }
     }
     return IconListMode::None;
@@ -618,9 +626,11 @@ public:
 LineEditMenuEventFilter::LineEditMenuEventFilter(QWidget* parent)
   : QObject(parent) {
   assert(parent);
+  // Might be a menu's submenu.
   if (auto* menu = qobject_cast<QMenu*>(parent)) {
     new LineEditMenuIconsBehavior(menu);
   } else {
+    // The QLineEdit.
     parent->installEventFilter(this);
   }
 }
@@ -628,11 +638,36 @@ LineEditMenuEventFilter::LineEditMenuEventFilter(QWidget* parent)
 bool LineEditMenuEventFilter::eventFilter(QObject*, QEvent* evt) {
   const auto type = evt->type();
   if (type == QEvent::ChildPolished) {
+    constexpr auto propertyName = "qlementine_tweak_menu_icons";
     auto* child = static_cast<QChildEvent*>(evt)->child();
-    if (auto* lineedit = qobject_cast<QLineEdit*>(child)) {
-      lineedit->installEventFilter(this);
-    } else if (auto* menu = qobject_cast<QMenu*>(child)) {
-      new LineEditMenuIconsBehavior(menu);
+
+    const auto tweaked = child->property(propertyName).toBool();
+    if (!tweaked) {
+      child->setProperty(propertyName, true);
+
+      // QLineEdit child of QSpinBox.
+      if (auto* lineEdit = qobject_cast<QLineEdit*>(child)) {
+        lineEdit->installEventFilter(this);
+
+      }
+      // Qmenu that needs tweaking.
+      else if (auto* menu = qobject_cast<QMenu*>(child)) {
+        new LineEditMenuIconsBehavior(menu);
+
+        // Forward auto icon color mode from parent to the menu.
+        if (const auto* menuParent = menu->parentWidget()) {
+          if (const auto* style = qobject_cast<oclero::qlementine::QlementineStyle*>(menuParent->style())) {
+            const auto autoIconColor = style->autoIconColor(menuParent);
+            QlementineStyle::setAutoIconColor(menu, autoIconColor);
+          }
+        }
+      }
+      // Case of a QPlainTextEdit (inherits QAbstractScrollArea).
+      else if (child->objectName() == "qt_scrollarea_viewport") {
+        if (auto* childWidget = qobject_cast<QWidget*>(child)) {
+          childWidget->installEventFilter(this);
+        }
+      }
     }
   }
 

@@ -1,8 +1,14 @@
-## Widgets
+# Widgets
 
 Qlementine provides a collection of `QWidgets` to extend Qt's standard ones.
 
 More information about them coming soon. You can check them in the Sandbox application, at the moment.
+
+## AboutDialog
+
+A standard "About" window that you can use to quickly display basic information about your app.
+
+![AboutDialog](assets/images/widgets/aboutdialog.png)
 
 ## AbstractItemListWidget
 
@@ -51,6 +57,12 @@ Improves `QLabel`` by allowing text roles as with HTML (headings h1, etc.).
 Improves `QLineEdit` by allowing statuses to display feedback for user (valid, error, warning, etc.).
 
 ![LineEdit](assets/images/widgets/lineedit.png)
+
+## LoadingSpinner
+
+A small widget that you can use to show that an asynchronous operation is currently running.
+
+![LoadingSpinner](assets/images/widgets/loadingspinner.png)
 
 ## Menu
 
