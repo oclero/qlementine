@@ -6007,7 +6007,7 @@ QColor const& QlementineStyle::switchGrooveBorderColor(
 }
 
 QColor const& QlementineStyle::switchHandleColor(MouseState const mouse, CheckState const checked) const {
-  const auto primary = checked == CheckState::Checked;
+  const auto primary = checked != CheckState::NotChecked;
 
   switch (mouse) {
     case MouseState::Pressed:
