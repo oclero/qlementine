@@ -163,7 +163,6 @@ void Switch::checkStateSet() {
 }
 
 void Switch::nextCheckState() {
-
   if (_tristate) {
     setCheckState(static_cast<Qt::CheckState>((checkState() + 1) % 3));
   } else {
@@ -250,6 +249,9 @@ void Switch::setupAnimation() {
   });
   QObject::connect(this, &QAbstractButton::toggled, this, [this]() {
     startAnimation();
+  });
+  QObject::connect(this, &Switch::checkStateChanged, this, [this]() {
+      startAnimation();
   });
 
   _handleAnimation.setDuration(animationDuration);
@@ -346,7 +348,7 @@ void Switch::initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const {
 void Switch::setTristate(bool tristate) {
   _tristate = tristate;
   update();
-  tristateChanged(tristate);
+  Q_EMIT tristateChanged(tristate);
 }
 
 bool Switch::isTristate() const {
