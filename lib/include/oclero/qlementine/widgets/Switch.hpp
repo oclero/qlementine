@@ -16,6 +16,7 @@ class Switch : public QAbstractButton {
   Q_OBJECT
 
   Q_PROPERTY(bool tristate READ isTristate WRITE setTristate NOTIFY tristateChanged)
+  Q_PROPERTY(bool showAccessibilitySymbols READ showAccessibilitySymbols WRITE setShowAccessibilitySymbols NOTIFY showAccessibilitySymbolsChanged)
 
 public:
   explicit Switch(QWidget* parent = nullptr);
@@ -27,12 +28,16 @@ public:
   void setTristate(bool);
   bool isTristate() const;
 
+  bool showAccessibilitySymbols() const;
+  void setShowAccessibilitySymbols(bool showAccessibilitySymbols);
+
   Qt::CheckState checkState() const;
   void setCheckState(Qt::CheckState state);
 
 Q_SIGNALS:
   void checkStateChanged(int);
   void tristateChanged(bool);
+  void showAccessibilitySymbolsChanged(bool);
 
 protected:
   void paintEvent(QPaintEvent* e) override;
@@ -60,12 +65,14 @@ private:
   bool _tristate{ false };
   bool _intermediate{ false };
   bool _blockRefresh{ false };
+  bool _showAccessibilitySymbols{ false };
   Qt::CheckState _publishedState{ Qt::CheckState::Unchecked };
   QVariantAnimation _handleAnimation;
   QVariantAnimation _handlePaddingAnimation;
   QVariantAnimation _bgAnimation;
   QVariantAnimation _borderAnimation;
   QVariantAnimation _fgAnimation;
+  QVariantAnimation _symbolAnimation;
   RoundedFocusFrame* _focusFrame{ nullptr };
 };
 } // namespace oclero::qlementine

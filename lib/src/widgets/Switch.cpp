@@ -72,10 +72,13 @@ void Switch::paintEvent(QPaintEvent*) {
   const auto& fgColor = _fgAnimation.currentValue().value<QColor>();
   const auto& borderColor = _borderAnimation.currentValue().value<QColor>();
   const auto& textColor = getTextColor();
+  const auto borderW = 1.0;
+  const auto halfBorderW = borderW / 2.;
+  const auto bgRect = switchRect.toRectF().marginsRemoved({ halfBorderW, halfBorderW, halfBorderW, halfBorderW });
   p.setPen(Qt::NoPen);
   p.setBrush(bgColor);
-  p.drawRoundedRect(switchRect, switchRadius, switchRadius);
-  drawRoundedRectBorder(&p, switchRect, borderColor, 1., switchRadius);
+  p.drawRoundedRect(bgRect, switchRadius, switchRadius);
+  drawRoundedRectBorder(&p, switchRect, borderColor, borderW, switchRadius);
 
   // Draw handle.
   const auto handleXRatio = _handleAnimation.currentValue().toDouble();
@@ -90,6 +93,18 @@ void Switch::paintEvent(QPaintEvent*) {
   p.drawEllipse(handleRect);
   auto availableX = switchRect.x() + switchRect.width() + spacing;
   auto availableW = contentRect.width() - switchRect.width() - spacing;
+
+  // Draw accessibility symbols.
+  if (showAccessibilitySymbols() && checkState() != Qt::PartiallyChecked) {
+    constexpr auto checkThickness = 1.01;  // A pen width of 1 causes visual bugs.
+    p.setBrush(Qt::NoBrush);
+    p.setPen(QPen{ bgColor, checkThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+    if (checkState() == Qt::Checked) {
+        drawCheckBoxIndicator(handleRect.toRect(), &p, _symbolAnimation.currentValue().toReal());
+    } else {
+        drawCloseIndicator(handleRect.toRect().marginsRemoved({1, 1, 1, 1}), &p);
+    }
+  }
 
   // Draw icon.
   const auto extent = iconSize.height();
@@ -209,6 +224,13 @@ void Switch::startAnimation() {
   _handlePaddingAnimation.setStartValue(currentPadding);
   _handlePaddingAnimation.setEndValue(_fullHandlePadding * (state == Qt::PartiallyChecked ? 3. : 1.));
   _handlePaddingAnimation.start();
+
+  const auto currentSymbol = _symbolAnimation.currentValue();
+  _symbolAnimation.stop();
+  _symbolAnimation.setDuration(animationDuration);
+  _symbolAnimation.setStartValue(currentSymbol);
+  _symbolAnimation.setEndValue(1.);
+  _symbolAnimation.start();
 }
 
 void Switch::setupAnimation() {
@@ -267,6 +289,14 @@ void Switch::setupAnimation() {
   _handlePaddingAnimation.setStartValue(_fullHandlePadding);
   _handlePaddingAnimation.setEndValue(_fullHandlePadding);
   QObject::connect(&_handlePaddingAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+      update();
+  });
+
+  _symbolAnimation.setDuration(animationDuration);
+  _symbolAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
+  _symbolAnimation.setStartValue(0.);
+  _symbolAnimation.setEndValue(0.);
+  QObject::connect(&_symbolAnimation, &QVariantAnimation::valueChanged, this, [this]() {
       update();
   });
 }
@@ -353,6 +383,16 @@ void Switch::setTristate(bool tristate) {
 
 bool Switch::isTristate() const {
   return _tristate;
+}
+
+void Switch::setShowAccessibilitySymbols(bool showAccessibilitySymbols) {
+    _showAccessibilitySymbols = showAccessibilitySymbols;
+    update();
+    Q_EMIT showAccessibilitySymbolsChanged(showAccessibilitySymbols);
+}
+
+bool Switch::showAccessibilitySymbols() const {
+    return _showAccessibilitySymbols;
 }
 
 Qt::CheckState Switch::checkState() const {
