@@ -41,7 +41,7 @@ void LoadingSpinner::setSpinning(bool spinning) {
       _i = 0;
     }
 
-    emit spinningChanged();
+    Q_EMIT spinningChanged();
     if (isVisible()) {
       update();
     }
