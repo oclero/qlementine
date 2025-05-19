@@ -1,5 +1,7 @@
 # Changelog
 
+## v1.3.0 (WIP)
+
 ## v1.2.2
 
 - Fix installing includes with double-slashes
