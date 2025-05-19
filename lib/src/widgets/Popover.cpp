@@ -61,6 +61,25 @@ public:
 
   void resizeEvent(QResizeEvent* e) override {
     QWidget::resizeEvent(e);
+    callResize();
+  }
+
+  bool event(QEvent* e) override {
+    const auto result = QWidget::event(e);
+    const auto type = e->type();
+    switch (type) {
+      case QEvent::LayoutRequest:
+      case QEvent::DevicePixelRatioChange:
+        callResize();
+        break;
+      default:
+        break;
+    }
+    return result;
+  }
+
+private:
+  void callResize() {
     if (_onResize) {
       _onResize();
     }
@@ -70,10 +89,11 @@ public:
 Popover::Popover(QWidget* parent)
   : QWidget(parent) {
   setAttribute(Qt::WA_TranslucentBackground, true);
-  setAttribute(Qt::WA_OpaquePaintEvent, false);
+  setAttribute(Qt::WA_OpaquePaintEvent, true);
   setAttribute(Qt::WA_NoSystemBackground, true);
   setWindowFlag(Qt::WindowType::Popup, true);
   setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
+
   if (_shouldDrawDropShadow) {
     // We draw the drop shadow ourselves.
     setWindowFlag(Qt::WindowType::NoDropShadowWindowHint, true);
@@ -89,8 +109,8 @@ Popover::Popover(QWidget* parent)
   setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
   const auto& palette = this->palette();
-  _backgroundColor = palette.color(QPalette::ColorGroup::Current, QPalette::ColorRole::Window);
-  _borderColor = palette.color(QPalette::ColorGroup::Current, QPalette::ColorRole::Button);
+  _backgroundColor = palette.color(QPalette::ColorGroup::Active, QPalette::ColorRole::Window);
+  _borderColor = palette.color(QPalette::ColorGroup::Active, QPalette::ColorRole::Button);
 
   const auto* style = this->style();
 
@@ -104,9 +124,7 @@ Popover::Popover(QWidget* parent)
   // Layout.
   _frame = new Popover::PopoverFrame(this);
   _frame->onResize([this]() {
-    // Prevents widgets from overflowing into rounded corners.
-    const auto mask = getFrameMask();
-    _frame->setMask(mask);
+    updateFrameMask();
   });
   _frameLayout = static_cast<QVBoxLayout*>(_frame->layout());
   popoverLayout->addWidget(_frame);
@@ -157,11 +175,15 @@ void Popover::setManualPositioning(bool value) {
   }
 }
 
-void Popover::setManualPositioningCallback(const std::function<QPoint()>& cb) {
+void Popover::setManualPositioningCallback(const std::function<QPoint(const QSize&)>& cb) {
   _manualPositioningCb = cb;
   if (isVisible()) {
     updatePopoverGeometry();
   }
+}
+
+QSize Popover::frameSize() const {
+  return _frame ? _frame->sizeHint() : QSize{};
 }
 
 Popover::Position Popover::preferredPosition() const {
@@ -233,6 +255,10 @@ bool Popover::isOpened() const {
   return _opened;
 }
 
+bool Popover::isClosed() const {
+  return !isOpened();
+}
+
 void Popover::setOpened(bool opened) {
   if (opened != _opened) {
     _opened = opened;
@@ -248,6 +274,10 @@ void Popover::setOpened(bool opened) {
 
     Q_EMIT openedChanged();
   }
+}
+
+void Popover::setClosed(bool closed) {
+  setOpened(!closed);
 }
 
 QMargins Popover::padding() const {
@@ -441,6 +471,17 @@ void Popover::setBorderColor(const QColor& color) {
   }
 }
 
+bool Popover::contentMaskEnabled() const {
+  return _contentMaskEnabled;
+}
+
+void Popover::setContentMaskEnabled(bool enabled) {
+  if (enabled != _contentMaskEnabled) {
+    _contentMaskEnabled = enabled;
+    Q_EMIT contentMaskEnabledChanged();
+  }
+}
+
 void Popover::openPopover() {
   setOpened(true);
   updatePopoverGeometry();
@@ -471,15 +512,20 @@ void Popover::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
 
+  const auto shapePixmap = getFrameShape();
+
   // Drop shadow.
   if (_shouldDrawDropShadow) {
     // Update cache if necessary.
-    if (_dropShadowCache.frameSize != size()) {
+    const auto frameSize = _frame->size();
+    const auto frameX = _frame->x();
+    const auto frameY = _frame->y();
+    if (_dropShadowCache.frameSize != frameSize) {
       updateDropShadowCache();
     }
-    const auto dropShadowSize = _dropShadowCache.shadowPixmap.size();
-    const auto dropShadowX = _frame->x() + (_frame->width() - dropShadowSize.width()) / 2 + _dropShadowOffset.x();
-    const auto dropShadowY = _frame->y() + (_frame->height() - dropShadowSize.height()) / 2 + _dropShadowOffset.y();
+    const auto dropShadowSize = _dropShadowCache.shadowPixmap.deviceIndependentSize();
+    const auto dropShadowX = frameX + (frameSize.width() - dropShadowSize.width()) / 2. + _dropShadowOffset.x();
+    const auto dropShadowY = frameY + (frameSize.height() - dropShadowSize.height()) / 2. + _dropShadowOffset.y();
 
     const auto compModeBackup = p.compositionMode();
     p.setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
@@ -490,16 +536,21 @@ void Popover::paintEvent(QPaintEvent*) {
   // Frame.
   {
     const auto bgRect = _frame->rect().translated(_frame->mapTo(this, QPoint{ 0, 0 }));
-    p.setPen(Qt::NoPen);
-    p.setBrush(_backgroundColor);
-    p.drawRoundedRect(bgRect, _radius, _radius);
 
-    const auto half_border = _borderWidth / 2.;
-    const auto border_rect = bgRect.toRectF().adjusted(half_border, half_border, -half_border, -half_border);
-    const auto border_radius = _radius - half_border;
-    p.setPen(QPen{ _borderColor, _borderWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
-    p.setBrush(Qt::NoBrush);
-    p.drawRoundedRect(border_rect, border_radius, border_radius);
+    if (_backgroundColor.isValid()) {
+      p.setPen(Qt::NoPen);
+      p.setBrush(_backgroundColor);
+      p.drawRoundedRect(bgRect, _radius, _radius);
+    }
+
+    if (_borderColor.isValid() && _borderWidth > 0.) {
+      const auto half_border = _borderWidth / 2.;
+      const auto border_rect = bgRect.toRectF().adjusted(half_border, half_border, -half_border, -half_border);
+      const auto border_radius = _radius - half_border;
+      p.setPen(QPen{ _borderColor, _borderWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+      p.setBrush(Qt::NoBrush);
+      p.drawRoundedRect(border_rect, border_radius, border_radius);
+    }
   }
 }
 
@@ -568,11 +619,21 @@ void Popover::updateDropShadowMargins() {
 void Popover::updateDropShadowCache() {
   if (_shouldDrawDropShadow) {
     const auto framePixmap = getFrameShape();
-    _dropShadowCache.frameSize = size();
+    _dropShadowCache.frameSize = _frame->size();
     _dropShadowCache.shadowPixmap = qlementine::getDropShadowPixmap(framePixmap, _dropShadowRadius, _dropShadowColor);
   } else {
     _dropShadowCache.frameSize = { 0, 0 };
     _dropShadowCache.shadowPixmap = {};
+  }
+}
+
+void Popover::updateFrameMask() {
+  _frame->clearMask();
+  // Prevents widgets from overflowing into rounded corners.
+  // NB: There won't be any antialiasing because this is a limitation of Qt.
+  if (!_frame->layout()->isEmpty() && _contentMaskEnabled) {
+    const auto mask = getFrameMask();
+    _frame->setMask(mask);
   }
 }
 
@@ -589,9 +650,11 @@ void Popover::updatePopoverGeometry() {
     Q_EMIT manualPositionRequested();
     auto topLeft = geometry().topLeft();
     if (_manualPositioningCb) {
-      topLeft = _manualPositioningCb();
-      topLeft.rx() += dropShadowMargins.left();
-      topLeft.ry() += dropShadowMargins.top();
+      // Start from the frame geometry,
+      // and get the total popup geometry by including the drop shadow margins.
+      topLeft = _manualPositioningCb(popoverFrameSize);
+      topLeft.rx() -= dropShadowMargins.left();
+      topLeft.ry() -= dropShadowMargins.top();
     }
     const auto geometry = QRect(topLeft, popoverTotalSize);
     setGeometry(geometry);
@@ -813,45 +876,47 @@ void Popover::startAnimation() {
 }
 
 QPixmap Popover::getFrameShape() const {
-  const auto rect = QRect{ QPoint{ 0, 0 }, _frame->size() };
-
+  // Used for getting the initial shape the drop shadow is computed from.
   // Ensure the pixmap is the same size as the widget.
-  const auto pixmapDeviceRatio = _frame->devicePixelRatioF();
-  const auto pixmapDeviceIndependentSize = _frame->size() * pixmapDeviceRatio;
-  QPixmap result(pixmapDeviceIndependentSize);
-  result.setDevicePixelRatio(pixmapDeviceRatio);
+  const auto frameSize = _frame->size();
+  const auto pixelRatio = _frame->devicePixelRatioF();
+  const auto physicalSize = frameSize * pixelRatio;
+  const auto physicalRect = QRect{ QPoint{ 0, 0 }, physicalSize };
+  const auto phyicalRadius = _radius * pixelRatio;
+
+  QPixmap result(physicalSize);
   result.fill(Qt::transparent);
 
   // Draw the frame.
-  QPainter p(&result);
-  p.setRenderHint(QPainter::RenderHint::Antialiasing, true);
-  p.setPen(Qt::NoPen);
-  p.setBrush(Qt::black);
-  p.drawRoundedRect(rect, _radius, _radius);
+  {
+    QPainter p(&result);
+    p.setRenderHint(QPainter::RenderHint::Antialiasing, true);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRoundedRect(physicalRect, phyicalRadius, phyicalRadius);
+  }
+
+  result.setDevicePixelRatio(pixelRatio);
 
   return result;
 }
 
 QBitmap Popover::getFrameMask() const {
-  const auto totalRect = _frame->rect().toRectF();
-  const auto innerRect = totalRect.marginsRemoved({ _borderWidth, _borderWidth, _borderWidth, _borderWidth });
+  // The mask doesn't to be pixel ratio aware.
+  const auto logicalSize = _frame->size();
+  const auto maskRect =
+    QRectF(QPointF{ 0., 0. }, logicalSize).marginsRemoved({ _borderWidth, _borderWidth, _borderWidth, _borderWidth });
+  const auto maskRadius = std::max(0., _radius - _borderWidth);
+  QPixmap mask(logicalSize);
+  {
+    mask.fill(Qt::white);
+    QPainter p(&mask);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRoundedRect(maskRect, maskRadius, maskRadius);
+  }
 
-  // Ensure the pixmap is the same size as the widget.
-  const auto pixmapDeviceRatio = _frame->devicePixelRatioF();
-  const auto pixmapDeviceIndependentSize = _frame->size() * pixmapDeviceRatio;
-  QPixmap mask(pixmapDeviceIndependentSize);
-  mask.setDevicePixelRatio(pixmapDeviceRatio);
-  mask.fill(Qt::white);
-
-  // Draw the mask.
-  QPainter p(&mask);
-  p.setRenderHint(QPainter::Antialiasing, true);
-  p.setPen(Qt::NoPen);
-  p.setBrush(Qt::black);
-  p.drawRoundedRect(innerRect, _radius, _radius);
-
-  // Mask to get nice rounded corners on content.
-  // NB: There won't be any antialiasing because this is a limitation of Qt.
   const auto bitmap = QBitmap::fromPixmap(mask);
   return bitmap;
 }

@@ -1389,7 +1389,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 #if 1
     auto* popoverContent = new QWidget();
     auto* popoverContentLayout = new QVBoxLayout(popoverContent);
-    popoverContentLayout->setContentsMargins(0, 0, 0, 0);
+    popoverContentLayout->setContentsMargins(16, 16, 16, 16);
     {
       for (auto i = 0; i < 3; ++i) {
         auto* btn = new QPushButton(QString("QPushButton %1").arg(i + 1), popoverContent);
