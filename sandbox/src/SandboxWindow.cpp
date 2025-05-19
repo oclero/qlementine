@@ -27,6 +27,7 @@
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
+#include <oclero/qlementine/widgets/NotificationBadge.hpp>
 
 #include <QActionGroup>
 #include <QApplication>
@@ -56,6 +57,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QTreeWidget>
+#include <QFont>
 
 #include <random>
 
@@ -1169,6 +1171,29 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     dialog->show();
   }
 
+  void setupUI_notificationBadge() {
+    {
+      auto* button = new QPushButton("Button", windowContent);
+      button->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+      windowContentLayout->addWidget(button);
+
+      auto* badge = new NotificationBadge(windowContent);
+      badge->setWidget(button);
+      badge->setRelativePosition(-4, 4);
+      windowContentLayout->addWidget(badge);
+    }
+    {
+      auto* button = new QPushButton("Button", windowContent);
+      button->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+      windowContentLayout->addWidget(button);
+
+      auto* badge = new NotificationBadge(windowContent);
+      badge->setWidget(button);
+      badge->setText("3");
+      windowContentLayout->addWidget(badge);
+    }
+  }
+
   void setupUI_treeView() {
     {
       auto* treeWidget = new QTreeWidget(windowContent);
@@ -1743,6 +1768,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_messageBoxIcons();
     // _impl->setupUI_loadingSpinner();
     // _impl->setupUI_aboutDialog();
+    // _impl->setupUI_notificationBadge();
 
     // _impl->setupUI_fontMetricsTests();
     // _impl->setupUI_blur();

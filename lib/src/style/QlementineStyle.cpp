@@ -5936,6 +5936,19 @@ QColor const& QlementineStyle::statusColor(Status const status, MouseState const
   }
 }
 
+QColor const& QlementineStyle::statusColorForeground(const Status, const MouseState mouse) const {
+  switch (mouse) {
+    case MouseState::Disabled:
+      return _impl->theme.statusColorForegroundDisabled;
+    case MouseState::Pressed:
+      return _impl->theme.statusColorForegroundPressed;
+    case MouseState::Hovered:
+      return _impl->theme.statusColorForegroundHovered;
+    default:
+      return _impl->theme.statusColorForeground;
+  }
+}
+
 QColor QlementineStyle::focusBorderColor(Status status) const {
   if (status == Status::Default)
     return _impl->theme.focusColor;
