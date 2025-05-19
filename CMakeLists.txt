@@ -36,7 +36,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 # Find Qt.
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Svg)
-qt_standard_project_setup()
+qt_standard_project_setup(
+  # REQUIRES 6.9.0
+)
 
 # The library.
 add_subdirectory(lib)
