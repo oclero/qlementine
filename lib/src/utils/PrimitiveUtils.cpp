@@ -245,7 +245,7 @@ void drawRoundedRectBorder(
 
 void drawRoundedRectBorder(
   QPainter* p, QRect const& rect, QColor const& color, qreal const borderWidth, qreal const radius) {
-  drawRoundedRectBorder(p, QRectF(rect), color, borderWidth, radius);
+  drawRoundedRectBorder(p, rect.toRectF(), color, borderWidth, radius);
 }
 
 void drawRoundedRectBorder(
