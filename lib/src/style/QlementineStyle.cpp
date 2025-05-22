@@ -32,6 +32,7 @@
 #include <QPixmapCache>
 #include <QApplication>
 #include <QMenuBar>
+#include <QToolBar>
 #include <QTableView>
 #include <QCheckBox>
 #include <QRadioButton>
@@ -563,18 +564,50 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto& rect = optToolBar->rect;
         p->fillRect(rect, bgColor);
 
-        // TODO Handle ToolBar when it's on left/right side, bottom + middle.
         const auto lineW = _impl->theme.borderWidth;
-        const auto x1 = rect.x();
-        const auto y1 = rect.y() + rect.height() - lineW / 2.;
-        const auto x2 = rect.x() + rect.width();
-        const auto y2 = y1;
-        const auto p1 = QPointF(x1, y1);
-        const auto p2 = QPointF(x2, y2);
         const auto& lineColor = toolBarBorderColor();
         p->setPen(QPen(lineColor, lineW, Qt::SolidLine, Qt::FlatCap));
         p->setBrush(Qt::NoBrush);
-        p->drawLine(p1, p2);
+
+        auto* toolBar = qobject_cast<const QToolBar*>(w);
+        const auto orientation = toolBar->orientation();
+        const auto allowedAreas = toolBar->allowedAreas();
+
+        if (orientation == Qt::Horizontal) {
+          if (allowedAreas.testFlag(Qt::TopToolBarArea)) {
+            // Draw bottom border
+            const auto x1 = rect.x();
+            const auto y1 = rect.y() + rect.height() - lineW / 2.;
+            const auto x2 = rect.x() + rect.width();
+            const auto y2 = y1;
+            p->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+          }
+          if (allowedAreas.testFlag(Qt::BottomToolBarArea)) {
+            // Draw top border
+            const auto x1 = rect.x();
+            const auto y1 = rect.y() + lineW / 2.;
+            const auto x2 = rect.x() + rect.width();
+            const auto y2 = y1;
+            p->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+          }
+        } else if (orientation == Qt::Vertical) {
+          if (allowedAreas.testFlag(Qt::LeftToolBarArea)) {
+            // Draw right border
+            const auto x1 = rect.x() + rect.width() - lineW / 2.;
+            const auto y1 = rect.y();
+            const auto x2 = x1;
+            const auto y2 = rect.y() + rect.height();
+            p->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+          }
+          if (allowedAreas.testFlag(Qt::RightToolBarArea)) {
+            // Draw left border
+            const auto x1 = rect.x() + lineW / 2.;
+            const auto y1 = rect.y();
+            const auto x2 = x1;
+            const auto y2 = rect.y() + rect.height();
+            p->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+          }
+        }
       }
       return;
     case PE_PanelLineEdit:
