@@ -259,6 +259,88 @@ struct SandboxWindow::Impl {
     owner.setCentralWidget(globalScrollArea);
   }
 
+  void setupUI_toolBar() {
+    auto addToolBarIcon = [](QToolBar* toolbar, int btnNum = 1) {
+      const auto icon = getTestQIcon();
+      for (int i = 0; i < btnNum; i++) {
+        auto* toolButton = new QToolButton(toolbar);
+        toolButton->setIcon(icon);
+        toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        toolbar->addWidget(toolButton);
+      }
+    };
+
+    auto* contentWidget = new CustomBgWidget(windowContent);
+    windowContentLayout->addWidget(contentWidget);
+
+    contentWidget->showBounds = true;
+    contentWidget->bgColor = Qt::white;
+
+    contentWidget->setMinimumSize(500, 400);
+    auto* contentLayout = new QHBoxLayout(contentWidget);
+    contentLayout->setContentsMargins(1, 1, 1, 1);
+    contentLayout->setSpacing(0);
+
+    {
+      auto* leftToolBar = new QToolBar(contentWidget);
+      contentLayout->addWidget(leftToolBar);
+      leftToolBar->setOrientation(Qt::Orientation::Vertical);
+      leftToolBar->setAllowedAreas(Qt::ToolBarArea::LeftToolBarArea);
+      addToolBarIcon(leftToolBar, 3);
+    }
+
+    {
+      auto* centralWidget = new QWidget(contentWidget);
+      contentLayout->addWidget(centralWidget);
+      auto* layout = new QVBoxLayout(centralWidget);
+      layout->setContentsMargins(0, 0, 0, 0);
+      layout->setSpacing(0);
+
+      {
+        auto* topToolBar = new QToolBar(centralWidget);
+        layout->addWidget(topToolBar);
+        topToolBar->setOrientation(Qt::Orientation::Horizontal);
+        topToolBar->setAllowedAreas(Qt::ToolBarArea::TopToolBarArea);
+        addToolBarIcon(topToolBar, 4);
+      }
+      {
+        auto* widget = new CustomBgWidget(centralWidget);
+        layout->addWidget(widget);
+        widget->showBounds = false;
+        widget->bgColor = Qt::white;
+      }
+      {
+        auto* middleToolbar = new QToolBar(centralWidget);
+        layout->addWidget(middleToolbar);
+        middleToolbar->setOrientation(Qt::Orientation::Horizontal);
+        middleToolbar->setAllowedAreas(Qt::ToolBarArea::TopToolBarArea | Qt::ToolBarArea::BottomToolBarArea);
+        addToolBarIcon(middleToolbar, 3);
+      }
+      {
+        auto* widget = new CustomBgWidget(centralWidget);
+        layout->addWidget(widget);
+        widget->showBounds = false;
+        widget->bgColor = Qt::white;
+        widget->setStyleSheet("background-color: white");
+      }
+      {
+        auto* bottomToolBar = new QToolBar(centralWidget);
+        layout->addWidget(bottomToolBar);
+        bottomToolBar->setOrientation(Qt::Orientation::Horizontal);
+        bottomToolBar->setAllowedAreas(Qt::ToolBarArea::BottomToolBarArea);
+        addToolBarIcon(bottomToolBar, 2);
+      }
+    }
+
+    {
+      auto* rightToolBar = new QToolBar(contentWidget);
+      contentLayout->addWidget(rightToolBar);
+      rightToolBar->setOrientation(Qt::Orientation::Vertical);
+      rightToolBar->setAllowedAreas(Qt::ToolBarArea::RightToolBarArea);
+      addToolBarIcon(rightToolBar, 3);
+    }
+  }
+
   void setupShortcuts() {
     auto* enableShortcut = new QShortcut(Qt::CTRL | Qt::Key_E, &owner);
     enableShortcut->setAutoRepeat(false);
@@ -1774,6 +1856,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_blur();
     // _impl->setupUI_themeEditor();
     // _impl->setupUI_messageBox();
+    _impl->setupUI_toolBar();
   }
   _impl->endSetupUI();
   oclero::qlementine::centerWidget(this);
