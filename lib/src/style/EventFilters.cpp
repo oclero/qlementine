@@ -348,6 +348,9 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
     } break;
     case QEvent::Type::MouseButtonRelease: {
       if (!_mousePressed) {
+        if (evt == _mouseEventToNotFilter.get()) {
+          return false; // let it go to the widget
+        }
         return true; // ignore
       }
       _mousePressed = false;
@@ -358,15 +361,10 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
           return true;
 
         if (action->menu() == nullptr) {
-          flashAction(action, _menu, [this, action]() {
-            // The call to QAction::trigger might destroy the menu or the actions.
-            const QPointer<QMenu> menu_guard(_menu);
-            action->trigger();
-            if (menu_guard) {
-              if (auto* top_menu = getTopLevelMenu(menu_guard)) {
-                top_menu->close();
-              }
-            }
+          _mouseEventToNotFilter.reset(evt->clone());
+          flashAction(action, _menu, [this]() {
+            QCoreApplication::sendEvent(_menu, _mouseEventToNotFilter.get());
+            _mouseEventToNotFilter.reset();
           });
           return true;
         }
