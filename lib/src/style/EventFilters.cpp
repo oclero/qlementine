@@ -23,6 +23,7 @@
 #include <QSpinBox>
 #include <QComboBox>
 #include <QListView>
+#include <QTreeView>
 #include <QLayout>
 #include <QPlainTextEdit>
 
@@ -389,7 +390,7 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
   return QObject::eventFilter(watchedObject, evt);
 }
 
-ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* view)
+ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QAbstractItemView* view)
   : QObject(view)
   , _comboBox(comboBox)
   , _view(view)
@@ -410,6 +411,10 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QListView* v
 */
 
   _comboBox->installEventFilter(this);
+
+  if (const auto* treeView = qobject_cast<QTreeView*>(_view)) {
+    connect(treeView, &QTreeView::expanded, this, &ComboboxItemViewFilter::fixViewGeometry);
+  }
 }
 
 bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
@@ -445,13 +450,23 @@ void ComboboxItemViewFilter::fixViewGeometry() {
 }
 
 QSize ComboboxItemViewFilter::viewMinimumSizeHint() const {
-  // QListView::minimumSizeHint() doesn't give the correct minimumHeight,
-  // so we have to compute it.
-  const auto rowCount = _view->model()->rowCount();
   auto height = 0;
-  for (auto i = 0; i < rowCount && height <= _initialMaxHeight; ++i) {
-    const auto rowSizeHint = _view->sizeHintForRow(i);
-    height = std::min(_initialMaxHeight, height + rowSizeHint);
+  if (const auto* treeView = qobject_cast<QTreeView*>(_view)) {
+    // For a QTreeView, look at expanded rows.
+    auto currentIndex = treeView->indexAt(QPoint(0, 0));
+    while (currentIndex.isValid()) {
+      const auto rowSizeHint = _view->sizeHintForIndex(currentIndex).height();
+      height = std::min(_initialMaxHeight, height + std::max(0, rowSizeHint));
+      currentIndex = treeView->indexBelow(currentIndex);
+    }
+  } else {
+    // QListView::minimumSizeHint() doesn't give the correct minimumHeight,
+    // so we have to compute it.
+    const auto rowCount = _view->model()->rowCount();
+    for (auto i = 0; i < rowCount && height <= _initialMaxHeight; ++i) {
+      const auto rowSizeHint = _view->sizeHintForRow(i);
+      height = std::min(_initialMaxHeight, height + rowSizeHint);
+    }
   }
   // It looks like it is OK for the width, though.
   const auto width = _view->sizeHintForColumn(0);

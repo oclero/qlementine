@@ -8,7 +8,7 @@
 
 #include <QTabBar>
 #include <QToolButton>
-#include <QListView>
+#include <QAbstractItemView>
 #include <QComboBox>
 #include <QCommandLinkButton>
 #include <QPointer>
@@ -80,7 +80,7 @@ private:
 
 class ComboboxItemViewFilter : public QObject {
 public:
-  ComboboxItemViewFilter(QComboBox* comboBox, QListView* view);
+  ComboboxItemViewFilter(QComboBox* comboBox, QAbstractItemView* view);
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override;
 
@@ -88,7 +88,7 @@ private:
   void fixViewGeometry();
   QSize viewMinimumSizeHint() const;
   QComboBox* _comboBox{ nullptr };
-  QListView* _view{ nullptr };
+  QAbstractItemView* _view{ nullptr };
   int _initialMaxHeight{ 0 };
 };
 
