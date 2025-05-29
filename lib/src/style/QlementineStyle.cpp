@@ -4334,7 +4334,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // TreeView/TableView.
     case PM_TreeViewIndentation:
-      return int(_impl->theme.spacing * 2.5);
+      return static_cast<int>(_impl->theme.spacing * 2.5);
     case PM_HeaderMargin:
       return _impl->theme.spacing; // Header horizontal padding.
     case PM_HeaderMarkSize:
