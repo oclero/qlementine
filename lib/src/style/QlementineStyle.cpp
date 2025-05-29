@@ -4804,7 +4804,7 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   // Try to remove the background...
-  if (auto* itemView = qobject_cast<QTreeView*>(w)) {
+  if (auto* itemView = qobject_cast<QAbstractItemView*>(w)) {
     auto* popup = itemView->parentWidget();
     auto isComboBoxPopupContainer = popup && popup->inherits("QComboBoxPrivateContainer");
     if (isComboBoxPopupContainer) {
