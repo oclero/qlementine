@@ -402,7 +402,7 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QAbstractIte
   _comboBox->installEventFilter(this);
 
   if (const auto* treeView = qobject_cast<QTreeView*>(_view)) {
-    connect(treeView, &QTreeView::expanded, this, &ComboboxItemViewFilter::fixViewGeometry);
+    QObject::connect(treeView, &QTreeView::expanded, this, &ComboboxItemViewFilter::fixViewGeometry);
   }
 }
 
@@ -424,17 +424,32 @@ bool ComboboxItemViewFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 }
 
 void ComboboxItemViewFilter::fixViewGeometry() {
-  const auto* comboBox = findFirstParentOfType<QComboBox>(_view);
-  if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style())) {
-    const auto hMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
-    const auto shadowWidth = qlementineStyle->theme().spacing;
-    const auto borderWidth = qlementineStyle->theme().borderWidth;
-    const auto width =
-      std::max(comboBox->width(), _view->sizeHintForColumn(0) + shadowWidth * 2) + hMargin * 2 + borderWidth * 2;
-    const auto height = std::min(800, viewMinimumSizeHint().height());
-    _view->setFixedWidth(width);
-    _view->setFixedHeight(height);
-    _view->parentWidget()->adjustSize();
+  if (const auto* comboBox = findFirstParentOfType<QComboBox>(_view)) {
+    if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(comboBox->style())) {
+      const auto isTreeView = _view->inherits("QTreeView");
+      const auto hMargin = qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
+      const auto shadowWidth = qlementineStyle->theme().spacing;
+      const auto borderWidth = qlementineStyle->theme().borderWidth;
+
+      // Width.
+      const auto absoluteMinWidth = qlementineStyle->theme().controlHeightLarge * (isTreeView ? 2 : 1);
+      const auto absoluteMaxWidth = qlementineStyle->theme().controlHeightLarge * 24;
+      const auto width = std::min(absoluteMaxWidth, std::max({
+                                                      comboBox->width(),
+                                                      _view->sizeHintForColumn(0),
+                                                      absoluteMinWidth,
+                                                    }))
+                         + shadowWidth * 2 + hMargin * 2 + borderWidth * 2;
+
+      // Height.
+      const auto absoluteMinHeight = qlementineStyle->theme().controlHeightLarge * (isTreeView ? 3 : 1);
+      const auto absoluteMaxHeight = qlementineStyle->theme().controlHeightLarge * 5;
+      const auto height = std::min(absoluteMaxHeight, std::max(absoluteMinHeight, viewMinimumSizeHint().height()));
+
+      _view->setFixedWidth(width);
+      _view->setFixedHeight(height);
+      _view->parentWidget()->adjustSize();
+    }
   }
 }
 
