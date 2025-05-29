@@ -258,7 +258,11 @@ QlementineStyle::QlementineStyle(QObject* parent)
   : _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
-  triggerCompleteRepaint();
+
+  // This method is virtual so it should not be called in the base class constructor.
+  QTimer::singleShot(0, this, [this]() {
+    triggerCompleteRepaint();
+  });
 }
 
 QlementineStyle::~QlementineStyle() = default;
