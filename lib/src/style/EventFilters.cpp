@@ -391,17 +391,6 @@ ComboboxItemViewFilter::ComboboxItemViewFilter(QComboBox* comboBox, QAbstractIte
 
   auto* comboBoxPopup = _view->parentWidget();
   comboBoxPopup->installEventFilter(this);
-
-  /*
-  const auto childWidgets = comboBoxPopup->findChildren<QWidget*>();
-  for (auto* child : childWidgets) {
-    if (child->inherits("QComboBoxPrivateScroller")) {
-      child->setFixedHeight(0);
-      child->setVisible(false);
-    }
-  }
-*/
-
   _comboBox->installEventFilter(this);
 
   if (const auto* treeView = qobject_cast<QTreeView*>(_view)) {
