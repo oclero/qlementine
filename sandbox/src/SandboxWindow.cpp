@@ -1856,7 +1856,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_blur();
     // _impl->setupUI_themeEditor();
     // _impl->setupUI_messageBox();
-    _impl->setupUI_toolBar();
+    // _impl->setupUI_toolBar();
   }
   _impl->endSetupUI();
   oclero::qlementine::centerWidget(this);
