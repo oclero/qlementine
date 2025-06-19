@@ -40,8 +40,7 @@ public:
 
 protected:
   bool eventFilter(QObject* watchedObject, QEvent* evt) override {
-    const auto type = evt->type();
-    switch (type) {
+    switch (evt->type()) {
       case QEvent::Type::ChildAdded: {
         if (watchedObject == _comboBox) {
           const auto* childEvent = static_cast<QChildEvent*>(evt);
@@ -80,7 +79,7 @@ protected:
   }
 
 private:
-  void fixViewGeometry() {
+  void fixViewGeometry() const {
     if (_comboBox) {
       if (auto* view = _comboBox->view()) {
         if (const auto* qlementineStyle = qobject_cast<QlementineStyle*>(_comboBox->style())) {
@@ -144,10 +143,10 @@ private:
 
 class ComboboxFilter : public QObject {
 public:
-  ComboboxFilter(QComboBox* comboBox)
+  explicit ComboboxFilter(QComboBox* comboBox)
     : QObject(comboBox)
     , _comboBox(comboBox) {
-    if (auto* view = comboBox->view()) {
+    if (const auto* view = comboBox->view()) {
       if (auto* popup = view->parentWidget()) {
         popup->installEventFilter(this);
       }
@@ -155,8 +154,7 @@ public:
   }
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override {
-    const auto type = evt->type();
-    switch (type) {
+    switch (evt->type()) {
       // This is the only way we found to know when the QComboBox's view has changed.
       case QEvent::ChildAdded: {
         const auto* childEvent = static_cast<QChildEvent*>(evt);

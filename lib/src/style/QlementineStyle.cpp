@@ -4863,7 +4863,7 @@ void QlementineStyle::polish(QWidget* w) {
     // Trigger the redefine when the QComboBox's view changes.
     new ComboboxFilter(comboBox);
   } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
-    tabBar->installEventFilter(new TabBarEventFilter(*this, tabBar));
+    tabBar->installEventFilter(new TabBarEventFilter(tabBar));
   } else if (auto* label = qobject_cast<QLabel*>(w)) {
     const auto labelObjName = label->objectName();
     const auto isInformativeLabel = labelObjName == QStringLiteral("qt_msgbox_informativelabel");

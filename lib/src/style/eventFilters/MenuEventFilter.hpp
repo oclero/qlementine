@@ -24,9 +24,7 @@ public:
   }
 
   bool eventFilter(QObject*, QEvent* evt) override {
-    const auto type = evt->type();
-
-    switch (type) {
+    switch (evt->type()) {
       case QEvent::Type::Show: {
         _mousePressed = false;
 

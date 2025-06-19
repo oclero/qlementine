@@ -15,12 +15,9 @@ public:
     , _widget(widget) {}
 
   bool eventFilter(QObject*, QEvent* evt) override {
-    const auto type = evt->type();
-    if (type == QEvent::Wheel) {
-      if (!_widget->hasFocus()) {
-        evt->ignore();
-        return true;
-      }
+    if (evt->type() == QEvent::Wheel && !_widget->hasFocus()) {
+      evt->ignore();
+      return true;
     }
 
     return false;
