@@ -802,7 +802,11 @@ struct SandboxWindow::Impl {
       treeWidget->topLevelItem(0)->setSelected(true);
 
       combobox->setModel(treeWidget->model());
-      combobox->setView(treeWidget);
+
+      QTimer::singleShot(300, combobox, [combobox, treeWidget]() {
+        combobox->setView(treeWidget);
+      });
+      //combobox->setView(treeWidget);
     }
 
     windowContentLayout->addWidget(combobox);
@@ -1867,7 +1871,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_spinBox();
     // _impl->setupUI_comboBox();
     // _impl->setupUI_comboBoxVariants();
-    // _impl->setupUI_comboBoxWithTreeView();
+    _impl->setupUI_comboBoxWithTreeView();
     // _impl->setupUI_fontComboBox();
     // _impl->setupUI_listView();
     // _impl->setupUI_treeWidget();
