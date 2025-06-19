@@ -4827,7 +4827,7 @@ void QlementineStyle::polish(QWidget* w) {
 
       itemView->viewport()->setAutoFillBackground(false);
       auto* comboBox = findFirstParentOfType<QComboBox>(itemView);
-      itemView->installEventFilter(new ComboboxItemViewFilter(comboBox, itemView));
+      new ComboboxItemViewFilter(comboBox, itemView);
     }
   }
 
@@ -4856,8 +4856,12 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   if (auto* comboBox = qobject_cast<QComboBox*>(w)) {
-    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
     comboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
+
+    // Will define a delegate to stylize the QComboBox items,
+    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
+    // Trigger the redefine when the QComboBox's view changes.
+    new ComboboxFilter(comboBox);
   } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
     tabBar->installEventFilter(new TabBarEventFilter(*this, tabBar));
   } else if (auto* label = qobject_cast<QLabel*>(w)) {
