@@ -31,7 +31,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto& color =
       _qlementineStyle ? _qlementineStyle->toolBarSeparatorColor() : Theme().secondaryAlternativeColorDisabled;
     const auto lineW = theme.borderWidth;
-    constexpr auto padding = 0; //theme.spacing / 2;
+    constexpr auto padding = 0;
     const auto x = rect.x() + (rect.width() - lineW) / 2.;
     const auto y1 = static_cast<double>(rect.y() + padding);
     const auto y2 = static_cast<double>(rect.y() + rect.height() - padding);
@@ -76,8 +76,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
 
     // Arrow that indicates that the tree's branch is open/closed.
     // It is already drawn by the QTreeView when the item is not the current one.
-    const auto isCurrent = opt.state.testFlag(QStyle::State_Selected);
-    if (viewIsTreeView && isCurrent) {
+    if (viewIsTreeView && opt.state.testFlag(QStyle::State_Selected)) {
       const auto hasChildren = opt.state.testFlag(QStyle::State_Children);
       if (hasChildren) {
         const auto indentation = _qlementineStyle ? _qlementineStyle->pixelMetric(QStyle::PM_TreeViewIndentation) : 0;

@@ -37,7 +37,7 @@ private:
 
 class TabBarEventFilter : public QObject {
 public:
-  TabBarEventFilter(QlementineStyle& style, QTabBar* tabBar)
+  TabBarEventFilter(QTabBar* tabBar)
     : QObject(tabBar)
     , _tabBar(tabBar) {
     // Tweak left/right buttons.
@@ -49,14 +49,14 @@ public:
       _leftButton->setFocusPolicy(Qt::NoFocus);
       _leftButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       _leftButton->setFixedSize(_leftButton->sizeHint());
-      style.setAutoIconColor(_leftButton, AutoIconColor::None);
+      QlementineStyle::setAutoIconColor(_leftButton, AutoIconColor::None);
       _leftButton->installEventFilter(buttonEvtFilter);
 
       _rightButton = toolButtons.at(1);
       _rightButton->setFocusPolicy(Qt::NoFocus);
       _rightButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       _rightButton->setFixedSize(_rightButton->sizeHint());
-      style.setAutoIconColor(_rightButton, AutoIconColor::None);
+      QlementineStyle::setAutoIconColor(_rightButton, AutoIconColor::None);
       _rightButton->installEventFilter(buttonEvtFilter);
     }
   }

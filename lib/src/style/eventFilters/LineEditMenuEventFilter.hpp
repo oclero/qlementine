@@ -106,7 +106,7 @@ class LineEditMenuIconsBehavior : public QObject {
   }
 
 public:
-  LineEditMenuIconsBehavior(QMenu* menu)
+  explicit LineEditMenuIconsBehavior(QMenu* menu)
     : QObject(menu)
     , _menu(menu) {
     // Hack pour modifier les icones du menu contextuel des line edit.
@@ -135,8 +135,7 @@ public:
 
 protected:
   bool eventFilter(QObject*, QEvent* evt) override {
-    const auto type = evt->type();
-    if (type == QEvent::ChildPolished) {
+    if (evt->type() == QEvent::ChildPolished) {
       constexpr auto propertyName = "qlementine_tweak_menu_icons";
       auto* child = static_cast<QChildEvent*>(evt)->child();
 
