@@ -58,13 +58,11 @@ public:
   void restart(T const& value) {
     stop();
 
-    // Ensure it has a start value.
-    if (!hasStartValue()) {
-      if (loopEnabled()) {
-        setStartValue(T());
-      } else {
-        setStartValue(value);
-      }
+    if (loopEnabled()) {
+      setStartValue(T());
+    } else if (!hasStartValue()) {
+      // Ensure it has a start value.
+      setStartValue(value);
     } else {
       setStartValue(this->value());
     }
@@ -74,7 +72,7 @@ public:
   }
 
   void restartIfNeeded(T const& value) {
-    if (value != finalValue() || !hasFinalValue()) {
+    if (value != finalValue() || !hasFinalValue() || (loopEnabled() && !isRunning())) {
       restart(value);
     }
   }
