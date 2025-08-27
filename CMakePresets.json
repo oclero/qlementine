@@ -56,6 +56,23 @@
         "lhs": "${hostSystemName}",
         "rhs": "Linux"
       }
+    },
+    {
+      "name": "linux-shared",
+      "displayName": "Linux (Shared Library)",
+      "description": "Makefile for Linux with shared library",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/_build_shared",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": true,
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
     }
   ],
   "buildPresets": [
