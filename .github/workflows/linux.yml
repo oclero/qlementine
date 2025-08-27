@@ -13,6 +13,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        library_type: [static, shared]
+        include:
+          - library_type: static
+            preset: linux
+            description: "Static Library"
+          - library_type: shared
+            preset: linux-shared
+            description: "Shared Library"
+
+    name: Build (${{ matrix.description }})
 
     steps:
       - name: Check Out
@@ -26,10 +38,7 @@ jobs:
           target: desktop
           arch: linux_gcc_64
 
-      - name: Build the library.
+      - name: Build the library (${{ matrix.description }})
         run: |
-          cmake --preset linux -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
-          cmake --build --preset linux --target install
-
-      - name: Build the Sandbox app.
-        run: cmake --build --preset linux-sandbox
+          cmake --preset ${{ matrix.preset }} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+          cmake --build --preset ${{ matrix.preset }} --target install
