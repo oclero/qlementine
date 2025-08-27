@@ -25,6 +25,25 @@
       }
     },
     {
+      "name": "macos-shared",
+      "displayName": "macOS (Shared Library)",
+      "description": "Ninja project for macOS with shared library",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/_build_shared",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6",
+        "BUILD_SHARED_LIBS": true,
+        "QLEMENTINE_SANDBOX": false,
+        "QLEMENTINE_SHOWCASE": false
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
       "name": "windows",
       "displayName": "Windows",
       "description": "Visual Studio 2026 x64 project for Windows",
@@ -61,12 +80,51 @@
       }
     },
     {
+      "name": "windows-ci-shared",
+      "displayName": "Windows CI (Shared Library)",
+      "description": "Ninja project for Windows CI with shared library",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/_build_shared",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_SHARED_LIBS": true,
+        "QLEMENTINE_SANDBOX": false,
+        "QLEMENTINE_SHOWCASE": false
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-shared",
+      "displayName": "Windows (Shared Library)",
+      "description": "Visual Studio 2026 x64 project for Windows with shared library",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "x64",
+      "toolset": "host=x64",
+      "binaryDir": "${sourceDir}/_build_shared",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.10.3/msvc2022_64",
+        "BUILD_SHARED_LIBS": true,
+        "QLEMENTINE_SANDBOX": false,
+        "QLEMENTINE_SHOWCASE": false
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
       "name": "linux",
       "displayName": "Linux",
       "description": "Ninja project for Linux",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
         "QLEMENTINE_SANDBOX": true,
         "QLEMENTINE_SHOWCASE": true
       },
@@ -79,13 +137,13 @@
     {
       "name": "linux-shared",
       "displayName": "Linux (Shared Library)",
-      "description": "Makefile for Linux with shared library",
-      "generator": "Unix Makefiles",
+      "description": "Ninja project for Linux with shared library",
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/_build_shared",
       "cacheVariables": {
         "BUILD_SHARED_LIBS": true,
-        "QLEMENTINE_SANDBOX": true,
-        "QLEMENTINE_SHOWCASE": true
+        "QLEMENTINE_SANDBOX": false,
+        "QLEMENTINE_SHOWCASE": false
       },
       "condition": {
         "type": "equals",
@@ -125,6 +183,30 @@
       "configurePreset": "macos",
       "description": "Showcase - Build with Ninja for macOS",
       "targets": ["showcase"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "macos-shared",
+      "displayName": "macOS (Shared Library)",
+      "configurePreset": "macos-shared",
+      "description": "Build shared library with Ninja for macOS",
+      "targets": ["qlementine"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "macos-shared-sandbox",
+      "displayName": "Sandbox for macOS (Shared Library)",
+      "configurePreset": "macos-shared",
+      "description": "Sandbox - Build with Ninja for macOS with shared library",
+      "targets": ["sandbox"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -204,6 +286,30 @@
       }
     },
     {
+      "name": "windows-shared",
+      "displayName": "Windows (Shared Library)",
+      "configurePreset": "windows-shared",
+      "description": "Build shared library with Visual Studio for Windows",
+      "targets": ["qlementine"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-ci-shared",
+      "displayName": "Windows CI (Shared Library)",
+      "configurePreset": "windows-ci-shared",
+      "description": "Build shared library with Ninja for Windows CI",
+      "targets": ["qlementine"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
       "name": "linux",
       "displayName": "Linux",
       "configurePreset": "linux",
@@ -233,6 +339,30 @@
       "configurePreset": "linux",
       "description": "Showcase - Build for Linux",
       "targets": ["showcase"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-shared",
+      "displayName": "Linux (Shared Library)",
+      "configurePreset": "linux-shared",
+      "description": "Build shared library for Linux",
+      "targets": ["qlementine"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-shared-sandbox",
+      "displayName": "Sandbox for Linux (Shared Library)",
+      "configurePreset": "linux-shared",
+      "description": "Sandbox - Build for Linux with shared library",
+      "targets": ["sandbox"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",

@@ -13,6 +13,18 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        library_type: [static, shared]
+        include:
+          - library_type: static
+            preset: windows-ci
+            description: "Static Library"
+          - library_type: shared
+            preset: windows-ci-shared
+            description: "Shared Library"
+
+    name: Build (${{ matrix.description }})
 
     steps:
       - name: Check Out
@@ -31,16 +43,17 @@ jobs:
           target: desktop
           arch: win64_msvc2022_64
 
-      - name: Build the library.
+      - name: Build the library (${{ matrix.description }})
         run: |
-          cmake --preset windows-ci -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
-          cmake --build --preset windows-ci --target qlementine
+          cmake --preset ${{ matrix.preset }} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+          cmake --build --preset ${{ matrix.preset }} --target qlementine
 
-      - name: Build the Qt style plugin.
-        run: cmake --build --preset windows-ci --target qlementinestyleplugin
+      - name: Build the Qt style plugin (${{ matrix.description }})
+        run: cmake --build --preset ${{ matrix.preset }} --target qlementinestyleplugin
 
-      - name: Install the library and plugin.
-        run: cmake --build --preset windows-ci --target install
+      - name: Install the library and plugin (${{ matrix.description }})
+        run: cmake --build --preset ${{ matrix.preset }} --target install
 
       - name: Build the Sandbox app.
+        if: matrix.library_type == 'static'
         run: cmake --build --preset windows-ci-sandbox

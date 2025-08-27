@@ -13,6 +13,18 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        library_type: [static, shared]
+        include:
+          - library_type: static
+            preset: macos
+            description: "Static Library"
+          - library_type: shared
+            preset: macos-shared
+            description: "Shared Library"
+
+    name: Build (${{ matrix.description }})
 
     steps:
       - name: Check Out
@@ -26,16 +38,17 @@ jobs:
           target: desktop
           arch: clang_64
 
-      - name: Build the library.
+      - name: Build the library (${{ matrix.description }})
         run: |
-          cmake --preset macos -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
-          cmake --build --preset macos --target qlementine
+          cmake --preset ${{ matrix.preset }} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+          cmake --build --preset ${{ matrix.preset }} --target qlementine
 
-      - name: Build the Qt style plugin.
-        run: cmake --build --preset macos --target qlementinestyleplugin
+      - name: Build the Qt style plugin (${{ matrix.description }})
+        run: cmake --build --preset ${{ matrix.preset }} --target qlementinestyleplugin
 
-      - name: Install the library and plugin.
-        run: cmake --build --preset macos --target install
+      - name: Install the library and plugin (${{ matrix.description }})
+        run: cmake --build --preset ${{ matrix.preset }} --target install
 
       - name: Build the Sandbox app.
+        if: matrix.library_type == 'static'
         run: cmake --build --preset macos-sandbox

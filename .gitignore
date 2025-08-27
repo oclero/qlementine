@@ -28,7 +28,7 @@ desktop.ini
 *.out
 *.app
 build/
-_build/
+_build*/
 Testing/
 
 # VS Code files.
