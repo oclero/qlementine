@@ -2,19 +2,54 @@
 
 ## Installation
 
-1. Add the library as a dependency. Here is an example with CMake FetchContent. You may add it with another way such as vcpkg or from a regular installation.
+### Option 1: FetchContent (Build from Source)
 
-   ```bash
+1. Add the library as a dependency using CMake FetchContent:
+
+   ```cmake
    include(FetchContent)
    FetchContent_Declare(Qlementine GIT_REPOSITORY "https://github.com/oclero/qlementine.git")
    FetchContent_MakeAvailable(Qlementine)
    ```
 
-2. Link with the library in CMake.
+2. Link with the library:
 
    ```cmake
    target_link_libraries(your_project qlementine)
    ```
+
+### Option 2: Find Installed Library
+
+If Qlementine is already installed on your system (via package manager, vcpkg, or manual installation):
+
+#### CMake
+
+```cmake
+find_package(qlementine REQUIRED)
+target_link_libraries(your_project qlementine::qlementine)
+```
+
+#### Meson
+
+```meson
+qlementine_dep = dependency('qlementine')
+executable('your_project',
+  sources: ['main.cpp'],
+  dependencies: [qlementine_dep]
+)
+```
+
+### Option 3: vcpkg
+
+```bash
+vcpkg install qlementine
+```
+
+Then in CMake:
+```cmake
+find_package(qlementine CONFIG REQUIRED)
+target_link_libraries(your_project PRIVATE qlementine::qlementine)
+```
 
 ## Usage in code
 

@@ -112,47 +112,141 @@ set(RESOURCES
   resources/qlementine_font_roboto.qrc
 )
 
-# Create target.
-qt_add_library(${PROJECT_NAME} STATIC
-  ${HEADERS}
-  ${SOURCES}
-  ${RESOURCES}
-)
-include(CMakePackageConfigHelpers)
+option(BUILD_SHARED_LIBS "Build shared libraries instead of static" OFF)
+option(QLEMENTINE_BUILD_STATIC "Build static library alongside shared (when BUILD_SHARED_LIBS=ON)" OFF)
 
-target_include_directories(${PROJECT_NAME}
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-)
+set(_build_shared ${BUILD_SHARED_LIBS})
+set(_build_static ON)  # Always build static unless only shared is requested
 
-target_link_libraries(${PROJECT_NAME}
-  PUBLIC
-    Qt::Core
-    Qt::Widgets
-    Qt::Svg
-)
+if(BUILD_SHARED_LIBS AND NOT QLEMENTINE_BUILD_STATIC)
+  set(_build_static OFF)  # Only shared
+endif()
 
-set_target_properties(${PROJECT_NAME}
-  PROPERTIES
-    OUTPUT_NAME ${PROJECT_NAME}
-    PROJECT_LABEL ${PROJECT_NAME}
-    FOLDER lib
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-    VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    DEBUG_POSTFIX _debug
-    CMAKE_AUTORCC ON
-    CMAKE_AUTOMOC ON
-    CMAKE_AUTOUIC ON
-)
+# Initialize target variables
+set(_targets_to_build)
+set(_main_target_name ${PROJECT_NAME})
 
-target_compile_options(${PROJECT_NAME}
-  PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/MP /WX /W4>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
-)
+# Create shared library target
+if(_build_shared)
+  set(_shared_target "${PROJECT_NAME}_shared")
+  if(NOT _build_static)
+    # If only shared, use the main project name
+    set(_shared_target ${PROJECT_NAME})
+  endif()
+
+  qt_add_library(${_shared_target} SHARED
+    ${HEADERS}
+    ${SOURCES}
+    ${RESOURCES}
+  )
+
+  # Set shared library specific properties
+  set_target_properties(${_shared_target}
+    PROPERTIES
+      OUTPUT_NAME ${PROJECT_NAME}
+      PROJECT_LABEL "${PROJECT_NAME}_Shared"
+      FOLDER lib
+      SOVERSION ${PROJECT_VERSION_MAJOR}
+      VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+      DEBUG_POSTFIX _debug
+      CMAKE_AUTORCC ON
+      CMAKE_AUTOMOC ON
+      CMAKE_AUTOUIC ON
+      # Use C++ visibility attributes for symbol export
+      CXX_VISIBILITY_PRESET default
+      VISIBILITY_INLINES_HIDDEN ON
+  )
+
+  list(APPEND _targets_to_build ${_shared_target})
+
+  # Create alias for shared library
+  if(_build_static)
+    add_library(${PROJECT_NAME}::shared ALIAS ${_shared_target})
+  else()
+    # If only shared, this is the main target
+    add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${_shared_target})
+    set(_main_target_name ${_shared_target})
+  endif()
+endif()
+
+# Create static library target
+if(_build_static)
+  set(_static_target "${PROJECT_NAME}_static")
+  if(NOT _build_shared)
+    # If only static, use the main project name
+    set(_static_target ${PROJECT_NAME})
+  endif()
+
+  qt_add_library(${_static_target} STATIC
+    ${HEADERS}
+    ${SOURCES}
+    ${RESOURCES}
+  )
+
+  # Set static library specific properties
+  set_target_properties(${_static_target}
+    PROPERTIES
+      OUTPUT_NAME ${PROJECT_NAME}
+      PROJECT_LABEL "${PROJECT_NAME}_Static"
+      FOLDER lib
+      DEBUG_POSTFIX _debug
+      CMAKE_AUTORCC ON
+      CMAKE_AUTOMOC ON
+      CMAKE_AUTOUIC ON
+  )
+
+  list(APPEND _targets_to_build ${_static_target})
+
+  # Create alias for static library
+  if(_build_shared)
+    add_library(${PROJECT_NAME}::static ALIAS ${_static_target})
+  else()
+    # If only static, this is the main target
+    add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${_static_target})
+    set(_main_target_name ${_static_target})
+  endif()
+endif()
+
+# Create the main alias that apps will link against
+# This always points to the "preferred" target (shared if available, otherwise static)
+if(_build_shared)
+  if(NOT TARGET ${PROJECT_NAME})
+    # Create an alias from the plain name to the shared target
+    add_library(${PROJECT_NAME} ALIAS ${_shared_target})
+  endif()
+else()
+  # For static-only builds, the plain name already exists as the target
+  if(NOT TARGET ${PROJECT_NAME})
+    add_library(${PROJECT_NAME} ALIAS ${_static_target})
+  endif()
+endif()
+# Configure all targets (shared and/or static)
+foreach(_target IN LISTS _targets_to_build)
+  if(TARGET ${_target})
+    message(STATUS "Configuring target: ${_target}")
+
+    target_include_directories(${_target}
+      PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    )
+
+    target_link_libraries(${_target}
+      PUBLIC
+        Qt::Core
+        Qt::Widgets
+        Qt::Svg
+    )
+
+    target_compile_options(${_target}
+      PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/MP /WX /W4>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror>
+    )
+  endif()
+endforeach()
 
 # Create source groups.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -166,7 +260,20 @@ if(WIN32)
   set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 endif()
 
-# Install target
+# Create source groups.
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
+  FILES
+    ${HEADERS}
+    ${SOURCES}
+)
+
+# Select correct startup project in Visual Studio.
+if(WIN32)
+  set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+endif()
+
+# CMake package configuration
+include(CMakePackageConfigHelpers)
 configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/config.cmake.in"
   "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
@@ -175,7 +282,22 @@ write_basic_package_version_file("${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Confi
   VERSION "${PROJECT_VERSION}"
   COMPATIBILITY AnyNewerVersion)
 
-install(TARGETS ${PROJECT_NAME}
+# Generate pkgconfig file on supported platforms
+if(UNIX OR MINGW)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/qlementine.pc.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/qlementine.pc"
+    @ONLY
+  )
+
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/qlementine.pc"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    COMPONENT Development
+  )
+endif()
+
+# Install targets
+install(TARGETS ${_targets_to_build}
   EXPORT "${PROJECT_NAME}Targets"
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
