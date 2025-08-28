@@ -3,11 +3,12 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/widgets/AbstractItemListWidget.hpp>
 
 namespace oclero::qlementine {
 /// A SegmentedControl like on MacOS.
-class SegmentedControl : public AbstractItemListWidget {
+class QLEMENTINE_EXPORT SegmentedControl : public AbstractItemListWidget {
 public:
   using AbstractItemListWidget::AbstractItemListWidget;
 

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QBitmap>
 #include <QList>
 #include <QPointer>
@@ -15,7 +17,7 @@
 
 namespace oclero::qlementine {
 // A MacOS-like popover.
-class Popover : public QWidget {
+class QLEMENTINE_EXPORT Popover : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(bool manualPositioning READ manualPositioning WRITE setManualPositioning NOTIFY manualPositioningChanged)

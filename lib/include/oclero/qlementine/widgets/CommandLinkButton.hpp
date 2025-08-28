@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QCommandLinkButton>
 
 namespace oclero::qlementine {
@@ -10,7 +12,7 @@ class QStyleOptionCommandLinkButton;
 
 /// A QCommandLinkButton that just doesn't force its size to Windows Vista's
 /// system-default CommandLinkButtton size. It actually lets content decide.
-class CommandLinkButton : public QCommandLinkButton {
+class QLEMENTINE_EXPORT CommandLinkButton : public QCommandLinkButton {
 public:
   explicit CommandLinkButton(QWidget* parent = nullptr);
   explicit CommandLinkButton(const QString& text, QWidget* parent = nullptr);

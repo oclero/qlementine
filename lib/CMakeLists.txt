@@ -1,3 +1,6 @@
+# Include GenerateExportHeader module
+include(GenerateExportHeader)
+
 # Declare files.
 set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimationManager.cpp
@@ -225,9 +228,19 @@ foreach(_target IN LISTS _targets_to_build)
   if(TARGET ${_target})
     message(STATUS "Configuring target: ${_target}")
 
+    # Generate export header for this target
+    generate_export_header(${_target}
+      BASE_NAME QLEMENTINE
+      EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/include/oclero/qlementine/qlementine_export.h
+      EXPORT_MACRO_NAME QLEMENTINE_EXPORT
+      NO_EXPORT_MACRO_NAME QLEMENTINE_NO_EXPORT
+      STATIC_DEFINE QLEMENTINE_STATIC_DEFINE
+    )
+
     target_include_directories(${_target}
       PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
@@ -306,6 +319,10 @@ install(TARGETS ${_targets_to_build}
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+# Install the generated export header
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/oclero/qlementine/qlementine_export.h"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/oclero/qlementine/")
 
 install(EXPORT "${PROJECT_NAME}Targets"
   FILE "${PROJECT_NAME}Targets.cmake"

@@ -6,10 +6,11 @@
 #include <QAbstractButton>
 #include <QColor>
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/Common.hpp>
 
 namespace oclero::qlementine {
-class ColorButton : public QAbstractButton {
+class QLEMENTINE_EXPORT ColorButton : public QAbstractButton {
   Q_OBJECT
 
   Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
