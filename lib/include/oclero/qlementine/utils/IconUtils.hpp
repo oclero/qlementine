@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QIcon>
 #include <QColor>
 
 namespace oclero::qlementine {
-struct IconTheme {
+struct QLEMENTINE_EXPORT IconTheme {
   QColor normal;
   QColor disabled;
   QColor checkedNormal;
@@ -21,9 +23,9 @@ struct IconTheme {
 };
 
 /// Makes an icon from the file located at the path in parameter. Fixes the standard Qt behavior.
-[[maybe_unused]] QIcon makeIconFromSvg(const QString& svgPath, const QSize& size);
+[[maybe_unused]] QLEMENTINE_EXPORT QIcon makeIconFromSvg(const QString& svgPath, const QSize& size);
 
 /// Makes an icon from the file located at the path in parameter and colorizes the QPixmaps. Fixes the standard Qt behavior.
-[[maybe_unused]] QIcon makeIconFromSvg(
+[[maybe_unused]] QLEMENTINE_EXPORT QIcon makeIconFromSvg(
   const QString& svgPath, const IconTheme& iconTheme, const QSize& size = QSize(16, 16));
 } // namespace oclero::qlementine

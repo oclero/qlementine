@@ -8,11 +8,12 @@
 
 #include <vector>
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 
 namespace oclero::qlementine {
-class ThemeManager : public QObject {
+class QLEMENTINE_EXPORT ThemeManager : public QObject {
   Q_OBJECT
 
   Q_PROPERTY(QString currentTheme READ currentTheme WRITE setCurrentTheme NOTIFY currentThemeChanged)

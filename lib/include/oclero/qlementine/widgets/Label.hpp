@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/Common.hpp>
 
 #include <QLabel>
@@ -10,7 +11,7 @@
 namespace oclero::qlementine {
 /// A QLabel that handles automatic styling for different text roles (titles, normal text, ect.)
 /// like h1,h2,p in HTML.
-class Label : public QLabel {
+class QLEMENTINE_EXPORT Label : public QLabel {
   Q_OBJECT
 
   Q_PROPERTY(oclero::qlementine::TextRole role READ role WRITE setRole NOTIFY roleChanged)

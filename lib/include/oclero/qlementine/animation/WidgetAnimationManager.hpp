@@ -4,6 +4,7 @@
 #pragma once
 
 #include <oclero/qlementine/animation/WidgetAnimator.hpp>
+#include <oclero/qlementine/qlementine_export.h>
 
 #include <unordered_map>
 #include <optional>
@@ -29,7 +30,7 @@ namespace oclero::qlementine {
   }
 
 // Handles animations for all widgets.
-class WidgetAnimationManager {
+class QLEMENTINE_EXPORT WidgetAnimationManager {
 public:
   WidgetAnimationManager();
 

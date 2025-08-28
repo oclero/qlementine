@@ -5,11 +5,13 @@
 
 #include <functional>
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QMenu>
 #include <QAction>
 
 namespace oclero::qlementine {
-class Menu : public QMenu {
+class QLEMENTINE_EXPORT Menu : public QMenu {
   Q_OBJECT
 
 public:

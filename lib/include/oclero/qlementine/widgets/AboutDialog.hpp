@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QDialog>
 
 class QLabel;
@@ -14,7 +16,7 @@ class Label;
 /// It includes the application icon, description, website link, license information,
 /// copyright notice, and social media links.
 /// It will automatically use the application's icon and name if not set explicitly.
-class AboutDialog : public QDialog {
+class QLEMENTINE_EXPORT AboutDialog : public QDialog {
   Q_OBJECT
 
 public:

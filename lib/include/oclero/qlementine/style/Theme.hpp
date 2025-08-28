@@ -5,6 +5,7 @@
 
 #include <optional>
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/Common.hpp>
 
 #include <QString>
@@ -31,7 +32,7 @@ struct ThemeMeta {
 };
 
 /// Color and sizes configuration for a Qlementine Theme.
-class Theme {
+class QLEMENTINE_EXPORT Theme {
 public: // Ctor.
   Theme();
 

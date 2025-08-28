@@ -5,6 +5,7 @@
 
 #include <oclero/qlementine/animation/WidgetAnimation.hpp>
 #include <oclero/qlementine/style/Theme.hpp>
+#include <oclero/qlementine/qlementine_export.h>
 
 #include <QObject>
 #include <QEvent>
@@ -46,7 +47,7 @@ public: \
     get##NAME##Animation().setLoopEnabled(loop); \
   }
 
-class WidgetAnimator : public QObject {
+class QLEMENTINE_EXPORT WidgetAnimator : public QObject {
 public:
   explicit WidgetAnimator(QWidget* parent)
     : QObject(parent)

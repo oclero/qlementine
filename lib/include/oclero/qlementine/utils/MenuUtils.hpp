@@ -5,11 +5,13 @@
 
 #include <functional>
 
+#include <oclero/qlementine/qlementine_export.h>
+
 class QMenu;
 class QAction;
 
 namespace oclero::qlementine {
-QMenu* getTopLevelMenu(QMenu* menu);
+QLEMENTINE_EXPORT QMenu* getTopLevelMenu(QMenu* menu);
 
-void flashAction(QAction* action, QMenu* menu, const std::function<void()>& onAnimationFinished);
+QLEMENTINE_EXPORT void flashAction(QAction* action, QMenu* menu, const std::function<void()>& onAnimationFinished);
 } // namespace oclero::qlementine
