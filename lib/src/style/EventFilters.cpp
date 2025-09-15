@@ -361,8 +361,10 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
           return true;
 
         if (action->menu() == nullptr) {
-          _mouseEventToNotFilter.reset(evt->clone());
-          flashAction(action, _menu, [this]() {
+          flashAction(action, _menu, [this, action]() {
+            const auto menuItemCenter = _menu->actionGeometry(action).center();
+            _mouseEventToNotFilter.reset(new QMouseEvent(QEvent::MouseButtonRelease, menuItemCenter,
+              _menu->mapToGlobal(menuItemCenter), Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
             QCoreApplication::sendEvent(_menu, _mouseEventToNotFilter.get());
             _mouseEventToNotFilter.reset();
           });
