@@ -6,7 +6,7 @@ set(CMAKE_BUILD_PARALLEL_LEVEL $ENV{NUMBER_OF_PROCESSORS})
 # Set project information.
 project("qlementine"
   LANGUAGES CXX
-  VERSION 1.2.2.0
+  VERSION 1.3.0.0
   DESCRIPTION "Modern QStyle for desktop Qt applications."
 )
 set(PROJECT_COPYRIGHT "© Olivier Cléro, MIT License.")
@@ -36,7 +36,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 # Find Qt.
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Svg)
-qt_standard_project_setup()
+qt_standard_project_setup(
+  # REQUIRES 6.9.0
+)
 
 # The library.
 add_subdirectory(lib)

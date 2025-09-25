@@ -74,6 +74,20 @@ A widget that allows to switch between a range of elements, such as seen on Andr
 
 ![NavigationBar](assets/images/widgets/navigationbar.png)
 
+## NotificationBadge
+
+A small badge to display a notification (with or without text) on another widget.
+
+```cpp
+// The parent set to the constructor is not important.
+auto* badge = new NotificationBadge(someParent);
+
+// The badge's parent will change to theWidget's parent.
+badge->setWidget(theWidget);
+```
+
+![NotificationBadge](assets/images/widgets/notificationbadge.png)
+
 ## Popover
 
 A popup-like widget that opens in a separate system window, with a drop shadow and corner radiuses (hence transparency) and an opacity animation when toggling visibility.

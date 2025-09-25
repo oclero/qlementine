@@ -13,6 +13,9 @@
 #include <QSvgRenderer>
 #include <QImageReader>
 
+#include <cmath>
+#include <algorithm>
+
 namespace qtprivate {
 // Taken from qpixmapfilter.cpp, line 946, Qt 5.15.2
 // Grayscales the image to dest (could be same). If rect isn't defined
@@ -308,7 +311,7 @@ QImage getBlurredImage(const QImage& inputImage, double blurRadius) {
   auto* inputData = input.bits();
   auto* outputData = output.bits();
   constexpr auto channelCount = 4; // ARGB
-  const auto sigma = blurRadius * inputImage.devicePixelRatioF() / pixelToSigma;
+  const auto sigma = blurRadius * inputImage.devicePixelRatioF() / oclero::qlementine::pixelToSigma;
   // Since fast_gaussian_blur does an unnecessary std::swap, the actual result is in input.
   fast_gaussian_blur(inputData, outputData, input.width(), input.height(), channelCount, sigma);
   input.setDevicePixelRatio(inputImage.devicePixelRatioF());
@@ -327,20 +330,20 @@ QPixmap getDropShadowPixmap(QPixmap const& input, double blurRadius, QColor cons
   if (input.isNull())
     return {};
 
-  if (blurRadius < .5) {
+  if (blurRadius * input.devicePixelRatioF() < .5) {
     QPixmap result(input.size());
     result.fill(Qt::transparent);
     result.setDevicePixelRatio(input.devicePixelRatioF());
     return result;
   }
 
-  // Create a colorized version of the input pixmap.
   const auto colorizedImage = colorizeImage(input, color);
-  // Create a blurred version of the colorized image.
-  const auto padding = blurRadiusNecessarySpace(blurRadius) * 2; // Each side. Logical pixels.
+  const auto padding = blurRadiusNecessarySpace(blurRadius); // Padding for one side, in logical pixels.
   const auto extendedImage = getExtendedImage(colorizedImage, padding);
   const auto shadowImage = getBlurredImage(extendedImage, blurRadius);
-  return QPixmap::fromImage(shadowImage);
+  auto output = QPixmap::fromImage(shadowImage);
+  output.setDevicePixelRatio(input.devicePixelRatioF());
+  return output;
 }
 
 QPixmap getDropShadowPixmap(QSize const& size, double borderRadius, double blurRadius, QColor const& color) {
@@ -349,18 +352,20 @@ QPixmap getDropShadowPixmap(QSize const& size, double borderRadius, double blurR
 
   // Create a pixmap with the same size as the input.
   // The pixmap is already colorized with the desired color.
-  QPixmap input(size);
-  input.fill(Qt::transparent);
+  QPixmap colorizedImage(size);
+  colorizedImage.fill(Qt::transparent);
   {
-    QPainter p(&input);
+    QPainter p(&colorizedImage);
     drawRoundedRect(&p, QRect{ QPoint(0, 0), size }, color, borderRadius);
   }
 
   // Create a blurred version of the colorized image.
   const auto padding = blurRadiusNecessarySpace(blurRadius) * 2;
-  const auto extendedImage = getExtendedImage(input, padding);
+  const auto extendedImage = getExtendedImage(colorizedImage, padding);
   const auto shadowImage = getBlurredImage(extendedImage, blurRadius);
-  return QPixmap::fromImage(shadowImage);
+  auto output = QPixmap::fromImage(shadowImage);
+  output.setDevicePixelRatio(colorizedImage.devicePixelRatioF());
+  return output;
 }
 
 int blurRadiusNecessarySpace(const double blurRadius) {

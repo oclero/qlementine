@@ -27,6 +27,7 @@
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
+#include <oclero/qlementine/widgets/NotificationBadge.hpp>
 
 #include <QActionGroup>
 #include <QApplication>
@@ -56,6 +57,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QTreeWidget>
+#include <QFont>
 
 #include <random>
 
@@ -255,6 +257,88 @@ struct SandboxWindow::Impl {
     globalScrollArea->setWidget(windowContent);
     globalScrollArea->setWidgetResizable(true);
     owner.setCentralWidget(globalScrollArea);
+  }
+
+  void setupUI_toolBar() {
+    auto addToolBarIcon = [](QToolBar* toolbar, int btnNum = 1) {
+      const auto icon = getTestQIcon();
+      for (int i = 0; i < btnNum; i++) {
+        auto* toolButton = new QToolButton(toolbar);
+        toolButton->setIcon(icon);
+        toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        toolbar->addWidget(toolButton);
+      }
+    };
+
+    auto* contentWidget = new CustomBgWidget(windowContent);
+    windowContentLayout->addWidget(contentWidget);
+
+    contentWidget->showBounds = true;
+    contentWidget->bgColor = Qt::white;
+
+    contentWidget->setMinimumSize(500, 400);
+    auto* contentLayout = new QHBoxLayout(contentWidget);
+    contentLayout->setContentsMargins(1, 1, 1, 1);
+    contentLayout->setSpacing(0);
+
+    {
+      auto* leftToolBar = new QToolBar(contentWidget);
+      contentLayout->addWidget(leftToolBar);
+      leftToolBar->setOrientation(Qt::Orientation::Vertical);
+      leftToolBar->setAllowedAreas(Qt::ToolBarArea::LeftToolBarArea);
+      addToolBarIcon(leftToolBar, 3);
+    }
+
+    {
+      auto* centralWidget = new QWidget(contentWidget);
+      contentLayout->addWidget(centralWidget);
+      auto* layout = new QVBoxLayout(centralWidget);
+      layout->setContentsMargins(0, 0, 0, 0);
+      layout->setSpacing(0);
+
+      {
+        auto* topToolBar = new QToolBar(centralWidget);
+        layout->addWidget(topToolBar);
+        topToolBar->setOrientation(Qt::Orientation::Horizontal);
+        topToolBar->setAllowedAreas(Qt::ToolBarArea::TopToolBarArea);
+        addToolBarIcon(topToolBar, 4);
+      }
+      {
+        auto* widget = new CustomBgWidget(centralWidget);
+        layout->addWidget(widget);
+        widget->showBounds = false;
+        widget->bgColor = Qt::white;
+      }
+      {
+        auto* middleToolbar = new QToolBar(centralWidget);
+        layout->addWidget(middleToolbar);
+        middleToolbar->setOrientation(Qt::Orientation::Horizontal);
+        middleToolbar->setAllowedAreas(Qt::ToolBarArea::TopToolBarArea | Qt::ToolBarArea::BottomToolBarArea);
+        addToolBarIcon(middleToolbar, 3);
+      }
+      {
+        auto* widget = new CustomBgWidget(centralWidget);
+        layout->addWidget(widget);
+        widget->showBounds = false;
+        widget->bgColor = Qt::white;
+        widget->setStyleSheet("background-color: white");
+      }
+      {
+        auto* bottomToolBar = new QToolBar(centralWidget);
+        layout->addWidget(bottomToolBar);
+        bottomToolBar->setOrientation(Qt::Orientation::Horizontal);
+        bottomToolBar->setAllowedAreas(Qt::ToolBarArea::BottomToolBarArea);
+        addToolBarIcon(bottomToolBar, 2);
+      }
+    }
+
+    {
+      auto* rightToolBar = new QToolBar(contentWidget);
+      contentLayout->addWidget(rightToolBar);
+      rightToolBar->setOrientation(Qt::Orientation::Vertical);
+      rightToolBar->setAllowedAreas(Qt::ToolBarArea::RightToolBarArea);
+      addToolBarIcon(rightToolBar, 3);
+    }
   }
 
   void setupShortcuts() {
@@ -1169,6 +1253,29 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     dialog->show();
   }
 
+  void setupUI_notificationBadge() {
+    {
+      auto* button = new QPushButton("Button", windowContent);
+      button->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+      windowContentLayout->addWidget(button);
+
+      auto* badge = new NotificationBadge(windowContent);
+      badge->setWidget(button);
+      badge->setRelativePosition(-4, 4);
+      windowContentLayout->addWidget(badge);
+    }
+    {
+      auto* button = new QPushButton("Button", windowContent);
+      button->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+      windowContentLayout->addWidget(button);
+
+      auto* badge = new NotificationBadge(windowContent);
+      badge->setWidget(button);
+      badge->setText("3");
+      windowContentLayout->addWidget(badge);
+    }
+  }
+
   void setupUI_treeView() {
     {
       auto* treeWidget = new QTreeWidget(windowContent);
@@ -1389,7 +1496,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 #if 1
     auto* popoverContent = new QWidget();
     auto* popoverContentLayout = new QVBoxLayout(popoverContent);
-    popoverContentLayout->setContentsMargins(0, 0, 0, 0);
+    popoverContentLayout->setContentsMargins(16, 16, 16, 16);
     {
       for (auto i = 0; i < 3; ++i) {
         auto* btn = new QPushButton(QString("QPushButton %1").arg(i + 1), popoverContent);
@@ -1743,11 +1850,13 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_messageBoxIcons();
     // _impl->setupUI_loadingSpinner();
     // _impl->setupUI_aboutDialog();
+    // _impl->setupUI_notificationBadge();
 
     // _impl->setupUI_fontMetricsTests();
     // _impl->setupUI_blur();
     // _impl->setupUI_themeEditor();
     // _impl->setupUI_messageBox();
+    // _impl->setupUI_toolBar();
   }
   _impl->endSetupUI();
   oclero::qlementine::centerWidget(this);

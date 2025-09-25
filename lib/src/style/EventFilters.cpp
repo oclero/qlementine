@@ -33,7 +33,7 @@ LineEditButtonEventFilter::LineEditButtonEventFilter(
   , _style(style)
   , _animManager(animManager)
   , _button(button) {
-  // Qt doesn't emit this signal so we emit it by ourselves.
+  // Qt doesn't call this signal so we call it by ourselves.
   if (auto* parent = button->parentWidget()) {
     if (auto* lineEdit = qobject_cast<QLineEdit*>(parent)) {
       QObject::connect(_button, &QAbstractButton::clicked, lineEdit, &QLineEdit::returnPressed);
@@ -353,6 +353,12 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
     } break;
     case QEvent::Type::MouseButtonRelease: {
       if (!_mousePressed) {
+        if (evt == _mouseEventToNotFilter) {
+          // Do not delete the event, it will be deleted for us.
+          _mouseEventToNotFilter = nullptr;
+          // Let it go to the widget.
+          return false;
+        }
         return true; // ignore
       }
       _mousePressed = false;
@@ -364,14 +370,11 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
         if (action->menu() == nullptr) {
           flashAction(action, _menu, [this, action]() {
-            // The call to QAction::trigger might destroy the menu or the actions.
-            const QPointer<QMenu> menu_guard(_menu);
-            action->trigger();
-            if (menu_guard) {
-              if (auto* top_menu = getTopLevelMenu(menu_guard)) {
-                top_menu->close();
-              }
-            }
+            // We send a manually-built mouse event to click on the menu item.
+            const auto menuItemCenter = _menu->actionGeometry(action).center();
+            _mouseEventToNotFilter = new QMouseEvent(QEvent::MouseButtonRelease, menuItemCenter,
+              _menu->mapToGlobal(menuItemCenter), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+            QCoreApplication::postEvent(_menu, _mouseEventToNotFilter);
           });
           return true;
         }
