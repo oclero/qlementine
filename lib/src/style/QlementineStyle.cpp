@@ -258,7 +258,11 @@ QlementineStyle::QlementineStyle(QObject* parent)
   : _impl(new QlementineStyleImpl{ *this }) {
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
-  triggerCompleteRepaint();
+
+  // This method is virtual so it should not be called in the base class constructor.
+  QTimer::singleShot(0, this, [this]() {
+    triggerCompleteRepaint();
+  });
 }
 
 QlementineStyle::~QlementineStyle() = default;
@@ -4332,7 +4336,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // TreeView/TableView.
     case PM_TreeViewIndentation:
-      return int(_impl->theme.spacing * 2.5);
+      return static_cast<int>(_impl->theme.spacing * 2.5);
     case PM_HeaderMargin:
       return _impl->theme.spacing; // Header horizontal padding.
     case PM_HeaderMarkSize:
@@ -4802,7 +4806,7 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   // Try to remove the background...
-  if (auto* itemView = qobject_cast<QListView*>(w)) {
+  if (auto* itemView = qobject_cast<QAbstractItemView*>(w)) {
     auto* popup = itemView->parentWidget();
     auto isComboBoxPopupContainer = popup && popup->inherits("QComboBoxPrivateContainer");
     if (isComboBoxPopupContainer) {
@@ -4821,7 +4825,7 @@ void QlementineStyle::polish(QWidget* w) {
 
       itemView->viewport()->setAutoFillBackground(false);
       auto* comboBox = findFirstParentOfType<QComboBox>(itemView);
-      itemView->installEventFilter(new ComboboxItemViewFilter(comboBox, itemView));
+      new ComboboxItemViewFilter(comboBox, itemView);
     }
   }
 
@@ -4850,10 +4854,14 @@ void QlementineStyle::polish(QWidget* w) {
   }
 
   if (auto* comboBox = qobject_cast<QComboBox*>(w)) {
-    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
     comboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
+
+    // Will define a delegate to stylize the QComboBox items,
+    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
+    // Trigger the redefine when the QComboBox's view changes.
+    new ComboboxFilter(comboBox);
   } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
-    tabBar->installEventFilter(new TabBarEventFilter(*this, tabBar));
+    tabBar->installEventFilter(new TabBarEventFilter(tabBar));
   } else if (auto* label = qobject_cast<QLabel*>(w)) {
     const auto labelObjName = label->objectName();
     const auto isInformativeLabel = labelObjName == QStringLiteral("qt_msgbox_informativelabel");

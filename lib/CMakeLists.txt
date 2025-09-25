@@ -3,6 +3,15 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimationManager.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/animation/WidgetAnimator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/ResourceInitialization.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/ComboBoxEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/CommandLinkButtonEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/LineEditButtonEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/LineEditMenuEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/MenuEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/MouseWheelBlockerEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/TabBarEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/TextEditEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/WidgetWithFocusFrameEventFilter.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/Delegates.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/EventFilters.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/EventFilters.hpp

@@ -10,6 +10,7 @@
 #include <oclero/qlementine/utils/ColorUtils.hpp>
 
 #include <QPainter>
+#include <QTreeView>
 
 namespace oclero::qlementine {
 ComboBoxDelegate::ComboBoxDelegate(QWidget* widget, QlementineStyle& style)
@@ -20,6 +21,7 @@ ComboBoxDelegate::ComboBoxDelegate(QWidget* widget, QlementineStyle& style)
 void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const {
   const auto& theme = _qlementineStyle ? _qlementineStyle->theme() : Theme{};
 
+  const auto viewIsTreeView = qobject_cast<const QTreeView*>(opt.widget);
   const auto isSeparator = idx.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
   const auto contentMargin = _qlementineStyle->pixelMetric(QStyle::PM_MenuHMargin);
   const auto contentRect = opt.rect.marginsRemoved({ contentMargin, 0, contentMargin, 0 });
@@ -29,7 +31,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto& color =
       _qlementineStyle ? _qlementineStyle->toolBarSeparatorColor() : Theme().secondaryAlternativeColorDisabled;
     const auto lineW = theme.borderWidth;
-    constexpr auto padding = 0; //_impl->theme.spacing / 2;
+    constexpr auto padding = 0;
     const auto x = rect.x() + (rect.width() - lineW) / 2.;
     const auto y1 = static_cast<double>(rect.y() + padding);
     const auto y2 = static_cast<double>(rect.y() + rect.height() - padding);
@@ -38,9 +40,14 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     p->drawLine(QPointF{ x, y1 }, QPointF{ x, y2 });
   } else {
     const auto mouse = getComboBoxItemMouseState(opt.state);
+    const auto& rect = contentRect;
 
     // Background.
-    const auto& bgRect = contentRect;
+    auto bgRect = contentRect;
+    if (viewIsTreeView) {
+      const auto viewPadding = theme.spacing / 2;
+      bgRect.setLeft(viewPadding);
+    }
     const auto hPadding = theme.spacing;
     const auto& bgColor =
       _qlementineStyle ? _qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
@@ -51,7 +58,7 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     p->drawRoundedRect(bgRect, radius, radius);
 
     // Foreground.
-    const auto fgRect = bgRect.marginsRemoved(QMargins{ hPadding, 0, hPadding, 0 });
+    const auto fgRect = rect.marginsRemoved(QMargins{ hPadding, 0, hPadding, 0 });
     if (fgRect.isEmpty()) {
       return;
     }
@@ -65,6 +72,27 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     auto fgColor = QColor(_qlementineStyle ? _qlementineStyle->menuItemForegroundColor(mouse) : Theme().secondaryColor);
     if (fgData.isValid()) {
       fgColor = fgData.value<QColor>();
+    }
+
+    // Arrow that indicates that the tree's branch is open/closed.
+    // It is already drawn by the QTreeView when the item is not the current one.
+    if (viewIsTreeView && opt.state.testFlag(QStyle::State_Selected)) {
+      const auto hasChildren = opt.state.testFlag(QStyle::State_Children);
+      if (hasChildren) {
+        const auto indentation = _qlementineStyle ? _qlementineStyle->pixelMetric(QStyle::PM_TreeViewIndentation) : 0;
+        const auto branchIsOpen = opt.state.testFlag(QStyle::State_Open);
+        const auto arrowSize = theme.iconSize;
+        const auto arrowX = rect.x() - indentation;
+        const auto arrowY = rect.y() + (rect.height() - arrowSize.height()) / 2;
+        const auto arrowRect = QRect(QPoint{ arrowX, arrowY }, arrowSize);
+        p->setBrush(Qt::NoBrush);
+        p->setPen(QPen(fgColor, 1.01, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        if (branchIsOpen) {
+          qlementine::drawArrowDown(arrowRect, p);
+        } else {
+          qlementine::drawArrowRight(arrowRect, p);
+        }
+      }
     }
 
     // Icon.
