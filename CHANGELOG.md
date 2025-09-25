@@ -1,6 +1,21 @@
 # Changelog
 
-## v1.3.0 (WIP)
+## v1.3.0
+
+New features:
+
+- Add `NotificationBadge` widget (#109).
+- Switch to Ninja as the default CMake generator on macOS instead of Xcode.
+- Replace `emit` by `Q_EMIT`for better compatibility.
+
+Bugfixes:
+
+- Fix `Popover`'s drop shadow and position pixel ratios on high-DPI screens.
+- Fix returned `QAction` by `QMenu::exec` (by @thierryba).
+- Fix missing border positions for `QToolBar` (by Иванов Павел Геннадьевич
+  ).
+- Fix loss `Popover` binding on multiscreen (by @polamedev).
+- Fix loop animation restart when it is stopped (by @polamedev).
 
 ## v1.2.2
 
