@@ -126,7 +126,7 @@ const QPoint& NotificationBadge::relativePosition() const {
 void NotificationBadge::setRelativePosition(const QPoint& pos) {
   if (pos != _relativePos) {
     _relativePos = pos;
-    emit relativePositionChanged();
+    Q_EMIT relativePositionChanged();
     updatePosition();
   }
 }
@@ -142,7 +142,7 @@ const QMargins& NotificationBadge::padding() const {
 void NotificationBadge::setPadding(const QMargins& padding) {
   if (padding != _padding) {
     _padding = padding;
-    emit paddingChanged();
+    Q_EMIT paddingChanged();
     updateGeometry();
     update();
     updatePosition();
