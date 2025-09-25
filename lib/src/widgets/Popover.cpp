@@ -661,10 +661,8 @@ void Popover::updatePopoverGeometry() {
   } else {
     // Check if the preferred position fits entirely on screen, or try another position until it works.
     const auto& priority = positionPriority(_preferredPosition);
-    const auto screenGeometry = 
-      _anchorWidget 
-        ? _anchorWidget->screen()->availableGeometry()
-        : screen()->availableGeometry();
+    const auto screenGeometry =
+      _anchorWidget ? _anchorWidget->screen()->availableGeometry() : screen()->availableGeometry();
     for (const auto position : priority) {
       auto geometry = getGeometryForPosition(position, _preferredAlignment);
 
@@ -714,10 +712,9 @@ const std::array<Popover::Position, 4>& Popover::positionPriority(Position const
 QRect Popover::getGeometryForPosition(Position const position, Alignment const alignment) const {
   // Take the content size as a basis, rather than the whole size that includes drop shadow.
   const auto popoverSize = _frame->sizeHint();
-  const auto screenGeometry =
-    _anchorWidget 
-      ? _anchorWidget->screen()->availableGeometry().marginsRemoved(_screenPadding)
-      : screen()->availableGeometry().marginsRemoved(_screenPadding);
+  const auto screenGeometry = _anchorWidget
+                                ? _anchorWidget->screen()->availableGeometry().marginsRemoved(_screenPadding)
+                                : screen()->availableGeometry().marginsRemoved(_screenPadding);
   const auto popoverFittedSize = QSize{
     std::min(screenGeometry.width(), popoverSize.width()),
     std::min(screenGeometry.height(), popoverSize.height()),
