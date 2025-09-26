@@ -656,6 +656,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         if (!isPlainLineEdit) {
           drawRoundedRectBorder(p, rect, currentBorderColor, borderW, radiuses);
         }
+        // Drawing the caret should be non-antialiased
+        p->setRenderHint(QPainter::Antialiasing, false);
       }
       return;
     case PE_IndicatorArrowDown:
