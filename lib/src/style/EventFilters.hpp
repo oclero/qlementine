@@ -72,7 +72,7 @@ public:
 private:
   QMenu* _menu{ nullptr };
 
-  // this is roughly copied from how QMenuPrivate::mouseDown detects whether the mouse is down
+  // This is roughly copied from how QMenuPrivate::mouseDown detects whether the mouse is down.
   bool _mousePressed{ false };
   std::unique_ptr<QEvent> _mouseEventToNotFilter{}; // please do not dereference it, this is just to close properly the QMenu
 };

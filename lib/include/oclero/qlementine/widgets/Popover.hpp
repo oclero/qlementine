@@ -36,6 +36,8 @@ class Popover : public QWidget {
   Q_PROPERTY(bool canBeOverAnchor READ canBeOverAnchor WRITE setCanBeOverAnchor NOTIFY canBeOverAnchorChanged)
   Q_PROPERTY(bool deleteContentAfterClosing READ deleteContentAfterClosing WRITE setDeleteContentAfterClosing NOTIFY
       deleteContentAfterClosingChanged)
+  Q_PROPERTY(
+    bool contentMaskEnabled READ contentMaskEnabled WRITE setContentMaskEnabled NOTIFY contentMaskEnabledChanged)
   Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
   Q_PROPERTY(QColor borderColor READ borderColor WRITE setBorderColor NOTIFY borderColorChanged)
 
@@ -62,8 +64,10 @@ public:
 public:
   bool manualPositioning() const;
   void setManualPositioning(bool manual);
-  void setManualPositioningCallback(const std::function<QPoint()>& cb);
+  void setManualPositioningCallback(const std::function<QPoint(const QSize&)>& cb);
   Q_SIGNAL void manualPositioningChanged();
+
+  QSize frameSize() const;
 
   Position preferredPosition() const;
   void setPreferredPosition(Position position);
@@ -80,6 +84,9 @@ public:
   bool isOpened() const;
   void setOpened(bool opened);
   Q_SIGNAL void openedChanged();
+
+  bool isClosed() const;
+  void setClosed(bool closed);
 
   QMargins padding() const;
   void setPadding(const QMargins& padding);
@@ -137,6 +144,10 @@ public:
   void setBorderColor(const QColor&);
   Q_SIGNAL void borderColorChanged();
 
+  bool contentMaskEnabled() const;
+  void setContentMaskEnabled(bool);
+  Q_SIGNAL void contentMaskEnabledChanged();
+
 public Q_SLOTS:
   void openPopover();
   void closePopover();
@@ -166,7 +177,7 @@ private:
   QMargins dropShadowMargins() const;
   void updateDropShadowMargins();
   void updateDropShadowCache();
-
+  void updateFrameMask();
   void updatePopoverGeometry();
   static const std::array<Position, 4>& positionPriority(Position const position);
   QRect getGeometryForPosition(Position const position, Alignment const alignment) const;
@@ -199,6 +210,7 @@ private:
   bool _canBeOverAnchor{ true };
   bool _deleteContentAfterClosing{ false };
   bool _animated{ true };
+  bool _contentMaskEnabled{ false };
   QTimer _clickTimer;
   QColor _dropShadowColor{ QColor(0, 0, 0, 76) };
   qreal _dropShadowRadius{ 12. };
@@ -207,7 +219,7 @@ private:
   qreal _radius{ 8. };
   QColor _backgroundColor{};
   QColor _borderColor{};
-  std::function<QPoint()> _manualPositioningCb;
+  std::function<QPoint(const QSize&)> _manualPositioningCb;
   static const bool _shouldDrawDropShadow;
 };
 } // namespace oclero::qlementine

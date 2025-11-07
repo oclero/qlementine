@@ -9,10 +9,11 @@
     {
       "name": "macos",
       "displayName": "macOS",
-      "description": "Xcode project for macOS",
-      "generator": "Xcode",
+      "description": "Ninja project for macOS",
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/_build",
       "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6",
         "QLEMENTINE_SANDBOX": true,
         "QLEMENTINE_SHOWCASE": true
@@ -62,7 +63,7 @@
       "name": "macos",
       "displayName": "macOS",
       "configurePreset": "macos",
-      "description": "Build with Xcode for macOS",
+      "description": "Build with Ninja for macOS",
       "targets": ["qlementine"],
       "condition": {
         "type": "equals",
@@ -74,7 +75,7 @@
       "name": "macos-sandbox",
       "displayName": "Sandbox for macOS",
       "configurePreset": "macos",
-      "description": "Sandbox - Build with Xcode for macOS",
+      "description": "Sandbox - Build with Ninja for macOS",
       "targets": ["sandbox"],
       "condition": {
         "type": "equals",
@@ -86,7 +87,7 @@
       "name": "macos-showcase",
       "displayName": "Showcase for macOS",
       "configurePreset": "macos",
-      "description": "Showcase - Build with Xcode for macOS",
+      "description": "Showcase - Build with Ninja for macOS",
       "targets": ["showcase"],
       "condition": {
         "type": "equals",

@@ -33,7 +33,7 @@ LineEditButtonEventFilter::LineEditButtonEventFilter(
   , _style(style)
   , _animManager(animManager)
   , _button(button) {
-  // Qt doesn't emit this signal so we emit it by ourselves.
+  // Qt doesn't call this signal so we call it by ourselves.
   if (auto* parent = button->parentWidget()) {
     if (auto* lineEdit = qobject_cast<QLineEdit*>(parent)) {
       QObject::connect(_button, &QAbstractButton::clicked, lineEdit, &QLineEdit::returnPressed);

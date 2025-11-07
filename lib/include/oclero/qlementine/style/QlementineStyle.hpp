@@ -259,6 +259,7 @@ public: // Theme-related methods.
   virtual QColor groupBoxBackgroundColor(MouseState const mouse) const;
 
   virtual QColor const& statusColor(Status const status, MouseState const mouse) const;
+  virtual QColor const& statusColorForeground(Status const status, MouseState const mouse) const;
   virtual QColor focusBorderColor(Status status) const;
   virtual QColor const& frameBorderColor() const;
   virtual QColor const& separatorColor() const;
