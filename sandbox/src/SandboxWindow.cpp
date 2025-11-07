@@ -802,7 +802,11 @@ struct SandboxWindow::Impl {
       treeWidget->topLevelItem(0)->setSelected(true);
 
       combobox->setModel(treeWidget->model());
-      combobox->setView(treeWidget);
+
+      QTimer::singleShot(300, combobox, [combobox, treeWidget]() {
+        combobox->setView(treeWidget);
+      });
+      //combobox->setView(treeWidget);
     }
 
     windowContentLayout->addWidget(combobox);
