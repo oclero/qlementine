@@ -612,6 +612,12 @@ struct ShowcaseWindow::Impl {
             groupBoxLayout->addRow(getDummyText(2, 2) + ":", switchWidget);
           }
           {
+            auto* tristateSwitchWidget = new qlementine::Switch(groupBox);
+            tristateSwitchWidget->setTristate(true);
+            tristateSwitchWidget->setCheckState(Qt::PartiallyChecked);
+            groupBoxLayout->addRow(getDummyText(2, 2) + ":", tristateSwitchWidget);
+          }
+          {
             auto* spinBox = new QSpinBox(groupBox);
             spinBox->setRange(0, 1000);
             spinBox->setSuffix("cm");

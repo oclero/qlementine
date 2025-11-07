@@ -22,10 +22,10 @@ Switch::Switch(QWidget* parent)
   setChecked(false);
   setAutoRepeat(false);
   setupAnimation();
-  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);  // Like QCheckBox
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  _handlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2;
+  _fullHandlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2;
 
   // Focus frame.
   _focusFrame = new RoundedFocusFrame(this);
@@ -42,9 +42,15 @@ QSize Switch::sizeHint() const {
   const auto textH = fm.height();
   const auto spacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
   const auto switchRect = getSwitchRect();
-  const auto w = (textW > 0 ? textW + spacing : 0) + switchRect.width();
+  auto w = (textW > 0 ? textW + spacing : 0) + switchRect.width();
+  const auto iconSize = this->iconSize();
+  const auto hasIcon = !icon().isNull() || iconSize.isEmpty();
+  const auto iconH = hasIcon ? iconSize.height() : 0;
+  if (hasIcon) {
+      w += iconSize.width() + spacing;
+  }
   const auto defaultH = qlementineStyle ? qlementineStyle->theme().controlHeightMedium : 0;
-  const auto h = std::max({ textH, switchRect.height(), defaultH });
+  const auto h = std::max({ textH, switchRect.height(), iconH, defaultH });
   return { w, h };
 }
 
@@ -66,17 +72,21 @@ void Switch::paintEvent(QPaintEvent*) {
   const auto& fgColor = _fgAnimation.currentValue().value<QColor>();
   const auto& borderColor = _borderAnimation.currentValue().value<QColor>();
   const auto& textColor = getTextColor();
+  const auto borderW = 1.0;
+  const auto halfBorderW = borderW / 2.;
+  const auto bgRect = switchRect.toRectF().marginsRemoved({ halfBorderW, halfBorderW, halfBorderW, halfBorderW });
   p.setPen(Qt::NoPen);
   p.setBrush(bgColor);
-  p.drawRoundedRect(switchRect, switchRadius, switchRadius);
-  drawRoundedRectBorder(&p, switchRect, borderColor, 1., switchRadius);
+  p.drawRoundedRect(bgRect, switchRadius, switchRadius);
+  drawRoundedRectBorder(&p, switchRect, borderColor, borderW, switchRadius);
 
   // Draw handle.
   const auto handleXRatio = _handleAnimation.currentValue().toDouble();
-  const auto handleDiameter = static_cast<double>(switchRect.height() - _handlePadding * 2);
-  const auto handleGrooveWidth = switchRect.width() - _handlePadding * 2 - handleDiameter;
-  const auto handleX = switchRect.x() + _handlePadding + handleGrooveWidth * handleXRatio;
-  const auto handleY = static_cast<double>(switchRect.y() + _handlePadding);
+  const auto handlePadding = _handlePaddingAnimation.currentValue().toInt();
+  const auto handleDiameter = static_cast<double>(switchRect.height() - handlePadding * 2);
+  const auto handleGrooveWidth = switchRect.width() - handlePadding * 2 - handleDiameter;
+  const auto handleX = switchRect.x() + handlePadding + handleGrooveWidth * handleXRatio;
+  const auto handleY = static_cast<double>(switchRect.y() + handlePadding);
   const auto handleRect = QRectF{ handleX, handleY, handleDiameter, handleDiameter };
   p.setPen(Qt::NoPen);
   p.setBrush(fgColor);
@@ -84,12 +94,27 @@ void Switch::paintEvent(QPaintEvent*) {
   auto availableX = switchRect.x() + switchRect.width() + spacing;
   auto availableW = contentRect.width() - switchRect.width() - spacing;
 
+  // Draw accessibility symbols.
+  if (showAccessibilitySymbols() && checkState() != Qt::PartiallyChecked) {
+    constexpr auto checkThickness = 1.01;  // A pen width of 1 causes visual bugs.
+    p.setBrush(Qt::NoBrush);
+    p.setPen(QPen{ bgColor, checkThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
+    if (checkState() == Qt::Checked) {
+        drawCheckBoxIndicator(handleRect.toRect(), &p, _symbolAnimation.currentValue().toReal());
+    } else {
+        drawCloseIndicator(handleRect.toRect().marginsRemoved({1, 1, 1, 1}), &p);
+    }
+  }
+
   // Draw icon.
   const auto extent = iconSize.height();
   if (hasIcon && availableW >= extent) {
     const auto pixmap =
       qlementine::getPixmap(icon(), { extent, extent }, MouseState::Normal, CheckState::Checked, this);
-    const auto coloredPixmap = getColorizedPixmap(pixmap, textColor);
+    const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
+    const auto coloredPixmap = qlementineStyle ?
+        qlementineStyle->getColorizedPixmap(pixmap, qlementineStyle->autoIconColor(this), textColor, textColor) :
+        pixmap;
     const auto iconX = availableX;
     const auto iconY = contentRect.y() + (contentRect.height() - extent) / 2;
     const auto iconRect = QRect{ iconX, iconY, extent, extent };
@@ -140,8 +165,25 @@ void Switch::focusOutEvent(QFocusEvent* e) {
 }
 
 void Switch::checkStateSet() {
-  QAbstractButton::checkStateSet();
+  if (_blockRefresh) {
+    return;
+  }
+  _intermediate = false;
+  const auto state = checkState();
+  if (state != _publishedState) {
+    _publishedState = state;
+    emit checkStateChanged(state);
+  }
   startAnimation();
+}
+
+void Switch::nextCheckState() {
+  if (_tristate) {
+    setCheckState(static_cast<Qt::CheckState>((checkState() + 1) % 3));
+  } else {
+    QAbstractButton::nextCheckState();
+    checkStateSet();
+  }
 }
 
 void Switch::startAnimation() {
@@ -169,11 +211,26 @@ void Switch::startAnimation() {
   _fgAnimation.start();
 
   const auto currentXRatio = _handleAnimation.currentValue();
+  const auto state = checkState();
   _handleAnimation.stop();
   _handleAnimation.setDuration(animationDuration);
   _handleAnimation.setStartValue(currentXRatio);
-  _handleAnimation.setEndValue(isChecked() ? 1. : 0.);
+  _handleAnimation.setEndValue(state == Qt::Checked ? 1. : (state == Qt::Unchecked ? 0. : 0.5));
   _handleAnimation.start();
+
+  const auto currentPadding = _handlePaddingAnimation.currentValue();
+  _handlePaddingAnimation.stop();
+  _handlePaddingAnimation.setDuration(animationDuration);
+  _handlePaddingAnimation.setStartValue(currentPadding);
+  _handlePaddingAnimation.setEndValue(_fullHandlePadding * (state == Qt::PartiallyChecked ? 3. : 1.));
+  _handlePaddingAnimation.start();
+
+  const auto currentSymbol = _symbolAnimation.currentValue();
+  _symbolAnimation.stop();
+  _symbolAnimation.setDuration(animationDuration);
+  _symbolAnimation.setStartValue(currentSymbol);
+  _symbolAnimation.setEndValue(1.);
+  _symbolAnimation.start();
 }
 
 void Switch::setupAnimation() {
@@ -215,6 +272,9 @@ void Switch::setupAnimation() {
   QObject::connect(this, &QAbstractButton::toggled, this, [this]() {
     startAnimation();
   });
+  QObject::connect(this, &Switch::checkStateChanged, this, [this]() {
+      startAnimation();
+  });
 
   _handleAnimation.setDuration(animationDuration);
   _handleAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
@@ -222,6 +282,22 @@ void Switch::setupAnimation() {
   _handleAnimation.setEndValue(0.);
   QObject::connect(&_handleAnimation, &QVariantAnimation::valueChanged, this, [this]() {
     update();
+  });
+
+  _handlePaddingAnimation.setDuration(animationDuration);
+  _handlePaddingAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
+  _handlePaddingAnimation.setStartValue(_fullHandlePadding);
+  _handlePaddingAnimation.setEndValue(_fullHandlePadding);
+  QObject::connect(&_handlePaddingAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+      update();
+  });
+
+  _symbolAnimation.setDuration(animationDuration);
+  _symbolAnimation.setEasingCurve(QEasingCurve::Type::OutCubic);
+  _symbolAnimation.setStartValue(0.);
+  _symbolAnimation.setEndValue(0.);
+  QObject::connect(&_symbolAnimation, &QVariantAnimation::valueChanged, this, [this]() {
+      update();
   });
 }
 
@@ -231,7 +307,7 @@ const QColor& Switch::getBgColor() const {
   const auto palette = style->standardPalette();
   const auto& bgColor = qlementineStyle
                           ? qlementineStyle->switchGrooveColor(
-                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(checkState()))
                           : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
                               QPalette::ColorRole::Button);
   return bgColor;
@@ -243,7 +319,7 @@ const QColor& Switch::getBorderColor() const {
   const auto palette = style->standardPalette();
   const auto& borderColor =
     qlementineStyle ? qlementineStyle->switchGrooveBorderColor(getMouseState(isDown(), _isMouseOver, isEnabled()),
-                        getFocusState(hasFocus()), getCheckState(isChecked()))
+                        getFocusState(hasFocus()), getCheckState(checkState()))
                     : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
                         QPalette::ColorRole::ButtonText);
   return borderColor;
@@ -255,7 +331,7 @@ const QColor& Switch::getFgColor() const {
   const auto palette = style->standardPalette();
   const auto& fgColor = qlementineStyle
                           ? qlementineStyle->switchHandleColor(
-                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(isChecked()))
+                              getMouseState(isDown(), _isMouseOver, isEnabled()), getCheckState(checkState()))
                           : palette.color(isEnabled() ? QPalette::ColorGroup::Normal : QPalette::ColorGroup::Disabled,
                               QPalette::ColorRole::ButtonText);
   return fgColor;
@@ -298,4 +374,51 @@ void Switch::initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const {
   opt.rect = switchRect.marginsAdded({ deltaX / 2, deltaY / 2, deltaX / 2, deltaY / 2 }).translated(deltaX, deltaY);
   opt.radiuses = switchRect.height() / 2.;
 }
+
+void Switch::setTristate(bool tristate) {
+  _tristate = tristate;
+  update();
+  Q_EMIT tristateChanged(tristate);
+}
+
+bool Switch::isTristate() const {
+  return _tristate;
+}
+
+void Switch::setShowAccessibilitySymbols(bool showAccessibilitySymbols) {
+    _showAccessibilitySymbols = showAccessibilitySymbols;
+    update();
+    Q_EMIT showAccessibilitySymbolsChanged(showAccessibilitySymbols);
+}
+
+bool Switch::showAccessibilitySymbols() const {
+    return _showAccessibilitySymbols;
+}
+
+Qt::CheckState Switch::checkState() const {
+  if (_tristate && _intermediate) {
+    return Qt::PartiallyChecked;
+  }
+  return isChecked() ? Qt::Checked : Qt::Unchecked;
+}
+
+void Switch::setCheckState(Qt::CheckState state) {
+  // Heavily inspired from tristate QCheckBox code.
+  if (state == Qt::PartiallyChecked) {
+    _tristate = true;
+    _intermediate = true;
+  } else {
+    _intermediate = false;
+  }
+  _blockRefresh = true;
+  setChecked(state != Qt::Unchecked);
+  _blockRefresh = false;
+  update();
+
+  if (state != _publishedState) {
+    _publishedState = state;
+    emit checkStateChanged(state);
+  }
+}
+
 } // namespace oclero::qlementine

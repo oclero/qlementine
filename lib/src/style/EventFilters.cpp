@@ -334,11 +334,6 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
         });
       }
     } break;
-    case QEvent::Type::MouseMove: {
-      if (static_cast<QMouseEvent*>(evt)->buttons()) {
-        _mousePressed = true;
-      }
-    } break;
     case QEvent::Type::MouseButtonPress: {
       _mousePressed = true;
       const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
@@ -353,11 +348,8 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
     } break;
     case QEvent::Type::MouseButtonRelease: {
       if (!_mousePressed) {
-        if (evt == _mouseEventToNotFilter) {
-          // Do not delete the event, it will be deleted for us.
-          _mouseEventToNotFilter = nullptr;
-          // Let it go to the widget.
-          return false;
+        if (evt == _mouseEventToNotFilter.get()) {
+          return false; // let it go to the widget
         }
         return true; // ignore
       }
@@ -370,11 +362,11 @@ bool MenuEventFilter::eventFilter(QObject* watchedObject, QEvent* evt) {
 
         if (action->menu() == nullptr) {
           flashAction(action, _menu, [this, action]() {
-            // We send a manually-built mouse event to click on the menu item.
             const auto menuItemCenter = _menu->actionGeometry(action).center();
-            _mouseEventToNotFilter = new QMouseEvent(QEvent::MouseButtonRelease, menuItemCenter,
-              _menu->mapToGlobal(menuItemCenter), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-            QCoreApplication::postEvent(_menu, _mouseEventToNotFilter);
+            _mouseEventToNotFilter.reset(new QMouseEvent(QEvent::MouseButtonRelease, menuItemCenter,
+              _menu->mapToGlobal(menuItemCenter), Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+            QCoreApplication::sendEvent(_menu, _mouseEventToNotFilter.get());
+            _mouseEventToNotFilter.reset();
           });
           return true;
         }
