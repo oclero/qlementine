@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "eventFilters/ComboBoxEventFilter.hpp"
+#include "eventFilters/ComboboxItemViewFilter.hpp"
 #include "eventFilters/CommandLinkButtonEventFilter.hpp"
 #include "eventFilters/LineEditButtonEventFilter.hpp"
 #include "eventFilters/LineEditMenuEventFilter.hpp"
