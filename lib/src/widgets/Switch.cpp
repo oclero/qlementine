@@ -22,7 +22,7 @@ Switch::Switch(QWidget* parent)
   setChecked(false);
   setAutoRepeat(false);
   setupAnimation();
-  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);  // Like QCheckBox
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // Like QCheckBox
   const auto* style = this->style();
   const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
   _fullHandlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2;
@@ -47,7 +47,7 @@ QSize Switch::sizeHint() const {
   const auto hasIcon = !icon().isNull() || iconSize.isEmpty();
   const auto iconH = hasIcon ? iconSize.height() : 0;
   if (hasIcon) {
-      w += iconSize.width() + spacing;
+    w += iconSize.width() + spacing;
   }
   const auto defaultH = qlementineStyle ? qlementineStyle->theme().controlHeightMedium : 0;
   const auto h = std::max({ textH, switchRect.height(), iconH, defaultH });
@@ -96,13 +96,13 @@ void Switch::paintEvent(QPaintEvent*) {
 
   // Draw accessibility symbols.
   if (showAccessibilitySymbols() && checkState() != Qt::PartiallyChecked) {
-    constexpr auto checkThickness = 1.01;  // A pen width of 1 causes visual bugs.
+    constexpr auto checkThickness = 1.01; // A pen width of 1 causes visual bugs.
     p.setBrush(Qt::NoBrush);
     p.setPen(QPen{ bgColor, checkThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
     if (checkState() == Qt::Checked) {
-        drawCheckBoxIndicator(handleRect.toRect(), &p, _symbolAnimation.currentValue().toReal());
+      drawCheckBoxIndicator(handleRect.toRect(), &p, _symbolAnimation.currentValue().toReal());
     } else {
-        drawCloseIndicator(handleRect.toRect().marginsRemoved({1, 1, 1, 1}), &p);
+      drawCloseIndicator(handleRect.toRect().marginsRemoved({ 1, 1, 1, 1 }), &p);
     }
   }
 
@@ -112,9 +112,9 @@ void Switch::paintEvent(QPaintEvent*) {
     const auto pixmap =
       qlementine::getPixmap(icon(), { extent, extent }, MouseState::Normal, CheckState::Checked, this);
     const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-    const auto coloredPixmap = qlementineStyle ?
-        qlementineStyle->getColorizedPixmap(pixmap, qlementineStyle->autoIconColor(this), textColor, textColor) :
-        pixmap;
+    const auto coloredPixmap = qlementineStyle ? qlementineStyle->getColorizedPixmap(
+                                                   pixmap, qlementineStyle->autoIconColor(this), textColor, textColor)
+                                               : pixmap;
     const auto iconX = availableX;
     const auto iconY = contentRect.y() + (contentRect.height() - extent) / 2;
     const auto iconRect = QRect{ iconX, iconY, extent, extent };
@@ -172,7 +172,7 @@ void Switch::checkStateSet() {
   const auto state = checkState();
   if (state != _publishedState) {
     _publishedState = state;
-    emit checkStateChanged(state);
+    Q_EMIT checkStateChanged(state);
   }
   startAnimation();
 }
@@ -273,7 +273,7 @@ void Switch::setupAnimation() {
     startAnimation();
   });
   QObject::connect(this, &Switch::checkStateChanged, this, [this]() {
-      startAnimation();
+    startAnimation();
   });
 
   _handleAnimation.setDuration(animationDuration);
@@ -289,7 +289,7 @@ void Switch::setupAnimation() {
   _handlePaddingAnimation.setStartValue(_fullHandlePadding);
   _handlePaddingAnimation.setEndValue(_fullHandlePadding);
   QObject::connect(&_handlePaddingAnimation, &QVariantAnimation::valueChanged, this, [this]() {
-      update();
+    update();
   });
 
   _symbolAnimation.setDuration(animationDuration);
@@ -297,7 +297,7 @@ void Switch::setupAnimation() {
   _symbolAnimation.setStartValue(0.);
   _symbolAnimation.setEndValue(0.);
   QObject::connect(&_symbolAnimation, &QVariantAnimation::valueChanged, this, [this]() {
-      update();
+    update();
   });
 }
 
@@ -386,13 +386,13 @@ bool Switch::isTristate() const {
 }
 
 void Switch::setShowAccessibilitySymbols(bool showAccessibilitySymbols) {
-    _showAccessibilitySymbols = showAccessibilitySymbols;
-    update();
-    Q_EMIT showAccessibilitySymbolsChanged(showAccessibilitySymbols);
+  _showAccessibilitySymbols = showAccessibilitySymbols;
+  update();
+  Q_EMIT showAccessibilitySymbolsChanged(showAccessibilitySymbols);
 }
 
 bool Switch::showAccessibilitySymbols() const {
-    return _showAccessibilitySymbols;
+  return _showAccessibilitySymbols;
 }
 
 Qt::CheckState Switch::checkState() const {
@@ -417,7 +417,7 @@ void Switch::setCheckState(Qt::CheckState state) {
 
   if (state != _publishedState) {
     _publishedState = state;
-    emit checkStateChanged(state);
+    Q_EMIT checkStateChanged(state);
   }
 }
 

@@ -16,7 +16,8 @@ class Switch : public QAbstractButton {
   Q_OBJECT
 
   Q_PROPERTY(bool tristate READ isTristate WRITE setTristate NOTIFY tristateChanged)
-  Q_PROPERTY(bool showAccessibilitySymbols READ showAccessibilitySymbols WRITE setShowAccessibilitySymbols NOTIFY showAccessibilitySymbolsChanged)
+  Q_PROPERTY(bool showAccessibilitySymbols READ showAccessibilitySymbols WRITE setShowAccessibilitySymbols NOTIFY
+      showAccessibilitySymbolsChanged)
 
 public:
   explicit Switch(QWidget* parent = nullptr);
@@ -60,7 +61,7 @@ private:
   const QColor& getTextColor() const;
 
 private:
-  double _fullHandlePadding { 2.0 };
+  double _fullHandlePadding{ 2.0 };
   bool _isMouseOver{ false };
   bool _tristate{ false };
   bool _intermediate{ false };
