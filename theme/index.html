@@ -1,0 +1,1442 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for the Qlementine library">
+      
+      
+        <meta name="author" content="Olivier Cléro">
+      
+      
+      
+        <link rel="prev" href="../usage/">
+      
+      
+        <link rel="next" href="../widgets/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
+    
+    
+      
+        <title>Theme - Qlementine Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#theme" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Qlementine Documentation" class="md-header__button md-logo" aria-label="Qlementine Documentation" data-md-component="logo">
+      
+  <img src="../assets/images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Qlementine Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Theme
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Qlementine Documentation" class="md-nav__button md-logo" aria-label="Qlementine Documentation" data-md-component="logo">
+      
+  <img src="../assets/images/logo.svg" alt="logo">
+
+    </a>
+    Qlementine Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Usage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Theme
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Theme
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#theme-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Theme specs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keys
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metadata
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boolean-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean values
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#numeric-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Numeric Values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Full example
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../widgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Widgets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Utilities
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#theme-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Theme specs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keys
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metadata
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boolean-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean values
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#numeric-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Numeric Values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Full example
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="theme">Theme</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Qlementine supports a theming system. This theming system is <strong>basic compared to CSS</strong>, but please keep in mind that this is specifically made <strong>on purpose</strong>. The goal of Qlementine is not to be a fully customizable theming system, but instead an <strong>opinionated</strong> look n'feel for your Qt application.</p>
+<h2 id="theme-specs">Theme specs</h2>
+<p>Qlementine themes are JSON files.</p>
+<ul>
+<li>Every key is <strong>optional</strong>. If a key-value pair is absent, the theme will use its default value.</li>
+<li>The key names are mostly based on the <code>Theme</code> struct members, defined in <code>Theme.hpp</code>.</li>
+<li>Values must be either <code>string</code>, <code>integer</code> or <code>double</code>.</li>
+<li>Colors are defined as <code>string</code> with their <strong>hexadecimal RGB or RGBA representation</strong>, beginning by a <code>#</code>, following this syntax <code>#rrggbb</code> or <code>#rrggbbaa</code> (Example: <code>"#ff000077"</code> for semi-transparent red). They will be parsed and turned into <code>QColor</code>.</li>
+<li>Key-Value pairs are defined at the root of the JSON object file, except for the metadata.</li>
+</ul>
+<p>Not all the <code>Theme</code> struct members are customizable, because some are used as cache to avoid computing the same colors again and again (e.g. the colors with the <em>-Transparent</em> suffix) during animations.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>info: A theme editor widget, named <code>ThemeEditor</code> is available in Qlementine, <code>/tools</code> folder.</p>
+</div>
+<h2 id="keys">Keys</h2>
+<h3 id="metadata">Metadata</h3>
+<p>Metadata must be a JSON object for the key <code>meta</code>.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>It is mandatory if you want to use <code>ThemeManager</code>, because the theme name is used as the identifier that should be unique for every theme.</p>
+</div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Awesome Theme&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.2.3&quot;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Key</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>name</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Name of the theme.</br>Example: <code>"My Awesome Theme"</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>version</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Version of the theme.</br>Example: <code>"1.2.3"</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>author</code></td>
+<td style="text-align: center;">string</td>
+<td style="text-align: left;">Author of the theme.</br>Example: <code>"John Doe"</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="colors">Colors</h3>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;backgroundColorMain1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Key</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>backgroundColorMain1</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Textfields, checkboxes, radiobuttons background.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>backgroundColorMain2</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Window background.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>backgroundColorMain3</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Container background, more contrast.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>backgroundColorMain4</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, more contrast.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>neutralColor</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Neutral interactive elements, such as buttons.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>neutralColorHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>neutralColorPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>neutralColorDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>focusColor</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Border around the widget that has keyboard focus with <code>QFocusFrame</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>backgroundColorWorkspace</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Window workspace backround.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>backgroundColorTabBar</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;"><code>QTabBar</code> backround.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>primaryColor</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Highlighted elements (default, checked or selected).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryColorHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryColorPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryColorDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>primaryColorForeground</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Text written over highlighted elements.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryColorForegroundHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryColorForegroundPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryColorForegroundDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>primaryAlternativeColor</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">A darker/lighter tint for highlighted elements over already highlighted elements.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryAlternativeColorHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryAlternativeColorPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>primaryAlternativeColorDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>secondaryColor</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Text.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryColorHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryColorPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryColorDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>secondaryColorForeground</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Text written over elements that already have text color.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryColorForegroundHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryColorForegroundPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryColorForegroundDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>secondaryAlternativeColor</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Less important text.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryAlternativeColorHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryAlternativeColorPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secondaryAlternativeColorDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>statusColorSuccess</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Feedback for success/validity.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorSuccessHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorSuccessPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorSuccessDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>statusColorInfo</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Feedback for information.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorInfoHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorInfoPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorInfoDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>statusColorWarning</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Feedback for warning.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorWarningHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorWarningPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorWarningDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>statusColorError</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Feedback for error.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorErrorHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorErrorPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorErrorDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>statusColorForeground</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Text over status colors.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorForegroundHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorForegroundPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>statusColorForegroundDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>shadowColor1</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Shadow for elevated elements.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>shadowColor2</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, more contrast.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>shadowColor3</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, more contrast.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>borderColor</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Borders of textfields, checkboxes, radiobuttons, switches and other elements.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>borderColorHovered</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in hovered state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>borderColorPressed</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in pressed state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>borderColorDisabled</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above, in disabled state.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>semiTransparentColor1</code></strong></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">To be used over another color to lighten/darken it.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>semiTransparentColor2</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above but more contrast.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>semiTransparentColor3</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above but more contrast.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>semiTransparentColor4</code></td>
+<td style="text-align: center;">color</td>
+<td style="text-align: left;">Same as above but more contrast.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="boolean-values">Boolean values</h3>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;useSystemFont&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Key</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>useSystemFont</code></td>
+<td style="text-align: center;">bool</td>
+<td style="text-align: left;">Whether or not to use the system's font instead of <code>qlementine</code> provided fonts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="numeric-values">Numeric Values</h3>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;fontSize&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Key</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: left;">Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>fontSize</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for normal text (<code>QLabel</code>, <code>QPushButton</code>, <code>QCheckBox</code>, etc.).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fontSizeMonospace</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for monospace text.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fontSizeH1</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for level 1 headers.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fontSizeH2</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for level 2 headers.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fontSizeH3</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for level 3 headers.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fontSizeH4</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for level 4 headers.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fontSizeH5</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for level 4 headers.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fontSizeS1</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Font size for level 1 captions.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>spacing</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Spacing between elements. Multiples of this value will be used across the various widgets, including default <code>QLayout</code> spacings and margins.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>iconExtent</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Size for icons. Multiple of this value will be used across the various widgets, according to their size for <code>QIcon</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>animationDuration</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Duration (in milliseconds) for a UI animation, such as a color change.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>focusAnimationDuration</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Duration (in milliseconds) for the focus border animation.</br>Note: can be longer to allow the user to see the focus .</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>sliderAnimationDuration</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Duration (in milliseconds) for the slider animation when its value changes.</br>Note: must be quick to feel responsive.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>borderRadius</code></td>
+<td style="text-align: center;">double</td>
+<td style="text-align: left;">Corner radius for most widgets.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>checkBoxBorderRadius</code></td>
+<td style="text-align: center;">double</td>
+<td style="text-align: left;">Corner radius for checkboxes.</br>Note: smaller than <code>borderRadius</code> because checkboxes are smaller.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>menuItemBorderRadius</code></td>
+<td style="text-align: center;">double</td>
+<td style="text-align: left;">Corner radius for menu items.</br>Note: Even smaller than <code>borderRadius</code> because menu already have a corner radius and padding.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>menuBarItemBorderRadius</code></td>
+<td style="text-align: center;">double</td>
+<td style="text-align: left;">Corner radius for menu bar items.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>borderWidth</code></td>
+<td style="text-align: center;">double</td>
+<td style="text-align: left;">Border thickness for widgets that have borders.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>focusBorderWidth</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Border thickness for the focus indicator.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>controlHeightLarge</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Height for most basics <code>QWidget</code>s, such as <code>QPushButton</code> or <code>QCheckBox</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>controlHeightMedium</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Height for a smaller <code>QWidget</code>, such as <code>QSlider</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>controlHeightSmall</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Height for an even smaller <code>QWidget</code>, such as the scroll buttons of a <code>QMenu</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>controlDefaultWidth</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">Width used as the default width in <code>sizeHint()</code> method for widgets that are extensible, such as <code>QSlider</code> or <code>QProgressBar</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>dialMarkLength</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QDial</code>, the length of the knob needle that indicates its value.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>dialMarkThickness</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QDial</code>, the thickness of a tick, if visible.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>dialTickLength</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QDial</code>, the length of a tick, if visible.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>dialTickSpacing</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QDial</code>, the spacing between knob and ticks, if visible.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>dialGrooveThickness</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QDial</code>, the thickness of the knob highlighted zone.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>sliderTickSize</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QSlider</code>, the length of a tick, if visible.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>sliderTickSpacing</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QSlider</code>, the spacing between slider and ticks, if visible.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>sliderTickThickness</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QSlider</code>, the thickness of a tick, if visible.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>sliderGrooveHeight</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QSlider</code>, the thickness of the groove (i.e. the highlited zone).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>progressBarGrooveHeight</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QProgressBar</code>, the thickness of the groove (i.e. the highlited zone).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scrollBarThicknessFull</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QScrollBar</code>, the thickness when the mouse is over.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scrollBarThicknessSmall</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QScrollBar</code>, the thickness when the mouse is not hover.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scrollBarMargin</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QScrollBar</code>, the margin between the scrollbar and its parent.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tabBarPaddingTop</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QTabBar</code>, the space between the top of the bar and the top of the tabs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tabBarTabMaxWidth</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QTabBar</code>, the maximum width a tab can have.</br>Note: any value below or equal to <code>0</code> will be ignored and treated as if there is no maximum width.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tabBarTabMinWidth</code></td>
+<td style="text-align: center;">int</td>
+<td style="text-align: left;">For a <code>QTabBar</code>, the minimum width a tab can have.</br>Note: any value below or equal to <code>0</code> will be ignored and treated as if there is no minimum width.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="full-example">Full example</h2>
+<p>Here is a full Qlementine theme in all its glory. Please note that every value is optional, and some might be redundant with the default values. Remove/add the key-value pairs you don't need to customize.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Olivier Cléro&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Light&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.5.0&quot;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nt">&quot;backgroundColorMain1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">&quot;backgroundColorMain2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#f3f3f3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">&quot;backgroundColorMain3&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#e3e3e3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="nt">&quot;backgroundColorMain4&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#dfdfdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">  </span><span class="nt">&quot;backgroundColorWorkspace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#b7b7b7&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">  </span><span class="nt">&quot;backgroundColorTabBar&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#dfdfdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">  </span><span class="nt">&quot;borderColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#d3d3d3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">  </span><span class="nt">&quot;borderColorDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#e9e9e9&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">  </span><span class="nt">&quot;borderColorHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#b3b3b3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">  </span><span class="nt">&quot;borderColorPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#a3a3a3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">  </span><span class="nt">&quot;focusColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#40a9ff66&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">  </span><span class="nt">&quot;neutralColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#d1d1d1&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">  </span><span class="nt">&quot;neutralColorHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#d3d3d3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">  </span><span class="nt">&quot;neutralColorPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#d5d5d5&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">  </span><span class="nt">&quot;neutralColorDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#eeeeee&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">  </span><span class="nt">&quot;primaryColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#1890ff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">  </span><span class="nt">&quot;primaryColorHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#2c9dff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">  </span><span class="nt">&quot;primaryColorPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#40a9ff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">  </span><span class="nt">&quot;primaryColorDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#d1e9ff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">  </span><span class="nt">&quot;primaryAlternativeColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#106ef9&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">  </span><span class="nt">&quot;primaryAlternativeColorDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#a9d6ff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">  </span><span class="nt">&quot;primaryAlternativeColorHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#107bfd&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="w">  </span><span class="nt">&quot;primaryAlternativeColorPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#108bfd&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a>
+<a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="w">  </span><span class="nt">&quot;primaryColorForeground&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="w">  </span><span class="nt">&quot;primaryColorForegroundDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ecf6ff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">  </span><span class="nt">&quot;primaryColorForegroundHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a><span class="w">  </span><span class="nt">&quot;primaryColorForegroundPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a>
+<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="w">  </span><span class="nt">&quot;secondaryColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#404040&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="w">  </span><span class="nt">&quot;secondaryColorHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#333333&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="w">  </span><span class="nt">&quot;secondaryColorPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#262626&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="w">  </span><span class="nt">&quot;secondaryColorDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#d4d4d4&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a>
+<a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a><span class="w">  </span><span class="nt">&quot;secondaryAlternativeColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#909090&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="w">  </span><span class="nt">&quot;secondaryAlternativeColorDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#c3c3c3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a><span class="w">  </span><span class="nt">&quot;secondaryAlternativeColorHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#747474&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a><span class="w">  </span><span class="nt">&quot;secondaryAlternativeColorPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#828282&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a>
+<a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a><span class="w">  </span><span class="nt">&quot;secondaryColorForeground&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a><span class="w">  </span><span class="nt">&quot;secondaryColorForegroundDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ededed&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a><span class="w">  </span><span class="nt">&quot;secondaryColorForegroundHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-56" name="__codelineno-4-56" href="#__codelineno-4-56"></a><span class="w">  </span><span class="nt">&quot;secondaryColorForegroundPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-57" name="__codelineno-4-57" href="#__codelineno-4-57"></a>
+<a id="__codelineno-4-58" name="__codelineno-4-58" href="#__codelineno-4-58"></a><span class="w">  </span><span class="nt">&quot;semiTransparentColor1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#0000000a&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-59" name="__codelineno-4-59" href="#__codelineno-4-59"></a><span class="w">  </span><span class="nt">&quot;semiTransparentColor2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#00000019&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-60" name="__codelineno-4-60" href="#__codelineno-4-60"></a><span class="w">  </span><span class="nt">&quot;semiTransparentColor3&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#00000021&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-61" name="__codelineno-4-61" href="#__codelineno-4-61"></a><span class="w">  </span><span class="nt">&quot;semiTransparentColor4&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#00000028&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-62" name="__codelineno-4-62" href="#__codelineno-4-62"></a>
+<a id="__codelineno-4-63" name="__codelineno-4-63" href="#__codelineno-4-63"></a><span class="w">  </span><span class="nt">&quot;shadowColor1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#00000020&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-64" name="__codelineno-4-64" href="#__codelineno-4-64"></a><span class="w">  </span><span class="nt">&quot;shadowColor2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#00000040&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-65" name="__codelineno-4-65" href="#__codelineno-4-65"></a><span class="w">  </span><span class="nt">&quot;shadowColor3&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#00000060&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-66" name="__codelineno-4-66" href="#__codelineno-4-66"></a>
+<a id="__codelineno-4-67" name="__codelineno-4-67" href="#__codelineno-4-67"></a><span class="w">  </span><span class="nt">&quot;statusColorError&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#e96b72&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-68" name="__codelineno-4-68" href="#__codelineno-4-68"></a><span class="w">  </span><span class="nt">&quot;statusColorErrorHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#f47c83&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-69" name="__codelineno-4-69" href="#__codelineno-4-69"></a><span class="w">  </span><span class="nt">&quot;statusColorErrorPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ff9197&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-70" name="__codelineno-4-70" href="#__codelineno-4-70"></a><span class="w">  </span><span class="nt">&quot;statusColorErrorDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#f9dadc&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-71" name="__codelineno-4-71" href="#__codelineno-4-71"></a>
+<a id="__codelineno-4-72" name="__codelineno-4-72" href="#__codelineno-4-72"></a><span class="w">  </span><span class="nt">&quot;statusColorForeground&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-73" name="__codelineno-4-73" href="#__codelineno-4-73"></a><span class="w">  </span><span class="nt">&quot;statusColorForegroundHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-74" name="__codelineno-4-74" href="#__codelineno-4-74"></a><span class="w">  </span><span class="nt">&quot;statusColorForegroundPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-75" name="__codelineno-4-75" href="#__codelineno-4-75"></a><span class="w">  </span><span class="nt">&quot;statusColorForegroundDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffffff99&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-76" name="__codelineno-4-76" href="#__codelineno-4-76"></a>
+<a id="__codelineno-4-77" name="__codelineno-4-77" href="#__codelineno-4-77"></a><span class="w">  </span><span class="nt">&quot;statusColorInfo&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#1ba8d5&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-78" name="__codelineno-4-78" href="#__codelineno-4-78"></a><span class="w">  </span><span class="nt">&quot;statusColorInfoHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#1eb5e5&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-79" name="__codelineno-4-79" href="#__codelineno-4-79"></a><span class="w">  </span><span class="nt">&quot;statusColorInfoPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#29c0f0&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a><span class="w">  </span><span class="nt">&quot;statusColorInfoDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#c7eaf5&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a>
+<a id="__codelineno-4-82" name="__codelineno-4-82" href="#__codelineno-4-82"></a><span class="w">  </span><span class="nt">&quot;statusColorSuccess&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#2bb5a0&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a><span class="w">  </span><span class="nt">&quot;statusColorSuccessHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#3cbfab&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-84" name="__codelineno-4-84" href="#__codelineno-4-84"></a><span class="w">  </span><span class="nt">&quot;statusColorSuccessPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#4ecdb9&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-85" name="__codelineno-4-85" href="#__codelineno-4-85"></a><span class="w">  </span><span class="nt">&quot;statusColorSuccessDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#d5f0ec&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-86" name="__codelineno-4-86" href="#__codelineno-4-86"></a>
+<a id="__codelineno-4-87" name="__codelineno-4-87" href="#__codelineno-4-87"></a><span class="w">  </span><span class="nt">&quot;statusColorWarning&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#fbc064&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-88" name="__codelineno-4-88" href="#__codelineno-4-88"></a><span class="w">  </span><span class="nt">&quot;statusColorWarningHovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffcf6c&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-89" name="__codelineno-4-89" href="#__codelineno-4-89"></a><span class="w">  </span><span class="nt">&quot;statusColorWarningPressed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ffd880&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-90" name="__codelineno-4-90" href="#__codelineno-4-90"></a><span class="w">  </span><span class="nt">&quot;statusColorWarningDisabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#feefd8&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-91" name="__codelineno-4-91" href="#__codelineno-4-91"></a>
+<a id="__codelineno-4-92" name="__codelineno-4-92" href="#__codelineno-4-92"></a><span class="w">  </span><span class="nt">&quot;useSystemFont&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-4-93" name="__codelineno-4-93" href="#__codelineno-4-93"></a>
+<a id="__codelineno-4-94" name="__codelineno-4-94" href="#__codelineno-4-94"></a><span class="w">  </span><span class="nt">&quot;fontSize&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-4-95" name="__codelineno-4-95" href="#__codelineno-4-95"></a><span class="w">  </span><span class="nt">&quot;fontSizeMonospace&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span>
+<a id="__codelineno-4-96" name="__codelineno-4-96" href="#__codelineno-4-96"></a><span class="w">  </span><span class="nt">&quot;fontSizeH1&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">34</span><span class="p">,</span>
+<a id="__codelineno-4-97" name="__codelineno-4-97" href="#__codelineno-4-97"></a><span class="w">  </span><span class="nt">&quot;fontSizeH2&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">26</span><span class="p">,</span>
+<a id="__codelineno-4-98" name="__codelineno-4-98" href="#__codelineno-4-98"></a><span class="w">  </span><span class="nt">&quot;fontSizeH3&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span>
+<a id="__codelineno-4-99" name="__codelineno-4-99" href="#__codelineno-4-99"></a><span class="w">  </span><span class="nt">&quot;fontSizeH4&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<a id="__codelineno-4-100" name="__codelineno-4-100" href="#__codelineno-4-100"></a><span class="w">  </span><span class="nt">&quot;fontSizeH5&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span>
+<a id="__codelineno-4-101" name="__codelineno-4-101" href="#__codelineno-4-101"></a><span class="w">  </span><span class="nt">&quot;fontSizeS1&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<a id="__codelineno-4-102" name="__codelineno-4-102" href="#__codelineno-4-102"></a>
+<a id="__codelineno-4-103" name="__codelineno-4-103" href="#__codelineno-4-103"></a><span class="w">  </span><span class="nt">&quot;spacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<a id="__codelineno-4-104" name="__codelineno-4-104" href="#__codelineno-4-104"></a><span class="w">  </span><span class="nt">&quot;iconExtent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-4-105" name="__codelineno-4-105" href="#__codelineno-4-105"></a>
+<a id="__codelineno-4-106" name="__codelineno-4-106" href="#__codelineno-4-106"></a><span class="w">  </span><span class="nt">&quot;animationDuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">192</span><span class="p">,</span>
+<a id="__codelineno-4-107" name="__codelineno-4-107" href="#__codelineno-4-107"></a><span class="w">  </span><span class="nt">&quot;focusAnimationDuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">384</span><span class="p">,</span>
+<a id="__codelineno-4-108" name="__codelineno-4-108" href="#__codelineno-4-108"></a><span class="w">  </span><span class="nt">&quot;sliderAnimationDuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">96</span><span class="p">,</span>
+<a id="__codelineno-4-109" name="__codelineno-4-109" href="#__codelineno-4-109"></a>
+<a id="__codelineno-4-110" name="__codelineno-4-110" href="#__codelineno-4-110"></a><span class="w">  </span><span class="nt">&quot;borderRadius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span>
+<a id="__codelineno-4-111" name="__codelineno-4-111" href="#__codelineno-4-111"></a><span class="w">  </span><span class="nt">&quot;checkBoxBorderRadius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span>
+<a id="__codelineno-4-112" name="__codelineno-4-112" href="#__codelineno-4-112"></a><span class="w">  </span><span class="nt">&quot;menuItemBorderRadius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span>
+<a id="__codelineno-4-113" name="__codelineno-4-113" href="#__codelineno-4-113"></a><span class="w">  </span><span class="nt">&quot;menuBarItemBorderRadius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span>
+<a id="__codelineno-4-114" name="__codelineno-4-114" href="#__codelineno-4-114"></a>
+<a id="__codelineno-4-115" name="__codelineno-4-115" href="#__codelineno-4-115"></a><span class="w">  </span><span class="nt">&quot;borderWidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-4-116" name="__codelineno-4-116" href="#__codelineno-4-116"></a><span class="w">  </span><span class="nt">&quot;focusBorderWidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-4-117" name="__codelineno-4-117" href="#__codelineno-4-117"></a>
+<a id="__codelineno-4-118" name="__codelineno-4-118" href="#__codelineno-4-118"></a><span class="w">  </span><span class="nt">&quot;controlHeightLarge&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">28</span><span class="p">,</span>
+<a id="__codelineno-4-119" name="__codelineno-4-119" href="#__codelineno-4-119"></a><span class="w">  </span><span class="nt">&quot;controlHeightMedium&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<a id="__codelineno-4-120" name="__codelineno-4-120" href="#__codelineno-4-120"></a><span class="w">  </span><span class="nt">&quot;controlHeightSmall&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-4-121" name="__codelineno-4-121" href="#__codelineno-4-121"></a><span class="w">  </span><span class="nt">&quot;controlDefaultWidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">96</span><span class="p">,</span>
+<a id="__codelineno-4-122" name="__codelineno-4-122" href="#__codelineno-4-122"></a>
+<a id="__codelineno-4-123" name="__codelineno-4-123" href="#__codelineno-4-123"></a><span class="w">  </span><span class="nt">&quot;dialMarkLength&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-4-124" name="__codelineno-4-124" href="#__codelineno-4-124"></a><span class="w">  </span><span class="nt">&quot;dialMarkThickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-4-125" name="__codelineno-4-125" href="#__codelineno-4-125"></a><span class="w">  </span><span class="nt">&quot;dialTickLength&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-4-126" name="__codelineno-4-126" href="#__codelineno-4-126"></a><span class="w">  </span><span class="nt">&quot;dialTickSpacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-4-127" name="__codelineno-4-127" href="#__codelineno-4-127"></a><span class="w">  </span><span class="nt">&quot;dialGrooveThickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-4-128" name="__codelineno-4-128" href="#__codelineno-4-128"></a>
+<a id="__codelineno-4-129" name="__codelineno-4-129" href="#__codelineno-4-129"></a><span class="w">  </span><span class="nt">&quot;sliderTickSize&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-4-130" name="__codelineno-4-130" href="#__codelineno-4-130"></a><span class="w">  </span><span class="nt">&quot;sliderTickSpacing&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-4-131" name="__codelineno-4-131" href="#__codelineno-4-131"></a><span class="w">  </span><span class="nt">&quot;sliderTickThickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-4-132" name="__codelineno-4-132" href="#__codelineno-4-132"></a><span class="w">  </span><span class="nt">&quot;sliderGrooveHeight&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-4-133" name="__codelineno-4-133" href="#__codelineno-4-133"></a>
+<a id="__codelineno-4-134" name="__codelineno-4-134" href="#__codelineno-4-134"></a><span class="w">  </span><span class="nt">&quot;progressBarGrooveHeight&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<a id="__codelineno-4-135" name="__codelineno-4-135" href="#__codelineno-4-135"></a>
+<a id="__codelineno-4-136" name="__codelineno-4-136" href="#__codelineno-4-136"></a><span class="w">  </span><span class="nt">&quot;scrollBarThicknessFull&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-4-137" name="__codelineno-4-137" href="#__codelineno-4-137"></a><span class="w">  </span><span class="nt">&quot;scrollBarThicknessSmall&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<a id="__codelineno-4-138" name="__codelineno-4-138" href="#__codelineno-4-138"></a><span class="w">  </span><span class="nt">&quot;scrollBarMargin&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-4-139" name="__codelineno-4-139" href="#__codelineno-4-139"></a>
+<a id="__codelineno-4-140" name="__codelineno-4-140" href="#__codelineno-4-140"></a><span class="w">  </span><span class="nt">&quot;tabBarPaddingTop&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-4-141" name="__codelineno-4-141" href="#__codelineno-4-141"></a><span class="w">  </span><span class="nt">&quot;tabBarTabMaxWidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-4-142" name="__codelineno-4-142" href="#__codelineno-4-142"></a><span class="w">  </span><span class="nt">&quot;tabBarTabMinWidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-4-143" name="__codelineno-4-143" href="#__codelineno-4-143"></a><span class="p">}</span>
+</code></pre></div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 8, 2025 00:28:01 UTC">November 8, 2025</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 Olivier Cléro
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["search.suggest"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
