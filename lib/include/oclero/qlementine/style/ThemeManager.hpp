@@ -20,7 +20,7 @@ class ThemeManager : public QObject {
 
 public:
   explicit ThemeManager(QObject* parent = nullptr);
-  ThemeManager(QlementineStyle* style, QObject* parent = nullptr);
+  explicit ThemeManager(QlementineStyle* style, QObject* parent = nullptr);
   ~ThemeManager() override = default;
 
   QlementineStyle* style() const;

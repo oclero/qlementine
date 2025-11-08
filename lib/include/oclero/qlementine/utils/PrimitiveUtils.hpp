@@ -31,13 +31,13 @@ QPainterPath getMultipleRadiusesRectPath(QRectF const& rect, RadiusesF const& ra
 /// Draws an antialiased rect.
 void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, qreal const radius = 0.);
 
-// Draws an antialiased rect with different radiuses.
+/// Draws an antialiased rect with different radiuses.
 void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, RadiusesF const& radiuses);
 
 /// Draws an antialiased rect.
 void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, qreal const radius = 0.);
 
-// Draws an antialiased rect with different radiuses.
+/// Draws an antialiased rect with different radiuses.
 void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, RadiusesF const& radiuses);
 
 /// Draws an antialiased pixel-perfect border for the rounded rect.

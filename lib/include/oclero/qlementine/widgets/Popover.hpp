@@ -67,7 +67,7 @@ public:
   void setManualPositioningCallback(const std::function<QPoint(const QSize&)>& cb);
   Q_SIGNAL void manualPositioningChanged();
 
-  QSize frameSize() const;
+  QSize popoverFrameSize() const;
 
   Position preferredPosition() const;
   void setPreferredPosition(Position position);

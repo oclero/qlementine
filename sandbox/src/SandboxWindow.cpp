@@ -765,6 +765,53 @@ struct SandboxWindow::Impl {
     }
   }
 
+  void setupUI_comboBoxWithTreeView() {
+    auto* combobox = new QComboBox(windowContent);
+    combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+
+    {
+      auto* treeWidget = new QTreeWidget(windowContent);
+      treeWidget->setMinimumSize(100, 200);
+      treeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+      treeWidget->setAlternatingRowColors(false);
+      treeWidget->setColumnCount(1);
+      treeWidget->setHeaderHidden(true);
+      treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+      for (auto i = 0; i < 3; ++i) {
+        auto* root = new QTreeWidgetItem(treeWidget);
+        root->setText(0, QString("Root %1").arg(i + 1));
+        root->setIcon(0, getTestQIcon({ 16, 16 }));
+        root->setText(1, QString("Column 2 of Root %1").arg(i + 1));
+
+        for (auto j = 0; j < 3; ++j) {
+          auto* child = new QTreeWidgetItem(root);
+          child->setText(0, QString("Child %1 of Root %2").arg(j).arg(i));
+          child->setIcon(0, getTestQIcon({ 16, 16 }));
+          child->setText(1, QString("Column 2 of Child %1 of Root %2").arg(j).arg(i));
+
+          for (auto k = 0; k < 3; ++k) {
+            auto* subChild = new QTreeWidgetItem(child);
+            subChild->setText(0, QString("Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
+            subChild->setIcon(0, getTestQIcon({ 16, 16 }));
+            subChild->setText(1, QString("Column 2 of Child %1 of Child %2 of Root %3").arg(k).arg(j).arg(i));
+          }
+        }
+      }
+
+      treeWidget->topLevelItem(0)->setSelected(true);
+
+      combobox->setModel(treeWidget->model());
+
+      QTimer::singleShot(300, combobox, [combobox, treeWidget]() {
+        combobox->setView(treeWidget);
+      });
+      //combobox->setView(treeWidget);
+    }
+
+    windowContentLayout->addWidget(combobox);
+  }
+
   void setupUI_fontComboBox() {
     auto* combobox = new QFontComboBox(windowContent);
     combobox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
@@ -1824,6 +1871,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_spinBox();
     // _impl->setupUI_comboBox();
     // _impl->setupUI_comboBoxVariants();
+    // _impl->setupUI_comboBoxWithTreeView();
     // _impl->setupUI_fontComboBox();
     // _impl->setupUI_listView();
     // _impl->setupUI_treeWidget();

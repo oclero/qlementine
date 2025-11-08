@@ -182,7 +182,7 @@ void Popover::setManualPositioningCallback(const std::function<QPoint(const QSiz
   }
 }
 
-QSize Popover::frameSize() const {
+QSize Popover::popoverFrameSize() const {
   return _frame ? _frame->sizeHint() : QSize{};
 }
 

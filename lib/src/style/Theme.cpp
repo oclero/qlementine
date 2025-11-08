@@ -87,7 +87,7 @@ std::optional<bool> tryGetBoolRecursive(QJsonObject const& jsonObj, QString cons
 }
 
 void tryGetBool(QJsonObject const& jsonObj, QString const& key, bool& target) {
-  if (const auto opt = tryGetBoolRecursive(jsonObj, key)) {
+  if (const auto opt = tryGetBoolRecursive(jsonObj, key); opt.has_value()) {
     target = opt.value();
   }
 }
@@ -113,7 +113,7 @@ std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const&
 }
 
 void tryGetInt(QJsonObject const& jsonObj, QString const& key, int& target) {
-  if (const auto opt = tryGetIntRecursive(jsonObj, key)) {
+  if (const auto opt = tryGetIntRecursive(jsonObj, key); opt.has_value()) {
     target = opt.value();
   }
 }
@@ -139,7 +139,7 @@ std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString 
 }
 
 void tryGetDouble(QJsonObject const& jsonObj, QString const& key, double& target) {
-  if (const auto opt = tryGetDoubleRecursive(jsonObj, key)) {
+  if (const auto opt = tryGetDoubleRecursive(jsonObj, key); opt.has_value()) {
     target = opt.value();
   }
 }
