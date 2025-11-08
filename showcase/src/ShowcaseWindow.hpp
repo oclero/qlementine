@@ -15,7 +15,7 @@ class ThemeManager;
 namespace oclero::qlementine::showcase {
 class ShowcaseWindow : public QWidget {
 public:
-  ShowcaseWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
+  explicit ShowcaseWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
   ~ShowcaseWindow();
 
 private:

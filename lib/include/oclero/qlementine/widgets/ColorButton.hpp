@@ -17,8 +17,8 @@ class ColorButton : public QAbstractButton {
 
 public:
   explicit ColorButton(QWidget* parent = nullptr);
-  ColorButton(const QColor& color, QWidget* parent = nullptr);
-  ColorButton(const QColor& color, ColorMode mode, QWidget* parent = nullptr);
+  explicit ColorButton(const QColor& color, QWidget* parent = nullptr);
+  explicit ColorButton(const QColor& color, ColorMode mode, QWidget* parent = nullptr);
 
   const QColor& color() const;
   void setColor(const QColor& color);
