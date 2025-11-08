@@ -13,6 +13,7 @@
 #include <QTreeView>
 #include <QAbstractItemView>
 #include <QChildEvent>
+#include <QScreen>
 
 namespace oclero::qlementine {
 // Event filter for the item view in the QComboBox's popup.
@@ -99,8 +100,11 @@ private:
                              + shadowWidth * 2 + hMargin * 2 + borderWidth * 2;
 
           // Height.
-          const auto absoluteMinHeight = qlementineStyle->theme().controlHeightLarge * (isTreeView ? 3 : 1);
-          const auto absoluteMaxHeight = qlementineStyle->theme().controlHeightLarge * 5;
+          const auto absoluteMinHeight = qlementineStyle->theme().controlHeightLarge * (isTreeView ? 5 : 1);
+          const auto screen = view->screen();
+          const auto absoluteMaxHeight = screen != nullptr ?
+                                             screen->geometry().height() - 128 :
+                                             qlementineStyle->theme().controlHeightLarge * 10;
           const auto height = std::min(absoluteMaxHeight, std::max(absoluteMinHeight, viewMinimumSizeHint().height()));
 
           view->setFixedWidth(width);
