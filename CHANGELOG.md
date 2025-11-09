@@ -1,5 +1,7 @@
 # Changelog
 
+## v1.4.1
+
 ## v1.4.0
 
 New features:
