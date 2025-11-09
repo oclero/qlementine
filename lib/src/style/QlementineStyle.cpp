@@ -4831,10 +4831,6 @@ void QlementineStyle::polish(QWidget* w) {
     }
   }
 
-  if (auto* cmdLinkButton = qobject_cast<QCommandLinkButton*>(w)) {
-    cmdLinkButton->setIconSize(_impl->theme.iconSizeMedium);
-  }
-
   // Ensure widgets are not compressed vertically.
   // Some widgets like QCheckBox or QLineEdit are compressed when added to
   // QFormLayout.
@@ -5050,7 +5046,7 @@ QSize QlementineStyle::sizeFromContentsExt(
   switch (ct) {
     case ContentsTypeExt::CT_CommandButton:
       if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
-        const auto iconSize = _impl->theme.iconSizeMedium;
+        const auto iconSize = optButton->iconSize;
         const auto& icon = optButton->icon;
         const auto spacing = _impl->theme.spacing;
         const auto hPadding = spacing * 2;

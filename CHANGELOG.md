@@ -2,6 +2,10 @@
 
 ## v1.4.1
 
+Bugfixes:
+
+- Fix QCommandLinkbutton icon size
+
 ## v1.4.0
 
 New features:
