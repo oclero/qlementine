@@ -826,12 +826,12 @@ Theme Theme::scaled(double factor) const {
   // ScrollBar.
   t.scrollBarThicknessFull = scaleInt(scrollBarThicknessFull);
   t.scrollBarThicknessSmall = scaleInt(scrollBarThicknessSmall);
-  t.scrollBarMargin = static_cast<int>(std::round(scrollBarMargin * factor));
+  t.scrollBarMargin = scaleInt(scrollBarMargin);
 
   // TabBar.
   t.tabBarPaddingTop = scaleInt(tabBarPaddingTop);
-  t.tabBarTabMaxWidth = tabBarTabMaxWidth > 0 ? scaleInt(tabBarTabMaxWidth) : 0;
-  t.tabBarTabMinWidth = tabBarTabMinWidth > 0 ? scaleInt(tabBarTabMinWidth) : 0;
+  t.tabBarTabMaxWidth = scaleInt(tabBarTabMaxWidth);
+  t.tabBarTabMinWidth = scaleInt(tabBarTabMinWidth);
 
   // Regenerate fonts from the scaled font sizes.
   t.initializeFonts();
