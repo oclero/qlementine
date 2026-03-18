@@ -202,6 +202,9 @@ public: // Values.
 public:
   QJsonDocument toJson() const;
 
+  /// Returns a copy with all dimension fields scaled by the given factor.
+  Theme scaled(double factor) const;
+
 private:
   void initializeFonts();
   void initializePalette();

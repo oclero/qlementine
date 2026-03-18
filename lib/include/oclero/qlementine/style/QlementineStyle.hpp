@@ -21,6 +21,7 @@ class QlementineStyle : public QCommonStyle {
   Q_OBJECT
 
   Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled NOTIFY animationsEnabledChanged)
+  Q_PROPERTY(double zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
 
 public:
   enum class StandardPixmapExt {
@@ -58,6 +59,10 @@ public:
   bool animationsEnabled() const;
   void setAnimationsEnabled(bool enabled);
   Q_SIGNAL void animationsEnabledChanged();
+
+  double zoomFactor() const;
+  void setZoomFactor(double factor);
+  Q_SIGNAL void zoomFactorChanged();
 
   virtual void triggerCompleteRepaint();
 
