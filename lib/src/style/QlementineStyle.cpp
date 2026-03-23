@@ -246,6 +246,8 @@ struct QlementineStyleImpl {
 
   QlementineStyle& owner;
   Theme theme{};
+  Theme baseTheme{};
+  double scaleFactor{ 1.0 };
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
   WidgetAnimationManager animations;
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
@@ -272,8 +274,9 @@ Theme const& QlementineStyle::theme() const {
 }
 
 void QlementineStyle::setTheme(Theme const& theme) {
-  if (_impl->theme != theme) {
-    _impl->theme = theme;
+  if (_impl->baseTheme != theme) {
+    _impl->baseTheme = theme;
+    _impl->theme = theme.scaled(_impl->scaleFactor);
     Q_EMIT themeChanged();
 
     triggerCompleteRepaint();
@@ -297,6 +300,20 @@ void QlementineStyle::setAnimationsEnabled(bool enabled) {
     Q_EMIT animationsEnabledChanged();
     triggerCompleteRepaint();
   }
+}
+
+double QlementineStyle::scaleFactor() const {
+  return _impl->scaleFactor;
+}
+
+void QlementineStyle::setScaleFactor(double factor) {
+  factor = qBound(0.5, factor, 4.0);
+  if (qFuzzyCompare(_impl->scaleFactor, factor))
+    return;
+  _impl->scaleFactor = factor;
+  _impl->theme = _impl->baseTheme.scaled(factor);
+  Q_EMIT scaleFactorChanged();
+  triggerCompleteRepaint();
 }
 
 void QlementineStyle::triggerCompleteRepaint() {

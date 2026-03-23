@@ -14,6 +14,8 @@
 #include <QVector>
 #include <QGuiApplication>
 
+#include <algorithm>
+#include <cmath>
 #include <optional>
 
 namespace oclero::qlementine {
@@ -752,6 +754,89 @@ bool Theme::operator==(const Theme& other) const {
 
 bool Theme::operator!=(const Theme& other) const {
   return !(*this == other);
+}
+
+Theme Theme::scaled(double factor) const {
+  if (qFuzzyCompare(factor, 1.0))
+    return *this;
+
+  Theme t = *this;
+
+  auto scaleInt = [factor](int v) -> int {
+    return v <= 0 ? v : std::max(1, static_cast<int>(std::round(v * factor)));
+  };
+  auto scaleDouble = [factor](double v) -> double {
+    return v <= 0.0 ? v : v * factor;
+  };
+  auto scaleSize = [&scaleInt](const QSize& s) -> QSize {
+    return { scaleInt(s.width()), scaleInt(s.height()) };
+  };
+
+  // Font sizes.
+  t.fontSize = scaleInt(fontSize);
+  t.fontSizeMonospace = scaleInt(fontSizeMonospace);
+  t.fontSizeH1 = scaleInt(fontSizeH1);
+  t.fontSizeH2 = scaleInt(fontSizeH2);
+  t.fontSizeH3 = scaleInt(fontSizeH3);
+  t.fontSizeH4 = scaleInt(fontSizeH4);
+  t.fontSizeH5 = scaleInt(fontSizeH5);
+  t.fontSizeS1 = scaleInt(fontSizeS1);
+
+  // Radii.
+  t.borderRadius = scaleDouble(borderRadius);
+  t.checkBoxBorderRadius = scaleDouble(checkBoxBorderRadius);
+  t.menuItemBorderRadius = scaleDouble(menuItemBorderRadius);
+  t.menuBarItemBorderRadius = scaleDouble(menuBarItemBorderRadius);
+
+  // Borders.
+  t.borderWidth = scaleInt(borderWidth);
+  t.focusBorderWidth = scaleInt(focusBorderWidth);
+
+  // Control sizes.
+  t.controlHeightLarge = scaleInt(controlHeightLarge);
+  t.controlHeightMedium = scaleInt(controlHeightMedium);
+  t.controlHeightSmall = scaleInt(controlHeightSmall);
+  t.controlDefaultWidth = scaleInt(controlDefaultWidth);
+
+  // Icons.
+  t.iconSize = scaleSize(iconSize);
+  t.iconSizeMedium = scaleSize(iconSizeMedium);
+  t.iconSizeLarge = scaleSize(iconSizeLarge);
+  t.iconSizeExtraSmall = scaleSize(iconSizeExtraSmall);
+
+  // Slider.
+  t.sliderTickSize = scaleInt(sliderTickSize);
+  t.sliderTickSpacing = scaleInt(sliderTickSpacing);
+  t.sliderTickThickness = scaleInt(sliderTickThickness);
+  t.sliderGrooveHeight = scaleInt(sliderGrooveHeight);
+
+  // ProgressBar.
+  t.progressBarGrooveHeight = scaleInt(progressBarGrooveHeight);
+
+  // Dial.
+  t.dialMarkLength = scaleInt(dialMarkLength);
+  t.dialMarkThickness = scaleInt(dialMarkThickness);
+  t.dialTickLength = scaleInt(dialTickLength);
+  t.dialTickSpacing = scaleInt(dialTickSpacing);
+  t.dialGrooveThickness = scaleInt(dialGrooveThickness);
+
+  // Spacing.
+  t.spacing = scaleInt(spacing);
+
+  // ScrollBar.
+  t.scrollBarThicknessFull = scaleInt(scrollBarThicknessFull);
+  t.scrollBarThicknessSmall = scaleInt(scrollBarThicknessSmall);
+  t.scrollBarMargin = scaleInt(scrollBarMargin);
+
+  // TabBar.
+  t.tabBarPaddingTop = scaleInt(tabBarPaddingTop);
+  t.tabBarTabMaxWidth = scaleInt(tabBarTabMaxWidth);
+  t.tabBarTabMinWidth = scaleInt(tabBarTabMinWidth);
+
+  // Regenerate fonts from the scaled font sizes.
+  t.initializeFonts();
+
+  return t;
 }
 
 } // namespace oclero::qlementine
