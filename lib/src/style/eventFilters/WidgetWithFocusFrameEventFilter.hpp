@@ -35,8 +35,16 @@ public:
           }
         });
       } else if (type == QEvent::Show && _added) {
+        // Defer to avoid mapTo() on a partially-connected hierarchy
+        // after reparenting (same pattern as the Paint path above).
+        QTimer::singleShot(0, this, [this]() {
+          _focusFrame->setWidget(nullptr);
+          _focusFrame->setWidget(_widget);
+        });
+      } else if (type == QEvent::Hide && _added) {
+        // Disconnect the focus frame when the widget is hidden (e.g.
+        // during reparenting) to prevent stale mapTo() calls.
         _focusFrame->setWidget(nullptr);
-        _focusFrame->setWidget(_widget);
       }
     }
 
