@@ -388,8 +388,7 @@ QPixmap QlementineStyle::getColorizedPixmap(
   if (aic == AutoIconColor::None) {
     return input;
   }
-  const auto status = iconStatus(widget);
-  if (status != Status::Default) {
+  if (const auto status = iconStatus(widget); status != Status::Default) {
     const auto& color = statusColor(status, mouse);
     return qlementine::getColorizedPixmap(input, color);
   }
