@@ -4829,6 +4829,11 @@ void QlementineStyle::polish(QWidget* w) {
 
   QCommonStyle::polish(w);
 
+  // Ensure we only polish a widget once, otherwise we might
+  // end up with multiple event filters on the same widget.
+  auto& polishedWidgetInfo = _polishedWidgetsWithEventFilters[w];
+  const auto eventFiltersInstalled = !polishedWidgetInfo._eventFilters.empty();
+
 // Currently we only support tooltips with rounded corners on MacOS.
 // More investigation is need to make it work on Windows.
 #ifndef _WIN32
@@ -4844,7 +4849,11 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Special case for the Qt-private buttons in a QLineEdit.
   if (w->inherits("QLineEditIconButton")) {
-    w->installEventFilter(new LineEditButtonEventFilter(this, _impl->animations, qobject_cast<QToolButton*>(w)));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new LineEditButtonEventFilter(this, _impl->animations, qobject_cast<QToolButton*>(w));
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+      w->installEventFilter(eventFilter);
+    }
     w->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     // Fix hardcoded width in qlineedit_p.cpp:493
     w->setFixedSize(_impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium);
@@ -4874,7 +4883,11 @@ void QlementineStyle::polish(QWidget* w) {
 
   // QFocusFrame is used to draw focus outside of the widget's bound.
   if (shouldHaveExternalFocusFrame(w)) {
-    w->installEventFilter(new WidgetWithFocusFrameEventFilter(w));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new WidgetWithFocusFrameEventFilter(w);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+      w->installEventFilter(eventFilter);
+    }
   }
 
   // Hijack the default focus policy for buttons.
@@ -4894,10 +4907,9 @@ void QlementineStyle::polish(QWidget* w) {
     menu->setProperty("_q_windowsDropShadow", false);
 
     // Place the QMenu correctly by making up for the drop shadow margins.
-    // Install the filter only once in case of re-polishing.
-    if (!menu->property("qlementine_menu_event_filter_installed").toBool()) {
-      menu->setProperty("qlementine_menu_event_filter_installed", true);
-      menu->installEventFilter(new MenuEventFilter(menu));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new MenuEventFilter(menu);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
     }
   }
 
@@ -4942,7 +4954,11 @@ void QlementineStyle::polish(QWidget* w) {
     if (w->focusPolicy() == Qt::WheelFocus) {
       w->setFocusPolicy(Qt::StrongFocus);
     }
-    w->installEventFilter(new MouseWheelBlockerEventFilter(w));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new MouseWheelBlockerEventFilter(w);
+      w->installEventFilter(eventFilter);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+    }
   }
 
   if (auto* comboBox = qobject_cast<QComboBox*>(w)) {
@@ -4957,7 +4973,11 @@ void QlementineStyle::polish(QWidget* w) {
       new ComboboxFilter(comboBox);
     }
   } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
-    tabBar->installEventFilter(new TabBarEventFilter(tabBar));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new TabBarEventFilter(tabBar);
+      tabBar->installEventFilter(eventFilter);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+    }
   } else if (auto* label = qobject_cast<QLabel*>(w)) {
     const auto labelObjName = label->objectName();
     const auto isInformativeLabel = labelObjName == QStringLiteral("qt_msgbox_informativelabel");
@@ -4984,25 +5004,55 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Make the QPlainTextEdit have a frame by default.
   if (auto* plainTextEdit = qobject_cast<QPlainTextEdit*>(w)) {
-    plainTextEdit->installEventFilter(new TextEditEventFilter(plainTextEdit));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new TextEditEventFilter(plainTextEdit);
+      plainTextEdit->installEventFilter(eventFilter);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+    }
     if (auto* viewport = plainTextEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
       viewport->setAutoFillBackground(false);
     }
   }
   // Make the QTextEdit have a frame by default.
   if (auto* textEdit = qobject_cast<QTextEdit*>(w)) {
-    textEdit->installEventFilter(new TextEditEventFilter(textEdit));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new TextEditEventFilter(textEdit);
+      textEdit->installEventFilter(eventFilter);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+    }
     if (auto* viewport = textEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
       viewport->setAutoFillBackground(false);
     }
   }
 
   if (auto* lineEdit = qobject_cast<QLineEdit*>(w)) {
-    lineEdit->installEventFilter(new LineEditMenuEventFilter(lineEdit));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new LineEditMenuEventFilter(lineEdit);
+      lineEdit->installEventFilter(eventFilter);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+    }
   } else if (auto* spinBox = qobject_cast<QSpinBox*>(w)) {
-    spinBox->installEventFilter(new LineEditMenuEventFilter(spinBox));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new LineEditMenuEventFilter(spinBox);
+      spinBox->installEventFilter(eventFilter);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+    }
   } else if (auto* plainTextEdit = qobject_cast<QPlainTextEdit*>(w)) {
-    plainTextEdit->installEventFilter(new LineEditMenuEventFilter(plainTextEdit));
+    if (!eventFiltersInstalled) {
+      auto* eventFilter = new LineEditMenuEventFilter(plainTextEdit);
+      plainTextEdit->installEventFilter(eventFilter);
+      polishedWidgetInfo._eventFilters.push_back(eventFilter);
+    }
+  }
+
+  // Clean up when the widget is destroyed without unpolish() being called.
+  // Using an event filter instead of signal to handle cases where blockSignals() is called.
+  if (!eventFiltersInstalled) {
+    auto* eventFilter = new DestructionEventFilter(w, this, [this](QWidget* widget) {
+      onWidgetDestroyed(widget);
+    });
+    w->installEventFilter(eventFilter);
+    polishedWidgetInfo._eventFilters.push_back(eventFilter);
   }
 }
 
@@ -5011,13 +5061,32 @@ void QlementineStyle::unpolish(QWidget* w) {
 
   // TODO revert all hacks made in QlementineStyle::polish(QWidget* w)
 
-  if (shouldHaveHoverEvents(w)) {
-    w->setAttribute(Qt::WA_Hover, false);
-    w->setAttribute(Qt::WA_OpaquePaintEvent, true);
+  // Remove event filters installed in QlementineStyle::polish(QWidget* w).
+  auto iter = _polishedWidgetsWithEventFilters.find(w);
+  if (iter != _polishedWidgetsWithEventFilters.end()) {
+    auto& polishedWidgetInfo = iter.value();
+    auto iterEventFilters = polishedWidgetInfo._eventFilters.begin();
+    while (iterEventFilters != polishedWidgetInfo._eventFilters.end()) {
+      w->removeEventFilter(*iterEventFilters);
+      delete *iterEventFilters;
+      ++iterEventFilters;
+    }
+
+    // Remove the widget from the map.
+    _polishedWidgetsWithEventFilters.erase(iter);
+
+    if (shouldHaveHoverEvents(w)) {
+      w->setAttribute(Qt::WA_Hover, false);
+      w->setAttribute(Qt::WA_OpaquePaintEvent, true);
+    }
+    if (shouldHaveMouseTracking(w)) {
+      w->setMouseTracking(false);
+    }
   }
-  if (shouldHaveMouseTracking(w)) {
-    w->setMouseTracking(false);
-  }
+}
+
+void QlementineStyle::onWidgetDestroyed(QWidget* w) {
+  unpolish(w);
 }
 
 /* QStyle extended enums. */

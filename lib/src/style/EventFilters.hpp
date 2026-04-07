@@ -5,6 +5,7 @@
 
 #include "eventFilters/ComboboxItemViewFilter.hpp"
 #include "eventFilters/CommandLinkButtonEventFilter.hpp"
+#include "eventFilters/DestructionEventFilter.hpp"
 #include "eventFilters/LineEditButtonEventFilter.hpp"
 #include "eventFilters/LineEditMenuEventFilter.hpp"
 #include "eventFilters/MenuEventFilter.hpp"
