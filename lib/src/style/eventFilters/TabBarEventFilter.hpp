@@ -133,7 +133,7 @@ public:
 
 private:
   QTabBar* _tabBar{ nullptr };
-  QPointer<QToolButton> _leftButton{ nullptr };
-  QPointer<QToolButton> _rightButton{ nullptr };
+  QToolButton* _leftButton{ nullptr };
+  QToolButton* _rightButton{ nullptr };
 };
 } // namespace oclero::qlementine

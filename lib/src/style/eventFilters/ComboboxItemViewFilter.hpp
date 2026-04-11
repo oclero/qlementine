@@ -44,13 +44,17 @@ protected:
     switch (evt->type()) {
       case QEvent::Type::ChildAdded: {
         if (watchedObject == _comboBox) {
-          const auto* childEvent = static_cast<QChildEvent*>(evt);
-          const auto* child = childEvent->child();
-          if (child == _comboBox->view()) {
-            if (auto* qlementine = qobject_cast<QlementineStyle*>(_comboBox->style())) {
-              _comboBox->setItemDelegate(new ComboBoxDelegate(_comboBox, *qlementine));
+          if (!_childAddedCurrentlyProcessing) {
+            _childAddedCurrentlyProcessing = true;
+            const auto* childEvent = static_cast<QChildEvent*>(evt);
+            const auto* child = childEvent->child();
+            if (child == _comboBox->view()) {
+              if (auto* qlementine = qobject_cast<QlementineStyle*>(_comboBox->style())) {
+                _comboBox->setItemDelegate(new ComboBoxDelegate(_comboBox, *qlementine));
+              }
             }
           }
+         _childAddedCurrentlyProcessing = false;
         }
       } break;
       case QEvent::Type::Show:
@@ -144,6 +148,8 @@ private:
   QAbstractItemView* _view{ nullptr };
   int _initialMaxHeight{ 0 };
   QModelIndex _clickedIndex{};
+
+  bool _childAddedCurrentlyProcessing{ false };
 };
 
 class ComboboxFilter : public QObject {
