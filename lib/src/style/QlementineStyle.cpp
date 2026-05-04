@@ -1720,8 +1720,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (hasText) {
           if (buttonStyle == Qt::ToolButtonTextUnderIcon && availableH > 0) {
             const auto elidedText = fm.elidedText(optToolButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
-            const auto elidedTextW = fm.boundingRect(optToolButton->rect, Qt::AlignCenter, elidedText).width();
-            const auto textRect = QRect{ availableX, availableY, elidedTextW, availableH };
+            const auto textRect = QRect{ availableX, availableY, availableW, availableH };
             const int textFlags = Qt::AlignCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
             p->setBrush(Qt::NoBrush);
             p->setPen(fgColor);
