@@ -1960,6 +1960,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         QStyleOptionFocusRoundedRect optFocus;
         optFocus.QStyleOption::operator=(*opt);
+        optFocus.type = QStyleOptionFocusRoundedRect::Type;
         optFocus.state.setFlag(State_HasFocus, hasFocus);
 
         // The focus frame is placed differently according to the widget.

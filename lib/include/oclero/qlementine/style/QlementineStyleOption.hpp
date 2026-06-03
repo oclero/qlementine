@@ -11,16 +11,21 @@ namespace oclero::qlementine {
 /// Allows to customize the radius of the focus border.
 class QStyleOptionFocusRoundedRect : public QStyleOptionFocusRect {
 public:
+  enum StyleOptionType { Type = SO_CustomBase + 2 };
+
   RadiusesF radiuses;
   int hMargin{ 0 };
   int vMargin{ 0 };
   QColor borderColor;
 
-  QStyleOptionFocusRoundedRect() = default;
+  QStyleOptionFocusRoundedRect() {
+    type = Type;
+  }
 
   static QStyleOptionFocusRoundedRect fromBase(QStyleOption const& opt, QRect const& rect, RadiusesF const& radiuses) {
     QStyleOptionFocusRoundedRect newOpt;
     newOpt.QStyleOption::operator=(opt);
+    newOpt.type = Type;
     newOpt.radiuses = radiuses;
     newOpt.rect = rect;
     return newOpt;
