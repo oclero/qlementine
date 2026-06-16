@@ -12,11 +12,11 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Check Out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
