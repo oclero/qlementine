@@ -77,7 +77,12 @@ public:
         _mousePressed = false;
         const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
         const auto mousePos = mouseEvt->pos();
-        if (auto* action = _menu->actionAt(mousePos)) {
+        auto* action = _menu->actionAt(mousePos);
+        if (action == nullptr && _menu->rect().contains(mousePos)) {
+          // Can happen after a screen geometry change: fall back to the highlighted action.
+          action = _menu->activeAction();
+        }
+        if (action != nullptr) {
           if (action->isSeparator() || !action->isEnabled() || action->property("qlementine_flashing").toBool())
             return true;
 
