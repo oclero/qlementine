@@ -78,8 +78,8 @@ public:
         const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
         const auto mousePos = mouseEvt->pos();
         auto* action = _menu->actionAt(mousePos);
+        // A click in a scrolled/clipped menu can miss every action rect: fall back to the highlighted action.
         if (action == nullptr && _menu->rect().contains(mousePos)) {
-          // Can happen after a screen geometry change: fall back to the highlighted action.
           action = _menu->activeAction();
         }
         if (action != nullptr) {
