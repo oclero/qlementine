@@ -102,8 +102,9 @@ private:
           // Height.
           const auto absoluteMinHeight = qlementineStyle->theme().controlHeightLarge * (isTreeView ? 5 : 1);
           const auto screen = view->screen();
+          const auto viewGlobalY = view->mapToGlobal(QPoint(0, 0)).y();  // Don't exceed the screen height when expanding a tree view.
           const auto absoluteMaxHeight = screen != nullptr ?
-                                             screen->geometry().height() - 128 :
+                                             screen->geometry().height() - 128 - viewGlobalY :
                                              qlementineStyle->theme().controlHeightLarge * 10;
           const auto height = std::min(absoluteMaxHeight, std::max(absoluteMinHeight, viewMinimumSizeHint().height()));
 
