@@ -4814,7 +4814,11 @@ void QlementineStyle::polish(QWidget* w) {
     menu->setProperty("_q_windowsDropShadow", false);
 
     // Place the QMenu correctly by making up for the drop shadow margins.
-    menu->installEventFilter(new MenuEventFilter(menu));
+    // Install the filter only once in case of re-polishing.
+    if (!menu->property("qlementine_menu_event_filter_installed").toBool()) {
+      menu->setProperty("qlementine_menu_event_filter_installed", true);
+      menu->installEventFilter(new MenuEventFilter(menu));
+    }
   }
 
   // Try to remove the background...
