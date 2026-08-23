@@ -42,7 +42,7 @@ std::optional<QColor> tryGetColorRecursive(QJsonObject const& jsonObj, QString c
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetColorRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetColorRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
   }
@@ -74,7 +74,7 @@ std::optional<bool> tryGetBoolRecursive(QJsonObject const& jsonObj, QString cons
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetBoolRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetBoolRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
 
@@ -100,7 +100,7 @@ std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const&
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetIntRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetIntRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
 
@@ -126,7 +126,7 @@ std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString 
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetDoubleRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetDoubleRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
 
