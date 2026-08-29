@@ -4,7 +4,7 @@ set(SHOWCASE_NAME "showcase")
 include(FetchContent)
 FetchContent_Declare(qlementine-icons
   GIT_REPOSITORY "https://github.com/oclero/qlementine-icons.git"
-  GIT_TAG v1.12.0
+  GIT_TAG v1.16.1
 )
 FetchContent_MakeAvailable(qlementine-icons)
 set_target_properties(qlementine-icons
