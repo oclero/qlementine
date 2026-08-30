@@ -113,7 +113,7 @@ void Expander::setExpanded(bool expanded) {
 
     const auto isVertical = _orientation == Qt::Orientation::Vertical;
     const auto current = isVertical ? height() : width();
-    const auto contentSizeHint = _content->sizeHint();
+    const auto contentSizeHint = _content ? _content->sizeHint() : QSize{ 0, 0 };
     const auto target = _content && _expanded ? (isVertical ? contentSizeHint.height() : contentSizeHint.width()) : 0;
     const auto animationDuration = isVisible() ? style()->styleHint(QStyle::SH_Widget_Animation_Duration) : 0;
     _animation.stop();

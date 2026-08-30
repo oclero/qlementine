@@ -6,6 +6,7 @@
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/utils/MenuUtils.hpp>
 
+#include <QCoreApplication>
 #include <QEvent>
 #include <QObject>
 #include <QMenu>
@@ -77,7 +78,12 @@ public:
         _mousePressed = false;
         const auto* mouseEvt = static_cast<QMouseEvent*>(evt);
         const auto mousePos = mouseEvt->pos();
-        if (auto* action = _menu->actionAt(mousePos)) {
+        auto* action = _menu->actionAt(mousePos);
+        // A click in a scrolled/clipped menu can miss every action rect: fall back to the highlighted action.
+        if (action == nullptr && _menu->rect().contains(mousePos)) {
+          action = _menu->activeAction();
+        }
+        if (action != nullptr) {
           if (action->isSeparator() || !action->isEnabled() || action->property("qlementine_flashing").toBool())
             return true;
 

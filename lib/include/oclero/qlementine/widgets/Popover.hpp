@@ -59,7 +59,7 @@ public:
 
 public:
   explicit Popover(QWidget* parent = nullptr);
-  virtual ~Popover();
+  ~Popover() override;
 
 public:
   bool manualPositioning() const;

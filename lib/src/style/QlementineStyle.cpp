@@ -381,6 +381,11 @@ QIcon QlementineStyle::makeThemedIconFromName(const QString& name, const QSize& 
   }
 }
 
+QIcon QlementineStyle::makeThemedIconFromData(const QByteArray& svgData, const QSize& size, ColorRole role) const {
+  const auto iconTheme = _impl->iconThemeFromTheme(role);
+  return makeIconFromSvgData(svgData, iconTheme, size);
+}
+
 void QlementineStyle::setIconPathGetter(const std::function<QString(QString)>& func) {
   _impl->iconPathFunc = func;
 }
@@ -1121,8 +1126,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), currentFgColor, currentFgColor);
         const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
         const auto iconW = colorizedPixmap.isNull() ? 0 : static_cast<int>(colorizedPixmap.width() / pixmapPixelRatio);
-        const auto fmFlags = hasMenu ? Qt::AlignLeft : Qt::AlignCenter;
-        const auto textW = optButton->fontMetrics.boundingRect(optButton->rect, fmFlags, optButton->text).width();
+        const auto textW = qlementine::textWidth(optButton->fontMetrics, optButton->text);
         const auto iconSpacing = iconW > 0 && !optButton->text.isEmpty() && textW > 0 ? spacing : 0;
         const auto& fgRect =
           hasMenu ? optButton->rect.marginsRemoved(QMargins{ 0, 0, indicatorSize + spacing, 0 }) : optButton->rect;
@@ -1150,7 +1154,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (availableW > 0 && textW > 0) {
           const auto elidedText =
             optButton->fontMetrics.elidedText(optButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
-          const auto elidedTextW = optButton->fontMetrics.boundingRect(optButton->rect, fmFlags, elidedText).width();
+          const auto elidedTextW = qlementine::textWidth(optButton->fontMetrics, elidedText);
           const auto textRect = QRect{ availableX, contentRect.y(), elidedTextW, contentRect.height() };
           int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
           if (iconW == 0) {
@@ -2377,6 +2381,9 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto hasMenu = optButton->features.testFlag(QStyleOptionButton::HasMenu);
         const auto padding = pixelMetric(PM_ButtonMargin);
         const auto [paddingLeft, paddingRight] = getHPaddings(hasIcon, hasText, hasMenu, padding);
+        if (paddingLeft + paddingRight >= opt->rect.width()) {
+          return opt->rect;
+        }
         return opt->rect.marginsRemoved({ paddingLeft, 0, paddingRight, 0 });
       }
       return opt->rect;
@@ -3181,7 +3188,8 @@ void QlementineStyle::drawComplexControl(
             fm.elidedText(groupBoxOpt->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
           const auto mouse = getMouseState(groupBoxOpt->state);
           const auto& textColor = groupBoxTitleColor(mouse, w);
-          constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
+          constexpr auto textFlags =
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setFont(font);
           p->setPen(textColor);
           p->setRenderHint(QPainter::Antialiasing, true);
@@ -4052,9 +4060,11 @@ QSize QlementineStyle::sizeFromContents(
       //return opt->rect.size();
       break;
     case CT_LineEdit:
-      if (const auto* optFrame = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
-        const auto r = optFrame->rect;
-        const auto w = r.width() - 2 * hardcodedLineEditHMargin;
+      if (qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
+        // Use contentSize (font-metrics-based) rather than optFrame->rect (current widget
+        // geometry) so that sizeHint/minimumSizeHint report a content-driven width instead
+        // of echoing back the widget's existing size.
+        const auto w = contentSize.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
         const auto* parent = widget->parentWidget();
         const auto* treeView = parent ? qobject_cast<const QAbstractItemView*>(parent->parentWidget()) : nullptr;
@@ -4894,7 +4904,11 @@ void QlementineStyle::polish(QWidget* w) {
     menu->setProperty("_q_windowsDropShadow", false);
 
     // Place the QMenu correctly by making up for the drop shadow margins.
-    menu->installEventFilter(new MenuEventFilter(menu));
+    // Install the filter only once in case of re-polishing.
+    if (!menu->property("qlementine_menu_event_filter_installed").toBool()) {
+      menu->setProperty("qlementine_menu_event_filter_installed", true);
+      menu->installEventFilter(new MenuEventFilter(menu));
+    }
   }
 
   // Try to remove the background...
@@ -4944,10 +4958,14 @@ void QlementineStyle::polish(QWidget* w) {
   if (auto* comboBox = qobject_cast<QComboBox*>(w)) {
     comboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
 
-    // Will define a delegate to stylize the QComboBox items,
-    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
-    // Trigger the redefine when the QComboBox's view changes.
-    new ComboboxFilter(comboBox);
+    // Only replace the delegate if the combobox doesn't already have a custom one.
+    // This preserves delegates set by third-party widgets.
+    if (isDefaultItemDelegate(comboBox->itemDelegate())) {
+      // Will define a delegate to stylize the QComboBox items,
+      comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
+      // Trigger the redefine when the QComboBox's view changes.
+      new ComboboxFilter(comboBox);
+    }
   } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
     tabBar->installEventFilter(new TabBarEventFilter(tabBar));
   } else if (auto* label = qobject_cast<QLabel*>(w)) {

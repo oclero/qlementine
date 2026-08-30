@@ -21,13 +21,15 @@ public:
 
   const QIcon& icon() const;
   Q_SLOT void setIcon(const QIcon& icon);
-  Q_SIGNAL void iconChanged();
 
   const QSize& iconSize() const;
   Q_SLOT void setIconSize(const QSize& iconSize);
-  Q_SIGNAL void iconSizeChanged();
 
   QSize sizeHint() const override;
+
+Q_SIGNALS:
+  void iconChanged();
+  void iconSizeChanged();
 
 protected:
   void paintEvent(QPaintEvent* e) override;

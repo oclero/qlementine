@@ -21,23 +21,24 @@ public:
 
   bool expanded() const;
   Q_SLOT void setExpanded(bool expanded);
-  Q_SIGNAL void expandedChanged();
   void toggleExpanded();
-
-  Q_SIGNAL void aboutToExpand();
-  Q_SIGNAL void aboutToShrink();
-  Q_SIGNAL void didExpand();
-  Q_SIGNAL void didShrink();
 
   Qt::Orientation orientation() const;
   Q_SLOT void setOrientation(Qt::Orientation orientation);
-  Q_SIGNAL void orientationChanged();
 
   QWidget* content() const;
   void setContent(QWidget* content);
-  Q_SIGNAL void contentChanged();
 
   QSize sizeHint() const override;
+
+Q_SIGNALS:
+  void expandedChanged();
+  void aboutToExpand();
+  void aboutToShrink();
+  void didExpand();
+  void didShrink();
+  void orientationChanged();
+  void contentChanged();
 
 protected:
   bool event(QEvent* e) override;

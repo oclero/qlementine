@@ -33,10 +33,8 @@ public:
 
   QString currentTheme() const;
   void setCurrentTheme(const QString& key);
-  Q_SIGNAL void currentThemeChanged();
 
   int themeCount() const;
-  Q_SIGNAL void themeCountChanged();
 
   Q_SLOT void setNextTheme();
   Q_SLOT void setPreviousTheme();
@@ -45,6 +43,10 @@ public:
 
   int currentThemeIndex() const;
   void setCurrentThemeIndex(int index);
+
+Q_SIGNALS:
+  void currentThemeChanged();
+  void themeCountChanged();
 
 private:
   void synchronizeThemeOnStyle();

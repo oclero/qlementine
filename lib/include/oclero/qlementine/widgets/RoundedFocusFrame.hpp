@@ -19,7 +19,9 @@ public:
 
   const RadiusesF& radiuses() const;
   Q_SLOT void setRadiuses(const RadiusesF&);
-  Q_SIGNAL void radiusesChanged();
+
+Q_SIGNALS:
+  void radiusesChanged();
 
 private:
   RadiusesF _radiuses;

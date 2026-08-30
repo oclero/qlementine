@@ -22,10 +22,12 @@ public:
 
   bool spinning() const;
   Q_SLOT void setSpinning(bool);
-  Q_SIGNAL void spinningChanged();
 
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;
+
+Q_SIGNALS:
+  void spinningChanged();
 
 protected:
   void paintEvent(QPaintEvent* evt) override;

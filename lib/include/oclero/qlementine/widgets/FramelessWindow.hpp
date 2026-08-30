@@ -13,7 +13,7 @@ class FramelessWindow : public QWidget {
 
 public:
   explicit FramelessWindow(QWidget* parent = nullptr);
-  virtual ~FramelessWindow();
+  ~FramelessWindow() override;
 
   QMenuBar* menuBar() const;
 

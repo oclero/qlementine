@@ -19,7 +19,7 @@ class AboutDialog : public QDialog {
 
 public:
   explicit AboutDialog(QWidget* parent = nullptr);
-  virtual ~AboutDialog() = default;
+  ~AboutDialog() override = default;
 
   void setIcon(const QIcon& icon);
   void setApplicationName(const QString& name);

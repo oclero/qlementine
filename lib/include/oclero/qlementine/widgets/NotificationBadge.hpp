@@ -29,27 +29,29 @@ public:
 
   const QString& text() const;
   Q_SLOT void setText(const QString&);
-  Q_SIGNAL void textChanged();
 
   const QColor& foregroundColor() const;
   Q_SLOT void setForegroundColor(const QColor&);
-  Q_SIGNAL void foregroundColorChanged();
 
   const QColor& backgroundColor() const;
   Q_SLOT void setBackgroundColor(const QColor&);
-  Q_SIGNAL void backgroundColorChanged();
 
   const QPoint& relativePosition() const;
   Q_SLOT void setRelativePosition(const QPoint&);
   void setRelativePosition(int x, int y);
-  Q_SIGNAL void relativePositionChanged();
 
   const QMargins& padding() const;
   Q_SLOT void setPadding(const QMargins&);
-  Q_SIGNAL void paddingChanged();
 
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;
+
+Q_SIGNALS:
+  void textChanged();
+  void foregroundColorChanged();
+  void backgroundColorChanged();
+  void relativePositionChanged();
+  void paddingChanged();
 
 protected:
   void paintEvent(QPaintEvent* evt) override;

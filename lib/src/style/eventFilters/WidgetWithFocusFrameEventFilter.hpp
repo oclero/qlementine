@@ -19,19 +19,22 @@ public:
   }
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override {
-    if (!_added && watchedObject == _widget) {
+    if (watchedObject == _widget) {
       const auto type = evt->type();
       // Create the focus frame as late as possible to give
       // more chances to any parent (e.g. scrollarea) to already exist.
       // QEvent::Show isn't sufficient. We need to delay even more, so
       // waiting for the first QEvent::Paint is our only solution.
-      if (type == QEvent::Paint) {
+      if (type == QEvent::Paint && !_added) {
         QTimer::singleShot(0, this, [this]() {
           if (!_added) {
             _added = true;
             _focusFrame->setWidget(_widget);
           }
         });
+      } else if (type == QEvent::Show && _added) {
+        _focusFrame->setWidget(nullptr);
+        _focusFrame->setWidget(_widget);
       }
     }
 

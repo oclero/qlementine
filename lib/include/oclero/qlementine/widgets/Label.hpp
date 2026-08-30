@@ -23,7 +23,9 @@ public:
 
   TextRole role() const;
   Q_SLOT void setRole(TextRole role);
-  Q_SIGNAL void roleChanged();
+
+Q_SIGNALS:
+  void roleChanged();
 
 protected:
   bool event(QEvent* e) override;

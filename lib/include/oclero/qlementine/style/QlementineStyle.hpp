@@ -53,12 +53,14 @@ public:
   Theme const& theme() const;
   void setTheme(Theme const& theme);
   void setThemeJsonPath(QString const& jsonPath);
-  Q_SIGNAL void themeChanged();
-
   bool animationsEnabled() const;
   void setAnimationsEnabled(bool enabled);
-  Q_SIGNAL void animationsEnabledChanged();
 
+Q_SIGNALS:
+  void themeChanged();
+  void animationsEnabledChanged();
+
+public:
   virtual void triggerCompleteRepaint();
 
   void setAutoIconColor(AutoIconColor autoIconColor);
@@ -75,6 +77,9 @@ public:
 
   QIcon makeThemedIconFromName(
     const QString& name, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
+
+  QIcon makeThemedIconFromData(
+    const QByteArray& svgData, const QSize& size = QSize(16, 16), ColorRole role = ColorRole::Secondary) const;
 
   // Allows to customize quickly the way QlementineStyle gets its icons. SVG paths preferred.
   void setIconPathGetter(const std::function<QString(QString)>& func);

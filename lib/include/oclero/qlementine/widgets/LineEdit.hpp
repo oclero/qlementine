@@ -23,14 +23,16 @@ public:
 
   const QIcon& icon() const;
   Q_SLOT void setIcon(const QIcon& icon);
-  Q_SIGNAL void iconChanged();
 
   void setUseMonoSpaceFont(bool useMonoSpaceFont);
   bool useMonoSpaceFont() const;
 
   Status status() const;
   Q_SLOT void setStatus(Status status);
-  Q_SIGNAL void statusChanged();
+
+Q_SIGNALS:
+  void iconChanged();
+  void statusChanged();
 
 protected:
   void paintEvent(QPaintEvent* evt) override;

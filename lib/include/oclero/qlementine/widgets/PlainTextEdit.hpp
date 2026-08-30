@@ -25,7 +25,9 @@ public:
 
   Status status() const;
   Q_SLOT void setStatus(Status status);
-  Q_SIGNAL void statusChanged();
+
+Q_SIGNALS:
+  void statusChanged();
 
 private:
   void updateFont();

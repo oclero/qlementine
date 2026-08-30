@@ -19,13 +19,15 @@ public:
 
   StatusBadge badge() const;
   Q_SLOT void setBadge(StatusBadge badge);
-  Q_SIGNAL void badgeChanged();
 
   StatusBadgeSize badgeSize() const;
   Q_SLOT void setBadgeSize(StatusBadgeSize size);
-  Q_SIGNAL void badgeSizeChanged();
 
   QSize sizeHint() const override;
+
+Q_SIGNALS:
+  void badgeChanged();
+  void badgeSizeChanged();
 
 protected:
   void paintEvent(QPaintEvent* e) override;
