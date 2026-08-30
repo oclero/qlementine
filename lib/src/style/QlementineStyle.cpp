@@ -5465,7 +5465,7 @@ QColor QlementineStyle::listItemBackgroundColor(MouseState const mouse, Selectio
   } else {
     switch (mouse) {
       case MouseState::Pressed:
-        return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColor;
+        return _impl->theme.neutralColor;
       case MouseState::Hovered:
         return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColorDisabled;
       case MouseState::Disabled:
