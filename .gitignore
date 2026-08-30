@@ -43,6 +43,7 @@ Testing/
 *creator.user*
 *.qml.autosave
 debug.log
+.qtcreator/
 
 # Temporary files.
 tmp/
