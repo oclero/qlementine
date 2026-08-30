@@ -637,6 +637,7 @@ struct SandboxWindow::Impl {
     slider->setPageStep(pageStep);
     slider->setSingleStep(singleStep);
     slider->setValue(val);
+    slider->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
     QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
     windowContentLayout->addWidget(slider);
   }

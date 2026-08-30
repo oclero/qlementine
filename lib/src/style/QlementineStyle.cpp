@@ -85,7 +85,17 @@ constexpr auto iconPenWidth = 1.01;
 // Used to determine if the icon must be colorized according to the Theme's colors or not.
 constexpr auto Property_AutoIconColor = "autoIconColor";
 
+
 struct QlementineStyleImpl {
+  QlementineStyle& owner;
+  Theme theme{};
+  std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
+  WidgetAnimationManager animations;
+  std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
+  std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
+  AutoIconColor autoIconColor{ AutoIconColor::None };
+  std::function<QString(QString)> iconPathFunc;
+
   explicit QlementineStyleImpl(QlementineStyle& o)
     : owner(o) {
     updatePalette();
@@ -248,14 +258,25 @@ struct QlementineStyleImpl {
     }
   }
 
-  QlementineStyle& owner;
-  Theme theme{};
-  std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
-  WidgetAnimationManager animations;
-  std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
-  std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
-  AutoIconColor autoIconColor{ AutoIconColor::None };
-  std::function<QString(QString)> iconPathFunc;
+  static QRect sliderHandleRect(
+    const QlementineStyle& style, const QStyleOptionSlider& opt, const qreal position, const QWidget* widget) {
+    const auto handleW = style.pixelMetric(QStyle::PM_SliderLength, &opt, widget);
+    const auto handleH = style.pixelMetric(QStyle::PM_SliderThickness, &opt, widget);
+    const auto handleY = opt.rect.y() + (opt.rect.height() - handleH) / 2;
+    const auto range = opt.maximum - opt.minimum;
+    const auto ratio = range == 0 ? 0. : (position - opt.minimum) / range;
+    const auto handleX = opt.rect.x() + static_cast<int>(ratio * (opt.rect.width() - handleW));
+    return QRect{ handleX, handleY, handleW, handleH };
+  }
+
+  static QRect sliderFocusRect(
+    const QlementineStyle& style, const QStyleOptionSlider& opt, const QRect& handleRect, const QWidget* widget) {
+    const auto deltaX = style.pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, widget);
+    const auto deltaY = style.pixelMetric(QStyle::PM_FocusFrameVMargin, &opt, widget);
+    const auto vMargin = deltaY / 2;
+    const auto hMargin = deltaX / 2;
+    return handleRect.translated(deltaX, deltaY).marginsAdded(QMargins(hMargin, vMargin, hMargin, vMargin));
+  }
 };
 
 QlementineStyle::QlementineStyle(QObject* parent)
@@ -2036,28 +2057,25 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         } else if (const auto* slider = qobject_cast<const QSlider*>(monitoredWidget)) {
           // Prepare monitored widget QStyleOption.
           const auto currentPos = _impl->animations.getAnimatedProgress(slider);
-          QStyleOptionSliderF optSlider;
+          QStyleOptionSlider optSlider;
           optSlider.QStyleOption::operator=(*opt);
           optSlider.initFrom(slider);
           optSlider.minimum = slider->minimum();
           optSlider.maximum = slider->maximum();
           optSlider.sliderPosition = slider->sliderPosition();
-          optSlider.sliderPositionF = currentPos ? currentPos.value() : optSlider.sliderPosition;
-          optSlider.status = QStyleOptionSliderF::INITIALIZED;
+          const auto sliderPosition = currentPos ? currentPos.value() : static_cast<qreal>(optSlider.sliderPosition);
 
           // Slider: placed around the handle.
-          optFocus.rect = subElementRect(SE_SliderFocusRect, &optSlider, slider);
+          const auto sliderHandleRect = QlementineStyleImpl::sliderHandleRect(*this, optSlider, sliderPosition, slider);
+          optFocus.rect = QlementineStyleImpl::sliderFocusRect(*this, optSlider, sliderHandleRect, slider);
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (const auto* dial = qobject_cast<const QDial*>(monitoredWidget)) {
           // Prepare monitored widget QStyleOption.
-          const auto currentPos = _impl->animations.getAnimatedProgress(dial);
-          QStyleOptionSliderF optDial;
+          QStyleOptionSlider optDial;
           optDial.initFrom(dial);
           optDial.minimum = dial->minimum();
           optDial.maximum = dial->maximum();
           optDial.sliderPosition = dial->sliderPosition();
-          optDial.sliderPositionF = currentPos ? currentPos.value() : optDial.sliderPosition;
-          optDial.status = QStyleOptionSliderF::INITIALIZED;
           optDial.subControls.setFlag(SC_DialTickmarks, dial->notchesVisible());
 
           // Dial: placed around the handle.
@@ -2429,11 +2447,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto complexControl = isDial ? CC_Dial : CC_Slider;
         const auto subControl = isDial ? SC_DialHandle : SC_SliderHandle;
         const auto handleRect = subControlRect(complexControl, optSlider, subControl, w);
-        const auto deltaX = pixelMetric(PM_FocusFrameHMargin, opt, w);
-        const auto deltaY = pixelMetric(PM_FocusFrameVMargin, opt, w);
-        const auto vMargin = deltaY / 2;
-        const auto hMargin = deltaX / 2;
-        return handleRect.translated(deltaX, deltaY).marginsAdded(QMargins(hMargin, vMargin, hMargin, vMargin));
+        return QlementineStyleImpl::sliderFocusRect(*this, *optSlider, handleRect, w);
       }
       return opt->rect;
     case SE_ProgressBarContents:
@@ -2892,16 +2906,12 @@ void QlementineStyle::drawComplexControl(
           sliderOpt->state.testFlag(State_Sunken) && sliderOpt->activeSubControls == SubControl::SC_SliderHandle;
         const auto duration = handleActive ? _impl->theme.sliderAnimationDuration : _impl->theme.animationDuration;
         const auto currentProgress = _impl->animations.animateProgress(w, progress, duration);
-        QStyleOptionSliderF currentSliderOpt;
-        currentSliderOpt.QStyleOptionSlider::operator=(*sliderOpt);
-        currentSliderOpt.sliderPositionF = currentProgress;
-        currentSliderOpt.status = QStyleOptionSliderF::INITIALIZED;
 
         const auto min = sliderOpt->minimum;
         const auto max = sliderOpt->maximum;
         const auto widgetMouse = getMouseState(sliderOpt->state);
         const auto mouse = widgetMouse == MouseState::Disabled ? MouseState::Disabled : MouseState::Normal;
-        const auto handleRect = subControlRect(CC_Slider, &currentSliderOpt, SC_SliderHandle, w);
+        const auto handleRect = QlementineStyleImpl::sliderHandleRect(*this, *sliderOpt, currentProgress, w);
         const auto disabled = mouse == MouseState::Disabled;
 
         // Draw tickmarks.
@@ -3148,10 +3158,6 @@ void QlementineStyle::drawComplexControl(
           dialOpt->state.testFlag(State_Sunken) && dialOpt->activeSubControls == SubControl::SC_DialHandle;
         const auto duration = handleActive ? _impl->theme.sliderAnimationDuration : _impl->theme.animationDuration;
         const auto currentProgress = _impl->animations.animateProgress(w, progress, duration);
-        QStyleOptionSliderF currentSliderOpt;
-        currentSliderOpt.QStyleOptionSlider::operator=(*dialOpt);
-        currentSliderOpt.sliderPositionF = currentProgress;
-        currentSliderOpt.status = QStyleOptionSliderF::INITIALIZED;
 
         // Dial shape.
         const auto dialRect = subControlRect(cc, opt, SC_DialGroove, w);
@@ -3567,24 +3573,8 @@ QRect QlementineStyle::subControlRect(
             return QRect{ grooveX, grooveY, grooveW, grooveH };
           } break;
           case SC_SliderHandle: {
-            const auto handleW = pixelMetric(PM_SliderLength);
-            const auto handleH = pixelMetric(PM_SliderThickness);
-            const auto handleY = opt->rect.y() + (opt->rect.height() - handleH) / 2;
-            const auto min = sliderOpt->minimum;
-            const auto max = sliderOpt->maximum;
-            auto position = static_cast<qreal>(sliderOpt->sliderPosition);
-
-            if (const auto* sliderOptF = qstyleoption_cast<const QStyleOptionSliderF*>(sliderOpt)) {
-              // Since the cast may succeed even if it is not the correct type, we have to check that
-              // the value is correctly initialized, which means it comes from us and is not the default value.
-              if (sliderOptF->status == QStyleOptionSliderF::INITIALIZED) {
-                position = sliderOptF->sliderPositionF;
-              }
-            }
-
-            const auto ratio = (position - min) / (max - min);
-            const auto handleX = opt->rect.x() + static_cast<int>(ratio * (opt->rect.width() - handleW));
-            return QRect{ handleX, handleY, handleW, handleH };
+            return QlementineStyleImpl::sliderHandleRect(
+              *this, *sliderOpt, static_cast<qreal>(sliderOpt->sliderPosition), w);
           } break;
           case SC_SliderTickmarks:
             switch (sliderOpt->tickPosition) {

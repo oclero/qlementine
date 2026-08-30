@@ -26,14 +26,9 @@ public:
     return newOpt;
   }
 
-  QStyleOptionFocusRoundedRect(const QStyleOptionFocusRoundedRect& other)
-    : QStyleOptionFocusRect(other) {
-    *this = other;
-  }
+  QStyleOptionFocusRoundedRect(const QStyleOptionFocusRoundedRect& other) = default;
 
   QStyleOptionFocusRoundedRect& operator=(const QStyleOptionFocusRoundedRect&) = default;
-
-  ~QStyleOptionFocusRoundedRect() = default;
 };
 
 /// Allows to customize the radius of a button.
@@ -41,41 +36,19 @@ class QStyleOptionRoundedButton : public QStyleOptionButton {
 public:
   enum StyleOptionType { Type = SO_CustomBase + 1 };
 
-  RadiusesF radiuses;
+  RadiusesF radiuses{ 0. };
 
   QStyleOptionRoundedButton() {
     type = Type;
-    radiuses = 0.;
   }
 
   QStyleOptionRoundedButton(const QStyleOptionRoundedButton& other)
-    : QStyleOptionButton(other) {
+    : QStyleOptionButton(other)
+    , radiuses(other.radiuses) {
     type = Type;
-    radiuses = other.radiuses;
   }
 
   QStyleOptionRoundedButton& operator=(const QStyleOptionRoundedButton&) = default;
-
-  ~QStyleOptionRoundedButton() = default;
-};
-
-/// Adds the ability to transition from one visual position to another.
-class QStyleOptionSliderF : public QStyleOptionSlider {
-public:
-  static constexpr auto INITIALIZED = 2;
-  qreal sliderPositionF{ 0. };
-  int status{ 0 }; // Needed to track that it was created by us.
-
-  QStyleOptionSliderF() = default;
-
-  QStyleOptionSliderF(const QStyleOptionSliderF& other)
-    : QStyleOptionSlider(other) {
-    *this = other;
-  }
-
-  QStyleOptionSliderF& operator=(const QStyleOptionSliderF&) = default;
-
-  ~QStyleOptionSliderF() = default;
 };
 
 /// Adds the ability to have a second line of text in the button.
