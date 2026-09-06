@@ -3,12 +3,14 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QWidget>
 #include <QIcon>
 
 namespace oclero::qlementine {
 /// A QWidget that displays a QIcon and paints the correct image according to its state.
-class IconWidget : public QWidget {
+class QLEMENTINE_EXPORT IconWidget : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(QIcon icon READ icon WRITE setIcon NOTIFY iconChanged)

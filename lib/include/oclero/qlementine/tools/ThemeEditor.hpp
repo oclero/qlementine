@@ -6,10 +6,11 @@
 #include <memory>
 #include <QWidget>
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/Theme.hpp>
 
 namespace oclero::qlementine {
-class ThemeEditor : public QWidget {
+class QLEMENTINE_EXPORT ThemeEditor : public QWidget {
   Q_OBJECT
 
 public:

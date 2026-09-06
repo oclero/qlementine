@@ -3,13 +3,14 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 
 #include <QItemDelegate>
 #include <QPointer>
 
 namespace oclero::qlementine {
-class ComboBoxDelegate : public QItemDelegate {
+class QLEMENTINE_EXPORT ComboBoxDelegate : public QItemDelegate {
 public:
   ComboBoxDelegate(QWidget* widget, QlementineStyle& style);
 

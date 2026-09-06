@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/utils/ImageUtils.hpp>
 #include <oclero/qlementine/utils/IconUtils.hpp>
@@ -17,7 +18,7 @@ class CommandLinkButtonPaintEventFilter;
 class LineEditButtonEventFilter;
 struct QlementineStyleImpl;
 
-class QlementineStyle : public QCommonStyle {
+class QLEMENTINE_EXPORT QlementineStyle : public QCommonStyle {
   Q_OBJECT
 
   Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled NOTIFY animationsEnabledChanged)
@@ -298,5 +299,5 @@ private:
   std::unique_ptr<QlementineStyleImpl> _impl;
 };
 
-QlementineStyle* appStyle();
+QLEMENTINE_EXPORT QlementineStyle* appStyle();
 } // namespace oclero::qlementine

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 
@@ -18,7 +19,7 @@ namespace oclero::qlementine {
 class RoundedFocusFrame;
 
 /// A class to factorize common behavior between widgets such as tab bars.
-class AbstractItemListWidget : public QWidget {
+class QLEMENTINE_EXPORT AbstractItemListWidget : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)

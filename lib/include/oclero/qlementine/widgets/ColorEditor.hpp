@@ -6,13 +6,14 @@
 #include <QWidget>
 #include <QColor>
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/Common.hpp>
 
 namespace oclero::qlementine {
 class ColorButton;
 class LineEdit;
 
-class ColorEditor : public QWidget {
+class QLEMENTINE_EXPORT ColorEditor : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
