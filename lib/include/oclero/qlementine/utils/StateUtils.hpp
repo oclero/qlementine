@@ -19,8 +19,10 @@ QLEMENTINE_EXPORT MouseState getTabItemMouseState(QStyle::State const& state, co
 QLEMENTINE_EXPORT ColorRole getColorRole(QStyle::State const& state, bool const isDefault);
 QLEMENTINE_EXPORT ColorRole getColorRole(bool checked, bool const isDefault);
 QLEMENTINE_EXPORT ColorRole getColorRole(CheckState const checked);
-QLEMENTINE_EXPORT MouseState getSliderHandleState(QStyle::State const& state, QStyle::SubControls const activeSubControls);
-QLEMENTINE_EXPORT MouseState getScrollBarHandleState(QStyle::State const& state, QStyle::SubControls const activeSubControls);
+QLEMENTINE_EXPORT MouseState getSliderHandleState(
+  QStyle::State const& state, QStyle::SubControls const activeSubControls);
+QLEMENTINE_EXPORT MouseState getScrollBarHandleState(
+  QStyle::State const& state, QStyle::SubControls const activeSubControls);
 QLEMENTINE_EXPORT FocusState getFocusState(QStyle::State const& state);
 QLEMENTINE_EXPORT FocusState getFocusState(bool focused);
 QLEMENTINE_EXPORT CheckState getCheckState(QStyle::State const& state);

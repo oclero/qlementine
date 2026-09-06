@@ -97,7 +97,8 @@ QLEMENTINE_EXPORT QPixmap makeRoundedPixmap(QPixmap const& input, double radius)
 QLEMENTINE_EXPORT QPixmap makeRoundedPixmap(QPixmap const& input, const RadiusesF& radiuses);
 
 /// Makes a QPixmap with rounded corners.
-QLEMENTINE_EXPORT QPixmap makeRoundedPixmap(QPixmap const& input, double topLeft, double topRight, double bottomRight, double bottomLeft);
+QLEMENTINE_EXPORT QPixmap makeRoundedPixmap(
+  QPixmap const& input, double topLeft, double topRight, double bottomRight, double bottomLeft);
 
 /// Makes a pixmap that fits the requested size.
 QLEMENTINE_EXPORT QPixmap makeFitPixmap(QPixmap const& input, const QSize& size);
@@ -118,7 +119,8 @@ QLEMENTINE_EXPORT QPixmap getBlurredPixmap(QPixmap const& input, double blurRadi
 QLEMENTINE_EXPORT QPixmap getDropShadowPixmap(QPixmap const& input, double blurRadius, QColor const& color = Qt::black);
 
 /// Gets a drop shadow for a QRect.
-QLEMENTINE_EXPORT QPixmap getDropShadowPixmap(QSize const& size, double borderRadius, double blurRadius, QColor const& color = Qt::black);
+QLEMENTINE_EXPORT QPixmap getDropShadowPixmap(
+  QSize const& size, double borderRadius, double blurRadius, QColor const& color = Qt::black);
 
 /// Calculates the necessary space for a blurred image.
 QLEMENTINE_EXPORT int blurRadiusNecessarySpace(const double blurRadius);

@@ -30,7 +30,8 @@ QLEMENTINE_EXPORT bool shouldHaveTabFocus(const QWidget* w);
 QLEMENTINE_EXPORT bool shouldNotBeVerticallyCompressed(const QWidget* w);
 
 /// Horizontal paddings (left, right) are different according to the content of the widget.
-QLEMENTINE_EXPORT std::tuple<int, int> getHPaddings(const bool hasIcon, const bool hasText, const bool hasIndicator, const int padding);
+QLEMENTINE_EXPORT std::tuple<int, int> getHPaddings(
+  const bool hasIcon, const bool hasText, const bool hasIndicator, const int padding);
 
 /// Should the widget not receive wheel events when not focused.
 QLEMENTINE_EXPORT bool shouldNotHaveWheelEvents(const QWidget* w);
