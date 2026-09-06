@@ -227,6 +227,7 @@ target_link_libraries(qlementinestyleplugin
 set_target_properties(qlementinestyleplugin
   PROPERTIES
     FOLDER lib
+    ARCHIVE_OUTPUT_NAME qlementinestyleplugin
     CMAKE_AUTORCC ON
     CMAKE_AUTOMOC ON
     CMAKE_AUTOUIC ON
