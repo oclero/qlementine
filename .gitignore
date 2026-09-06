@@ -30,6 +30,7 @@ desktop.ini
 build/
 _build*/
 Testing/
+_install*/
 
 # VS Code files.
 .cproject
