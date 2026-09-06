@@ -1,8 +1,26 @@
 # Changelog
 
+## v1.5.0
+
+New features:
+
+- Add support for `QListView::IconMode` (by @gjaegy).
+- Add Qt style plugin (by @BLumia).
+- Add support for static and shared library (by @kangie).
+
+Bugfixes:
+
+- Fix event filters added multiple times to the same widget (#165 by @gjaegy).
+- Fix `QComboBox` maximum height based on available screen space (by @tlambert03).
+- Fix black rectangles when using QFocusFrame on Windows (#139 by @gjaegy).
+- Fix ThemeManager constructor and style getter (#148 by @tlambert03).
+- Fix missing `TextHideMnemonic` flag to `drawComplexControl` for `CC_GroupBox` (#147 by @tlambert03).
+- Fix `Expander::setExpanded` with no content (#145 by @tlambert03).
+
 ## v1.4.2
 
-WIP
+- Set menu item flash count to 1 like macOS.
+- Don't exceed the screen height when expanding a tree view.
 
 ## v1.4.1
 
