@@ -10,8 +10,10 @@
 
 This library contains:
 
-- A custom `QStyle` named `QlementineStyle`, that implements all the necessary API to give a modern look and feel to your Qt application. It's a drop-in replacement for the default `QStyle`.
-- Lots of utilities to help you write beautiful `QWidgets`.
+- A custom `QStyle` named `QlementineStyle`, that implements all the necessary API to give a modern look and feel to your Qt application. It's a **drop-in replacement** for the default `QStyle`.
+- **Static and shared library builds**, for applications that vendor Qlementine or consume it as a system package.
+- A **Qt style plugin** named `qlementinestyleplugin`, exposing the `"qlementine"` style key.
+- Lots of **utilities** to help you write beautiful `QWidgets` that fits well with the style.
 - A collection of new `QWidgets` that are missing in Qt's standard collection, such as `Switch`.
 
 ## Requirements

@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QAction>
 #include <functional>
 
 namespace oclero::qlementine {
-class Action : public QAction {
+class QLEMENTINE_EXPORT Action : public QAction {
   Q_OBJECT
 
   Q_PROPERTY(bool shortcutEditable READ shortcutEditable WRITE setShortcutEditable NOTIFY shortcutEditableChanged)

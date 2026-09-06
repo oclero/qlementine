@@ -32,13 +32,13 @@ QLEMENTINE_EXPORT QPainterPath getMultipleRadiusesRectPath(QRectF const& rect, R
 /// Draws an antialiased rect.
 QLEMENTINE_EXPORT void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, qreal const radius = 0.);
 
-// Draws an antialiased rect with different radiuses.
+/// Draws an antialiased rect with different radiuses.
 QLEMENTINE_EXPORT void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, RadiusesF const& radiuses);
 
 /// Draws an antialiased rect.
 QLEMENTINE_EXPORT void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, qreal const radius = 0.);
 
-// Draws an antialiased rect with different radiuses.
+/// Draws an antialiased rect with different radiuses.
 QLEMENTINE_EXPORT void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, RadiusesF const& radiuses);
 
 /// Draws an antialiased pixel-perfect border for the rounded rect.
@@ -72,11 +72,12 @@ QLEMENTINE_EXPORT void drawCheckerboard(
 
 /// Draws the value of a progress bar. A clipping mask is used to ensure the rectangle radiuses are respected
 /// even for values close to min or max.
-QLEMENTINE_EXPORT void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min, qreal max, qreal value,
-  qreal const radius = 0., bool inverted = false);
+QLEMENTINE_EXPORT void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min,
+  qreal max, qreal value, qreal const radius = 0., bool inverted = false);
 
 /// Draws a color mark. Will draw a border if the contrast between color and background is not high enough.
-QLEMENTINE_EXPORT void drawColorMark(QPainter* p, QRect const& rect, const QColor& color, const QColor& borderColor, int borderWidth = 1);
+QLEMENTINE_EXPORT void drawColorMark(
+  QPainter* p, QRect const& rect, const QColor& color, const QColor& borderColor, int borderWidth = 1);
 
 /// Draws the border of a color mark.
 QLEMENTINE_EXPORT void drawColorMarkBorder(QPainter* p, QRect const& rect, const QColor& borderColor, int borderWidth);
@@ -88,7 +89,8 @@ QLEMENTINE_EXPORT void drawDebugRect(const QRect& rect, QPainter* p);
 using PixmapMakerFunc = std::function<QPixmap(const QSize& s, const QColor& c)>;
 
 /// Utility to add QPixmaps to all states of the QIcon. The callback in parameter will be called to draw each QPixmap.
-QLEMENTINE_EXPORT void updateUncheckableButtonIconPixmap(QIcon& icon, const QSize& size, Theme const& theme, const PixmapMakerFunc& func);
+QLEMENTINE_EXPORT void updateUncheckableButtonIconPixmap(
+  QIcon& icon, const QSize& size, Theme const& theme, const PixmapMakerFunc& func);
 
 /// Gets the path to draw the menu arrow in a Button.
 QLEMENTINE_EXPORT QPainterPath getMenuIndicatorPath(const QRect& rect);
@@ -106,8 +108,8 @@ QLEMENTINE_EXPORT void drawPartiallyCheckedCheckBoxIndicator(const QRect& rect, 
 QLEMENTINE_EXPORT void drawRadioButtonIndicator(const QRect& rect, QPainter* p, qreal progress = 1.);
 
 /// Draws a spinbox up/down indicator (i.e. +/- or up/down arrow).
-QLEMENTINE_EXPORT void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p, QAbstractSpinBox::ButtonSymbols buttonSymbol,
-  QStyle::SubControl subControl, QSize const& iconSize);
+QLEMENTINE_EXPORT void drawSpinBoxArrowIndicator(const QRect& rect, QPainter* p,
+  QAbstractSpinBox::ButtonSymbols buttonSymbol, QStyle::SubControl subControl, QSize const& iconSize);
 
 /// Draws an arrow that points to the right.
 QLEMENTINE_EXPORT void drawArrowRight(const QRect& rect, QPainter* p);
@@ -140,18 +142,21 @@ QLEMENTINE_EXPORT void drawTreeViewIndicator(const QRect& rect, QPainter* p, boo
 QLEMENTINE_EXPORT void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color);
 
 /// Draws a grip indicator (for drag n' drop).
-QLEMENTINE_EXPORT void drawGripIndicator(const QRect& rect, QPainter* p, const QColor& color, Qt::Orientation orientation);
+QLEMENTINE_EXPORT void drawGripIndicator(
+  const QRect& rect, QPainter* p, const QColor& color, Qt::Orientation orientation);
 
 /// Gets the tick interval according to the length of steps, range and available length.
-QLEMENTINE_EXPORT int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int max, int sliderLength);
+QLEMENTINE_EXPORT int getTickInterval(
+  int tickInterval, int singleStep, int pageStep, int min, int max, int sliderLength);
 
 /// Draws the Slider tick marks.
-QLEMENTINE_EXPORT void drawSliderTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
-  const int interval, const int tickThickness, const int singleStep, const int pageStep);
+QLEMENTINE_EXPORT void drawSliderTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor,
+  const int min, const int max, const int interval, const int tickThickness, const int singleStep, const int pageStep);
 
 /// Draws the Dial tick marks.
-QLEMENTINE_EXPORT void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
-  const int tickThickness, const int tickLength, const int singleStep, const int pageStep, const int minArcLength);
+QLEMENTINE_EXPORT void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor,
+  const int min, const int max, const int tickThickness, const int tickLength, const int singleStep, const int pageStep,
+  const int minArcLength);
 
 /// Draws a Dial.
 QLEMENTINE_EXPORT void drawDial(QPainter* p, QRect const& rect, int min, int max, double value, QColor const& bgColor,
@@ -162,8 +167,8 @@ QLEMENTINE_EXPORT void drawDial(QPainter* p, QRect const& rect, int min, int max
 QLEMENTINE_EXPORT QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses);
 
 /// Draws a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
-QLEMENTINE_EXPORT void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor, bool drawShadow = false,
-  const QColor& shadowColor = Qt::black);
+QLEMENTINE_EXPORT void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor,
+  bool drawShadow = false, const QColor& shadowColor = Qt::black);
 
 /// Draws the shadow of a rounded tab.
 QLEMENTINE_EXPORT void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color);
@@ -173,15 +178,16 @@ QLEMENTINE_EXPORT void drawRadioButton(QPainter* p, const QRect& rect, QColor co
   QColor const& fgColor, const qreal borderWidth, qreal progress);
 
 /// Draws a CheckButton indicator according to its checked state.
-QLEMENTINE_EXPORT void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor,
-  const QColor& fgColor, const qreal borderWidth, qreal progress, CheckState checkState);
+QLEMENTINE_EXPORT void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor,
+  const QColor& borderColor, const QColor& fgColor, const qreal borderWidth, qreal progress, CheckState checkState);
 
 /// Draws a menu separator.
 QLEMENTINE_EXPORT void drawMenuSeparator(QPainter* p, const QRect& rect, QColor const& color, const int thickness);
 
 /// Draws an elided text (with an ellipsis "…" at the end if necessary) inside a QRect.
 /// The difference with Qt's method is the ellipsis (Qt doesn't draw one and just cuts the text).
-QLEMENTINE_EXPORT void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text, const QPaintDevice* paintDevice);
+QLEMENTINE_EXPORT void drawElidedMultiLineText(
+  QPainter& p, const QRect& rect, const QString& text, const QPaintDevice* paintDevice);
 
 /// Removes the trailing whitespaces at the end.
 QLEMENTINE_EXPORT QString removeTrailingWhitespaces(const QString& str);
@@ -190,8 +196,8 @@ QLEMENTINE_EXPORT QString removeTrailingWhitespaces(const QString& str);
 QLEMENTINE_EXPORT QString displayedShortcutString(const QKeySequence& shortcut);
 
 /// Draws a keyboard shortcut.
-QLEMENTINE_EXPORT void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme, bool enabled,
-  Qt::Alignment alignment = { Qt::AlignLeft | Qt::AlignVCenter });
+QLEMENTINE_EXPORT void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme,
+  bool enabled, Qt::Alignment alignment = { Qt::AlignLeft | Qt::AlignVCenter });
 
 /// Gets the necessary size to display the whole shortcut.
 QLEMENTINE_EXPORT QSize shortcutSizeHint(const QKeySequence& shortcut, const Theme& theme);
@@ -202,8 +208,8 @@ QLEMENTINE_EXPORT QPixmap getPixmap(
   const QIcon& icon, const QSize& iconSize, const MouseState mouse, const CheckState checked, const QWidget* widget);
 
 /// Draws the icon to fill the rect. Returns the actual rect occupied by the pixmap (it can be smaller).
-QLEMENTINE_EXPORT QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
-  const QWidget* widget, bool colorize = false, const QColor& color = {});
+QLEMENTINE_EXPORT QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse,
+  const CheckState checked, const QWidget* widget, bool colorize = false, const QColor& color = {});
 
 /// Updates the QIcon with the QPixmap given by the function at the right size and for all states.
 QLEMENTINE_EXPORT void updateUncheckableButtonIconPixmap(
@@ -237,7 +243,8 @@ QLEMENTINE_EXPORT QPixmap makeArrowRightPixmap(QSize const& size, QColor const& 
 QLEMENTINE_EXPORT QPixmap makeMessageBoxWarningPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
 QLEMENTINE_EXPORT QPixmap makeMessageBoxCriticalPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
 QLEMENTINE_EXPORT QPixmap makeMessageBoxQuestionPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
-QLEMENTINE_EXPORT QPixmap makeMessageBoxInformationPixmap(QSize const& size, QColor const& bgColor, QColor const& fgColor);
+QLEMENTINE_EXPORT QPixmap makeMessageBoxInformationPixmap(
+  QSize const& size, QColor const& bgColor, QColor const& fgColor);
 
 QLEMENTINE_EXPORT void updateMessageBoxWarningIcon(QIcon& icon, QSize const& size, Theme const& theme);
 QLEMENTINE_EXPORT void updateMessageBoxCriticalIcon(QIcon& icon, QSize const& size, Theme const& theme);

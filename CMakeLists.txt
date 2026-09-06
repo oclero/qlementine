@@ -36,9 +36,6 @@ if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
 endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-# Include GNUInstallDirs for standard install directories
-include(GNUInstallDirs)
-
 # Find Qt.
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Svg)
 qt_standard_project_setup(

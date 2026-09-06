@@ -128,6 +128,7 @@ endif()
 # Initialize target variables
 set(_targets_to_build)
 set(_main_target_name ${PROJECT_NAME})
+set(_export_header_target)
 
 # Create shared library target
 if(_build_shared)
@@ -147,6 +148,7 @@ if(_build_shared)
   set_target_properties(${_shared_target}
     PROPERTIES
       OUTPUT_NAME ${PROJECT_NAME}
+      DEFINE_SYMBOL QLEMENTINE_EXPORTS
       PROJECT_LABEL "${PROJECT_NAME}_Shared"
       FOLDER lib
       SOVERSION ${PROJECT_VERSION_MAJOR}
@@ -161,6 +163,7 @@ if(_build_shared)
   )
 
   list(APPEND _targets_to_build ${_shared_target})
+  set(_export_header_target ${_shared_target})
 
   # Create alias for shared library
   if(_build_static)
@@ -190,6 +193,7 @@ if(_build_static)
   set_target_properties(${_static_target}
     PROPERTIES
       OUTPUT_NAME ${PROJECT_NAME}
+      ARCHIVE_OUTPUT_NAME $<IF:$<BOOL:${_build_shared}>,${PROJECT_NAME}_static,${PROJECT_NAME}>
       PROJECT_LABEL "${PROJECT_NAME}_Static"
       FOLDER lib
       DEBUG_POSTFIX _debug
@@ -198,7 +202,16 @@ if(_build_static)
       CMAKE_AUTOUIC ON
   )
 
+  target_compile_definitions(${_static_target}
+    PUBLIC
+      QLEMENTINE_STATIC_DEFINE
+  )
+
   list(APPEND _targets_to_build ${_static_target})
+
+  if(NOT _export_header_target)
+    set(_export_header_target ${_static_target})
+  endif()
 
   # Create alias for static library
   if(_build_shared)
@@ -223,19 +236,19 @@ else()
     add_library(${PROJECT_NAME} ALIAS ${_static_target})
   endif()
 endif()
+
+generate_export_header(${_export_header_target}
+  BASE_NAME QLEMENTINE
+  EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/include/oclero/qlementine/qlementine_export.h
+  EXPORT_MACRO_NAME QLEMENTINE_EXPORT
+  NO_EXPORT_MACRO_NAME QLEMENTINE_NO_EXPORT
+  STATIC_DEFINE QLEMENTINE_STATIC_DEFINE
+)
+
 # Configure all targets (shared and/or static)
 foreach(_target IN LISTS _targets_to_build)
   if(TARGET ${_target})
     message(STATUS "Configuring target: ${_target}")
-
-    # Generate export header for this target
-    generate_export_header(${_target}
-      BASE_NAME QLEMENTINE
-      EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/include/oclero/qlementine/qlementine_export.h
-      EXPORT_MACRO_NAME QLEMENTINE_EXPORT
-      NO_EXPORT_MACRO_NAME QLEMENTINE_NO_EXPORT
-      STATIC_DEFINE QLEMENTINE_STATIC_DEFINE
-    )
 
     target_include_directories(${_target}
       PUBLIC
@@ -260,18 +273,6 @@ foreach(_target IN LISTS _targets_to_build)
     )
   endif()
 endforeach()
-
-# Create source groups.
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
-  FILES
-    ${HEADERS}
-    ${SOURCES}
-)
-
-# Select correct startup project in Visual Studio.
-if(WIN32)
-  set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-endif()
 
 # Create source groups.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -342,7 +343,7 @@ export(EXPORT "${PROJECT_NAME}Targets"
 qt_add_plugin(qlementinestyleplugin
   SHARED
   CLASS_NAME QlementineStylePlugin
-  OUTPUT_NAME qlementine
+  OUTPUT_NAME qlementinestyleplugin
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/QlementineStylePlugin.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/QlementineStylePlugin.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/qlementine_style_plugin.json
