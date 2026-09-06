@@ -8,6 +8,7 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/ResourceInitialization.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/ComboboxItemViewFilter.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/CommandLinkButtonEventFilter.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/DestructionEventFilter.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/LineEditButtonEventFilter.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/LineEditMenuEventFilter.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/eventFilters/MenuEventFilter.hpp
