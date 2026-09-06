@@ -60,3 +60,6 @@ public/
 # CMake files.
 CMakeUserPresets.json
 CMakeLists.txt.user
+
+# Clangd cache
+.cache/

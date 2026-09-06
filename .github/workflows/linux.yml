@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Check Out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -29,7 +29,13 @@ jobs:
       - name: Build the library.
         run: |
           cmake --preset linux -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
-          cmake --build --preset linux --target install
+          cmake --build --preset linux --target qlementine
+
+      - name: Build the Qt style plugin.
+        run: cmake --build --preset linux --target qlementinestyleplugin
+
+      - name: Install the library and plugin.
+        run: cmake --build --preset linux --target install
 
       - name: Build the Sandbox app.
         run: cmake --build --preset linux-sandbox

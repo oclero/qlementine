@@ -198,3 +198,42 @@ install(FILES
 export(EXPORT "${PROJECT_NAME}Targets"
   FILE "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Targets.cmake"
   NAMESPACE ${PROJECT_NAME}::)
+
+# Qt Style Plugin
+qt_add_plugin(qlementinestyleplugin
+  SHARED
+  CLASS_NAME QlementineStylePlugin
+  OUTPUT_NAME qlementine
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/QlementineStylePlugin.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/QlementineStylePlugin.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/qlementine_style_plugin.json
+  ${RESOURCES}
+)
+
+target_include_directories(qlementinestyleplugin
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+
+target_link_libraries(qlementinestyleplugin
+  PRIVATE
+    ${PROJECT_NAME}
+    Qt::Core
+    Qt::Widgets
+    Qt::Svg
+)
+
+set_target_properties(qlementinestyleplugin
+  PROPERTIES
+    FOLDER lib
+    ARCHIVE_OUTPUT_NAME qlementinestyleplugin
+    CMAKE_AUTORCC ON
+    CMAKE_AUTOMOC ON
+    CMAKE_AUTOUIC ON
+)
+
+install(TARGETS qlementinestyleplugin
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/plugins/styles"
+  RUNTIME DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/plugins/styles"
+)

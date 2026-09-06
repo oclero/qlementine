@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Check Out
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -34,7 +34,13 @@ jobs:
       - name: Build the library.
         run: |
           cmake --preset windows-ci -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
-          cmake --build --preset windows-ci --target install
+          cmake --build --preset windows-ci --target qlementine
+
+      - name: Build the Qt style plugin.
+        run: cmake --build --preset windows-ci --target qlementinestyleplugin
+
+      - name: Install the library and plugin.
+        run: cmake --build --preset windows-ci --target install
 
       - name: Build the Sandbox app.
         run: cmake --build --preset windows-ci-sandbox
