@@ -19,6 +19,10 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/Delegates.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/EventFilters.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/EventFilters.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/PolishedWidgetRegistry.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/PolishedWidgetRegistry.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/PolishUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/style/PolishUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/QlementineStyle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/Theme.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/style/ThemeManager.cpp
