@@ -26,41 +26,43 @@
 
 #include "EventFilters.hpp"
 
-#include <QResizeEvent>
-#include <QFontDatabase>
-#include <QToolTip>
-#include <QPixmapCache>
 #include <QApplication>
-#include <QMenuBar>
-#include <QToolBar>
-#include <QTableView>
 #include <QCheckBox>
-#include <QRadioButton>
-#include <QHeaderView>
-#include <QPainter>
-#include <QPainterPath>
-#include <QDial>
-#include <QGroupBox>
 #include <QComboBox>
+#include <QDateTimeEdit>
+#include <QDial>
+#include <QFontComboBox>
+#include <QFontDatabase>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QLineEdit>
+#include <QList>
 #include <QListView>
 #include <QMainWindow>
-#include <QFormLayout>
-#include <QScrollBar>
-#include <QScrollArea>
+#include <QMap>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmapCache>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QResizeEvent>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QSpinBox>
+#include <QTableView>
+#include <QTextEdit>
+#include <QTextEdit>
 #include <QTextEdit>
 #include <QTimer>
-#include <QDateTimeEdit>
-#include <QWindow>
-#include <QPlainTextEdit>
-#include <QTextEdit>
-#include <QSpinBox>
-#include <QFontComboBox>
-#include <QTreeView>
-#include <QPushButton>
+#include <QToolBar>
 #include <QToolButton>
-#include <QLineEdit>
-#include <QTextEdit>
+#include <QToolTip>
+#include <QTreeView>
+#include <QWindow>
 
 #include <cmath>
 #include <mutex>
@@ -87,12 +89,17 @@ constexpr auto Property_AutoIconColor = "autoIconColor";
 
 
 struct QlementineStyleImpl {
+  struct PolishedWidgetInfo {
+    QList<QObject*> _eventFilters;
+  };
+
   QlementineStyle& owner;
   Theme theme{};
   std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
   WidgetAnimationManager animations;
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
   std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
+  QMap<QWidget*, PolishedWidgetInfo> polishedWidgetsWithEventFilters;
   AutoIconColor autoIconColor{ AutoIconColor::None };
   std::function<QString(QString)> iconPathFunc;
 
@@ -127,6 +134,19 @@ struct QlementineStyleImpl {
   /// Some widgets need to have a QPalette explicitely set.
   void updatePalette() const {
     QToolTip::setPalette(theme.palette);
+  }
+
+  void forgetDestroyedWidget(QWidget* widget, QObject* destructionEventFilter) {
+    if (!widget)
+      return;
+
+    auto iter = polishedWidgetsWithEventFilters.find(widget);
+    if (iter == polishedWidgetsWithEventFilters.end())
+      return;
+
+    auto& eventFilters = iter.value()._eventFilters;
+    eventFilters.removeAll(destructionEventFilter);
+    polishedWidgetsWithEventFilters.erase(iter);
   }
 
   /// Updates the font cache.
@@ -4831,7 +4851,7 @@ void QlementineStyle::polish(QWidget* w) {
 
   // Ensure we only polish a widget once, otherwise we might
   // end up with multiple event filters on the same widget.
-  auto& polishedWidgetInfo = _polishedWidgetsWithEventFilters[w];
+  auto& polishedWidgetInfo = _impl->polishedWidgetsWithEventFilters[w];
   const auto eventFiltersInstalled = !polishedWidgetInfo._eventFilters.empty();
 
 // Currently we only support tooltips with rounded corners on MacOS.
@@ -5048,8 +5068,8 @@ void QlementineStyle::polish(QWidget* w) {
   // Clean up when the widget is destroyed without unpolish() being called.
   // Using an event filter instead of signal to handle cases where blockSignals() is called.
   if (!eventFiltersInstalled) {
-    auto* eventFilter = new DestructionEventFilter(w, this, [this](QWidget* widget) {
-      onWidgetDestroyed(widget);
+    auto* eventFilter = new DestructionEventFilter(w, this, [this](QWidget* widget, QObject* destructionEventFilter) {
+      _impl->forgetDestroyedWidget(widget, destructionEventFilter);
     });
     w->installEventFilter(eventFilter);
     polishedWidgetInfo._eventFilters.push_back(eventFilter);
@@ -5062,8 +5082,8 @@ void QlementineStyle::unpolish(QWidget* w) {
   // TODO revert all hacks made in QlementineStyle::polish(QWidget* w)
 
   // Remove event filters installed in QlementineStyle::polish(QWidget* w).
-  auto iter = _polishedWidgetsWithEventFilters.find(w);
-  if (iter != _polishedWidgetsWithEventFilters.end()) {
+  auto iter = _impl->polishedWidgetsWithEventFilters.find(w);
+  if (iter != _impl->polishedWidgetsWithEventFilters.end()) {
     auto& polishedWidgetInfo = iter.value();
     auto iterEventFilters = polishedWidgetInfo._eventFilters.begin();
     while (iterEventFilters != polishedWidgetInfo._eventFilters.end()) {
@@ -5073,9 +5093,9 @@ void QlementineStyle::unpolish(QWidget* w) {
     }
 
     // Remove the widget from the map.
-    _polishedWidgetsWithEventFilters.erase(iter);
+    _impl->polishedWidgetsWithEventFilters.erase(iter);
   }
-  
+
   if (shouldHaveHoverEvents(w)) {
     w->setAttribute(Qt::WA_Hover, false);
     w->setAttribute(Qt::WA_OpaquePaintEvent, true);
@@ -5083,10 +5103,6 @@ void QlementineStyle::unpolish(QWidget* w) {
   if (shouldHaveMouseTracking(w)) {
     w->setMouseTracking(false);
   }
-}
-
-void QlementineStyle::onWidgetDestroyed(QWidget* w) {
-  unpolish(w);
 }
 
 /* QStyle extended enums. */

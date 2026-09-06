@@ -17,7 +17,6 @@ namespace oclero::qlementine {
 class CommandLinkButtonPaintEventFilter;
 class LineEditButtonEventFilter;
 struct QlementineStyleImpl;
-class DestructionEventFilter;
 
 class QLEMENTINE_EXPORT QlementineStyle : public QCommonStyle {
   Q_OBJECT
@@ -128,9 +127,6 @@ public: // QStyle overrides.
   void polish(QWidget* w) override;
   void unpolish(QWidget* w) override;
   void unpolish(QApplication* app) override;
-
-private:
-  void onWidgetDestroyed(QWidget* w);
 
 public: // QStyle extended enums.
   virtual void drawPrimitiveExt(
@@ -301,10 +297,6 @@ public: // Theme-related methods.
 
 private:
   std::unique_ptr<QlementineStyleImpl> _impl;
-  struct PolishedWidgetInfo {
-    QList<QObject*> _eventFilters;
-  };
-  QMap<QWidget*, PolishedWidgetInfo> _polishedWidgetsWithEventFilters;
 };
 
 QLEMENTINE_EXPORT QlementineStyle* appStyle();

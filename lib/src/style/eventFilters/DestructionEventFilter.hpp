@@ -3,22 +3,23 @@
 
 #pragma once
 
-
-#include <oclero/qlementine/style/QlementineStyle.hpp>
-#include <oclero/qlementine/style/Delegates.hpp>
+#include <functional>
+#include <utility>
 
 #include <QEvent>
 #include <QObject>
+#include <QWidget>
+#include <QPointer>
 
 namespace oclero::qlementine {
 class DestructionEventFilter : public QObject {
   Q_OBJECT
 
 public:
-  using DestructionCallback = std::function<void(QWidget*)>;
+  using DestructionCallback = std::function<void(QWidget*, QObject*)>;
 
   DestructionEventFilter(QWidget* widget, QObject* parent, DestructionCallback callback)
-    : QObject(parent)  // Parent to QlementineStyle, not the widget!
+    : QObject(parent) // Parent to QlementineStyle, not the widget!
     , _widget(widget)
     , _callback(std::move(callback)) {}
   virtual ~DestructionEventFilter() {}
@@ -26,18 +27,22 @@ public:
 protected:
   bool eventFilter(QObject* watched, QEvent* event) override {
     if (event->type() == QEvent::Destroy && watched == _widget) {
-      // Call the cleanup callback before the widget is destroyed
-      if (_callback) {
-        _callback(_widget);
+      auto* widget = _widget.data();
+      auto callback = std::move(_callback);
+      _callback = {};
+      _widget = nullptr;
+      watched->removeEventFilter(this);
+      if (callback) {
+        callback(widget, this);
       }
-      // The filter will be deleted automatically when the widget is destroyed
-      // since it's parented to the widget
+      deleteLater();
+      return false;
     }
     return QObject::eventFilter(watched, event);
   }
 
 private:
-  QWidget* _widget;
+  QPointer<QWidget> _widget;
   DestructionCallback _callback;
 };
 } // namespace oclero::qlementine
