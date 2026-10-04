@@ -68,6 +68,16 @@
 
 namespace oclero::qlementine {
 
+static const QStyleOptionButton* buttonStyleOption(const QStyleOption* opt) {
+  if (const auto* roundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+    return roundedButton;
+  }
+  if (const auto* commandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+    return commandButton;
+  }
+  return qstyleoption_cast<const QStyleOptionButton*>(opt);
+}
+
 QlementineStyle* appStyle() {
   return qobject_cast<QlementineStyle*>(qApp->style());
 }
@@ -444,14 +454,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameDockWidget:
       break;
-    case PE_FrameFocusRect:
-      if (const auto* optFocus = qstyleoption_cast<const QStyleOptionFocusRect*>(opt)) {
+    case PE_FrameFocusRect: {
+      const auto* optRoundedFocus = qstyleoption_cast<const QStyleOptionFocusRoundedRect*>(opt);
+      const QStyleOptionFocusRect* optFocus =
+        optRoundedFocus ? optRoundedFocus : qstyleoption_cast<const QStyleOptionFocusRect*>(opt);
+      if (optFocus) {
         if (optFocus->rect.isEmpty())
           return;
 
-        // Border-radius hack.
         RadiusesF borderRadiuses;
-        if (const auto* optRoundedFocus = qstyleoption_cast<const QStyleOptionFocusRoundedRect*>(opt)) {
+        if (optRoundedFocus) {
           borderRadiuses = optRoundedFocus->radiuses;
         }
 
@@ -470,6 +482,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           drawRoundedRectBorder(p, currentFocusRect, borderColor, currentBorderW, currentRadius);
         }
       }
+    }
       return;
     case PE_FrameGroupBox:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
@@ -528,7 +541,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameButtonBevel: {
       // Try to get information about rounded corners. By default, all corners are rounded.
-      const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt);
+      const auto* optButton = buttonStyleOption(opt);
       const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
       if (optRoundedButton) {
         optButton = optRoundedButton;
@@ -779,7 +792,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_IndicatorCheckBox:
     case PE_IndicatorRadioButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto checkState = getCheckState(optButton->state);
         const auto mouse = getMouseState(optButton->state);
         const auto focus = getFocusState(optButton->state);
@@ -1132,7 +1145,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
   switch (ce) {
     case CE_PushButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         // Button background and border.
         drawControl(CE_PushButtonBevel, optButton, p, w);
 
@@ -1143,20 +1156,20 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       }
       return;
     case CE_PushButtonBevel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
-        // Draw background rect.
-        auto optButtonBg = QStyleOptionButton(*optButton);
-        optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
-        drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
-      } else if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+      if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
         // Draw background rect.
         auto optButtonBg = QStyleOptionRoundedButton(*optRoundedButton);
+        optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
+        drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
+      } else if (const auto* optButton = buttonStyleOption(opt)) {
+        // Draw background rect.
+        auto optButtonBg = QStyleOptionButton(*optButton);
         optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
         drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
       }
       return;
     case CE_PushButtonLabel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         // Content.
         const auto mouse = getMouseState(optButton->state);
         const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
@@ -1230,7 +1243,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_RadioButton:
     case CE_CheckBox:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto isRadio = ce == CE_RadioButton;
 
         // Draw rect and indicator.
@@ -1246,7 +1259,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_CheckBoxLabel:
     case CE_RadioButtonLabel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         // Draw text and icon.
         const auto mouse = getMouseState(optButton->state);
         const auto& fgColor = labelForegroundColor(mouse, w);
@@ -2450,7 +2463,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, const QWidget* w) const {
   switch (se) {
     case SE_PushButtonContents:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto hasIcon = !optButton->icon.isNull();
         const auto hasText = !optButton->text.isEmpty();
         const auto hasMenu = optButton->features.testFlag(QStyleOptionButton::HasMenu);
@@ -3817,7 +3830,7 @@ QSize QlementineStyle::sizeFromContents(
   ContentsType ct, const QStyleOption* opt, const QSize& contentSize, const QWidget* widget) const {
   switch (ct) {
     case CT_PushButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto hasIcon = !optButton->icon.isNull();
         const auto hasText = !optButton->text.isEmpty();
         const auto hasMenu = optButton->features.testFlag(QStyleOptionButton::HasMenu);
@@ -3863,7 +3876,7 @@ QSize QlementineStyle::sizeFromContents(
       break;
     case CT_CheckBox:
     case CT_RadioButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         QSize actualContentSize(contentSize);
 
         if (!optButton->icon.isNull()) {
@@ -4960,9 +4973,11 @@ void QlementineStyle::unpolish(QWidget* w) {
 
 void QlementineStyle::drawPrimitiveExt(
   PrimitiveElementExt pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  const auto* optButton = buttonStyleOption(opt);
+  const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (pe) {
     case PrimitiveElementExt::PE_CommandButtonPanel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         const auto radius = _impl->theme.borderRadius;
         const auto mouse = getMouseState(optButton->state);
         const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
@@ -4976,7 +4991,7 @@ void QlementineStyle::drawPrimitiveExt(
       }
       return;
     case PrimitiveElementExt::PE_CommandButtonLabel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         p->setRenderHint(QPainter::Antialiasing, true);
         p->setBrush(Qt::NoBrush);
 
@@ -5022,7 +5037,7 @@ void QlementineStyle::drawPrimitiveExt(
         }
 
         const auto& text = optButton->text;
-        const auto& description = optButton->description;
+        const auto description = optCommandButton ? optCommandButton->description : QString{};
         const auto hasText = !text.isEmpty();
         const auto hasDescription = !description.isEmpty();
         const auto& fm = optButton->fontMetrics;
@@ -5077,22 +5092,30 @@ QSize QlementineStyle::sizeFromContentsExt(
   Q_UNUSED(s);
   Q_UNUSED(w);
 
+  const auto* optButton = buttonStyleOption(opt);
+  const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (ct) {
     case ContentsTypeExt::CT_CommandButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         const auto iconSize = optButton->iconSize;
         const auto& icon = optButton->icon;
         const auto spacing = _impl->theme.spacing;
         const auto hPadding = spacing * 2;
         const auto vPadding = spacing;
-        const auto vSpacing = spacing / 4;
+        const auto description = optCommandButton ? optCommandButton->description : QString{};
+        const auto hasText = !optButton->text.isEmpty();
+        const auto hasDescription = !description.isEmpty();
+        const auto vSpacing = hasText && hasDescription ? spacing / 4 : 0;
         const auto iconW = icon.isNull() ? 0 : iconSize.width() + spacing * 2;
         const auto& fm = optButton->fontMetrics;
         const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
-        const auto textW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
-        const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->description).width();
+        const auto textW = boldFm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
+        const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, description).width();
         const auto width = hPadding * 2 + iconW + std::max(textW, descriptionW);
-        const auto height = vPadding * 2 + fm.height() + boldFm.height() + vSpacing;
+        const auto textH = hasText ? boldFm.height() : 0;
+        const auto descriptionH = hasDescription ? fm.height() : 0;
+        const auto height =
+          vPadding * 2 + std::max(icon.isNull() ? 0 : iconSize.height(), textH + descriptionH + vSpacing);
         return QSize{ width, height };
       }
       break;
@@ -5104,18 +5127,21 @@ QSize QlementineStyle::sizeFromContentsExt(
 
 void QlementineStyle::drawControlExt(
   ControlElementExt ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  const auto* optButton = buttonStyleOption(opt);
+  const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (ce) {
     case ControlElementExt::CE_CommandButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         // Button background and border.
-        drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonPanel, optButton, p, w);
+        drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonPanel, opt, p, w);
 
         // Button foreground (text, descrption and icon).
         const auto spacing = _impl->theme.spacing;
         const auto hPadding = spacing * 2;
         const auto vPadding = spacing;
         const auto fgRect = optButton->rect.marginsRemoved(QMargins{ hPadding, vPadding, hPadding, vPadding });
-        auto optLabel = QStyleOptionCommandLinkButton{ *optButton };
+        auto optLabel = optCommandButton ? QStyleOptionCommandLinkButton{ *optCommandButton }
+                                         : QStyleOptionCommandLinkButton{ *optButton };
         optLabel.rect = fgRect;
         drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonLabel, &optLabel, p, w);
       }
