@@ -6,6 +6,7 @@
 #include <oclero/qlementine/utils/RadiusesF.hpp>
 
 #include <QStyleOption>
+#include <QtTypeTraits>
 
 namespace oclero::qlementine {
 enum class StyleOptionTypeExt {
@@ -17,7 +18,7 @@ enum class StyleOptionTypeExt {
 /// Allows to customize the radius of the focus border.
 class QStyleOptionFocusRoundedRect : public QStyleOptionFocusRect {
 public:
-  enum StyleOptionType { Type = static_cast<int>(StyleOptionTypeExt::SO_FocusRoundedRect) };
+  enum StyleOptionType { Type = qToUnderlying(StyleOptionTypeExt::SO_FocusRoundedRect) };
 
   RadiusesF radiuses;
   int hMargin{ 0 };
@@ -49,7 +50,7 @@ public:
 /// Allows to customize the radius of a button.
 class QStyleOptionRoundedButton : public QStyleOptionButton {
 public:
-  enum StyleOptionType { Type = static_cast<int>(StyleOptionTypeExt::SO_RoundedButton) };
+  enum StyleOptionType { Type = qToUnderlying(StyleOptionTypeExt::SO_RoundedButton) };
 
   RadiusesF radiuses{ 0. };
 
@@ -71,7 +72,7 @@ public:
 /// Adds the ability to have a second line of text in the button.
 class QStyleOptionCommandLinkButton : public QStyleOptionButton {
 public:
-  enum StyleOptionType { Type = static_cast<int>(StyleOptionTypeExt::SO_CommandLinkButton) };
+  enum StyleOptionType { Type = qToUnderlying(StyleOptionTypeExt::SO_CommandLinkButton) };
 
   QString description;
 
