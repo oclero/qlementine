@@ -114,7 +114,6 @@ struct QlementineStyleImpl {
 
   explicit QlementineStyleImpl(QlementineStyle& o)
     : owner(o) {
-    updatePalette();
     std::call_once(qlementineOnceFlag, qlementine::resources::initializeResources);
     installFonts();
   }
@@ -142,7 +141,9 @@ struct QlementineStyleImpl {
 
   /// Some widgets need to have a QPalette explicitely set.
   void updatePalette() const {
-    QToolTip::setPalette(theme.palette);
+    auto palette = theme.palette;
+    palette.setColor(QPalette::ColorGroup::Inactive, QPalette::ColorRole::ToolTipText, owner.toolTipForegroundColor());
+    QToolTip::setPalette(palette);
   }
 
   /// Updates the font cache.
@@ -297,6 +298,7 @@ struct QlementineStyleImpl {
 
 QlementineStyle::QlementineStyle(QObject* parent)
   : _impl(new QlementineStyleImpl{ *this }) {
+  _impl->updatePalette();
   setParent(parent);
   setObjectName(QStringLiteral("QlementineStyle"));
 
