@@ -7,6 +7,7 @@ New features:
 - Add support for `QListView::IconMode` (by @gjaegy).
 - Add Qt style plugin (by @BLumia).
 - Add support for static and shared library (by @kangie).
+- Add `widgetStatus` property support: allows to color icons based on the widget's status (warning, error, ...) (by @tlambert03).
 
 Bugfixes:
 
