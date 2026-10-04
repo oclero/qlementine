@@ -20,6 +20,7 @@ class QLEMENTINE_EXPORT LoadingSpinner : public QWidget {
 
 public:
   explicit LoadingSpinner(QWidget* parent = nullptr);
+  ~LoadingSpinner() override = default;
 
   bool spinning() const;
   Q_SLOT void setSpinning(bool);

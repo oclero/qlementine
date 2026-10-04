@@ -13,6 +13,7 @@ namespace oclero::qlementine {
 class QLEMENTINE_EXPORT ComboBoxDelegate : public QItemDelegate {
 public:
   ComboBoxDelegate(QWidget* widget, QlementineStyle& style);
+  ~ComboBoxDelegate() override = default;
 
 protected:
   void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;

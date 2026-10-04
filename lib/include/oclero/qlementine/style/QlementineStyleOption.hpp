@@ -28,6 +28,8 @@ public:
     type = Type;
   }
 
+  ~QStyleOptionFocusRoundedRect() = default;
+
   static QStyleOptionFocusRoundedRect fromBase(QStyleOption const& opt, QRect const& rect, RadiusesF const& radiuses) {
     QStyleOptionFocusRoundedRect newOpt;
     newOpt.QStyleOption::operator=(opt);
@@ -55,6 +57,8 @@ public:
     type = Type;
   }
 
+  ~QStyleOptionRoundedButton() = default;
+
   QStyleOptionRoundedButton(const QStyleOptionRoundedButton& other)
     : QStyleOptionButton(other)
     , radiuses(other.radiuses) {
@@ -74,6 +78,8 @@ public:
   QStyleOptionCommandLinkButton() {
     type = Type;
   }
+
+  ~QStyleOptionCommandLinkButton() = default;
 
   QStyleOptionCommandLinkButton(const QStyleOptionButton& other)
     : QStyleOptionButton(other) {

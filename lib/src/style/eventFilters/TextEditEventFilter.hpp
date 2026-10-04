@@ -20,6 +20,8 @@ public:
     : QObject(textEdit)
     , _textEdit(textEdit) {}
 
+  ~TextEditEventFilter() override = default;
+
   bool eventFilter(QObject*, QEvent* evt) override {
     const auto type = evt->type();
     switch (type) {

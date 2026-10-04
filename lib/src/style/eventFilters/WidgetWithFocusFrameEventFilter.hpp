@@ -18,6 +18,8 @@ public:
     _focusFrame = new QFocusFrame(_widget);
   }
 
+  ~WidgetWithFocusFrameEventFilter() override = default;
+
   bool eventFilter(QObject* watchedObject, QEvent* evt) override {
     if (watchedObject == _widget) {
       const auto type = evt->type();

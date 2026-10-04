@@ -22,6 +22,8 @@ public:
     , _animManager(animManager)
     , _button(button) {}
 
+  ~CommandLinkButtonEventFilter() override = default;
+
   bool eventFilter(QObject*, QEvent* evt) override {
     if (evt->type() == QEvent::Paint && _style) {
       // Draw the button by ourselves to bypass QLineEditIconButton::paintEvent in qlineedit_p.cpp:353

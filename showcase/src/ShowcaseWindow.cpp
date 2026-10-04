@@ -72,6 +72,7 @@ static QIcon makeThemedIcon(Icons16 id, const QSize& size = { 16, 16 }) {
 class DummyWorkspace : public QWidget {
 public:
   using QWidget::QWidget;
+  ~DummyWorkspace() override = default;
 
 protected:
   void paintEvent(QPaintEvent* evt) override {
@@ -513,8 +514,12 @@ struct ShowcaseWindow::Impl {
 
       {
         class CustomDelegate : public QStyledItemDelegate {
+        public:
           using QStyledItemDelegate::QStyledItemDelegate;
 
+          ~CustomDelegate() override = default;
+
+        private:
           QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override {
             const auto result = QStyledItemDelegate::sizeHint(option, index);
             return { 0, result.height() };

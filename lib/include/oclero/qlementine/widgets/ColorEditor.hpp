@@ -22,6 +22,7 @@ class QLEMENTINE_EXPORT ColorEditor : public QWidget {
 public:
   explicit ColorEditor(QWidget* parent = nullptr);
   explicit ColorEditor(const QColor& color, QWidget* parent = nullptr);
+  ~ColorEditor() override = default;
 
   const QColor& color() const;
   void setColor(const QColor& color);

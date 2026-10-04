@@ -16,7 +16,7 @@ namespace oclero::qlementine::showcase {
 class ShowcaseWindow : public QWidget {
 public:
   explicit ShowcaseWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
-  ~ShowcaseWindow();
+  ~ShowcaseWindow() override;
 
 private:
   struct Impl;

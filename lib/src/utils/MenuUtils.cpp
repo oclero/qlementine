@@ -20,6 +20,8 @@ public:
     }
   }
 
+  ~FlashActionHelper() override = default;
+
 protected:
   void timerEvent(QTimerEvent*) override {
     if (_flashActionElapsedTime < flashActionDuration && _menu && _action) {

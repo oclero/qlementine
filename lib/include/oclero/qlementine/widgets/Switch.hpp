@@ -22,6 +22,7 @@ class QLEMENTINE_EXPORT Switch : public QAbstractButton {
 
 public:
   explicit Switch(QWidget* parent = nullptr);
+  ~Switch() override = default;
 
   QSize sizeHint() const override;
 

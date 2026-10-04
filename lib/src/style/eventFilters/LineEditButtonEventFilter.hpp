@@ -30,6 +30,8 @@ public:
     }
   }
 
+  ~LineEditButtonEventFilter() override = default;
+
 protected:
   bool eventFilter(QObject*, QEvent* evt) override {
     switch (evt->type()) {

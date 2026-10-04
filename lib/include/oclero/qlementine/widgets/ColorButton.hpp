@@ -20,6 +20,7 @@ public:
   explicit ColorButton(QWidget* parent = nullptr);
   explicit ColorButton(const QColor& color, QWidget* parent = nullptr);
   explicit ColorButton(const QColor& color, ColorMode mode, QWidget* parent = nullptr);
+  ~ColorButton() override = default;
 
   const QColor& color() const;
   void setColor(const QColor& color);

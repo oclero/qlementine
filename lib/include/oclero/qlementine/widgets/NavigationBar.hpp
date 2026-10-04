@@ -11,6 +11,7 @@ namespace oclero::qlementine {
 class QLEMENTINE_EXPORT NavigationBar : public AbstractItemListWidget {
 public:
   using AbstractItemListWidget::AbstractItemListWidget;
+  ~NavigationBar() override = default;
 
 protected: // Inherited via AbstractItemListWidget
   const QColor& getBgColor(const Theme& theme) const override;

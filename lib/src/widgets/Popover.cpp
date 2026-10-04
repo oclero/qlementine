@@ -52,6 +52,8 @@ public:
     setLayout(layout);
   }
 
+  ~PopoverFrame() override = default;
+
   void onResize(const std::function<void()>&& cb) {
     _onResize = cb;
     if (_onResize) {

@@ -28,6 +28,8 @@ public:
     menu->installEventFilter(this);
   }
 
+  ~MenuEventFilter() override = default;
+
   bool eventFilter(QObject*, QEvent* evt) override {
     switch (evt->type()) {
       case QEvent::Type::Show: {
