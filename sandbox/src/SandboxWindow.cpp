@@ -838,7 +838,7 @@ struct SandboxWindow::Impl {
         getTestQIcon(), QString("Item #%1 with very long text that can be elided").arg(i), listView);
       if (checkable) {
         item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
-        item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+        item->setCheckState(i % 2 ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
       }
 
       //item->setForeground(i % 2 ? Qt::red : Qt::blue);
@@ -1387,7 +1387,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
         auto* item = new QListWidgetItem(
           getTestQIcon(), QString("Item #%1 with very long text that can be elided").arg(i), listView);
         item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
-        item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+        item->setCheckState(i % 2 ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
 
         listView->addItem(item);
       }
