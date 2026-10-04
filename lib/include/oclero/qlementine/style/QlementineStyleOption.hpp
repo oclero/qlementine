@@ -82,7 +82,7 @@ public:
 
   ~QStyleOptionCommandLinkButton() = default;
 
-  QStyleOptionCommandLinkButton(const QStyleOptionButton& other)
+  explicit QStyleOptionCommandLinkButton(const QStyleOptionButton& other)
     : QStyleOptionButton(other) {
     type = Type;
   }
