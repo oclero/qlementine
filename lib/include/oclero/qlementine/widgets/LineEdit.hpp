@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/Common.hpp>
 
@@ -12,7 +13,7 @@
 
 namespace oclero::qlementine {
 /// A QLineEdit that draws a search icon
-class LineEdit : public QLineEdit {
+class QLEMENTINE_EXPORT LineEdit : public QLineEdit {
   Q_OBJECT
 
   Q_PROPERTY(QIcon icon READ icon WRITE setIcon NOTIFY iconChanged)
@@ -20,17 +21,20 @@ class LineEdit : public QLineEdit {
 
 public:
   explicit LineEdit(QWidget* parent = nullptr);
+  ~LineEdit() override = default;
 
   const QIcon& icon() const;
   Q_SLOT void setIcon(const QIcon& icon);
-  Q_SIGNAL void iconChanged();
 
   void setUseMonoSpaceFont(bool useMonoSpaceFont);
   bool useMonoSpaceFont() const;
 
   Status status() const;
   Q_SLOT void setStatus(Status status);
-  Q_SIGNAL void statusChanged();
+
+Q_SIGNALS:
+  void iconChanged();
+  void statusChanged();
 
 protected:
   void paintEvent(QPaintEvent* evt) override;

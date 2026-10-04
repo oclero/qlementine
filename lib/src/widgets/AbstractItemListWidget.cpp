@@ -37,7 +37,7 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   _badgeFont.setBold(true);
 }
 
-AbstractItemListWidget ::~AbstractItemListWidget() = default;
+AbstractItemListWidget::~AbstractItemListWidget() = default;
 
 int AbstractItemListWidget::itemCount() const {
   return static_cast<int>(_items.size());
@@ -50,12 +50,16 @@ int AbstractItemListWidget::currentIndex() const {
 void AbstractItemListWidget::setCurrentIndex(int index) {
   index = index < 0 || index > itemCount() - 1 ? -1 : index;
   if (index != _currentIndex) {
+    const auto oldData = currentData();
     _currentIndex = index;
     _focusedIndex = index;
     update();
     updateCurrentIndexAnimation();
     updateItemsAnimations();
     Q_EMIT currentIndexChanged();
+    if (currentData() != oldData) {
+      Q_EMIT currentDataChanged();
+    }
   }
 }
 
@@ -122,6 +126,7 @@ int AbstractItemListWidget::addItem(
 
   update();
   updateGeometry();
+  updateItemRects();
   updateItemsAnimations();
   updateCurrentIndexAnimation();
   Q_EMIT itemCountChanged();
@@ -670,6 +675,7 @@ void AbstractItemListWidget::initStyleOptionFocus(QStyleOptionFocusRoundedRect& 
 void AbstractItemListWidget::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   // Background.
   drawBackground(p);

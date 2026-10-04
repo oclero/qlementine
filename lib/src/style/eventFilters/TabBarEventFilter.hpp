@@ -19,6 +19,8 @@ public:
     : QObject(tabBar)
     , _tabBar(tabBar) {}
 
+  ~TabBarButtonEventFilter() override = default;
+
 protected:
   bool eventFilter(QObject*, QEvent* evt) override {
     const auto type = evt->type();
@@ -60,6 +62,8 @@ public:
       _rightButton->installEventFilter(buttonEvtFilter);
     }
   }
+
+  ~TabBarEventFilter() override = default;
 
   bool eventFilter(QObject*, QEvent* evt) override {
     const auto type = evt->type();

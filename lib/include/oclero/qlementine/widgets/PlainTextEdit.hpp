@@ -3,19 +3,21 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/Common.hpp>
 
 #include <QPlainTextEdit>
 
 namespace oclero::qlementine {
 /// An improved QPlainTextEdit.
-class PlainTextEdit : public QPlainTextEdit {
+class QLEMENTINE_EXPORT PlainTextEdit : public QPlainTextEdit {
   Q_OBJECT
 
   Q_PROPERTY(Status status READ status WRITE setStatus NOTIFY statusChanged)
 
 public:
   explicit PlainTextEdit(QWidget* parent = nullptr);
+  ~PlainTextEdit() override = default;
 
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;
@@ -25,7 +27,9 @@ public:
 
   Status status() const;
   Q_SLOT void setStatus(Status status);
-  Q_SIGNAL void statusChanged();
+
+Q_SIGNALS:
+  void statusChanged();
 
 private:
   void updateFont();

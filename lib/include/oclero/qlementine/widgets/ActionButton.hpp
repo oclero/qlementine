@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QPushButton>
 
 namespace oclero::qlementine {
 
-class ActionButton : public QPushButton {
+class QLEMENTINE_EXPORT ActionButton : public QPushButton {
   Q_OBJECT
 
 public:

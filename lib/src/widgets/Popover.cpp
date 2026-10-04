@@ -52,6 +52,8 @@ public:
     setLayout(layout);
   }
 
+  ~PopoverFrame() override = default;
+
   void onResize(const std::function<void()>&& cb) {
     _onResize = cb;
     if (_onResize) {
@@ -301,6 +303,7 @@ QMargins Popover::screenPadding() const {
 void Popover::setScreenPadding(const QMargins& padding) {
   if (padding != _screenPadding) {
     _screenPadding = padding;
+    Q_EMIT screenPaddingChanged();
     if (isVisible()) {
       updatePopoverGeometry();
     }
@@ -511,6 +514,7 @@ void Popover::adjustSizeToContent() {
 void Popover::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   const auto shapePixmap = getFrameShape();
 

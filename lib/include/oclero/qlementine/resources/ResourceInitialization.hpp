@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 namespace oclero::qlementine::resources {
-void initializeResources();
+QLEMENTINE_EXPORT void initializeResources();
 } // namespace oclero::qlementine::resources

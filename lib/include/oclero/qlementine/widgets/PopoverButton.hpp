@@ -3,19 +3,22 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QPushButton>
 
 namespace oclero::qlementine {
 class Popover;
 
 /// A Button that looks like a ComboBox but opens a Popover.
-class PopoverButton : public QPushButton {
+class QLEMENTINE_EXPORT PopoverButton : public QPushButton {
   Q_OBJECT
 
 public:
   explicit PopoverButton(QWidget* parent = nullptr);
   PopoverButton(const QString& text, QWidget* parent = nullptr);
   PopoverButton(const QString& text, const QIcon& icon, QWidget* parent = nullptr);
+  ~PopoverButton() override = default;
 
 public:
   QWidget* popoverContentWidget() const;

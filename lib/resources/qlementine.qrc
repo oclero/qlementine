@@ -8,5 +8,7 @@
     <file>icons/messagebox_question_fg.svg</file>
     <file>icons/messagebox_warning_bg.svg</file>
     <file>icons/messagebox_warning_fg.svg</file>
+    <file>themes/dark.json</file>
+    <file>themes/light.json</file>
   </qresource>
 </RCC>

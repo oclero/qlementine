@@ -14,6 +14,8 @@ public:
     : QObject(widget)
     , _widget(widget) {}
 
+  ~MouseWheelBlockerEventFilter() override = default;
+
   bool eventFilter(QObject*, QEvent* evt) override {
     if (evt->type() == QEvent::Wheel && !_widget->hasFocus()) {
       evt->ignore();

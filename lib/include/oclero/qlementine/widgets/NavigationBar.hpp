@@ -3,13 +3,15 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/widgets/AbstractItemListWidget.hpp>
 
 namespace oclero::qlementine {
 /// A TabBar with tabs like on Android.
-class NavigationBar : public AbstractItemListWidget {
+class QLEMENTINE_EXPORT NavigationBar : public AbstractItemListWidget {
 public:
   using AbstractItemListWidget::AbstractItemListWidget;
+  ~NavigationBar() override = default;
 
 protected: // Inherited via AbstractItemListWidget
   const QColor& getBgColor(const Theme& theme) const override;

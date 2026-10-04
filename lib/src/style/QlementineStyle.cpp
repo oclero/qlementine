@@ -24,44 +24,60 @@
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 
-#include "EventFilters.hpp"
+#include "PolishedWidgetRegistry.hpp"
+#include "PolishUtils.hpp"
 
-#include <QResizeEvent>
-#include <QFontDatabase>
-#include <QToolTip>
-#include <QPixmapCache>
 #include <QApplication>
-#include <QMenuBar>
-#include <QToolBar>
-#include <QTableView>
 #include <QCheckBox>
-#include <QRadioButton>
-#include <QHeaderView>
-#include <QPainter>
-#include <QPainterPath>
-#include <QDial>
-#include <QGroupBox>
 #include <QComboBox>
+#include <QDateTimeEdit>
+#include <QDial>
+#include <QFontComboBox>
+#include <QFontDatabase>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QLineEdit>
 #include <QListView>
 #include <QMainWindow>
-#include <QFormLayout>
-#include <QScrollBar>
-#include <QScrollArea>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QPainter>
+#include <QPainterStateGuard>
+#include <QPainterPath>
+#include <QPixmapCache>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QResizeEvent>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QSpinBox>
+#include <QTableView>
+#include <QTextEdit>
+#include <QTextEdit>
 #include <QTextEdit>
 #include <QTimer>
-#include <QDateTimeEdit>
-#include <QWindow>
-#include <QPlainTextEdit>
-#include <QTextEdit>
-#include <QSpinBox>
-#include <QFontComboBox>
+#include <QToolBar>
+#include <QToolButton>
+#include <QToolTip>
 #include <QTreeView>
+#include <QWindow>
 
 #include <cmath>
 #include <mutex>
 
 namespace oclero::qlementine {
+
+static const QStyleOptionButton* buttonStyleOption(const QStyleOption* opt) {
+  if (const auto* roundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+    return roundedButton;
+  }
+  if (const auto* commandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+    return commandButton;
+  }
+  return qstyleoption_cast<const QStyleOptionButton*>(opt);
+}
 
 QlementineStyle* appStyle() {
   return qobject_cast<QlementineStyle*>(qApp->style());
@@ -81,7 +97,21 @@ constexpr auto iconPenWidth = 1.01;
 // Used to determine if the icon must be colorized according to the Theme's colors or not.
 constexpr auto Property_AutoIconColor = "autoIconColor";
 
+// Used to determine the status of a widget.
+constexpr auto Property_Status = "status";
+
+
 struct QlementineStyleImpl {
+  QlementineStyle& owner;
+  Theme theme{};
+  std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
+  WidgetAnimationManager animations;
+  std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
+  std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
+  PolishedWidgetRegistry polishedWidgets;
+  AutoIconColor autoIconColor{ AutoIconColor::None };
+  std::function<QString(QString)> iconPathFunc;
+
   explicit QlementineStyleImpl(QlementineStyle& o)
     : owner(o) {
     updatePalette();
@@ -244,14 +274,25 @@ struct QlementineStyleImpl {
     }
   }
 
-  QlementineStyle& owner;
-  Theme theme{};
-  std::unique_ptr<QFontMetrics> fontMetricsBold{ nullptr };
-  WidgetAnimationManager animations;
-  std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
-  std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
-  AutoIconColor autoIconColor{ AutoIconColor::None };
-  std::function<QString(QString)> iconPathFunc;
+  static QRect sliderHandleRect(
+    const QlementineStyle& style, const QStyleOptionSlider& opt, const qreal position, const QWidget* widget) {
+    const auto handleW = style.pixelMetric(QStyle::PM_SliderLength, &opt, widget);
+    const auto handleH = style.pixelMetric(QStyle::PM_SliderThickness, &opt, widget);
+    const auto handleY = opt.rect.y() + (opt.rect.height() - handleH) / 2;
+    const auto range = opt.maximum - opt.minimum;
+    const auto ratio = range == 0 ? 0. : (position - opt.minimum) / range;
+    const auto handleX = opt.rect.x() + static_cast<int>(ratio * (opt.rect.width() - handleW));
+    return QRect{ handleX, handleY, handleW, handleH };
+  }
+
+  static QRect sliderFocusRect(
+    const QlementineStyle& style, const QStyleOptionSlider& opt, const QRect& handleRect, const QWidget* widget) {
+    const auto deltaX = style.pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, widget);
+    const auto deltaY = style.pixelMetric(QStyle::PM_FocusFrameVMargin, &opt, widget);
+    const auto vMargin = deltaY / 2;
+    const auto hMargin = deltaX / 2;
+    return handleRect.translated(deltaX, deltaY).marginsAdded(QMargins(hMargin, vMargin, hMargin, vMargin));
+  }
 };
 
 QlementineStyle::QlementineStyle(QObject* parent)
@@ -339,10 +380,14 @@ void QlementineStyle::setAutoIconColor(QWidget* widget, AutoIconColor autoIconCo
   }
 }
 
-AutoIconColor QlementineStyle::autoIconColor(const QWidget* widget) const {
+AutoIconColor QlementineStyle::autoIconColor(const QWidget* widget) {
+  //. Fallback to the app's style.
   if (!widget) {
-    return autoIconColor();
+    const auto* qlementine_style = appStyle();
+    return qlementine_style ? qlementine_style->_impl->autoIconColor : AutoIconColor::None;
   }
+
+  // Look for the property on the widget.
   const auto property = widget->property(Property_AutoIconColor);
   if (!property.isValid()) {
     return autoIconColor(widget->parentWidget());
@@ -363,6 +408,19 @@ QPixmap QlementineStyle::getColorizedPixmap(
   return input;
 }
 
+QPixmap QlementineStyle::getColorizedPixmap(
+  const QPixmap& input, const QWidget* widget, const QColor& fgColor, const QColor& textColor, MouseState mouse) const {
+  const auto aic = autoIconColor(widget);
+  if (aic == AutoIconColor::None) {
+    return input;
+  }
+  if (const auto status = widgetStatus(widget); status != Status::Default) {
+    const auto& color = statusColor(status, mouse);
+    return qlementine::getColorizedPixmap(input, color);
+  }
+  return getColorizedPixmap(input, aic, fgColor, textColor);
+}
+
 QIcon QlementineStyle::makeThemedIcon(const QString& svgPath, const QSize& size, ColorRole role) const {
   const auto iconTheme = _impl->iconThemeFromTheme(role);
   return makeIconFromSvg(svgPath, iconTheme, size);
@@ -377,6 +435,11 @@ QIcon QlementineStyle::makeThemedIconFromName(const QString& name, const QSize& 
   }
 }
 
+QIcon QlementineStyle::makeThemedIconFromData(const QByteArray& svgData, const QSize& size, ColorRole role) const {
+  const auto iconTheme = _impl->iconThemeFromTheme(role);
+  return makeIconFromSvgData(svgData, iconTheme, size);
+}
+
 void QlementineStyle::setIconPathGetter(const std::function<QString(QString)>& func) {
   _impl->iconPathFunc = func;
 }
@@ -384,6 +447,8 @@ void QlementineStyle::setIconPathGetter(const std::function<QString(QString)>& f
 /* QStyle overrides. */
 
 void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   switch (pe) {
     case PE_Frame:
       //qDebug() << pe;
@@ -392,14 +457,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameDockWidget:
       break;
-    case PE_FrameFocusRect:
-      if (const auto* optFocus = qstyleoption_cast<const QStyleOptionFocusRect*>(opt)) {
+    case PE_FrameFocusRect: {
+      const auto* optRoundedFocus = qstyleoption_cast<const QStyleOptionFocusRoundedRect*>(opt);
+      const QStyleOptionFocusRect* optFocus =
+        optRoundedFocus ? optRoundedFocus : qstyleoption_cast<const QStyleOptionFocusRect*>(opt);
+      if (optFocus) {
         if (optFocus->rect.isEmpty())
           return;
 
-        // Border-radius hack.
         RadiusesF borderRadiuses;
-        if (const auto* optRoundedFocus = qstyleoption_cast<const QStyleOptionFocusRoundedRect*>(opt)) {
+        if (optRoundedFocus) {
           borderRadiuses = optRoundedFocus->radiuses;
         }
 
@@ -418,6 +485,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           drawRoundedRectBorder(p, currentFocusRect, borderColor, currentBorderW, currentRadius);
         }
       }
+    }
       return;
     case PE_FrameGroupBox:
       if (const auto* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
@@ -476,7 +544,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       break;
     case PE_FrameButtonBevel: {
       // Try to get information about rounded corners. By default, all corners are rounded.
-      const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt);
+      const auto* optButton = buttonStyleOption(opt);
       const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt);
       if (optRoundedButton) {
         optButton = optRoundedButton;
@@ -486,7 +554,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto isFlat = optButton->features.testFlag(QStyleOptionButton::Flat);
         const auto mouse = isFlat ? getToolButtonMouseState(opt->state) : getMouseState(opt->state);
         const auto role = getColorRole(opt->state, isDefault);
-        const auto& bgColor = isFlat ? toolButtonBackgroundColor(mouse, role) : buttonBackgroundColor(mouse, role, w);
+        const auto hasFocus = optButton->state.testFlag(QStyle::State_HasFocus);
+        const auto effectiveMouse =
+          isFlat && hasFocus && mouse == MouseState::Transparent ? MouseState::Hovered : mouse;
+        const auto& bgColor =
+          isFlat ? toolButtonBackgroundColor(effectiveMouse, role) : buttonBackgroundColor(effectiveMouse, role, w);
         const auto& currentBgColor =
           _impl->animations.animateBackgroundColor(w, bgColor, _impl->theme.animationDuration);
         const auto radiuses = optRoundedButton ? optRoundedButton->radiuses : RadiusesF{ _impl->theme.borderRadius };
@@ -723,7 +795,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       return;
     case PE_IndicatorCheckBox:
     case PE_IndicatorRadioButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto checkState = getCheckState(optButton->state);
         const auto mouse = getMouseState(optButton->state);
         const auto focus = getFocusState(optButton->state);
@@ -903,58 +975,68 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           widgetHasFocus && selection == SelectionState::Selected ? FocusState::Focused : FocusState::NotFocused;
         const auto active = getActiveState(itemState);
         const auto& color = listItemBackgroundColor(mouse, selection, focus, active, optItem->index, w);
-        p->fillRect(rect, color);
+        const auto listView = qobject_cast<const QListView*>(w);
+        const auto viewMode = listView ? listView->viewMode() : QListView::ListMode;
 
-        // Border on the left if necessary.
-        if (column == 0) {
-          if (const auto* tableView = qobject_cast<const QTableView*>(w)) {
-            if (tableView->showGrid() && tableView->verticalHeader()->isHidden()) {
-              const auto lineW = _impl->theme.borderWidth;
-              const auto p1 = QPointF(rect.x() + lineW * .5, rect.y());
-              const auto p2 = QPointF(rect.x() + lineW * .5, rect.y() + rect.height());
-              const auto& lineColor = tableLineColor();
-              p->setRenderHint(QPainter::Antialiasing, false);
-              p->setPen(QPen(lineColor, lineW));
-              p->drawLine(p1, p2);
+        if (viewMode == QListView::IconMode) {
+          p->setRenderHint(QPainter::Antialiasing, true);
+          p->setBrush(color);
+          p->setPen(Qt::NoPen);
+          p->drawRoundedRect(rect, _impl->theme.borderRadius, _impl->theme.borderRadius);
+        } else {
+          p->fillRect(rect, color);
+
+          // Border on the left if necessary.
+          if (column == 0) {
+            if (const auto* tableView = qobject_cast<const QTableView*>(w)) {
+              if (tableView->showGrid() && tableView->verticalHeader()->isHidden()) {
+                const auto lineW = _impl->theme.borderWidth;
+                const auto p1 = QPointF(rect.x() + lineW * .5, rect.y());
+                const auto p2 = QPointF(rect.x() + lineW * .5, rect.y() + rect.height());
+                const auto& lineColor = tableLineColor();
+                p->setRenderHint(QPainter::Antialiasing, false);
+                p->setPen(QPen(lineColor, lineW));
+                p->drawLine(p1, p2);
+              }
             }
           }
-        }
-        // Border on the top if necessary.
-        if (row == 0) {
-          if (const auto* tableView = qobject_cast<const QTableView*>(w)) {
-            if (tableView->showGrid() && tableView->horizontalHeader()->isHidden()) {
-              const auto lineW = _impl->theme.borderWidth;
-              const auto p1 = QPointF(rect.x(), rect.y() + lineW * .5);
-              const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + lineW * .5);
-              const auto& lineColor = tableLineColor();
-              p->setRenderHint(QPainter::Antialiasing, false);
-              p->setPen(QPen(lineColor, lineW));
-              p->drawLine(p1, p2);
+          // Border on the top if necessary.
+          if (row == 0) {
+            if (const auto* tableView = qobject_cast<const QTableView*>(w)) {
+              if (tableView->showGrid() && tableView->horizontalHeader()->isHidden()) {
+                const auto lineW = _impl->theme.borderWidth;
+                const auto p1 = QPointF(rect.x(), rect.y() + lineW * .5);
+                const auto p2 = QPointF(rect.x() + rect.width(), rect.y() + lineW * .5);
+                const auto& lineColor = tableLineColor();
+                p->setRenderHint(QPainter::Antialiasing, false);
+                p->setPen(QPen(lineColor, lineW));
+                p->drawLine(p1, p2);
+              }
             }
           }
-        }
 
-        // Border that indicates which cell has focus.
-        // We don't show this border in the first column of a table/tree (the column with the arrow).
-        const auto isTable = qobject_cast<const QTableView*>(w) != nullptr;
-        if (isTable && row < 0)
-          return;
+          // Border that indicates which cell has focus.
+          // We don't show this border in the first column of a table/tree (the column with the arrow).
+          const auto isTable = qobject_cast<const QTableView*>(w) != nullptr;
+          if (isTable && row < 0)
+            return;
 
 #if 0
-        //const auto* itemView = qobject_cast<const QAbstractItemView*>(optItem->widget);
-        //const auto* model = itemView ? itemView->model() : nullptr;
-        //const auto columnCount = model ? model->columnCount() : 1;
-        //const auto multiColumn = columnCount > 1;
-        //const auto isCurrentCell = active == ActiveState::Active && focus == FocusState::Focused;
-        //const auto multiSelection = itemView ? itemView->selectionMode() != QAbstractItemView::SelectionMode::SingleSelection : false;
-        const auto showCellFocus = true; //multiColumn ? isCurrentCell : multiSelection;
-        const auto cellFocus = showCellFocus ? focus : FocusState::NotFocused;
-        const auto& borderColor = cellItemFocusBorderColor(cellFocus, selection, active);
-        const auto borderW = _impl->theme.borderWidth * 2;
-        auto borderRect = optItem->rect;
-        borderRect.setLeft(0);
-        drawRectBorder(p, borderRect, borderColor, borderW);
+          //const auto* itemView = qobject_cast<const QAbstractItemView*>(optItem->widget);
+          //const auto* model = itemView ? itemView->model() : nullptr;
+          //const auto columnCount = model ? model->columnCount() : 1;
+          //const auto multiColumn = columnCount > 1;
+          //const auto isCurrentCell = active == ActiveState::Active && focus == FocusState::Focused;
+          //const auto multiSelection = itemView ? itemView->selectionMode() != QAbstractItemView::SelectionMode::SingleSelection : false;
+          const auto showCellFocus = true; //multiColumn ? isCurrentCell : multiSelection;
+          const auto cellFocus = showCellFocus ? focus : FocusState::NotFocused;
+          const auto& borderColor = cellItemFocusBorderColor(cellFocus, selection, active);
+          const auto borderW = _impl->theme.borderWidth * 2;
+          auto borderRect = optItem->rect;
+          borderRect.setLeft(0);
+          drawRectBorder(p, borderRect, borderColor, borderW);
 #endif
+        }
       }
       return;
     case PE_PanelItemViewRow:
@@ -1064,9 +1146,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 }
 
 void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   switch (ce) {
     case CE_PushButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         // Button background and border.
         drawControl(CE_PushButtonBevel, optButton, p, w);
 
@@ -1077,20 +1161,20 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       }
       return;
     case CE_PushButtonBevel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
-        // Draw background rect.
-        auto optButtonBg = QStyleOptionButton(*optButton);
-        optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
-        drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
-      } else if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
+      if (const auto* optRoundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
         // Draw background rect.
         auto optButtonBg = QStyleOptionRoundedButton(*optRoundedButton);
+        optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
+        drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
+      } else if (const auto* optButton = buttonStyleOption(opt)) {
+        // Draw background rect.
+        auto optButtonBg = QStyleOptionButton(*optButton);
         optButtonBg.rect = subElementRect(SE_PushButtonBevel, opt, w);
         drawPrimitive(PE_FrameButtonBevel, &optButtonBg, p, w);
       }
       return;
     case CE_PushButtonLabel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         // Content.
         const auto mouse = getMouseState(optButton->state);
         const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
@@ -1104,11 +1188,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto centered = !hasMenu;
         const auto checked = getCheckState(optButton->state);
         const auto pixmap = getPixmap(optButton->icon, optButton->iconSize, mouse, checked, w);
-        const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), currentFgColor, currentFgColor);
+        const auto& colorizedPixmap = getColorizedPixmap(pixmap, w, currentFgColor, currentFgColor, mouse);
         const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
         const auto iconW = colorizedPixmap.isNull() ? 0 : static_cast<int>(colorizedPixmap.width() / pixmapPixelRatio);
-        const auto fmFlags = hasMenu ? Qt::AlignLeft : Qt::AlignCenter;
-        const auto textW = optButton->fontMetrics.boundingRect(optButton->rect, fmFlags, optButton->text).width();
+        const auto textW = qlementine::textWidth(optButton->fontMetrics, optButton->text);
         const auto iconSpacing = iconW > 0 && !optButton->text.isEmpty() && textW > 0 ? spacing : 0;
         const auto& fgRect =
           hasMenu ? optButton->rect.marginsRemoved(QMargins{ 0, 0, indicatorSize + spacing, 0 }) : optButton->rect;
@@ -1136,7 +1219,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (availableW > 0 && textW > 0) {
           const auto elidedText =
             optButton->fontMetrics.elidedText(optButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
-          const auto elidedTextW = optButton->fontMetrics.boundingRect(optButton->rect, fmFlags, elidedText).width();
+          const auto elidedTextW = qlementine::textWidth(optButton->fontMetrics, elidedText);
           const auto textRect = QRect{ availableX, contentRect.y(), elidedTextW, contentRect.height() };
           int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
           if (iconW == 0) {
@@ -1165,7 +1248,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_RadioButton:
     case CE_CheckBox:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto isRadio = ce == CE_RadioButton;
 
         // Draw rect and indicator.
@@ -1181,14 +1264,14 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     case CE_CheckBoxLabel:
     case CE_RadioButtonLabel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         // Draw text and icon.
         const auto mouse = getMouseState(optButton->state);
         const auto& fgColor = labelForegroundColor(mouse, w);
         const auto spacing = _impl->theme.spacing;
         const auto checked = getCheckState(optButton->state);
         const auto pixmap = getPixmap(optButton->icon, optButton->iconSize, mouse, checked, w);
-        const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor);
+        const auto& colorizedPixmap = getColorizedPixmap(pixmap, w, fgColor, fgColor, mouse);
         const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
         const auto iconW =
           colorizedPixmap.isNull() ? 0 : static_cast<int>((qreal) colorizedPixmap.width() / (pixmapPixelRatio));
@@ -1307,7 +1390,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         if (!iconSize.isEmpty()) {
           const auto checked = selection == SelectionState::Selected ? CheckState::Checked : CheckState::NotChecked;
           const auto pixmap = getPixmap(icon, iconSize, mouse, checked, w);
-          const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, textColor);
+          const auto& colorizedPixmap = getColorizedPixmap(pixmap, w, fgColor, textColor, mouse);
           const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
           const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.width() / pixmapPixelRatio) : 0;
           const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.height() / pixmapPixelRatio) : 0;
@@ -1486,7 +1569,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
               : 0;
           const auto pixmap = getPixmap(optMenuItem->icon, _impl->theme.iconSize, mouse, checkState, w);
           if (!pixmap.isNull()) {
-            const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor);
+            const auto& colorizedPixmap = getColorizedPixmap(pixmap, w, fgColor, fgColor, mouse);
             const auto targetPxRatio = colorizedPixmap.devicePixelRatio();
             const auto pixmapW = targetPxRatio != 0 ? (int) ((qreal) colorizedPixmap.width() / targetPxRatio) : 0;
             const auto pixmapH = targetPxRatio != 0 ? (int) ((qreal) colorizedPixmap.height() / targetPxRatio) : 0;
@@ -1668,44 +1751,74 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           !hasMenu && (buttonStyle == Qt::ToolButtonTextOnly || buttonStyle == Qt::ToolButtonTextBesideIcon)
             ? spacing * 2
             : spacing;
-        const auto fgRect = rect.adjusted(leftPadding, 0, -rightPadding, 0);
+        const auto topPadding = buttonStyle == Qt::ToolButtonTextUnderIcon ? spacing : 0;
+        const auto bottomPadding = buttonStyle == Qt::ToolButtonTextUnderIcon ? spacing : 0;
+        const auto fgRect = rect.adjusted(leftPadding, topPadding, -rightPadding, -bottomPadding);
         const auto centered = !hasMenu;
         const auto textW = fm.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text).width();
-        const auto contentW = centered ? std::min(fgRect.width(), iconSize.width() + spacing + textW) : fgRect.width();
-        const auto contentX = centered ? fgRect.x() + (fgRect.width() - contentW) / 2 : fgRect.x();
-        auto availableW = contentW;
-        auto availableX = contentX;
+        const auto textH = fm.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text).height();
+
+        auto availableW = 0;
+        auto availableX = 0;
+        if (buttonStyle != Qt::ToolButtonTextUnderIcon) {
+          availableW = centered ? std::min(fgRect.width(), iconSize.width() + spacing + textW) : fgRect.width();
+          availableX = centered ? fgRect.x() + (fgRect.width() - availableW) / 2 : fgRect.x();
+        } else {
+          const auto contentMaxW = std::max(iconSize.width(), textW);
+          availableW = centered ? std::min(fgRect.width(), contentMaxW) : fgRect.width();
+          availableX = centered ? fgRect.x() + (fgRect.width() - availableW) / 2 : fgRect.x();
+        }
+        auto availableH = std::min(fgRect.height(), iconSize.height() + spacing + textH);
+        auto availableY = fgRect.y();
 
         // Icon.
         if (hasIcon) {
           const auto pixmap = getPixmap(icon, iconSize, mouse, checked, w);
-          const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor);
+          const auto& colorizedPixmap = getColorizedPixmap(pixmap, w, fgColor, fgColor, mouse);
           const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
           const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.width() / pixmapPixelRatio) : 0;
           const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) colorizedPixmap.height() / pixmapPixelRatio) : 0;
-          const auto iconOnly = buttonStyle == Qt::ToolButtonIconOnly;
-          const auto pixmapX = iconOnly ? availableX + (availableW - pixmapW) / 2 : availableX;
-          const auto pixmapY = rect.y() + (rect.height() - pixmapH) / 2;
-          const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
-          availableW -= pixmapW + spacing;
-          availableX += pixmapW + spacing;
-          p->drawPixmap(pixmapRect, colorizedPixmap);
+          if (buttonStyle == Qt::ToolButtonTextUnderIcon) {
+            const auto pixmapX = availableX + (availableW - pixmapW) / 2;
+            const auto pixmapY = fgRect.y() + (fgRect.height() - availableH) / 2;
+            const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
+            availableH -= pixmapH + spacing;
+            availableY += pixmapH + spacing;
+            p->drawPixmap(pixmapRect, colorizedPixmap);
+          } else {
+            const auto iconOnly = buttonStyle == Qt::ToolButtonIconOnly;
+            const auto pixmapX = iconOnly ? availableX + (availableW - pixmapW) / 2 : availableX;
+            const auto pixmapY = rect.y() + (rect.height() - pixmapH) / 2;
+            const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
+            availableW -= pixmapW + spacing;
+            availableX += pixmapW + spacing;
+            p->drawPixmap(pixmapRect, colorizedPixmap);
+          }
         }
 
         // Text.
-        if (hasText && availableW > 0) {
-          const auto elidedText = fm.elidedText(optToolButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
-          const auto elidedTextW = fm.boundingRect(optToolButton->rect, Qt::AlignCenter, elidedText).width();
-          const auto textRect = QRect{ availableX, fgRect.y(), elidedTextW, fgRect.height() };
-          int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
-          if (iconSize.isEmpty() || !showIcon) {
-            textFlags |= Qt::AlignHCenter;
-          } else {
-            textFlags |= Qt::AlignLeft;
+        if (hasText) {
+          if (buttonStyle == Qt::ToolButtonTextUnderIcon && availableH > 0) {
+            const auto elidedText = fm.elidedText(optToolButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
+            const auto textRect = QRect{ availableX, availableY, availableW, availableH };
+            const int textFlags = Qt::AlignCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
+            p->setBrush(Qt::NoBrush);
+            p->setPen(fgColor);
+            p->drawText(textRect, textFlags, elidedText, nullptr);
+          } else if (availableW > 0) {
+            const auto elidedText = fm.elidedText(optToolButton->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
+            const auto elidedTextW = fm.boundingRect(optToolButton->rect, Qt::AlignCenter, elidedText).width();
+            const auto textRect = QRect{ availableX, availableY, elidedTextW, availableH };
+            int textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::TextHideMnemonic;
+            if (iconSize.isEmpty() || !showIcon) {
+              textFlags |= Qt::AlignHCenter;
+            } else {
+              textFlags |= Qt::AlignLeft;
+            }
+            p->setBrush(Qt::NoBrush);
+            p->setPen(fgColor);
+            p->drawText(textRect, textFlags, elidedText, nullptr);
           }
-          p->setBrush(Qt::NoBrush);
-          p->setPen(fgColor);
-          p->drawText(textRect, textFlags, elidedText, nullptr);
         }
       }
       return;
@@ -1869,12 +1982,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto iconRect = QRect(iconX, iconY, iconExtent, iconExtent);
 
           if (!hasArrow || iconRect.right() <= maxLabelX) {
-            const auto autoIconColor = this->autoIconColor(w);
-            const auto colorize = autoIconColor != AutoIconColor::None;
+            const auto colorize = this->autoIconColor(w) != AutoIconColor::None;
             const auto iconMode = (optHeader->state & State_Enabled || colorize) ? QIcon::Normal : QIcon::Disabled;
             const auto iconPixmap =
               icon.pixmap({ iconExtent, iconExtent }, qlementine::getWindow(w)->devicePixelRatio(), iconMode);
-            const auto& colorizedPixmap = colorize ? qlementine::colorizePixmap(iconPixmap, fgColor) : iconPixmap;
+            const auto& colorizedPixmap = getColorizedPixmap(iconPixmap, w, fgColor, fgColor, mouse);
             p->drawPixmap(iconRect, colorizedPixmap);
           }
         }
@@ -2018,28 +2130,25 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         } else if (const auto* slider = qobject_cast<const QSlider*>(monitoredWidget)) {
           // Prepare monitored widget QStyleOption.
           const auto currentPos = _impl->animations.getAnimatedProgress(slider);
-          QStyleOptionSliderF optSlider;
+          QStyleOptionSlider optSlider;
           optSlider.QStyleOption::operator=(*opt);
           optSlider.initFrom(slider);
           optSlider.minimum = slider->minimum();
           optSlider.maximum = slider->maximum();
           optSlider.sliderPosition = slider->sliderPosition();
-          optSlider.sliderPositionF = currentPos ? currentPos.value() : optSlider.sliderPosition;
-          optSlider.status = QStyleOptionSliderF::INITIALIZED;
+          const auto sliderPosition = currentPos ? currentPos.value() : static_cast<qreal>(optSlider.sliderPosition);
 
           // Slider: placed around the handle.
-          optFocus.rect = subElementRect(SE_SliderFocusRect, &optSlider, slider);
+          const auto sliderHandleRect = QlementineStyleImpl::sliderHandleRect(*this, optSlider, sliderPosition, slider);
+          optFocus.rect = QlementineStyleImpl::sliderFocusRect(*this, optSlider, sliderHandleRect, slider);
           optFocus.radiuses = optFocus.rect.height() / 2.;
         } else if (const auto* dial = qobject_cast<const QDial*>(monitoredWidget)) {
           // Prepare monitored widget QStyleOption.
-          const auto currentPos = _impl->animations.getAnimatedProgress(dial);
-          QStyleOptionSliderF optDial;
+          QStyleOptionSlider optDial;
           optDial.initFrom(dial);
           optDial.minimum = dial->minimum();
           optDial.maximum = dial->maximum();
           optDial.sliderPosition = dial->sliderPosition();
-          optDial.sliderPositionF = currentPos ? currentPos.value() : optDial.sliderPosition;
-          optDial.status = QStyleOptionSliderF::INITIALIZED;
           optDial.subControls.setFlag(SC_DialTickmarks, dial->notchesVisible());
 
           // Dial: placed around the handle.
@@ -2153,8 +2262,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto contentRect = totalRect.marginsRemoved({ contentLeftPadding, 0, contentRightPadding, 0 });
         const auto pixmap =
           getPixmap(optComboBox->currentIcon, optComboBox->iconSize, mouse, CheckState::NotChecked, w);
-        const auto& colorizedPixmap =
-          getColorizedPixmap(pixmap, autoIconColor(w), fgColor, fgColor); // No animation for icon?
+        const auto& colorizedPixmap = getColorizedPixmap(pixmap, w, fgColor, fgColor, mouse); // No animation for icon?
         const auto iconW = colorizedPixmap.isNull() ? 0 : colorizedPixmap.width() / colorizedPixmap.devicePixelRatio();
         const auto iconSpacing = iconW > 0 ? spacing : 0;
         auto availableW = contentRect.width();
@@ -2220,19 +2328,18 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Foreground.
         const auto& features = optItem->features;
-        const auto isList = qobject_cast<const QListView*>(w) != nullptr;
-        const auto spacing = _impl->theme.spacing;
-        const auto hPadding = isList ? spacing : spacing / 2;
         const auto hasIcon = features.testFlag(QStyleOptionViewItem::HasDecoration) && !optItem->icon.isNull();
         const auto& iconSize = hasIcon ? optItem->decorationSize : QSize{ 0, 0 };
-        const auto fgRect = optItem->rect.marginsRemoved(QMargins{ hPadding, 0, hPadding, 0 });
         const auto selected = getSelectionState(optItem->state);
         const auto hasCheck = features.testFlag(QStyleOptionViewItem::HasCheckIndicator);
-        const auto checkBoxSize = _impl->theme.iconSize;
-        const auto checkBoxSpace = hasCheck ? checkBoxSize.width() + spacing : 0;
         const auto isChecked = hasCheck && optItem->checkState == Qt::Checked;
         const auto checked = isChecked ? CheckState::Checked : CheckState::NotChecked;
         const auto active = getActiveState(optItem->state);
+
+        const auto* styleProxy = this->proxy();
+        const auto checkboxRect = styleProxy->subElementRect(SE_ItemViewItemCheckIndicator, optItem, w);
+        const auto iconRect = styleProxy->subElementRect(SE_ItemViewItemDecoration, optItem, w);
+        const auto textRect = styleProxy->subElementRect(SE_ItemViewItemText, optItem, w);
 
         // We show the selected color on the whole row, not only the cell.
         // Make it consistent with the background color in PE_PanelItemViewItem.
@@ -2242,9 +2349,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Checkbox, if any.
         if (hasCheck) {
-          const auto checkBoxX = fgRect.x();
-          const auto checkBoxY = fgRect.y() + (fgRect.height() - checkBoxSize.height()) / 2;
-          const auto checkboxRect = QRect{ QPoint{ checkBoxX, checkBoxY }, checkBoxSize };
           auto checkBoxState = optItem->state;
           //// TODO: How to know if checkbox hovered/pressed?
           //auto checkHovered = false;
@@ -2273,24 +2377,10 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto& textColor =
           focus == FocusState::Focused ? fgColor : optItem->palette.color(paletteColorGroup, paletteColorRole);
 
-        const auto contentRect = fgRect.adjusted(checkBoxSpace, 0, 0, 0);
-        auto availableW = contentRect.width();
-        auto availableX = contentRect.x();
-
         // Icon.
-        if (availableW > 0 && hasIcon) {
-          const auto iconW = iconSize.width();
-          const auto iconSpacing = iconW > 0 ? spacing : 0;
+        if (iconRect.width() > 0 && hasIcon) {
           const auto pixmap = getPixmap(optItem->icon, iconSize, itemMouse, checked, w);
           const auto autoIconColor = listItemAutoIconColor(itemMouse, selected, focus, active, optItem->index, w);
-          const auto pixmapPixelRatio = pixmap.devicePixelRatio();
-          const auto pixmapW = pixmapPixelRatio != 0 ? (int) ((qreal) pixmap.width() / pixmapPixelRatio) : 0;
-          const auto pixmapH = pixmapPixelRatio != 0 ? (int) ((qreal) pixmap.height() / pixmapPixelRatio) : 0;
-          const auto pixmapX = availableX + (iconSize.width() - pixmapW) / 2; // Center the icon in the rect.
-          const auto pixmapY = contentRect.y() + (contentRect.height() - pixmapH) / 2;
-          const auto pixmapRect = QRect{ pixmapX, pixmapY, pixmapW, pixmapH };
-          availableW -= iconW + iconSpacing;
-          availableX += iconW + iconSpacing;
 
           if (itemMouse == MouseState::Disabled && autoIconColor == AutoIconColor::None) {
             const auto& bgColor =
@@ -2300,29 +2390,32 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto opacity = selected == SelectionState::Selected ? 0.3 : 0.25;
             const auto backupOpacity = p->opacity();
             p->setOpacity(opacity * backupOpacity);
-            p->drawPixmap(pixmapRect, tintedPixmap);
+            p->drawPixmap(iconRect, tintedPixmap);
             p->setOpacity(backupOpacity);
           } else {
-            const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor, fgColor, textColor);
-            auto iconRect = subElementRect(SE_ItemViewItemDecoration, optItem, w);
-            iconRect.moveLeft(pixmapRect.left());
+            const auto status = widgetStatus(w);
+            const auto& colorizedPixmap = (status != Status::Default && autoIconColor != AutoIconColor::None)
+                                            ? qlementine::getColorizedPixmap(pixmap, statusColor(status, itemMouse))
+                                            : getColorizedPixmap(pixmap, autoIconColor, fgColor, textColor);
             p->drawPixmap(iconRect, colorizedPixmap);
           }
         }
 
         // Text.
-        if (availableW > 0 && !optItem->text.isEmpty()) {
+        if (textRect.width() > 0 && !optItem->text.isEmpty()) {
           const auto& fm = optItem->fontMetrics;
-          const auto elidedText = fm.elidedText(optItem->text, Qt::ElideRight, availableW, Qt::TextSingleLine);
-          const auto textX = availableX;
-          const auto textRect = QRect{ textX, contentRect.y(), availableW, contentRect.height() };
-          const auto textAlignment = optItem->displayAlignment;
-          auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine
-                           | (textAlignment.testFlag(Qt::AlignRight) ? Qt::AlignRight : Qt::AlignLeft);
-          p->setFont(optItem->font);
-          p->setBrush(Qt::NoBrush);
-          p->setPen(textColor);
-          p->drawText(textRect, int(textFlags), elidedText, nullptr);
+          if (textRect.width() > 0) {
+            const auto elidedText = fm.elidedText(optItem->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
+            const auto textAlignment = optItem->displayAlignment;
+            auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine;
+            textFlags = textAlignment.testFlag(Qt::AlignHCenter) ? textFlags | Qt::AlignHCenter
+                        : textAlignment.testFlag(Qt::AlignRight) ? textFlags | Qt::AlignRight
+                                                                 : textFlags | Qt::AlignLeft;
+            p->setFont(optItem->font);
+            p->setBrush(Qt::NoBrush);
+            p->setPen(textColor);
+            p->drawText(textRect, static_cast<int>(textFlags), elidedText, nullptr);
+          }
         }
       }
       return;
@@ -2375,12 +2468,22 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, const QWidget* w) const {
   switch (se) {
     case SE_PushButtonContents:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto hasIcon = !optButton->icon.isNull();
         const auto hasText = !optButton->text.isEmpty();
         const auto hasMenu = optButton->features.testFlag(QStyleOptionButton::HasMenu);
         const auto padding = pixelMetric(PM_ButtonMargin);
-        const auto [paddingLeft, paddingRight] = getHPaddings(hasIcon, hasText, hasMenu, padding);
+        auto [paddingLeft, paddingRight] = getHPaddings(hasIcon, hasText, hasMenu, padding);
+
+        // Keep visual balance for text+icon QPushButton without menu indicator.
+        if (hasText && hasIcon && !hasMenu) {
+          paddingLeft = padding * 2;
+          paddingRight = padding * 2;
+        }
+
+        if (paddingLeft + paddingRight >= opt->rect.width()) {
+          return opt->rect;
+        }
         return opt->rect.marginsRemoved({ paddingLeft, 0, paddingRight, 0 });
       }
       return opt->rect;
@@ -2426,11 +2529,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto complexControl = isDial ? CC_Dial : CC_Slider;
         const auto subControl = isDial ? SC_DialHandle : SC_SliderHandle;
         const auto handleRect = subControlRect(complexControl, optSlider, subControl, w);
-        const auto deltaX = pixelMetric(PM_FocusFrameHMargin, opt, w);
-        const auto deltaY = pixelMetric(PM_FocusFrameVMargin, opt, w);
-        const auto vMargin = deltaY / 2;
-        const auto hMargin = deltaX / 2;
-        return handleRect.translated(deltaX, deltaY).marginsAdded(QMargins(hMargin, vMargin, hMargin, vMargin));
+        return QlementineStyleImpl::sliderFocusRect(*this, *optSlider, handleRect, w);
       }
       return opt->rect;
     case SE_ProgressBarContents:
@@ -2492,7 +2591,71 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_ItemViewItemCheckIndicator:
     case SE_ItemViewItemDecoration:
     case SE_ItemViewItemText:
-      // Let QCommonStyle handle these.
+      if (const auto* optItem = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
+        const auto* listView = qobject_cast<const QListView*>(w);
+        const auto iconMode = listView && listView->viewMode() == QListView::IconMode;
+        const auto& features = optItem->features;
+        const auto spacing = _impl->theme.spacing;
+        const auto hPadding = spacing;
+        const auto hasIcon = features.testFlag(QStyleOptionViewItem::HasDecoration) && !optItem->icon.isNull();
+        const auto iconSize = hasIcon ? optItem->decorationSize : QSize{ 0, 0 };
+        const auto hasText = features.testFlag(QStyleOptionViewItem::HasDisplay) && !optItem->text.isEmpty();
+        const auto textH = hasText ? optItem->fontMetrics.height() : 0;
+        const auto hasCheck = features.testFlag(QStyleOptionViewItem::HasCheckIndicator);
+        const auto checkSize = hasCheck ? _impl->theme.iconSize : QSize{ 0, 0 };
+
+        if (iconMode) {
+          const auto contentH = iconSize.height() + (hasIcon && hasText ? spacing : 0) + textH
+                                + (hasCheck && (hasIcon || hasText) ? spacing : 0) + checkSize.height();
+          auto y = optItem->rect.y() + std::max(0, optItem->rect.height() - contentH) / 2;
+
+          if (se == SE_ItemViewItemDecoration) {
+            return hasIcon ? QRect{ optItem->rect.x() + (optItem->rect.width() - iconSize.width()) / 2, y,
+              iconSize.width(), iconSize.height() }
+                           : QRect{};
+          }
+
+          if (hasIcon) {
+            y += iconSize.height() + (hasText || hasCheck ? spacing : 0);
+          }
+          if (se == SE_ItemViewItemText) {
+            return hasText ? QRect{ optItem->rect.x() + hPadding, y, optItem->rect.width() - 2 * hPadding, textH }
+                           : QRect{};
+          }
+
+          if (hasText) {
+            y += textH + (hasCheck ? spacing : 0);
+          }
+          return hasCheck ? QRect{ optItem->rect.x() + (optItem->rect.width() - checkSize.width()) / 2, y,
+            checkSize.width(), checkSize.height() }
+                          : QRect{};
+        } else {
+          auto x = optItem->rect.x() + hPadding;
+          const auto contentY = optItem->rect.y();
+          const auto contentH = optItem->rect.height();
+          const auto contentRight = optItem->rect.x() + optItem->rect.width() - hPadding;
+
+          if (se == SE_ItemViewItemCheckIndicator) {
+            return hasCheck
+                     ? QRect{ x, contentY + (contentH - checkSize.height()) / 2, checkSize.width(), checkSize.height() }
+                     : QRect{};
+          }
+
+          if (hasCheck) {
+            x += checkSize.width() + spacing;
+          }
+          if (se == SE_ItemViewItemDecoration) {
+            return hasIcon
+                     ? QRect{ x, contentY + (contentH - iconSize.height()) / 2, iconSize.width(), iconSize.height() }
+                     : QRect{};
+          }
+
+          if (hasIcon) {
+            x += iconSize.width() + spacing;
+          }
+          return hasText ? QRect{ x, contentY, std::max(0, contentRight - x), contentH } : QRect{};
+        }
+      }
       break;
     case SE_TreeViewDisclosureItem:
       break;
@@ -2636,6 +2799,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
 
 void QlementineStyle::drawComplexControl(
   ComplexControl cc, const QStyleOptionComplex* opt, QPainter* p, const QWidget* w) const {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   switch (cc) {
     case CC_SpinBox:
       if (const auto* spinboxOpt = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
@@ -2825,16 +2990,12 @@ void QlementineStyle::drawComplexControl(
           sliderOpt->state.testFlag(State_Sunken) && sliderOpt->activeSubControls == SubControl::SC_SliderHandle;
         const auto duration = handleActive ? _impl->theme.sliderAnimationDuration : _impl->theme.animationDuration;
         const auto currentProgress = _impl->animations.animateProgress(w, progress, duration);
-        QStyleOptionSliderF currentSliderOpt;
-        currentSliderOpt.QStyleOptionSlider::operator=(*sliderOpt);
-        currentSliderOpt.sliderPositionF = currentProgress;
-        currentSliderOpt.status = QStyleOptionSliderF::INITIALIZED;
 
         const auto min = sliderOpt->minimum;
         const auto max = sliderOpt->maximum;
         const auto widgetMouse = getMouseState(sliderOpt->state);
         const auto mouse = widgetMouse == MouseState::Disabled ? MouseState::Disabled : MouseState::Normal;
-        const auto handleRect = subControlRect(CC_Slider, &currentSliderOpt, SC_SliderHandle, w);
+        const auto handleRect = QlementineStyleImpl::sliderHandleRect(*this, *sliderOpt, currentProgress, w);
         const auto disabled = mouse == MouseState::Disabled;
 
         // Draw tickmarks.
@@ -3081,10 +3242,6 @@ void QlementineStyle::drawComplexControl(
           dialOpt->state.testFlag(State_Sunken) && dialOpt->activeSubControls == SubControl::SC_DialHandle;
         const auto duration = handleActive ? _impl->theme.sliderAnimationDuration : _impl->theme.animationDuration;
         const auto currentProgress = _impl->animations.animateProgress(w, progress, duration);
-        QStyleOptionSliderF currentSliderOpt;
-        currentSliderOpt.QStyleOptionSlider::operator=(*dialOpt);
-        currentSliderOpt.sliderPositionF = currentProgress;
-        currentSliderOpt.status = QStyleOptionSliderF::INITIALIZED;
 
         // Dial shape.
         const auto dialRect = subControlRect(cc, opt, SC_DialGroove, w);
@@ -3121,7 +3278,8 @@ void QlementineStyle::drawComplexControl(
             fm.elidedText(groupBoxOpt->text, Qt::ElideRight, textRect.width(), Qt::TextSingleLine);
           const auto mouse = getMouseState(groupBoxOpt->state);
           const auto& textColor = groupBoxTitleColor(mouse, w);
-          constexpr auto textFlags = Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft;
+          constexpr auto textFlags =
+            Qt::AlignVCenter | Qt::AlignBaseline | Qt::TextSingleLine | Qt::AlignLeft | Qt::TextHideMnemonic;
           p->setFont(font);
           p->setPen(textColor);
           p->setRenderHint(QPainter::Antialiasing, true);
@@ -3499,24 +3657,8 @@ QRect QlementineStyle::subControlRect(
             return QRect{ grooveX, grooveY, grooveW, grooveH };
           } break;
           case SC_SliderHandle: {
-            const auto handleW = pixelMetric(PM_SliderLength);
-            const auto handleH = pixelMetric(PM_SliderThickness);
-            const auto handleY = opt->rect.y() + (opt->rect.height() - handleH) / 2;
-            const auto min = sliderOpt->minimum;
-            const auto max = sliderOpt->maximum;
-            auto position = static_cast<qreal>(sliderOpt->sliderPosition);
-
-            if (const auto* sliderOptF = qstyleoption_cast<const QStyleOptionSliderF*>(sliderOpt)) {
-              // Since the cast may succeed even if it is not the correct type, we have to check that
-              // the value is correctly initialized, which means it comes from us and is not the default value.
-              if (sliderOptF->status == QStyleOptionSliderF::INITIALIZED) {
-                position = sliderOptF->sliderPositionF;
-              }
-            }
-
-            const auto ratio = (position - min) / (max - min);
-            const auto handleX = opt->rect.x() + static_cast<int>(ratio * (opt->rect.width() - handleW));
-            return QRect{ handleX, handleY, handleW, handleH };
+            return QlementineStyleImpl::sliderHandleRect(
+              *this, *sliderOpt, static_cast<qreal>(sliderOpt->sliderPosition), w);
           } break;
           case SC_SliderTickmarks:
             switch (sliderOpt->tickPosition) {
@@ -3695,7 +3837,7 @@ QSize QlementineStyle::sizeFromContents(
   ContentsType ct, const QStyleOption* opt, const QSize& contentSize, const QWidget* widget) const {
   switch (ct) {
     case CT_PushButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         const auto hasIcon = !optButton->icon.isNull();
         const auto hasText = !optButton->text.isEmpty();
         const auto hasMenu = optButton->features.testFlag(QStyleOptionButton::HasMenu);
@@ -3719,7 +3861,14 @@ QSize QlementineStyle::sizeFromContents(
         const auto maxW = maxSize.width();
         const auto maxH = maxSize.height();
         const auto padding = pixelMetric(PM_ButtonMargin, opt, widget);
-        const auto [paddingLeft, paddingRight] = getHPaddings(hasIcon, hasText, hasMenu, padding);
+        auto [paddingLeft, paddingRight] = getHPaddings(hasIcon, hasText, hasMenu, padding);
+
+        // Keep visual balance for text+icon QPushButton without menu indicator.
+        if (hasText && hasIcon && !hasMenu) {
+          paddingLeft = padding * 2;
+          paddingRight = padding * 2;
+        }
+
         const auto defaultH = _impl->theme.controlHeightLarge;
         auto w = std::max(defaultH, contentWidth + paddingLeft + paddingRight);
         if (maxW != QWIDGETSIZE_MAX && maxW > -1) {
@@ -3734,7 +3883,7 @@ QSize QlementineStyle::sizeFromContents(
       break;
     case CT_CheckBox:
     case CT_RadioButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+      if (const auto* optButton = buttonStyleOption(opt)) {
         QSize actualContentSize(contentSize);
 
         if (!optButton->icon.isNull()) {
@@ -3785,8 +3934,6 @@ QSize QlementineStyle::sizeFromContents(
 
         const auto separatorW = menuIsOnSeparateButton ? _impl->theme.borderWidth : 0;
         const auto menuIndicatorW = hasMenu ? separatorW + iconSize.width() + spacing / 2 : 0;
-        const auto h = iconSize.height() < _impl->theme.controlHeightLarge ? _impl->theme.controlHeightLarge
-                                                                           : iconSize.height() + _impl->theme.spacing;
 
         switch (buttonStyle) {
           case Qt::ToolButtonStyle::ToolButtonTextOnly: {
@@ -3796,13 +3943,30 @@ QSize QlementineStyle::sizeFromContents(
             const auto leftPadding = spacing * 2;
             const auto rightPadding = hasMenu ? spacing : spacing * 2;
             const auto w = leftPadding + textW + rightPadding + menuIndicatorW;
+            const auto h = iconSize.height() < _impl->theme.controlHeightLarge
+                             ? _impl->theme.controlHeightLarge
+                             : iconSize.height() + _impl->theme.spacing;
             return QSize{ w, h };
           }
           case Qt::ToolButtonStyle::ToolButtonIconOnly: {
             const auto w = iconSize.width() + spacing * 2 + menuIndicatorW;
+            const auto h = iconSize.height() < _impl->theme.controlHeightLarge
+                             ? _impl->theme.controlHeightLarge
+                             : iconSize.height() + _impl->theme.spacing;
             return QSize{ w, h };
           }
-          case Qt::ToolButtonStyle::ToolButtonTextUnderIcon: // Not handled
+          case Qt::ToolButtonStyle::ToolButtonTextUnderIcon: {
+            constexpr auto maxTextW = 150;
+            const auto textW = qMin(maxTextW,
+              optToolButton->fontMetrics.boundingRect(optToolButton->rect, Qt::AlignCenter, optToolButton->text)
+                .width());
+            const auto textH = optToolButton->fontMetrics.height();
+            const auto hPadding = _impl->theme.spacing;
+            const auto vPadding = _impl->theme.spacing;
+            const auto w = hPadding * 2 + qMax(iconSize.width(), textW) + menuIndicatorW;
+            const auto h = vPadding * 2 + iconSize.height() + spacing + textH;
+            return QSize{ w, h };
+          }
           case Qt::ToolButtonStyle::ToolButtonTextBesideIcon: {
             const auto iconW = iconSize.width();
             const auto textW =
@@ -3811,6 +3975,9 @@ QSize QlementineStyle::sizeFromContents(
             const auto leftPadding = spacing;
             const auto rightPadding = hasMenu ? spacing : spacing * 2;
             const auto w = leftPadding + iconW + spacing + textW + rightPadding + menuIndicatorW;
+            const auto h = iconSize.height() < _impl->theme.controlHeightLarge
+                             ? _impl->theme.controlHeightLarge
+                             : iconSize.height() + _impl->theme.spacing;
             return QSize{ w, h };
           }
           default:
@@ -3992,9 +4159,11 @@ QSize QlementineStyle::sizeFromContents(
       //return opt->rect.size();
       break;
     case CT_LineEdit:
-      if (const auto* optFrame = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
-        const auto r = optFrame->rect;
-        const auto w = r.width() - 2 * hardcodedLineEditHMargin;
+      if (qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
+        // Use contentSize (font-metrics-based) rather than optFrame->rect (current widget
+        // geometry) so that sizeHint/minimumSizeHint report a content-driven width instead
+        // of echoing back the widget's existing size.
+        const auto w = contentSize.width() - 2 * hardcodedLineEditHMargin;
         const auto h = _impl->theme.controlHeightLarge;
         const auto* parent = widget->parentWidget();
         const auto* treeView = parent ? qobject_cast<const QAbstractItemView*>(parent->parentWidget()) : nullptr;
@@ -4079,15 +4248,45 @@ QSize QlementineStyle::sizeFromContents(
         const auto hasCheck = features.testFlag(QStyleOptionViewItem::HasCheckIndicator);
         const auto& checkSize = hasCheck ? _impl->theme.iconSize : QSize{ 0, 0 };
 
+        const auto* listView = qobject_cast<const QListView*>(widget);
+        const auto isList = listView != nullptr;
+        const auto iconMode = (isList && listView->viewMode() == QListView::IconMode);
+
         auto font = QFont(widget->font());
         const auto fm = QFontMetrics(font);
         const auto textW = qlementine::textWidth(fm, optItem->text);
-
-        const auto w = textW + 2 * hPadding + (iconSize.width() > 0 ? iconSize.width() + spacing : 0)
-                       + (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
         const auto defaultH = _impl->theme.controlHeightLarge;
-        const auto h = std::max({ iconSize.height() + spacing, textH + spacing, defaultH });
-        return QSize{ w, h };
+
+        if (iconMode) {
+          constexpr auto maxTextWInIconMode = 100;
+          const auto maxContentW = std::max({
+            std::min(textW, maxTextWInIconMode),
+            iconSize.width(),
+            checkSize.width(),
+          });
+          auto w = 2 * hPadding + maxContentW;
+          const auto hasContentAboveCheck = hasIcon || hasText;
+          auto h = std::max({
+            iconSize.height() + (hasIcon && hasText ? spacing : 0) + textH
+              + (hasCheck && hasContentAboveCheck ? spacing : 0) + checkSize.height(),
+            defaultH,
+          });
+
+          const auto gridSize = listView ? listView->gridSize() : QSize{ 0, 0 };
+          w = qMax(gridSize.width(), w);
+          h = qMax(gridSize.height(), h);
+          return QSize{ w, h };
+        } else {
+          const auto sideBySideIconWidth = (iconSize.width() > 0 ? iconSize.width() + spacing : 0);
+          const auto sideBySideCheckWidth = (checkSize.width() > 0 ? checkSize.width() + spacing : 0);
+          const auto w = textW + 2 * hPadding + sideBySideIconWidth + sideBySideCheckWidth;
+          const auto h = std::max({
+            iconSize.height() + spacing,
+            textH + spacing,
+            defaultH,
+          });
+          return QSize{ w, h };
+        }
       }
       break;
     default:
@@ -4739,128 +4938,24 @@ void QlementineStyle::polish(QWidget* w) {
 
   QCommonStyle::polish(w);
 
-// Currently we only support tooltips with rounded corners on MacOS.
-// More investigation is need to make it work on Windows.
-#ifndef _WIN32
-  if (w->inherits("QTipLabel")) {
-    // TODO: turn this into addAlphaChannel
-    w->setBackgroundRole(QPalette::NoRole);
-    w->setAutoFillBackground(false);
-    w->setAttribute(Qt::WA_TranslucentBackground, true);
-    w->setAttribute(Qt::WA_NoSystemBackground, true);
-    w->setAttribute(Qt::WA_OpaquePaintEvent, false);
-  }
-#endif
+  // Ensure we only polish a widget once, otherwise we might
+  // end up with multiple event filters on the same widget.
+  auto& polishedWidgetInfo = _impl->polishedWidgets.ensure(w);
+  const auto eventFiltersInstalled = !polishedWidgetInfo.eventFilters.empty();
 
-  // Special case for the Qt-private buttons in a QLineEdit.
-  if (w->inherits("QLineEditIconButton")) {
-    w->installEventFilter(new LineEditButtonEventFilter(this, _impl->animations, qobject_cast<QToolButton*>(w)));
-    w->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    // Fix hardcoded width in qlineedit_p.cpp:493
-    w->setFixedSize(_impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium);
-  }
+  // Not yet ideal, but still better than a huge fonction.
+  polishToolTip(w);
+  polishLineEditIconButton(*this, _impl->animations, w, polishedWidgetInfo, eventFiltersInstalled);
+  polishCommonWidget(w);
+  polishExternalFocusFrame(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
+  polishMenu(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
+  polishComboBoxPopup(w, *this);
+  polishVerticalCompression(w);
+  polishMouseWheelBlocker(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
+  polishComboBox(*this, w);
+  polishTabBar(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
 
-  // Prevent the following warning:
-  // QWidget::setMinimumSize: (/QAbstractButton) Negative sizes (0,-1) are not possible
-  if (qobject_cast<QAbstractButton*>(w) && w->minimumSize() == QSize(0, -1)) {
-    w->setMinimumSize(0, 1);
-  }
-
-  // Font.
-  if (shouldHaveBoldFont(w)) {
-    auto font = QFont{ w->font() };
-    font.setBold(true);
-    w->setFont(font);
-  }
-
-  // Enable hover state.
-  if (shouldHaveHoverEvents(w)) {
-    w->setAttribute(Qt::WA_Hover, true);
-    w->setAttribute(Qt::WA_OpaquePaintEvent, false);
-  }
-  if (shouldHaveMouseTracking(w)) {
-    w->setMouseTracking(true);
-  }
-
-  // QFocusFrame is used to draw focus outside of the widget's bound.
-  if (shouldHaveExternalFocusFrame(w)) {
-    w->installEventFilter(new WidgetWithFocusFrameEventFilter(w));
-  }
-
-  // Hijack the default focus policy for buttons.
-  if (shouldHaveTabFocus(w)) {
-    w->setFocusPolicy(Qt::TabFocus);
-  }
-
-  // Allow for rounded corners in menus.
-  if (auto* menu = qobject_cast<QMenu*>(w)) {
-    menu->setBackgroundRole(QPalette::NoRole);
-    menu->setAutoFillBackground(false);
-    menu->setAttribute(Qt::WA_TranslucentBackground, true);
-    menu->setAttribute(Qt::WA_OpaquePaintEvent, false);
-    menu->setAttribute(Qt::WA_NoSystemBackground, true);
-    menu->setWindowFlag(Qt::FramelessWindowHint, true);
-    menu->setWindowFlag(Qt::NoDropShadowWindowHint, true);
-    menu->setProperty("_q_windowsDropShadow", false);
-
-    // Place the QMenu correctly by making up for the drop shadow margins.
-    menu->installEventFilter(new MenuEventFilter(menu));
-  }
-
-  // Try to remove the background...
-  if (auto* itemView = qobject_cast<QAbstractItemView*>(w)) {
-    auto* popup = itemView->parentWidget();
-    auto isComboBoxPopupContainer = popup && popup->inherits("QComboBoxPrivateContainer");
-    if (isComboBoxPopupContainer) {
-      popup->setAttribute(Qt::WA_TranslucentBackground, true);
-      popup->setAttribute(Qt::WA_OpaquePaintEvent, false);
-      popup->setAttribute(Qt::WA_NoSystemBackground, true);
-      popup->setWindowFlag(Qt::FramelessWindowHint, true);
-      popup->setWindowFlag(Qt::NoDropShadowWindowHint, true);
-      popup->setProperty("_q_windowsDropShadow", false);
-
-      // Same shadow as QMenu.
-      const auto shadowWidth = _impl->theme.spacing;
-      const auto borderWidth = _impl->theme.borderWidth;
-      const auto margin = shadowWidth + borderWidth;
-      popup->layout()->setContentsMargins(margin, margin, margin, margin);
-
-      itemView->viewport()->setAutoFillBackground(false);
-      auto* comboBox = findFirstParentOfType<QComboBox>(itemView);
-      new ComboboxItemViewFilter(comboBox, itemView);
-    }
-  }
-
-  // Ensure widgets are not compressed vertically.
-  // Some widgets like QCheckBox or QLineEdit are compressed when added to
-  // QFormLayout.
-  if (shouldNotBeVerticallyCompressed(w)) {
-    const auto minHeight = w->minimumHeight();
-    if (minHeight == 0 || minHeight == 1) {
-      const auto heightHint = w->sizeHint().height();
-      if (heightHint > 0) {
-        w->setMinimumHeight(w->sizeHint().height());
-      }
-    }
-  }
-
-  if (shouldNotHaveWheelEvents(w)) {
-    if (w->focusPolicy() == Qt::WheelFocus) {
-      w->setFocusPolicy(Qt::StrongFocus);
-    }
-    w->installEventFilter(new MouseWheelBlockerEventFilter(w));
-  }
-
-  if (auto* comboBox = qobject_cast<QComboBox*>(w)) {
-    comboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
-
-    // Will define a delegate to stylize the QComboBox items,
-    comboBox->setItemDelegate(new ComboBoxDelegate(comboBox, *this));
-    // Trigger the redefine when the QComboBox's view changes.
-    new ComboboxFilter(comboBox);
-  } else if (auto* tabBar = qobject_cast<QTabBar*>(w)) {
-    tabBar->installEventFilter(new TabBarEventFilter(tabBar));
-  } else if (auto* label = qobject_cast<QLabel*>(w)) {
+  if (auto* label = qobject_cast<QLabel*>(w)) {
     const auto labelObjName = label->objectName();
     const auto isInformativeLabel = labelObjName == QStringLiteral("qt_msgbox_informativelabel");
     if (isInformativeLabel) {
@@ -4868,67 +4963,30 @@ void QlementineStyle::polish(QWidget* w) {
     }
   }
 
-  if (auto* messageBox = qobject_cast<QMessageBox*>(w)) {
-    if (auto* textEdit = messageBox->findChild<QTextEdit*>()) {
-      textEdit->document()->setDocumentMargin(_impl->theme.spacing * 2);
-    }
-  }
-
-  // Prevent ScrollArea to be focusable with Tab key.
-  if (auto* scrollarea = qobject_cast<QScrollArea*>(w)) {
-    scrollarea->setFocusPolicy(Qt::NoFocus);
-  }
-
-  // Make the QSlider horizontal by default.
-  if (auto* slider = qobject_cast<QSlider*>(w)) {
-    slider->setOrientation(Qt::Orientation::Horizontal);
-  }
-
-  // Make the QPlainTextEdit have a frame by default.
-  if (auto* plainTextEdit = qobject_cast<QPlainTextEdit*>(w)) {
-    plainTextEdit->installEventFilter(new TextEditEventFilter(plainTextEdit));
-    if (auto* viewport = plainTextEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
-      viewport->setAutoFillBackground(false);
-    }
-  }
-  // Make the QTextEdit have a frame by default.
-  if (auto* textEdit = qobject_cast<QTextEdit*>(w)) {
-    textEdit->installEventFilter(new TextEditEventFilter(textEdit));
-    if (auto* viewport = textEdit->findChild<QWidget*>(QStringLiteral("qt_scrollarea_viewport"))) {
-      viewport->setAutoFillBackground(false);
-    }
-  }
-
-  if (auto* lineEdit = qobject_cast<QLineEdit*>(w)) {
-    lineEdit->installEventFilter(new LineEditMenuEventFilter(lineEdit));
-  } else if (auto* spinBox = qobject_cast<QSpinBox*>(w)) {
-    spinBox->installEventFilter(new LineEditMenuEventFilter(spinBox));
-  } else if (auto* plainTextEdit = qobject_cast<QPlainTextEdit*>(w)) {
-    plainTextEdit->installEventFilter(new LineEditMenuEventFilter(plainTextEdit));
-  }
+  polishMessageBox(w, *this);
+  polishScrollArea(w);
+  polishSlider(w);
+  polishTextEditors(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
+  polishLineEditMenus(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
+  polishDestructionTracking(w, this, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
 }
 
 void QlementineStyle::unpolish(QWidget* w) {
   QCommonStyle::unpolish(w);
-
-  // TODO revert all hacks made in QlementineStyle::polish(QWidget* w)
-
-  if (shouldHaveHoverEvents(w)) {
-    w->setAttribute(Qt::WA_Hover, false);
-    w->setAttribute(Qt::WA_OpaquePaintEvent, true);
-  }
-  if (shouldHaveMouseTracking(w)) {
-    w->setMouseTracking(false);
-  }
+  unpolishWidget(*this, w, _impl->polishedWidgets);
 }
 
 /* QStyle extended enums. */
 
 void QlementineStyle::drawPrimitiveExt(
   PrimitiveElementExt pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
+  const auto* optButton = buttonStyleOption(opt);
+  const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (pe) {
     case PrimitiveElementExt::PE_CommandButtonPanel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         const auto radius = _impl->theme.borderRadius;
         const auto mouse = getMouseState(optButton->state);
         const auto isDefault = optButton->features.testFlag(QStyleOptionButton::DefaultButton);
@@ -4942,7 +5000,7 @@ void QlementineStyle::drawPrimitiveExt(
       }
       return;
     case PrimitiveElementExt::PE_CommandButtonLabel:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         p->setRenderHint(QPainter::Antialiasing, true);
         p->setBrush(Qt::NoBrush);
 
@@ -4966,7 +5024,7 @@ void QlementineStyle::drawPrimitiveExt(
 
           if (!pixmap.isNull() && !iconRect.isEmpty()) {
             const auto& iconColor = commandButtonIconColor(mouse, role);
-            const auto& colorizedPixmap = getColorizedPixmap(pixmap, autoIconColor(w), iconColor, iconColor);
+            const auto& colorizedPixmap = getColorizedPixmap(pixmap, w, iconColor, iconColor, mouse);
 
             // The pixmap may be smaller than the requested size, so we center it in the rect by default.
             const auto pixmapPixelRatio = colorizedPixmap.devicePixelRatio();
@@ -4988,7 +5046,7 @@ void QlementineStyle::drawPrimitiveExt(
         }
 
         const auto& text = optButton->text;
-        const auto& description = optButton->description;
+        const auto description = optCommandButton ? optCommandButton->description : QString{};
         const auto hasText = !text.isEmpty();
         const auto hasDescription = !description.isEmpty();
         const auto& fm = optButton->fontMetrics;
@@ -5043,22 +5101,30 @@ QSize QlementineStyle::sizeFromContentsExt(
   Q_UNUSED(s);
   Q_UNUSED(w);
 
+  const auto* optButton = buttonStyleOption(opt);
+  const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (ct) {
     case ContentsTypeExt::CT_CommandButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         const auto iconSize = optButton->iconSize;
         const auto& icon = optButton->icon;
         const auto spacing = _impl->theme.spacing;
         const auto hPadding = spacing * 2;
         const auto vPadding = spacing;
-        const auto vSpacing = spacing / 4;
+        const auto description = optCommandButton ? optCommandButton->description : QString{};
+        const auto hasText = !optButton->text.isEmpty();
+        const auto hasDescription = !description.isEmpty();
+        const auto vSpacing = hasText && hasDescription ? spacing / 4 : 0;
         const auto iconW = icon.isNull() ? 0 : iconSize.width() + spacing * 2;
         const auto& fm = optButton->fontMetrics;
         const auto& boldFm = _impl->fontMetricsBold ? *_impl->fontMetricsBold : fm;
-        const auto textW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
-        const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->description).width();
+        const auto textW = boldFm.boundingRect(optButton->rect, Qt::AlignLeft, optButton->text).width();
+        const auto descriptionW = fm.boundingRect(optButton->rect, Qt::AlignLeft, description).width();
         const auto width = hPadding * 2 + iconW + std::max(textW, descriptionW);
-        const auto height = vPadding * 2 + fm.height() + boldFm.height() + vSpacing;
+        const auto textH = hasText ? boldFm.height() : 0;
+        const auto descriptionH = hasDescription ? fm.height() : 0;
+        const auto height =
+          vPadding * 2 + std::max(icon.isNull() ? 0 : iconSize.height(), textH + descriptionH + vSpacing);
         return QSize{ width, height };
       }
       break;
@@ -5070,18 +5136,23 @@ QSize QlementineStyle::sizeFromContentsExt(
 
 void QlementineStyle::drawControlExt(
   ControlElementExt ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
+  const auto* optButton = buttonStyleOption(opt);
+  const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (ce) {
     case ControlElementExt::CE_CommandButton:
-      if (const auto* optButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt)) {
+      if (optButton) {
         // Button background and border.
-        drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonPanel, optButton, p, w);
+        drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonPanel, opt, p, w);
 
         // Button foreground (text, descrption and icon).
         const auto spacing = _impl->theme.spacing;
         const auto hPadding = spacing * 2;
         const auto vPadding = spacing;
         const auto fgRect = optButton->rect.marginsRemoved(QMargins{ hPadding, vPadding, hPadding, vPadding });
-        auto optLabel = QStyleOptionCommandLinkButton{ *optButton };
+        auto optLabel = optCommandButton ? QStyleOptionCommandLinkButton{ *optCommandButton }
+                                         : QStyleOptionCommandLinkButton{ *optButton };
         optLabel.rect = fgRect;
         drawPrimitiveExt(PrimitiveElementExt::PE_CommandButtonLabel, &optLabel, p, w);
       }
@@ -5367,7 +5438,7 @@ QColor QlementineStyle::listItemBackgroundColor(MouseState const mouse, Selectio
   } else {
     switch (mouse) {
       case MouseState::Pressed:
-        return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColor;
+        return _impl->theme.neutralColor;
       case MouseState::Hovered:
         return isSelected ? _impl->theme.neutralColor : _impl->theme.neutralColorDisabled;
       case MouseState::Disabled:
@@ -6141,16 +6212,67 @@ int QlementineStyle::pixelSizeForTextRole(TextRole role) const {
 }
 
 Status QlementineStyle::widgetStatus(QWidget const* widget) const {
+  if (!widget) {
+    return Status::Default;
+  }
+
+  // QFocusFrame: delegate to the focused widget.
   if (const auto* focusFrame = qobject_cast<const QFocusFrame*>(widget)) {
     if (const auto* focusedWidget = focusFrame->widget()) {
       return widgetStatus(focusedWidget);
     }
-  } else if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
+    return Status::Default;
+  }
+
+  // LineEdit custom widget.
+  if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
     return qlementineLineEdit->status();
-  } else if (const auto* qlementineTextEdit = qobject_cast<const qlementine::PlainTextEdit*>(widget)) {
+  }
+
+  // PlainTextEdit custom widget.
+  if (const auto* qlementineTextEdit = qobject_cast<const qlementine::PlainTextEdit*>(widget)) {
     return qlementineTextEdit->status();
   }
+
+  // Generic widget with Qt property.
+  if (const auto statusVariant = widget->property(Property_Status);
+    statusVariant.isValid() && statusVariant.canConvert<Status>()) {
+    return statusVariant.value<Status>();
+  }
+
   return Status::Default;
+}
+
+void QlementineStyle::setWidgetStatus(QWidget* widget, Status status) {
+  if (!widget) {
+    return;
+  }
+
+  // LineEdit custom widget.
+  if (auto* qlementineLineEdit = qobject_cast<qlementine::LineEdit*>(widget)) {
+    qlementineLineEdit->setStatus(status);
+    return;
+  }
+
+  // PlainTextEdit custom widget.
+  if (auto* qlementineTextEdit = qobject_cast<qlementine::PlainTextEdit*>(widget)) {
+    qlementineTextEdit->setStatus(status);
+    return;
+  }
+
+  // Generic widget: use Qt property.
+  const auto currentStatus = widget->property(Property_Status);
+  const auto currentStatusValue =
+    currentStatus.isValid() && currentStatus.canConvert<Status>() ? currentStatus.value<Status>() : Status::Default;
+
+  if (currentStatusValue != status) {
+    if (status == Status::Default) {
+      widget->setProperty(Property_Status, QVariant());
+    } else {
+      widget->setProperty(Property_Status, QVariant::fromValue(status));
+    }
+    widget->update();
+  }
 }
 
 QColor const& QlementineStyle::statusBarBackgroundColor() const {

@@ -2,7 +2,7 @@
   "meta": {
     "author": "Olivier Cléro",
     "name": "Light",
-    "version": "1.5.0"
+    "version": "1.5.1"
   },
 
   "backgroundColorMain1": "#ffffff",
@@ -21,8 +21,8 @@
   "focusColor": "#40a9ff66",
 
   "neutralColor": "#d1d1d1",
-  "neutralColorHovered": "#d3d3d3",
-  "neutralColorPressed": "#d5d5d5",
+  "neutralColorHovered": "#dbdbdb",
+  "neutralColorPressed": "#dfdfdf",
   "neutralColorDisabled": "#eeeeee",
 
   "primaryColor": "#1890ff",

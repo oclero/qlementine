@@ -4,7 +4,7 @@ set(SHOWCASE_NAME "showcase")
 include(FetchContent)
 FetchContent_Declare(qlementine-icons
   GIT_REPOSITORY "https://github.com/oclero/qlementine-icons.git"
-  GIT_TAG v1.12.0
+  GIT_TAG v1.16.1
 )
 FetchContent_MakeAvailable(qlementine-icons)
 set_target_properties(qlementine-icons
@@ -64,3 +64,9 @@ set_target_properties(${SHOWCASE_NAME}
     XCODE_ATTRIBUTE_CODE_SIGN_STYLE "${XCODE_ATTRIBUTE_CODE_SIGN_STYLE}"
     XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS OFF
 )
+
+if(WIN32 AND NOT CMAKE_GENERATOR MATCHES "Ninja")
+  set_property(TARGET ${SHOWCASE_NAME}
+    PROPERTY VS_DEBUGGER_ENVIRONMENT "PATH=$<TARGET_FILE_DIR:Qt6::Core>\;%PATH%"
+  )
+endif()

@@ -6,7 +6,7 @@ set(CMAKE_BUILD_PARALLEL_LEVEL $ENV{NUMBER_OF_PROCESSORS})
 # Set project information.
 project("qlementine"
   LANGUAGES CXX
-  VERSION 1.4.2.0
+  VERSION 1.5.0.0
   DESCRIPTION "Modern QStyle for desktop Qt applications."
 )
 set(PROJECT_COPYRIGHT "© Olivier Cléro, MIT License.")
@@ -32,7 +32,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "13.6")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0")
 endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 

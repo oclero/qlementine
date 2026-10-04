@@ -13,8 +13,8 @@ class ThemeManager;
 namespace oclero::qlementine::sandbox {
 class SandboxWindow : public QMainWindow {
 public:
-  SandboxWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
-  ~SandboxWindow();
+  explicit SandboxWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
+  ~SandboxWindow() override;
 
   bool eventFilter(QObject* watched, QEvent* event) override;
 

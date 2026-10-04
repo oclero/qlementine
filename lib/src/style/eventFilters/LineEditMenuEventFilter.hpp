@@ -117,6 +117,8 @@ public:
       }
     });
   }
+
+  ~LineEditMenuIconsBehavior() override = default;
 };
 
 class LineEditMenuEventFilter : public QObject {
@@ -132,6 +134,8 @@ public:
       parent->installEventFilter(this);
     }
   }
+
+  ~LineEditMenuEventFilter() override = default;
 
 protected:
   bool eventFilter(QObject*, QEvent* evt) override {

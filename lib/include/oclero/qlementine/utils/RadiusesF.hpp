@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QDebug>
 
 namespace oclero::qlementine {
 // Handles radiuses for the 4 angles (topLeft, topRight, bottomRight, bottomLeft).
-struct RadiusesF {
+struct QLEMENTINE_EXPORT RadiusesF {
   double topLeft{ 0. };
   double topRight{ 0. };
   double bottomRight{ 0. };
@@ -37,7 +39,7 @@ struct RadiusesF {
   bool operator!=(const RadiusesF& rhs) const;
 };
 
-QDebug operator<<(QDebug debug, const RadiusesF& radiuses);
+QLEMENTINE_EXPORT QDebug operator<<(QDebug debug, const RadiusesF& radiuses);
 
 } // namespace oclero::qlementine
 

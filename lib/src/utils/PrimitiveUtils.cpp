@@ -12,6 +12,7 @@
 #include <QTextLine>
 #include <QPaintDevice>
 #include <QPainter>
+#include <QPainterStateGuard>
 #include <QPainterPath>
 #include <QPixmapCache>
 #include <QWindow>
@@ -125,6 +126,7 @@ std::tuple<QString, QString> getMenuLabelAndShortcut(QString const& text) {
 }
 
 void drawEllipseBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth) {
+  QPainterStateGuard stateGuard(p);
   const auto halfBorderW = borderWidth / 2.;
   const auto borderRect = rect.marginsRemoved({ halfBorderW, halfBorderW, halfBorderW, halfBorderW });
   p->setPen(QPen(color, borderWidth, Qt::SolidLine));
@@ -181,6 +183,7 @@ QPainterPath getMultipleRadiusesRectPath(QRectF const& rect, RadiusesF const& ra
 }
 
 void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, qreal const radius) {
+  QPainterStateGuard stateGuard(p);
   if (radius < 0.1) {
     p->fillRect(rect, brush);
   } else {
@@ -191,7 +194,8 @@ void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, qreal
   }
 }
 
-void drawRoundedRectF(QPainter* p, QRectF const& rect, QBrush const& brush, RadiusesF const& radiuses) {
+void drawRoundedRect(QPainter* p, QRectF const& rect, QBrush const& brush, RadiusesF const& radiuses) {
+  QPainterStateGuard stateGuard(p);
   if (radiuses.hasSameRadius()) {
     drawRoundedRect(p, rect, brush, radiuses.topLeft);
   } else {
@@ -204,6 +208,7 @@ void drawRoundedRectF(QPainter* p, QRectF const& rect, QBrush const& brush, Radi
 }
 
 void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, qreal const radius) {
+  QPainterStateGuard stateGuard(p);
   if (radius < 0.1) {
     p->fillRect(rect, brush);
   } else {
@@ -215,6 +220,7 @@ void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, qreal 
 }
 
 void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, RadiusesF const& radiuses) {
+  QPainterStateGuard stateGuard(p);
   if (radiuses.hasSameRadius()) {
     drawRoundedRect(p, rect, brush, radiuses.topLeft);
   } else {
@@ -228,6 +234,7 @@ void drawRoundedRect(QPainter* p, QRect const& rect, QBrush const& brush, Radius
 
 void drawRoundedRectBorder(
   QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, qreal const radius) {
+  QPainterStateGuard stateGuard(p);
   if (borderWidth > 0) {
     p->setRenderHint(QPainter::RenderHint::Antialiasing);
     p->setPen(QPen{ color, borderWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin });
@@ -250,6 +257,7 @@ void drawRoundedRectBorder(
 
 void drawRoundedRectBorder(
   QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth, RadiusesF const& radiuses) {
+  QPainterStateGuard stateGuard(p);
   if (borderWidth > 0) {
     if (radiuses.hasSameRadius()) {
       drawRoundedRectBorder(p, rect, color, borderWidth, radiuses.topLeft);
@@ -281,6 +289,7 @@ void drawRectBorder(QPainter* p, QRect const& rect, QColor const& color, qreal c
 }
 
 void drawRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal const borderWidth) {
+  QPainterStateGuard stateGuard(p);
   if (borderWidth > 0) {
     p->setRenderHint(QPainter::RenderHint::Antialiasing);
     p->setPen(QPen{ color, borderWidth, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin });
@@ -292,6 +301,7 @@ void drawRectBorder(QPainter* p, QRectF const& rect, QColor const& color, qreal 
 }
 
 void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius) {
+  QPainterStateGuard stateGuard(p);
   const auto w = rect.width();
   const auto h = rect.height();
   const auto x = rect.x();
@@ -340,6 +350,7 @@ void drawRoundedTriangle(QPainter* p, QRectF const& rect, qreal const radius) {
 
 void drawCheckerboard(
   QPainter* p, const QRectF& rect, const QColor& darkColor, const QColor& lightColor, const qreal cellWidth) {
+  QPainterStateGuard stateGuard(p);
   const auto hCellCount = rect.width() / cellWidth;
   const auto vCellCount = rect.height() / cellWidth;
 
@@ -367,15 +378,15 @@ void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& colo
 
   QPainterPath clipPath;
   clipPath.addRoundedRect(rect, radius, radius);
-  p->save();
+  QPainterStateGuard stateGuard(p);
   {
     p->setClipPath(clipPath);
     p->fillRect(valueRect, color);
   }
-  p->restore();
 }
 
 void drawColorMark(QPainter* p, QRect const& rect, const QColor& color, const QColor& borderColor, int borderWidth) {
+  QPainterStateGuard stateGuard(p);
   const auto circleDiameter = rect.height();
   const auto markRect = QRect((rect.width() - circleDiameter) / 2, 0, circleDiameter, circleDiameter);
 
@@ -389,12 +400,11 @@ void drawColorMark(QPainter* p, QRect const& rect, const QColor& color, const QC
 
     QPainterPath clipPath;
     clipPath.addEllipse(markRect);
-    p->save();
+    QPainterStateGuard clipStateGuard(p);
     {
       p->setClipPath(clipPath);
       drawCheckerboard(p, markRect, darkCellColor, lightCellColor, cellWidth);
     }
-    p->restore();
   }
 
   // Draw background.
@@ -761,6 +771,7 @@ void drawTreeViewIndicator(const QRect& rect, QPainter* p, bool open) {
 }
 
 void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color) {
+  QPainterStateGuard stateGuard(p);
   constexpr auto defaultSize = 16.;
   constexpr auto defaultPenWidth = 1.01;
   constexpr auto defaultRadius = 2.5;
@@ -797,6 +808,7 @@ void drawCalendarIndicator(const QRect& rect, QPainter* p, const QColor& color) 
 }
 
 void drawGripIndicator(const QRect& rect, QPainter* p, const QColor& color, Qt::Orientation orientation) {
+  QPainterStateGuard stateGuard(p);
   constexpr auto defaultSize = 16.;
   constexpr auto defaultBulletDiameter = 2.;
 
@@ -826,6 +838,7 @@ void drawGripIndicator(const QRect& rect, QPainter* p, const QColor& color, Qt::
 
 void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
   QColor const& fgColor, const qreal borderWidth, qreal progress) {
+  QPainterStateGuard stateGuard(p);
   // Background.
   p->setRenderHint(QPainter::RenderHint::Antialiasing);
   p->setPen(Qt::NoPen);
@@ -852,6 +865,7 @@ void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, cons
 
 void drawCheckButton(QPainter* p, const QRect& rect, qreal radius, const QColor& bgColor, const QColor& borderColor,
   QColor const& fgColor, const qreal borderWidth, qreal progress, CheckState checkState) {
+  QPainterStateGuard stateGuard(p);
   // Background.
   p->setRenderHint(QPainter::RenderHint::Antialiasing);
   if (radius < 1) {
@@ -890,6 +904,8 @@ void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixma
   const QFontMetrics& fontMetrics, QColor const& textColor, const int spacing, Qt::Alignment const alignment,
   const QString& secondaryText, QColor const& secondaryTextColor, bool const useMnemonic, bool const showMnemonic,
   Qt::TextElideMode const elideMode) {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   p->setRenderHint(QPainter::Antialiasing, true);
 
   const auto hasIcon = !iconPixmap.isNull();
@@ -993,6 +1009,7 @@ int getTickInterval(int tickInterval, int singleStep, int pageStep, int min, int
 
 void drawSliderTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
   const int interval, const int tickThickness, const int singleStep, const int pageStep) {
+  QPainterStateGuard stateGuard(p);
   const auto sliderLength = tickmarksRect.width();
   const auto tickInterval = getTickInterval(interval, singleStep, pageStep, min, max, sliderLength);
 
@@ -1013,6 +1030,7 @@ void drawSliderTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& 
 
 void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor, const int min, const int max,
   const int tickThickness, const int tickLength, const int singleStep, const int pageStep, const int minArcLength) {
+  QPainterStateGuard stateGuard(p);
   p->setRenderHint(QPainter::Antialiasing, true);
   p->setPen(QPen(tickColor, tickThickness, Qt::SolidLine, Qt::FlatCap));
   p->setBrush(Qt::NoBrush);
@@ -1047,6 +1065,7 @@ void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& ti
 void drawDial(QPainter* p, QRect const& dialRect, int min, int max, double value, QColor const& bgColor,
   QColor const& handleColor, QColor const& grooveColor, QColor const& valueColor, QColor const& markColor,
   const int grooveThickness, const int markLength, const int markThickness) {
+  QPainterStateGuard stateGuard(p);
   constexpr auto totalAngleDegrees = 360;
   constexpr auto deadAngleDegrees = 90;
   constexpr auto angleSpreadDegrees = totalAngleDegrees - deadAngleDegrees;
@@ -1159,6 +1178,7 @@ QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses) {
 
 void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& bgColor, bool drawShadow,
   const QColor& shadowColor) {
+  QPainterStateGuard stateGuard(p);
   if (drawShadow) {
     drawTabShadow(p, rect, radius, shadowColor);
   }
@@ -1170,6 +1190,8 @@ void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radius, const QCol
 }
 
 void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color) {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   // Draw the tab in a temporary buffer.
   const auto path = getTabPath(rect, radius);
   const auto pathRect = path.boundingRect().toAlignedRect();
@@ -1194,10 +1216,8 @@ void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, cons
   const auto deltaY = (shadowPixmap.height() - pathRect.height()) / 2 + shadowY - blurRadius;
   const auto shadowRect = QRect(QPoint(pathRect.x() - deltaX, pathRect.y() - deltaY), shadowPixmap.size());
 
-  const auto modeBackup = p->compositionMode();
   p->setCompositionMode(QPainter::CompositionMode::CompositionMode_Multiply);
   p->drawPixmap(shadowRect, shadowPixmap);
-  p->setCompositionMode(modeBackup);
 }
 
 void drawElidedMultiLineText(QPainter& p, const QRect& rect, const QString& text, const QPaintDevice* paintDevice) {
@@ -1271,6 +1291,7 @@ QString displayedShortcutString(const QKeySequence& shortcut) {
 
 void drawShortcut(QPainter& p, const QKeySequence& shortcut, const QRect& rect, const Theme& theme, bool enabled,
   Qt::Alignment alignment) {
+  QPainterStateGuard stateGuard(&p);
   const auto shortcutStr = displayedShortcutString(shortcut);
   if (shortcutStr.isEmpty())
     return;
@@ -1382,6 +1403,8 @@ QPixmap getPixmap(
 
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
   const QWidget* widget, bool colorize, const QColor& color) {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   if (rect.isEmpty() || icon.isNull()) {
     return { rect.x(), rect.y(), 0, 0 };
   }

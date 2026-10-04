@@ -6,3 +6,13 @@ include(CMakeFindDependencyMacro)
 find_dependency(Qt6 REQUIRED COMPONENTS Core Widgets Svg)
 
 check_required_components(@PROJECT_NAME@)
+
+# Set version and config path for find_package_handle_standard_args.
+# These are normally set by find_package() after sourcing the config file,
+# but we need them available now since we call FPHSA from within.
+set(@PROJECT_NAME@_VERSION "@PROJECT_VERSION@")
+set(@PROJECT_NAME@_CONFIG "${CMAKE_CURRENT_LIST_FILE}")
+
+# Produce the standard "Found <pkg>" message and properly set <pkg>_FOUND.
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(@PROJECT_NAME@ CONFIG_MODE)

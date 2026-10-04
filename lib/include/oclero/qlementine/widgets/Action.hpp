@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QAction>
 #include <functional>
 
 namespace oclero::qlementine {
-class Action : public QAction {
+class QLEMENTINE_EXPORT Action : public QAction {
   Q_OBJECT
 
   Q_PROPERTY(bool shortcutEditable READ shortcutEditable WRITE setShortcutEditable NOTIFY shortcutEditableChanged)
@@ -26,6 +28,7 @@ public:
   explicit Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut, QObject* parent = nullptr);
   explicit Action(const QIcon& icon, const QString& text, const QKeySequence& shortcut,
     const Qt::ShortcutContext shortcutContext, QObject* parent = nullptr);
+  ~Action() override = default;
 
   void setCallback(const std::function<void()>& cb);
   void setEnabledPredicate(const std::function<bool()>& cb);

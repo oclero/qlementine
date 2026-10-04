@@ -23,14 +23,11 @@ Switch::Switch(QWidget* parent)
   setAutoRepeat(false);
   setupAnimation();
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // Like QCheckBox
-  const auto* style = this->style();
-  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style);
-  _fullHandlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2;
-
   // Focus frame.
   _focusFrame = new RoundedFocusFrame(this);
-  _focusFrame->setRadiuses(RadiusesF{ qlementineStyle ? qlementineStyle->theme().borderRadius : 0. });
   _focusFrame->setWidget(this);
+
+  refreshThemeMetrics();
 }
 
 QSize Switch::sizeHint() const {
@@ -57,6 +54,7 @@ QSize Switch::sizeHint() const {
 void Switch::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   const auto* style = this->style();
   const auto spacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
@@ -149,7 +147,8 @@ void Switch::changeEvent(QEvent* e) {
   QAbstractButton::changeEvent(e);
   const auto type = e->type();
   if (type == QEvent::Type::EnabledChange || type == QEvent::Type::PaletteChange
-      || type == QEvent::Type::ApplicationPaletteChange) {
+      || type == QEvent::Type::ApplicationPaletteChange || type == QEvent::Type::StyleChange) {
+    refreshThemeMetrics();
     startAnimation();
   }
 }
@@ -231,6 +230,17 @@ void Switch::startAnimation() {
   _symbolAnimation.setStartValue(currentSymbol);
   _symbolAnimation.setEndValue(1.);
   _symbolAnimation.start();
+}
+
+void Switch::refreshThemeMetrics() {
+  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
+  _fullHandlePadding = qlementineStyle ? qlementineStyle->theme().borderWidth * 2 : 2.0;
+
+  if (_focusFrame) {
+    _focusFrame->setRadiuses(RadiusesF{ qlementineStyle ? qlementineStyle->theme().borderRadius : 0.0 });
+  }
+
+  updateGeometry();
 }
 
 void Switch::setupAnimation() {

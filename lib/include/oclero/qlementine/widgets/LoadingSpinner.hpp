@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/Common.hpp>
 
@@ -12,20 +13,23 @@
 
 namespace oclero::qlementine {
 /// An animated loading spinner.
-class LoadingSpinner : public QWidget {
+class QLEMENTINE_EXPORT LoadingSpinner : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(bool spinning READ spinning WRITE setSpinning NOTIFY spinningChanged)
 
 public:
   explicit LoadingSpinner(QWidget* parent = nullptr);
+  ~LoadingSpinner() override = default;
 
   bool spinning() const;
   Q_SLOT void setSpinning(bool);
-  Q_SIGNAL void spinningChanged();
 
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;
+
+Q_SIGNALS:
+  void spinningChanged();
 
 protected:
   void paintEvent(QPaintEvent* evt) override;

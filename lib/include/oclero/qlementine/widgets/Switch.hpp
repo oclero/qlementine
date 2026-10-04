@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/widgets/RoundedFocusFrame.hpp>
 
 #include <QAbstractButton>
@@ -12,7 +13,7 @@ namespace oclero::qlementine {
 class QStyleOptionFocusRoundedRect;
 
 /// A switch toggle button like on iOS and Android.
-class Switch : public QAbstractButton {
+class QLEMENTINE_EXPORT Switch : public QAbstractButton {
   Q_OBJECT
 
   Q_PROPERTY(bool tristate READ isTristate WRITE setTristate NOTIFY tristateChanged)
@@ -21,6 +22,7 @@ class Switch : public QAbstractButton {
 
 public:
   explicit Switch(QWidget* parent = nullptr);
+  ~Switch() override = default;
 
   QSize sizeHint() const override;
 
@@ -53,6 +55,7 @@ protected:
 private:
   void setupAnimation();
   void startAnimation();
+  void refreshThemeMetrics();
   QRect getSwitchRect() const;
 
   const QColor& getBgColor() const;

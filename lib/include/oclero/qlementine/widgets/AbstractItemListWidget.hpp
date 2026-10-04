@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
 #include <oclero/qlementine/style/Theme.hpp>
 #include <oclero/qlementine/style/QlementineStyleOption.hpp>
 
@@ -18,7 +19,7 @@ namespace oclero::qlementine {
 class RoundedFocusFrame;
 
 /// A class to factorize common behavior between widgets such as tab bars.
-class AbstractItemListWidget : public QWidget {
+class QLEMENTINE_EXPORT AbstractItemListWidget : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
@@ -34,23 +35,18 @@ public:
   QSize sizeHint() const override;
 
   int itemCount() const;
-  Q_SIGNAL void itemCountChanged();
 
   int currentIndex() const;
   void setCurrentIndex(int index);
-  Q_SIGNAL void currentIndexChanged();
 
   QVariant currentData() const;
   void setCurrentData(const QVariant& currentData);
-  Q_SIGNAL void currentDataChanged();
 
   const QSize& iconSize() const;
   void setIconSize(const QSize& size);
-  Q_SIGNAL void iconSizeChanged();
 
   bool itemsShouldExpand() const;
   void setItemsShouldExpand(bool expand);
-  Q_SIGNAL void itemsShouldExpandChanged();
 
   int addItem(const QString& text, const QIcon& icon = {}, const QString& badge = {}, const QVariant& itemData = {});
   void removeItem(int index);
@@ -75,6 +71,13 @@ public:
   Q_SLOT void moveToPreviousItem();
 
   virtual void initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const;
+
+Q_SIGNALS:
+  void itemCountChanged();
+  void currentIndexChanged();
+  void currentDataChanged();
+  void iconSizeChanged();
+  void itemsShouldExpandChanged();
 
 protected: // QWidget override.
   void keyPressEvent(QKeyEvent* e) override;

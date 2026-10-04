@@ -4,6 +4,9 @@
 #pragma once
 
 #include <oclero/qlementine/animation/WidgetAnimator.hpp>
+#include <oclero/qlementine/qlementine_export.h>
+
+#include <QObject>
 
 #include <unordered_map>
 #include <optional>
@@ -29,9 +32,11 @@ namespace oclero::qlementine {
   }
 
 // Handles animations for all widgets.
-class WidgetAnimationManager {
+class QLEMENTINE_EXPORT WidgetAnimationManager : public QObject {
+  Q_OBJECT
 public:
-  WidgetAnimationManager();
+  explicit WidgetAnimationManager(QObject* parent = nullptr);
+  ~WidgetAnimationManager() override = default;
 
   bool enabled() const;
   void setEnabled(bool enabled);

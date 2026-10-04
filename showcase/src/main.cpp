@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
   // Theme manager.
   auto* themeManager = new oclero::qlementine::ThemeManager(style);
-  themeManager->loadDirectory(":/showcase/themes");
+  themeManager->loadDirectory(":/qlementine/resources/themes");
 
   // Define theme on QStyle.
   themeManager->setCurrentTheme("Light");

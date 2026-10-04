@@ -42,7 +42,7 @@ std::optional<QColor> tryGetColorRecursive(QJsonObject const& jsonObj, QString c
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetColorRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetColorRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
   }
@@ -74,7 +74,7 @@ std::optional<bool> tryGetBoolRecursive(QJsonObject const& jsonObj, QString cons
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetBoolRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetBoolRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
 
@@ -100,7 +100,7 @@ std::optional<int> tryGetIntRecursive(QJsonObject const& jsonObj, QString const&
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetIntRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetIntRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
 
@@ -126,7 +126,7 @@ std::optional<double> tryGetDoubleRecursive(QJsonObject const& jsonObj, QString 
     if (variant.userType() == QMetaType::QString && maxRecursiveCalls > 0) {
       const auto variantString = variant.toString();
       if (variantString != key) {
-        return tryGetDoubleRecursive(jsonObj, variantString, --maxRecursiveCalls);
+        return tryGetDoubleRecursive(jsonObj, variantString, maxRecursiveCalls - 1);
       }
     }
 
@@ -185,6 +185,15 @@ bool jsonObjHasAllKeys(const QJsonObject& obj, const QVector<QString>& keys) {
   }
   return true;
 }
+
+int resolveFontPixelSize(const QFont& font) {
+  if (font.pixelSize() > 0) {
+    return std::max(1, font.pixelSize());
+  }
+
+  const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
+  return std::max(1, qRound(pointSizeToPixelSize(font.pointSizeF(), dpi)));
+}
 } // namespace
 
 Theme::Theme() {
@@ -194,6 +203,16 @@ Theme::Theme() {
 
 std::optional<Theme> Theme::fromJsonPath(const QString& jsonPath) {
   return fromJsonDoc(readJsonDoc(jsonPath));
+}
+
+Theme Theme::makeLight() {
+  const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/light.json"));
+  return themeOpt.value_or(Theme{});
+}
+
+Theme Theme::makeDark() {
+  const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/dark.json"));
+  return themeOpt.value_or(Theme{});
 }
 
 std::optional<Theme> Theme::fromJsonDoc(const QJsonDocument& jsonDoc) {
@@ -215,57 +234,50 @@ void Theme::initializeFonts() {
   const auto titleFont =
     useSystemFonts ? QFontDatabase::systemFont(QFontDatabase::TitleFont) : QFont(QStringLiteral("Inter Display"));
 
-  const auto dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
-
   fontRegular = defaultFont;
-  if (useSystemFonts) {
-    fontSize = defaultFont.pointSize();
-  } else {
-    fontRegular.setWeight(QFont::Weight::Normal);
-    fontRegular.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
+  fontRegular.setWeight(QFont::Weight::Normal);
+  if (useSystemFonts && !fontSizeWasOverriden) {
+    fontSize = resolveFontPixelSize(defaultFont);
   }
+  fontRegular.setPixelSize(std::max(1, fontSize));
 
   fontBold = defaultFont;
   fontBold.setWeight(QFont::Weight::Bold);
-  if (!useSystemFonts) {
-    fontBold.setPointSizeF(pixelSizeToPointSize(fontSize, dpi));
-  }
+  fontBold.setPixelSize(std::max(1, fontSize));
 
   fontH1 = titleFont;
   fontH1.setWeight(QFont::Weight::Bold);
-  fontH1.setPointSizeF(pixelSizeToPointSize(fontSizeH1, dpi));
+  fontH1.setPixelSize(std::max(1, fontSizeH1));
 
   fontH2 = titleFont;
   fontH2.setWeight(QFont::Weight::Bold);
-  fontH2.setPointSizeF(pixelSizeToPointSize(fontSizeH2, dpi));
+  fontH2.setPixelSize(std::max(1, fontSizeH2));
 
   fontH3 = titleFont;
   fontH3.setWeight(QFont::Weight::Bold);
-  fontH3.setPointSizeF(pixelSizeToPointSize(fontSizeH3, dpi));
+  fontH3.setPixelSize(std::max(1, fontSizeH3));
 
   fontH4 = titleFont;
   fontH4.setWeight(QFont::Weight::Bold);
-  fontH4.setPointSizeF(pixelSizeToPointSize(fontSizeH4, dpi));
+  fontH4.setPixelSize(std::max(1, fontSizeH4));
 
   fontH5 = titleFont;
   fontH5.setWeight(QFont::Weight::Bold);
-  fontH5.setPointSizeF(pixelSizeToPointSize(fontSizeH5, dpi));
+  fontH5.setPixelSize(std::max(1, fontSizeH5));
 
   fontCaption = defaultFont;
-  if (useSystemFonts) {
-    fontSizeS1 = defaultFont.pointSize();
-  } else {
-    fontCaption.setWeight(QFont::Weight::Normal);
-    fontCaption.setPointSizeF(pixelSizeToPointSize(fontSizeS1, dpi));
+  fontCaption.setWeight(QFont::Weight::Normal);
+  if (useSystemFonts && !fontSizeS1WasOverriden) {
+    fontSizeS1 = resolveFontPixelSize(defaultFont);
   }
+  fontCaption.setPixelSize(std::max(1, fontSizeS1));
 
   fontMonospace = fixedFont;
-  if (useSystemFonts) {
-    fontSizeMonospace = fixedFont.pointSize();
-  } else {
-    fontMonospace.setWeight(QFont::Weight::Normal);
-    fontMonospace.setPointSizeF(pixelSizeToPointSize(fontSizeMonospace, dpi));
+  fontMonospace.setWeight(QFont::Weight::Normal);
+  if (useSystemFonts && !fontSizeMonospaceWasOverriden) {
+    fontSizeMonospace = resolveFontPixelSize(fixedFont);
   }
+  fontMonospace.setPixelSize(std::max(1, fontSizeMonospace));
 }
 
 void Theme::initializePalette() {
@@ -437,6 +449,10 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     shadowColorTransparent = colorWithAlpha(shadowColor1, 0);
 
     TRY_GET_BOOL_ATTRIBUTE(jsonObj, useSystemFonts);
+
+    fontSizeWasOverriden = jsonObj.contains(QStringLiteral("fontSize"));
+    fontSizeMonospaceWasOverriden = jsonObj.contains(QStringLiteral("fontSizeMonospace"));
+    fontSizeS1WasOverriden = jsonObj.contains(QStringLiteral("fontSizeS1"));
 
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSize);
     TRY_GET_INT_ATTRIBUTE(jsonObj, fontSizeMonospace);

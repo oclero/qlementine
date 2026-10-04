@@ -19,6 +19,7 @@
 #include <QRadioButton>
 #include <QToolButton>
 #include <QPlainTextEdit>
+#include <QToolButton>
 
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 
@@ -69,7 +70,12 @@ bool shouldHaveExternalFocusFrame(const QWidget* w) {
 
 bool shouldHaveTabFocus(const QWidget* w) {
   return w && (w->focusPolicy() == Qt::StrongFocus || w->focusPolicy() == Qt::ClickFocus)
-         && (qobject_cast<const QAbstractButton*>(w) || qobject_cast<const QGroupBox*>(w));
+         && (qobject_cast<const QAbstractButton*>(w) || qobject_cast<const QGroupBox*>(w))
+         && !qobject_cast<const QToolButton*>(w);
+}
+
+bool shouldHaveNoFocus(const QWidget* w) {
+  return qobject_cast<const QToolButton*>(w);
 }
 
 bool shouldNotBeVerticallyCompressed(const QWidget* w) {

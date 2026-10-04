@@ -30,6 +30,8 @@ public:
     }
   }
 
+  ~LineEditButtonEventFilter() override = default;
+
 protected:
   bool eventFilter(QObject*, QEvent* evt) override {
     switch (evt->type()) {
@@ -107,9 +109,10 @@ protected:
         const auto pixmapRect = QRect{ { pixmapX, pixmapY }, theme.iconSize };
 
         QPainter p(_button);
+        p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+        p.setRenderHint(QPainter::Antialiasing, true);
         p.setOpacity(opacity);
         p.setPen(Qt::NoPen);
-        p.setRenderHint(QPainter::Antialiasing, true);
 
         // Background.
         p.setBrush(currentBgColor);

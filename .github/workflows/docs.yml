@@ -2,7 +2,7 @@ name: Docs
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
 
 permissions:
   contents: write
@@ -14,11 +14,11 @@ jobs:
     steps:
       - name: Check Out
         # Checks out the repository.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Python
         # Install Python.
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v7
         with:
           python-version: 3.x
 
@@ -28,7 +28,7 @@ jobs:
 
       - name: Restore cache
         # Restores cache.
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           key: mkdocs-material-${{ env.cache_id }}
           path: .cache

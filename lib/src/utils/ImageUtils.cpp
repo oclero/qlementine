@@ -191,6 +191,8 @@ QPixmap makePixmapFromSvg(const QString& backgroundSvgPath, const QColor& backgr
   pixmap.fill(Qt::transparent);
 
   QPainter p(&pixmap);
+  p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
   p.drawPixmap(0, 0, coloredBgPixmap);
   p.drawPixmap(0, 0, coloredFgPixmap);
 
@@ -217,6 +219,7 @@ QPixmap makeRoundedPixmap(
 
   // Mask.
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
   drawRoundedRect(&p, result.rect(), Qt::white, { topLeft, topRight, bottomRight, bottomLeft });
   p.setCompositionMode(QPainter::CompositionMode_SourceIn);
   // Draw input pixmap over.
@@ -240,6 +243,7 @@ QPixmap makeFitPixmap(QPixmap const& input, const QSize& size) {
   const auto y = (result.height() - scaledInput.height()) / 2.;
 
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
   p.drawPixmap(int(x), int(y), scaledInput);
 
   return result;

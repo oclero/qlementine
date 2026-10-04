@@ -3,14 +3,16 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QString>
 #include <QFontMetrics>
 
 namespace oclero::qlementine {
 
-double pointSizeToPixelSize(double pointSize, double dpi);
+QLEMENTINE_EXPORT double pointSizeToPixelSize(double pointSize, double dpi);
 
-double pixelSizeToPointSize(double pixelSize, double dpi);
+QLEMENTINE_EXPORT double pixelSizeToPointSize(double pixelSize, double dpi);
 
 /**
  * @brief An utility to centralize the calls to QFontMetrics.
@@ -18,5 +20,5 @@ double pixelSizeToPointSize(double pixelSize, double dpi);
  * @param text The text to compute the width for.
  * @return The width of the text in logical pixels.
  */
-int textWidth(const QFontMetrics& fm, const QString& text);
+QLEMENTINE_EXPORT int textWidth(const QFontMetrics& fm, const QString& text);
 } // namespace oclero::qlementine

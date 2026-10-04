@@ -86,6 +86,8 @@ public:
     parent->installEventFilter(this);
   }
 
+  ~ContextMenuEventFilter() override = default;
+
 protected:
   virtual bool eventFilter(QObject* watched, QEvent* evt) override {
     if (evt->type() == QEvent::ContextMenu && _cb) {
@@ -98,8 +100,12 @@ protected:
 };
 
 class FontMetricsTestsWidget : public QWidget {
+public:
   using QWidget::QWidget;
 
+  ~FontMetricsTestsWidget() override = default;
+
+private:
   void paintEvent(QPaintEvent*) override {
     const auto text = QString("A very long text than can be elided because it is too long.");
     const auto fm = this->fontMetrics();
@@ -162,9 +168,11 @@ class FontMetricsTestsWidget : public QWidget {
 };
 
 class RoundedTriangleWidget : public QWidget {
+public:
   using QWidget::QWidget;
 
-public:
+  ~RoundedTriangleWidget() override = default;
+
   double radius() const {
     return _r;
   }
@@ -198,6 +206,7 @@ private:
 class CustomBgWidget : public QWidget {
 public:
   using QWidget::QWidget;
+  ~CustomBgWidget() override = default;
 
   QColor bgColor{ Qt::red };
   QColor borderColor{ Qt::black };
@@ -435,7 +444,7 @@ struct SandboxWindow::Impl {
     }
     {
       auto* label = new Label(windowContent);
-      label->setText(QStringLiteral("Comment/Uncomment lines in SandbowWindow.cpp to show/hide desired widgets."));
+      label->setText(QStringLiteral("Comment/Uncomment lines in SandboxWindow.cpp to show/hide desired widgets."));
       label->setRole(TextRole::Caption);
       windowContentLayout->addWidget(label);
     }
@@ -443,10 +452,9 @@ struct SandboxWindow::Impl {
 
   void setupUI_button() {
     auto* button = new QPushButton(windowContent);
-    button->setText(QStringLiteral("Button with a very long text that can be elided"));
+    button->setText(QStringLiteral("Button"));
     button->setIcon(getTestQIcon());
-    button->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-    button->setDefault(true);
+    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     windowContentLayout->addWidget(button);
   }
 
@@ -637,6 +645,7 @@ struct SandboxWindow::Impl {
     slider->setPageStep(pageStep);
     slider->setSingleStep(singleStep);
     slider->setValue(val);
+    slider->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
     QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
     windowContentLayout->addWidget(slider);
   }
@@ -820,16 +829,27 @@ struct SandboxWindow::Impl {
   }
 
   void setupUI_listView() {
+    constexpr auto icon_mode = true;
+    constexpr auto checkable = false;
+
     auto* listView = new QListWidget(windowContent);
+    listView->setUniformItemSizes(false);
     listView->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
     //listView->setAlternatingRowColors(true);
-    listView->setIconSize(QSize(32, 32));
+    if (icon_mode) {
+      listView->setViewMode(QListView::ViewMode::IconMode);
+      listView->setGridSize(QSize(112, 80));
+    }
+    listView->setIconSize(QSize(16, 16));
 
     for (auto i = 0; i < 2; ++i) {
       auto* item = new QListWidgetItem(
         getTestQIcon(), QString("Item #%1 with very long text that can be elided").arg(i), listView);
-      item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
-      item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+      if (checkable) {
+        item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
+        item->setCheckState(i % 2 ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+      }
+
       //item->setForeground(i % 2 ? Qt::red : Qt::blue);
       listView->addItem(item);
     }
@@ -989,7 +1009,7 @@ struct SandboxWindow::Impl {
     auto* toolButton = new QToolButton(toolbar);
     toolButton->setIcon(getTestQIcon());
     toolButton->setText(QStringLiteral("Button with a very long text that can be elided"));
-    toolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolButton->setCheckable(false);
     toolButton->setChecked(false);
 
@@ -1016,7 +1036,6 @@ struct SandboxWindow::Impl {
     toolbar->setMovable(false);
     toolbar->setFloatable(false);
     toolbar->setIconSize(QSize(16, 16));
-    toolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonFollowStyle);
 
     // Button 1: Icon only
     {
@@ -1090,6 +1109,14 @@ struct SandboxWindow::Impl {
       toolButton->setMenu(subMenu);
       subMenu->addAction(icon, QStringLiteral("Sub Action 1"));
       subMenu->addAction(icon, QStringLiteral("Sub Action 2"));
+      toolbar->addWidget(toolButton);
+    }
+    // Button 7: Icon and Text, vertical.
+    {
+      auto* toolButton = new QToolButton(toolbar);
+      toolButton->setIcon(icon);
+      toolButton->setText(QStringLiteral("Button"));
+      toolButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
       toolbar->addWidget(toolButton);
     }
   }
@@ -1369,7 +1396,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
         auto* item = new QListWidgetItem(
           getTestQIcon(), QString("Item #%1 with very long text that can be elided").arg(i), listView);
         item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
-        item->setCheckState(i % 2 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+        item->setCheckState(i % 2 ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
 
         listView->addItem(item);
       }
@@ -1846,6 +1873,14 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     windowContentLayout->addWidget(plainWidget);
   }
+
+  void setupUI_widgetStatus() {
+    const auto icon = getTestQIcon();
+    auto* button = new QPushButton("Test Button", windowContent);
+    button->setIcon(icon);
+    oclero::qlementine::QlementineStyle::setWidgetStatus(button, oclero::qlementine::Status::Error);
+    windowContentLayout->addWidget(button);
+  }
 };
 
 SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
@@ -1905,6 +1940,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_themeEditor();
     // _impl->setupUI_messageBox();
     // _impl->setupUI_toolBar();
+    // _impl->setupUI_widgetStatus();
   }
   _impl->endSetupUI();
   oclero::qlementine::centerWidget(this);

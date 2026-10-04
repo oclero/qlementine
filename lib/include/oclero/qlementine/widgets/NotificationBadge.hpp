@@ -3,13 +3,15 @@
 
 #pragma once
 
+#include <oclero/qlementine/qlementine_export.h>
+
 #include <QWidget>
 #include <QPointer>
 #include <QMargins>
 
 namespace oclero::qlementine {
 /// A small badge to display a notification (with or without text) on another widget.
-class NotificationBadge : public QWidget {
+class QLEMENTINE_EXPORT NotificationBadge : public QWidget {
   Q_OBJECT
 
   Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
@@ -19,6 +21,7 @@ class NotificationBadge : public QWidget {
 
 public:
   explicit NotificationBadge(QWidget* parent = nullptr);
+  ~NotificationBadge() override = default;
 
   // Will track changes to widget and resize itself automatically.
   // If the monitored widget's parent changes, will follow the widget and place
@@ -29,27 +32,29 @@ public:
 
   const QString& text() const;
   Q_SLOT void setText(const QString&);
-  Q_SIGNAL void textChanged();
 
   const QColor& foregroundColor() const;
   Q_SLOT void setForegroundColor(const QColor&);
-  Q_SIGNAL void foregroundColorChanged();
 
   const QColor& backgroundColor() const;
   Q_SLOT void setBackgroundColor(const QColor&);
-  Q_SIGNAL void backgroundColorChanged();
 
   const QPoint& relativePosition() const;
   Q_SLOT void setRelativePosition(const QPoint&);
   void setRelativePosition(int x, int y);
-  Q_SIGNAL void relativePositionChanged();
 
   const QMargins& padding() const;
   Q_SLOT void setPadding(const QMargins&);
-  Q_SIGNAL void paddingChanged();
 
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;
+
+Q_SIGNALS:
+  void textChanged();
+  void foregroundColorChanged();
+  void backgroundColorChanged();
+  void relativePositionChanged();
+  void paddingChanged();
 
 protected:
   void paintEvent(QPaintEvent* evt) override;

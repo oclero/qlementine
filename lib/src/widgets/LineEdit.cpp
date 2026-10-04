@@ -22,6 +22,7 @@ const QIcon& LineEdit::icon() const {
 
 void LineEdit::setIcon(const QIcon& icon) {
   _icon = icon;
+  Q_EMIT iconChanged();
   update();
   if (_icon.isNull()) {
     setTextMargins(0, 0, 0, 0);
@@ -55,6 +56,7 @@ void LineEdit::paintEvent(QPaintEvent* evt) {
   const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };
 
   QPainter p(this);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
   p.drawPixmap(pixmapRect, pixmap);
 }
 

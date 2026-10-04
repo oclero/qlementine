@@ -10,6 +10,7 @@
 #include <oclero/qlementine/utils/ColorUtils.hpp>
 
 #include <QPainter>
+#include <QPainterStateGuard>
 #include <QTreeView>
 
 namespace oclero::qlementine {
@@ -19,6 +20,9 @@ ComboBoxDelegate::ComboBoxDelegate(QWidget* widget, QlementineStyle& style)
   , _qlementineStyle(&style) {}
 
 void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::Antialiasing, true);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   const auto& theme = _qlementineStyle ? _qlementineStyle->theme() : Theme{};
 
   const auto viewIsTreeView = qobject_cast<const QTreeView*>(opt.widget);
@@ -52,7 +56,6 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
     const auto& bgColor =
       _qlementineStyle ? _qlementineStyle->menuItemBackgroundColor(mouse) : Theme().primaryColorTransparent;
     const auto radius = _qlementineStyle->theme().borderRadius - contentMargin / 2;
-    p->setRenderHint(QPainter::Antialiasing, true);
     p->setPen(Qt::NoPen);
     p->setBrush(bgColor);
     p->drawRoundedRect(bgRect, radius, radius);

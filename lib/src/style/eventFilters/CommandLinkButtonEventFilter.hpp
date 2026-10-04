@@ -22,6 +22,8 @@ public:
     , _animManager(animManager)
     , _button(button) {}
 
+  ~CommandLinkButtonEventFilter() override = default;
+
   bool eventFilter(QObject*, QEvent* evt) override {
     if (evt->type() == QEvent::Paint && _style) {
       // Draw the button by ourselves to bypass QLineEditIconButton::paintEvent in qlineedit_p.cpp:353
@@ -45,9 +47,10 @@ public:
       const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };
 
       QPainter p(_button);
+      p.setRenderHint(QPainter::Antialiasing, true);
+      p.setRenderHint(QPainter::SmoothPixmapTransform, true);
       p.setPen(Qt::NoPen);
       p.setBrush(currentBgColor);
-      p.setRenderHint(QPainter::Antialiasing, true);
       p.drawRoundedRect(rect, radius, radius);
       p.drawPixmap(pixmapRect, pixmap);
 

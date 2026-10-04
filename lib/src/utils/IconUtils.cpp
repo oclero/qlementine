@@ -9,6 +9,42 @@
 #include <QPainter>
 
 namespace oclero::qlementine {
+namespace {
+// Helper function to generate icon from SVG renderer with optional colorization.
+QIcon makeIconFromRenderer(QSvgRenderer& svgRenderer, const QSize& size, const IconTheme* iconTheme = nullptr) {
+  if (size.isEmpty())
+    return {};
+
+  QIcon icon;
+  svgRenderer.setAspectRatioMode(Qt::AspectRatioMode::KeepAspectRatio);
+
+  for (const auto pxRatio : { 1., 2. }) {
+    QPixmap pixmap(size * pxRatio);
+    pixmap.fill(Qt::transparent);
+    {
+      QPainter painter(&pixmap);
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      svgRenderer.render(&painter, pixmap.rect());
+    }
+    pixmap.setDevicePixelRatio(pxRatio);
+
+    for (const auto iconMode : { QIcon::Normal, QIcon::Disabled, QIcon::Active, QIcon::Selected }) {
+      for (const auto iconState : { QIcon::On, QIcon::Off }) {
+        if (iconTheme) {
+          const auto& fgColor = iconTheme->color(iconMode, iconState);
+          const auto coloredPixmap = qlementine::getColorizedPixmap(pixmap, fgColor);
+          icon.addPixmap(coloredPixmap, iconMode, iconState);
+        } else {
+          icon.addPixmap(pixmap, iconMode, iconState);
+        }
+      }
+    }
+  }
+
+  return icon;
+}
+} // namespace
+
 IconTheme::IconTheme(const QColor& normal, const QColor& disabled, const QColor& checkedNormal, QColor checkedDisabled)
   : normal(normal)
   , disabled(disabled)
@@ -37,59 +73,31 @@ QIcon makeIconFromSvg(const QString& svgPath, const QSize& size) {
   if (svgPath.isEmpty() || size.isEmpty())
     return {};
 
-  QIcon icon;
-
   QSvgRenderer svgRenderer(svgPath);
-  svgRenderer.setAspectRatioMode(Qt::AspectRatioMode::KeepAspectRatio);
-
-  for (const auto pxRatio : { 1., 2. }) {
-    QPixmap pixmap(size * pxRatio);
-    pixmap.fill(Qt::transparent);
-    {
-      QPainter painter(&pixmap);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-      svgRenderer.render(&painter, pixmap.rect());
-    }
-    pixmap.setDevicePixelRatio(pxRatio);
-
-    for (const auto iconMode : { QIcon::Normal, QIcon::Disabled, QIcon::Active, QIcon::Selected }) {
-      for (const auto iconState : { QIcon::On, QIcon::Off }) {
-        icon.addPixmap(pixmap, iconMode, iconState);
-      }
-    }
-  }
-
-  return icon;
+  return makeIconFromRenderer(svgRenderer, size);
 }
 
 QIcon makeIconFromSvg(const QString& svgPath, const IconTheme& iconTheme, const QSize& size) {
   if (svgPath.isEmpty() || size.isEmpty())
     return {};
 
-  QIcon icon;
-
   QSvgRenderer svgRenderer(svgPath);
-  svgRenderer.setAspectRatioMode(Qt::AspectRatioMode::KeepAspectRatio);
+  return makeIconFromRenderer(svgRenderer, size, &iconTheme);
+}
 
-  for (const auto pxRatio : { 1, 2 }) {
-    QPixmap pixmap(size * pxRatio);
-    pixmap.fill(Qt::transparent);
-    {
-      QPainter painter(&pixmap);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-      svgRenderer.render(&painter, pixmap.rect());
-    }
-    pixmap.setDevicePixelRatio(static_cast<double>(pxRatio));
+QIcon makeIconFromSvgData(const QByteArray& svgData, const QSize& size) {
+  if (svgData.isEmpty() || size.isEmpty())
+    return {};
 
-    for (const auto iconMode : { QIcon::Normal, QIcon::Disabled, QIcon::Active, QIcon::Selected }) {
-      for (const auto iconState : { QIcon::On, QIcon::Off }) {
-        const auto& fgColor = iconTheme.color(iconMode, iconState);
-        const auto coloredPixmap = qlementine::getColorizedPixmap(pixmap, fgColor);
-        icon.addPixmap(coloredPixmap, iconMode, iconState);
-      }
-    }
-  }
+  QSvgRenderer svgRenderer(svgData);
+  return makeIconFromRenderer(svgRenderer, size);
+}
 
-  return icon;
+QIcon makeIconFromSvgData(const QByteArray& svgData, const IconTheme& iconTheme, const QSize& size) {
+  if (svgData.isEmpty() || size.isEmpty())
+    return {};
+
+  QSvgRenderer svgRenderer(svgData);
+  return makeIconFromRenderer(svgRenderer, size, &iconTheme);
 }
 } // namespace oclero::qlementine

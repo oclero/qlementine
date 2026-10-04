@@ -72,6 +72,7 @@ static QIcon makeThemedIcon(Icons16 id, const QSize& size = { 16, 16 }) {
 class DummyWorkspace : public QWidget {
 public:
   using QWidget::QWidget;
+  ~DummyWorkspace() override = default;
 
 protected:
   void paintEvent(QPaintEvent* evt) override {
@@ -419,6 +420,7 @@ struct ShowcaseWindow::Impl {
 
       themeSwitch = new oclero::qlementine::Switch(toolBar);
       themeSwitch->setToolTip("Switch between light and dark theme");
+      themeSwitch->setFocusPolicy(Qt::FocusPolicy::NoFocus);
       QObject::connect(themeSwitch, &oclero::qlementine::Switch::clicked, themeSwitch, [this](auto checked) {
         setTheme(checked ? "Dark" : "Light");
       });
@@ -512,8 +514,12 @@ struct ShowcaseWindow::Impl {
 
       {
         class CustomDelegate : public QStyledItemDelegate {
+        public:
           using QStyledItemDelegate::QStyledItemDelegate;
 
+          ~CustomDelegate() override = default;
+
+        private:
           QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override {
             const auto result = QStyledItemDelegate::sizeHint(option, index);
             return { 0, result.height() };
@@ -535,7 +541,7 @@ struct ShowcaseWindow::Impl {
           const auto itemText = QString("Item #%1 with very long text that can be elided").arg(i);
           auto* item = new QListWidgetItem(getDummyColoredIcon(), itemText, listWidget);
           item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
-          item->setCheckState(i % 3 == 0 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+          item->setCheckState(i % 3 == 0 ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
           listWidget->addItem(item);
         }
         listWidget->item(0)->setSelected(true);
