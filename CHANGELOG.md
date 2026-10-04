@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.5.1
+
+Bugfixes:
+
+- Fix tooltip foreground color.
+
 ## v1.5.0
 
 New features:
