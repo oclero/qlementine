@@ -2379,8 +2379,6 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             const auto& colorizedPixmap = (status != Status::Default && autoIconColor != AutoIconColor::None)
                                             ? qlementine::getColorizedPixmap(pixmap, statusColor(status, itemMouse))
                                             : getColorizedPixmap(pixmap, autoIconColor, fgColor, textColor);
-            auto iconRect = subElementRect(SE_ItemViewItemDecoration, optItem, w);
-            //iconRect.moveLeft(pixmapRect.left());
             p->drawPixmap(iconRect, colorizedPixmap);
           }
         }
