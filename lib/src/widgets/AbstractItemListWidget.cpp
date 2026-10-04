@@ -37,7 +37,7 @@ AbstractItemListWidget::AbstractItemListWidget(QWidget* parent)
   _badgeFont.setBold(true);
 }
 
-AbstractItemListWidget ::~AbstractItemListWidget() = default;
+AbstractItemListWidget::~AbstractItemListWidget() = default;
 
 int AbstractItemListWidget::itemCount() const {
   return static_cast<int>(_items.size());

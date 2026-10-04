@@ -30,9 +30,9 @@ struct QLEMENTINE_EXPORT IconTheme {
   const QString& svgPath, const IconTheme& iconTheme, const QSize& size = QSize(16, 16));
 
 /// Makes an icon from SVG data in memory. Fixes the standard Qt behavior.
-[[maybe_unused]] QIcon makeIconFromSvgData(const QByteArray& svgData, const QSize& size);
+[[maybe_unused]] QLEMENTINE_EXPORT QIcon makeIconFromSvgData(const QByteArray& svgData, const QSize& size);
 
 /// Makes an icon from SVG data in memory and colorizes the QPixmaps. Fixes the standard Qt behavior.
-[[maybe_unused]] QIcon makeIconFromSvgData(
+[[maybe_unused]] QLEMENTINE_EXPORT QIcon makeIconFromSvgData(
   const QByteArray& svgData, const IconTheme& iconTheme, const QSize& size = QSize(16, 16));
 } // namespace oclero::qlementine

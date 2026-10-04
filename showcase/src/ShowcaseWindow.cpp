@@ -536,7 +536,7 @@ struct ShowcaseWindow::Impl {
           const auto itemText = QString("Item #%1 with very long text that can be elided").arg(i);
           auto* item = new QListWidgetItem(getDummyColoredIcon(), itemText, listWidget);
           item->setFlags(item->flags() | Qt::ItemFlag::ItemIsUserCheckable);
-          item->setCheckState(i % 3 == 0 ? Qt ::CheckState::Checked : Qt::CheckState::Unchecked);
+          item->setCheckState(i % 3 == 0 ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
           listWidget->addItem(item);
         }
         listWidget->item(0)->setSelected(true);
