@@ -1864,6 +1864,14 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
     windowContentLayout->addWidget(plainWidget);
   }
+
+  void setupUI_widgetStatus() {
+    const auto icon = getTestQIcon();
+    auto* button = new QPushButton("Test Button", windowContent);
+    button->setIcon(icon);
+    oclero::qlementine::QlementineStyle::setWidgetStatus(button, oclero::qlementine::Status::Error);
+    windowContentLayout->addWidget(button);
+  }
 };
 
 SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
@@ -1923,6 +1931,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_themeEditor();
     // _impl->setupUI_messageBox();
     // _impl->setupUI_toolBar();
+    // _impl->setupUI_widgetStatus();
   }
   _impl->endSetupUI();
   oclero::qlementine::centerWidget(this);

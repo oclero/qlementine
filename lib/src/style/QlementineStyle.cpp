@@ -85,7 +85,9 @@ constexpr auto iconPenWidth = 1.01;
 
 // Used to determine if the icon must be colorized according to the Theme's colors or not.
 constexpr auto Property_AutoIconColor = "autoIconColor";
-constexpr auto Property_IconStatus = "iconStatus";
+
+// Used to determine the status of a widget.
+constexpr auto Property_Status = "status";
 
 
 struct QlementineStyleImpl {
@@ -367,10 +369,14 @@ void QlementineStyle::setAutoIconColor(QWidget* widget, AutoIconColor autoIconCo
   }
 }
 
-AutoIconColor QlementineStyle::autoIconColor(const QWidget* widget) const {
+AutoIconColor QlementineStyle::autoIconColor(const QWidget* widget) {
+  //. Fallback to the app's style.
   if (!widget) {
-    return autoIconColor();
+    const auto* qlementine_style = qobject_cast<const QlementineStyle*>(qApp->style());
+    return qlementine_style ? qlementine_style->_impl->autoIconColor : AutoIconColor::None;
   }
+
+  // Look for the property on the widget.
   const auto property = widget->property(Property_AutoIconColor);
   if (!property.isValid()) {
     return autoIconColor(widget->parentWidget());
@@ -391,30 +397,13 @@ QPixmap QlementineStyle::getColorizedPixmap(
   return input;
 }
 
-void QlementineStyle::setIconStatus(QWidget* widget, Status status) {
-  if (widget) {
-    widget->setProperty(Property_IconStatus, QVariant::fromValue(status));
-  }
-}
-
-Status QlementineStyle::iconStatus(const QWidget* widget) const {
-  if (!widget) {
-    return Status::Default;
-  }
-  const auto property = widget->property(Property_IconStatus);
-  if (!property.isValid()) {
-    return iconStatus(widget->parentWidget());
-  }
-  return property.value<Status>();
-}
-
 QPixmap QlementineStyle::getColorizedPixmap(
   const QPixmap& input, const QWidget* widget, const QColor& fgColor, const QColor& textColor, MouseState mouse) const {
   const auto aic = autoIconColor(widget);
   if (aic == AutoIconColor::None) {
     return input;
   }
-  if (const auto status = iconStatus(widget); status != Status::Default) {
+  if (const auto status = widgetStatus(widget); status != Status::Default) {
     const auto& color = statusColor(status, mouse);
     return qlementine::getColorizedPixmap(input, color);
   }
@@ -2386,12 +2375,12 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
             p->drawPixmap(iconRect, tintedPixmap);
             p->setOpacity(backupOpacity);
           } else {
-            const auto status = iconStatus(w);
+            const auto status = widgetStatus(w);
             const auto& colorizedPixmap = (status != Status::Default && autoIconColor != AutoIconColor::None)
                                             ? qlementine::getColorizedPixmap(pixmap, statusColor(status, itemMouse))
                                             : getColorizedPixmap(pixmap, autoIconColor, fgColor, textColor);
             auto iconRect = subElementRect(SE_ItemViewItemDecoration, optItem, w);
-            iconRect.moveLeft(pixmapRect.left());
+            //iconRect.moveLeft(pixmapRect.left());
             p->drawPixmap(iconRect, colorizedPixmap);
           }
         }
@@ -6188,16 +6177,67 @@ int QlementineStyle::pixelSizeForTextRole(TextRole role) const {
 }
 
 Status QlementineStyle::widgetStatus(QWidget const* widget) const {
+  if (!widget) {
+    return Status::Default;
+  }
+
+  // QFocusFrame: delegate to the focused widget.
   if (const auto* focusFrame = qobject_cast<const QFocusFrame*>(widget)) {
     if (const auto* focusedWidget = focusFrame->widget()) {
       return widgetStatus(focusedWidget);
     }
-  } else if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
+    return Status::Default;
+  }
+
+  // LineEdit custom widget.
+  if (const auto* qlementineLineEdit = qobject_cast<const qlementine::LineEdit*>(widget)) {
     return qlementineLineEdit->status();
-  } else if (const auto* qlementineTextEdit = qobject_cast<const qlementine::PlainTextEdit*>(widget)) {
+  }
+
+  // PlainTextEdit custom widget.
+  if (const auto* qlementineTextEdit = qobject_cast<const qlementine::PlainTextEdit*>(widget)) {
     return qlementineTextEdit->status();
   }
+
+  // Generic widget with Qt property.
+  const auto statusVariant = widget->property(Property_Status);
+  if (statusVariant.isValid() && statusVariant.canConvert<Status>()) {
+    return statusVariant.value<Status>();
+  }
+
   return Status::Default;
+}
+
+void QlementineStyle::setWidgetStatus(QWidget* widget, Status status) {
+  if (!widget) {
+    return;
+  }
+
+  // LineEdit custom widget.
+  if (auto* qlementineLineEdit = qobject_cast<qlementine::LineEdit*>(widget)) {
+    qlementineLineEdit->setStatus(status);
+    return;
+  }
+
+  // PlainTextEdit custom widget.
+  if (auto* qlementineTextEdit = qobject_cast<qlementine::PlainTextEdit*>(widget)) {
+    qlementineTextEdit->setStatus(status);
+    return;
+  }
+
+  // Generic widget: use Qt property.
+  const auto currentStatus = widget->property(Property_Status);
+  const auto currentStatusValue =
+    currentStatus.isValid() && currentStatus.canConvert<Status>() ? currentStatus.value<Status>() : Status::Default;
+
+  if (currentStatusValue != status) {
+    if (status == Status::Default) {
+      widget->setProperty(Property_Status, QVariant());
+    } else {
+      widget->setProperty(Property_Status, QVariant::fromValue(status));
+    }
+    widget->update();
+  }
 }
 
 QColor const& QlementineStyle::statusBarBackgroundColor() const {
