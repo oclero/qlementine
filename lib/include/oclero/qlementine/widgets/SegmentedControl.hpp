@@ -11,6 +11,7 @@ namespace oclero::qlementine {
 class QLEMENTINE_EXPORT SegmentedControl : public AbstractItemListWidget {
 public:
   using AbstractItemListWidget::AbstractItemListWidget;
+  ~SegmentedControl() override = default;
 
 protected: // Inherited via AbstractItemListWidget
   void initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const override;

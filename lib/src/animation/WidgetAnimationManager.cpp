@@ -4,7 +4,8 @@
 #include <oclero/qlementine/animation/WidgetAnimationManager.hpp>
 
 namespace oclero::qlementine {
-WidgetAnimationManager::WidgetAnimationManager() {
+WidgetAnimationManager::WidgetAnimationManager(QObject* parent)
+  : QObject(parent) {
   initializeEasingCurves();
 }
 
@@ -40,7 +41,7 @@ void WidgetAnimationManager::addWidget(const QWidget* widget, WidgetAnimator* wi
   if (!findWidget(widget)) {
     _map.insert_or_assign(widget, widgetAnimator);
 
-    QObject::connect(widget, &QObject::destroyed, widget, [this, widget]() {
+    QObject::connect(widget, &QObject::destroyed, this, [this, widget]() {
       removeWidget(widget);
     });
   }

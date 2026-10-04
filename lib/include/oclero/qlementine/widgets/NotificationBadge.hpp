@@ -21,6 +21,7 @@ class QLEMENTINE_EXPORT NotificationBadge : public QWidget {
 
 public:
   explicit NotificationBadge(QWidget* parent = nullptr);
+  ~NotificationBadge() override = default;
 
   // Will track changes to widget and resize itself automatically.
   // If the monitored widget's parent changes, will follow the widget and place

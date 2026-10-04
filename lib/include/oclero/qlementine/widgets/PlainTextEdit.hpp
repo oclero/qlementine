@@ -17,6 +17,7 @@ class QLEMENTINE_EXPORT PlainTextEdit : public QPlainTextEdit {
 
 public:
   explicit PlainTextEdit(QWidget* parent = nullptr);
+  ~PlainTextEdit() override = default;
 
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;

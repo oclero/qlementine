@@ -20,6 +20,7 @@ class QLEMENTINE_EXPORT Expander : public QWidget {
 
 public:
   explicit Expander(QWidget* parent = nullptr);
+  ~Expander() override = default;
 
   bool expanded() const;
   Q_SLOT void setExpanded(bool expanded);

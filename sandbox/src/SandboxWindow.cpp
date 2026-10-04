@@ -86,6 +86,8 @@ public:
     parent->installEventFilter(this);
   }
 
+  ~ContextMenuEventFilter() override = default;
+
 protected:
   virtual bool eventFilter(QObject* watched, QEvent* evt) override {
     if (evt->type() == QEvent::ContextMenu && _cb) {
@@ -98,8 +100,12 @@ protected:
 };
 
 class FontMetricsTestsWidget : public QWidget {
+public:
   using QWidget::QWidget;
 
+  ~FontMetricsTestsWidget() override = default;
+
+private:
   void paintEvent(QPaintEvent*) override {
     const auto text = QString("A very long text than can be elided because it is too long.");
     const auto fm = this->fontMetrics();
@@ -162,9 +168,11 @@ class FontMetricsTestsWidget : public QWidget {
 };
 
 class RoundedTriangleWidget : public QWidget {
+public:
   using QWidget::QWidget;
 
-public:
+  ~RoundedTriangleWidget() override = default;
+
   double radius() const {
     return _r;
   }
@@ -198,6 +206,7 @@ private:
 class CustomBgWidget : public QWidget {
 public:
   using QWidget::QWidget;
+  ~CustomBgWidget() override = default;
 
   QColor bgColor{ Qt::red };
   QColor borderColor{ Qt::black };

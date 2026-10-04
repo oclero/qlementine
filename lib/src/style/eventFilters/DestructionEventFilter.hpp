@@ -22,7 +22,7 @@ public:
     : QObject(parent) // Parent to QlementineStyle, not the widget!
     , _widget(widget)
     , _callback(std::move(callback)) {}
-  virtual ~DestructionEventFilter() {}
+  ~DestructionEventFilter() override = default;
 
 protected:
   bool eventFilter(QObject* watched, QEvent* event) override {

@@ -45,7 +45,7 @@ jobs:
 
       - name: Build the library (${{ matrix.description }})
         run: |
-          cmake --preset ${{ matrix.preset }} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+          cmake --preset ${{ matrix.preset }} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
           cmake --build --preset ${{ matrix.preset }} --target qlementine
 
       - name: Build the Qt style plugin (${{ matrix.description }})
@@ -56,4 +56,4 @@ jobs:
 
       - name: Build the Sandbox app.
         if: matrix.library_type == 'static'
-        run: cmake --build --preset windows-ci-sandbox
+        run: cmake --build --preset ${{ matrix.preset }} --target sandbox

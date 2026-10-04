@@ -18,6 +18,7 @@ public:
   explicit PopoverButton(QWidget* parent = nullptr);
   PopoverButton(const QString& text, QWidget* parent = nullptr);
   PopoverButton(const QString& text, const QIcon& icon, QWidget* parent = nullptr);
+  ~PopoverButton() override = default;
 
 public:
   QWidget* popoverContentWidget() const;

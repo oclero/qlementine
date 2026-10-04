@@ -30,6 +30,8 @@ inline bool isDefaultItemDelegate(const QAbstractItemDelegate* delegate) {
 // Event filter for the item view in the QComboBox's popup.
 class ComboboxItemViewFilter : public QObject {
 public:
+  ~ComboboxItemViewFilter() override = default;
+
   ComboboxItemViewFilter(QComboBox* comboBox, QAbstractItemView* view)
     : QObject(view)
     , _comboBox(comboBox)
@@ -169,6 +171,8 @@ private:
 
 class ComboboxFilter : public QObject {
 public:
+  ~ComboboxFilter() override = default;
+
   explicit ComboboxFilter(QComboBox* comboBox)
     : QObject(comboBox)
     , _comboBox(comboBox) {

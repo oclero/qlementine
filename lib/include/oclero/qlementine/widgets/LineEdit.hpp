@@ -21,6 +21,7 @@ class QLEMENTINE_EXPORT LineEdit : public QLineEdit {
 
 public:
   explicit LineEdit(QWidget* parent = nullptr);
+  ~LineEdit() override = default;
 
   const QIcon& icon() const;
   Q_SLOT void setIcon(const QIcon& icon);

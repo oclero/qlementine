@@ -20,6 +20,7 @@ public:
   explicit IconWidget(QWidget* parent = nullptr);
   IconWidget(const QIcon& icon, QWidget* parent = nullptr);
   IconWidget(const QIcon& icon, const QSize& size, QWidget* parent = nullptr);
+  ~IconWidget() override = default;
 
   const QIcon& icon() const;
   Q_SLOT void setIcon(const QIcon& icon);

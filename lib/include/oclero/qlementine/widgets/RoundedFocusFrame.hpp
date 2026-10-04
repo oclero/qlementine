@@ -17,6 +17,7 @@ class QLEMENTINE_EXPORT RoundedFocusFrame : public QFocusFrame {
 
 public:
   using QFocusFrame::QFocusFrame;
+  ~RoundedFocusFrame() override = default;
 
   const RadiusesF& radiuses() const;
   Q_SLOT void setRadiuses(const RadiusesF&);

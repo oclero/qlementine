@@ -16,6 +16,7 @@ class QLEMENTINE_EXPORT Menu : public QMenu {
 
 public:
   using QMenu::QMenu;
+  ~Menu() override = default;
 
   void setEnabledPredicate(const std::function<bool()>& cb);
   void setVisiblePredicate(const std::function<bool()>& cb);
