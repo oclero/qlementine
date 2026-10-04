@@ -35,7 +35,7 @@ namespace oclero::qlementine {
 class QLEMENTINE_EXPORT WidgetAnimationManager : public QObject {
   Q_OBJECT
 public:
-  WidgetAnimationManager(QObject* parent = nullptr);
+  explicit WidgetAnimationManager(QObject* parent = nullptr);
   ~WidgetAnimationManager() override = default;
 
   bool enabled() const;
