@@ -6,6 +6,7 @@
 #include <oclero/qlementine/utils/PrimitiveUtils.hpp>
 
 #include <QPainterPath>
+#include <QPainterStateGuard>
 
 namespace oclero::qlementine {
 /// Gets the background and foreground colors.
@@ -36,6 +37,8 @@ std::pair<QSize, QSize> getStatusBadgeSizes(StatusBadgeSize statusBadgeSize, con
 /// Draws the icons by drawing QPainterPaths directly, instead of using SVG files.
 void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize statusBadgeSize,
   const QColor& color, qreal lineThickness) {
+  QPainterStateGuard stateGuard(p);
+
   switch (statusBadge) {
     case StatusBadge::Success: {
       if (statusBadgeSize == StatusBadgeSize::Small) {
@@ -308,6 +311,7 @@ void drawStatusBadgeIcon(QPainter* p, const QRect& rect, StatusBadge statusBadge
 
 void drawStatusBadge(
   QPainter* p, const QRect& rect, StatusBadge statusBadge, StatusBadgeSize size, const Theme& theme) {
+  QPainterStateGuard stateGuard(p);
   const auto [bgColor, fgColor] = getStatusBadgeColors(statusBadge, theme);
   const auto [badgeSize, iconSize] = getStatusBadgeSizes(size, theme);
 
