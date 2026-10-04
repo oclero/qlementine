@@ -372,7 +372,7 @@ void QlementineStyle::setAutoIconColor(QWidget* widget, AutoIconColor autoIconCo
 AutoIconColor QlementineStyle::autoIconColor(const QWidget* widget) {
   //. Fallback to the app's style.
   if (!widget) {
-    const auto* qlementine_style = qobject_cast<const QlementineStyle*>(qApp->style());
+    const auto* qlementine_style = appStyle();
     return qlementine_style ? qlementine_style->_impl->autoIconColor : AutoIconColor::None;
   }
 
@@ -6198,8 +6198,8 @@ Status QlementineStyle::widgetStatus(QWidget const* widget) const {
   }
 
   // Generic widget with Qt property.
-  const auto statusVariant = widget->property(Property_Status);
-  if (statusVariant.isValid() && statusVariant.canConvert<Status>()) {
+  if (const auto statusVariant = widget->property(Property_Status);
+    statusVariant.isValid() && statusVariant.canConvert<Status>()) {
     return statusVariant.value<Status>();
   }
 
