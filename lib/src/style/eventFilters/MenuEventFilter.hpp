@@ -59,7 +59,7 @@ public:
             screen = menuBar->screen();
           }
           if (screen) {
-            menuNewPos.setX(std::max(menuNewPos.x(), screen->availableGeometry().left()));
+            menuNewPos.setX(std::max(menuNewPos.x(), screen->availableGeometry().left() - menuDropShadowWidth));
           }
         }
 
