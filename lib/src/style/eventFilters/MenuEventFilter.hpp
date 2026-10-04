@@ -8,12 +8,16 @@
 
 #include <QCoreApplication>
 #include <QEvent>
+#include <QGuiApplication>
 #include <QObject>
 #include <QMenu>
 #include <QMenuBar>
+#include <QScreen>
 #include <QTimer>
 #include <QMouseEvent>
 #include <QPointer>
+
+#include <algorithm>
 
 namespace oclero::qlementine {
 class MenuEventFilter : public QObject {
@@ -42,7 +46,20 @@ public:
         const auto menuOriginalPos = _menu->pos();
         const auto menuBarTranslation = alignForMenuBar ? QPoint(-menuItemHPadding, 0) : QPoint(0, 0);
         const auto shadowTranslation = QPoint(-menuDropShadowWidth, -menuDropShadowWidth);
-        const auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
+        auto menuNewPos = menuOriginalPos + menuBarTranslation + shadowTranslation;
+
+        if (alignForMenuBar) {
+          const auto* menuBar = qobject_cast<QMenuBar*>(_menu->parentWidget());
+          const auto actionRect = menuBar->actionGeometry(_menu->menuAction());
+          const auto anchor = menuBar->mapToGlobal(actionRect.center());
+          const auto* screen = QGuiApplication::screenAt(anchor);
+          if (!screen) {
+            screen = menuBar->screen();
+          }
+          if (screen) {
+            menuNewPos.setX(std::max(menuNewPos.x(), screen->availableGeometry().left()));
+          }
+        }
 
         // Menus have weird sizing bugs when moving them from this event.
         // We have to wait for the event loop to be processed before setting the final position.
