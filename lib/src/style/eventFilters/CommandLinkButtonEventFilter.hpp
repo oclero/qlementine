@@ -47,9 +47,10 @@ public:
       const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };
 
       QPainter p(_button);
+      p.setRenderHint(QPainter::Antialiasing, true);
+      p.setRenderHint(QPainter::SmoothPixmapTransform, true);
       p.setPen(Qt::NoPen);
       p.setBrush(currentBgColor);
-      p.setRenderHint(QPainter::Antialiasing, true);
       p.drawRoundedRect(rect, radius, radius);
       p.drawPixmap(pixmapRect, pixmap);
 

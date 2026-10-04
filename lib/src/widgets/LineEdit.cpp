@@ -56,6 +56,7 @@ void LineEdit::paintEvent(QPaintEvent* evt) {
   const auto pixmapRect = QRect{ { pixmapX, pixmapY }, iconSize };
 
   QPainter p(this);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
   p.drawPixmap(pixmapRect, pixmap);
 }
 

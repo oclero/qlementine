@@ -675,6 +675,7 @@ void AbstractItemListWidget::initStyleOptionFocus(QStyleOptionFocusRoundedRect& 
 void AbstractItemListWidget::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   // Background.
   drawBackground(p);

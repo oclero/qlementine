@@ -448,6 +448,7 @@ void QlementineStyle::setIconPathGetter(const std::function<QString(QString)>& f
 
 void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
   QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   switch (pe) {
     case PE_Frame:
       //qDebug() << pe;
@@ -1146,6 +1147,7 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
 void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
   QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   switch (ce) {
     case CE_PushButton:
       if (const auto* optButton = buttonStyleOption(opt)) {
@@ -2798,6 +2800,7 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
 void QlementineStyle::drawComplexControl(
   ComplexControl cc, const QStyleOptionComplex* opt, QPainter* p, const QWidget* w) const {
   QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   switch (cc) {
     case CC_SpinBox:
       if (const auto* spinboxOpt = qstyleoption_cast<const QStyleOptionSpinBox*>(opt)) {
@@ -4978,6 +4981,7 @@ void QlementineStyle::unpolish(QWidget* w) {
 void QlementineStyle::drawPrimitiveExt(
   PrimitiveElementExt pe, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
   QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   const auto* optButton = buttonStyleOption(opt);
   const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (pe) {
@@ -5133,6 +5137,7 @@ QSize QlementineStyle::sizeFromContentsExt(
 void QlementineStyle::drawControlExt(
   ControlElementExt ce, const QStyleOption* opt, QPainter* p, const QWidget* w) const {
   QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   const auto* optButton = buttonStyleOption(opt);
   const auto* optCommandButton = qstyleoption_cast<const QStyleOptionCommandLinkButton*>(opt);
   switch (ce) {

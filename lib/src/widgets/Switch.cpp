@@ -54,6 +54,7 @@ QSize Switch::sizeHint() const {
 void Switch::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   const auto* style = this->style();
   const auto spacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);

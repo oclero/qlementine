@@ -905,6 +905,7 @@ void drawItemForeground(QPainter* p, const QRect& rect, const QPixmap& iconPixma
   const QString& secondaryText, QColor const& secondaryTextColor, bool const useMnemonic, bool const showMnemonic,
   Qt::TextElideMode const elideMode) {
   QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   p->setRenderHint(QPainter::Antialiasing, true);
 
   const auto hasIcon = !iconPixmap.isNull();
@@ -1190,6 +1191,7 @@ void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radius, const QCol
 
 void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color) {
   QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   // Draw the tab in a temporary buffer.
   const auto path = getTabPath(rect, radius);
   const auto pathRect = path.boundingRect().toAlignedRect();
@@ -1401,6 +1403,8 @@ QPixmap getPixmap(
 
 QRect drawIcon(const QRect& rect, QPainter* p, const QIcon& icon, const MouseState mouse, const CheckState checked,
   const QWidget* widget, bool colorize, const QColor& color) {
+  QPainterStateGuard stateGuard(p);
+  p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   if (rect.isEmpty() || icon.isNull()) {
     return { rect.x(), rect.y(), 0, 0 };
   }

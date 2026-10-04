@@ -514,6 +514,7 @@ void Popover::adjustSizeToContent() {
 void Popover::paintEvent(QPaintEvent*) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   const auto shapePixmap = getFrameShape();
 

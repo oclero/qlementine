@@ -80,6 +80,7 @@ void IconWidget::paintEvent(QPaintEvent*) {
 
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing, true);
+  p.setRenderHint(QPainter::SmoothPixmapTransform, true);
   const auto x = (width() - _iconSize.width()) / 2;
   const auto y = (height() - _iconSize.height()) / 2;
   p.drawPixmap(x, y, colorizedPixmap);
