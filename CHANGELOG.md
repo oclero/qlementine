@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.5.2
+
+Bugfixes:
+
+- Fix potential crash with `QFocusFrame` when reparenting a widget (by @tlambert03).
+
 ## v1.5.1
 
 Bugfixes:

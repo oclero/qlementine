@@ -5,6 +5,7 @@
 
 #include <QAbstractScrollArea>
 #include <QFocusFrame>
+#include <QPointer>
 #include <QTimer>
 #include <QEvent>
 
@@ -22,21 +23,36 @@ public:
 
   bool eventFilter(QObject* watchedObject, QEvent* evt) override {
     if (watchedObject == _widget) {
-      const auto type = evt->type();
-      // Create the focus frame as late as possible to give
-      // more chances to any parent (e.g. scrollarea) to already exist.
-      // QEvent::Show isn't sufficient. We need to delay even more, so
-      // waiting for the first QEvent::Paint is our only solution.
-      if (type == QEvent::Paint && !_added) {
-        QTimer::singleShot(0, this, [this]() {
+      switch (evt->type()) {
+        case QEvent::Paint:
+          // Create the focus frame as late as possible to give
+          // more chances to any parent (e.g. scrollarea) to already exist.
+          // QEvent::Show isn't sufficient. We need to delay even more, so
+          // waiting for the first QEvent::Paint is our only solution.
           if (!_added) {
-            _added = true;
-            _focusFrame->setWidget(_widget);
+            QTimer::singleShot(0, this, [this]() {
+              attachFocusFrame();
+            });
           }
-        });
-      } else if (type == QEvent::Show && _added) {
-        _focusFrame->setWidget(nullptr);
-        _focusFrame->setWidget(_widget);
+          break;
+        case QEvent::Show:
+          // Defer to avoid mapTo() on a partially-connected hierarchy
+          // after reparenting (same pattern as the Paint path above).
+          if (_added) {
+            QTimer::singleShot(0, this, [this]() {
+              reattachFocusFrame();
+            });
+          }
+          break;
+        case QEvent::Hide:
+          // Disconnect the focus frame when the widget is hidden (e.g.
+          // during reparenting) to prevent stale mapTo() calls.
+          if (_added) {
+            detachFocusFrame();
+          }
+          break;
+        default:
+          break;
       }
     }
 
@@ -44,8 +60,28 @@ public:
   }
 
 private:
-  QWidget* _widget{ nullptr };
-  QFocusFrame* _focusFrame{ nullptr };
+  void attachFocusFrame() {
+    if (!_added && _widget && _focusFrame) {
+      _added = true;
+      _focusFrame->setWidget(_widget);
+    }
+  }
+
+  void reattachFocusFrame() {
+    if (_widget && _focusFrame) {
+      _focusFrame->setWidget(nullptr);
+      _focusFrame->setWidget(_widget);
+    }
+  }
+
+  void detachFocusFrame() {
+    if (_focusFrame) {
+      _focusFrame->setWidget(nullptr);
+    }
+  }
+
+  QPointer<QWidget> _widget;
+  QPointer<QFocusFrame> _focusFrame;
   bool _added{ false };
 };
 } // namespace oclero::qlementine
