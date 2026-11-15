@@ -32,14 +32,17 @@ int main(int argc, char* argv[]) {
   style->setAnimationsEnabled(true);
   style->setAutoIconColor(oclero::qlementine::AutoIconColor::TextColor);
   style->setIconPathGetter(oclero::qlementine::icons::fromFreeDesktop);
+
+  // Theme manager. Created before the style is applied, so it can capture the system accent color.
+  auto* themeManager = new oclero::qlementine::ThemeManager(style);
+
   qApplication.setStyle(style);
 
   // Custom icon theme.
   oclero::qlementine::icons::initializeIconTheme();
   QIcon::setThemeName("qlementine");
 
-  // Theme manager.
-  auto* themeManager = new oclero::qlementine::ThemeManager(style);
+  // Load themes.
   themeManager->loadDirectory(":/qlementine/resources/themes");
 
   // Define theme on QStyle.

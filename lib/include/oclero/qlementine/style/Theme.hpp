@@ -37,9 +37,14 @@ public: // Ctor.
   Theme();
 
   static std::optional<Theme> fromJsonPath(const QString& jsonPath);
+  static std::optional<Theme> fromJsonString(const QString& jsonString);
   static std::optional<Theme> fromJsonDoc(const QJsonDocument& jsonDoc);
   static Theme makeLight();
   static Theme makeDark();
+  static Theme makeLegacyDark();
+
+  /// Gets a copy of this theme where every primary color (and the focus color) is derived from the accent color.
+  Theme withAccentColor(const QColor& accentColor) const;
 
   Theme(Theme const& other) = default;
   Theme(Theme&& other) noexcept = default;

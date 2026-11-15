@@ -112,19 +112,26 @@ QApplication::setStyle("qlementine");
 
 ## Themes
 
-Qlementine embeds by default 2 themes: `light.json` and `dark.json`. They are available in `:/qlementine/resources/themes`.
+Qlementine embeds by default 3 themes: `light.json`, `dark.json` and `legacy-dark.json` (the previous, more neutral dark grey theme). They are available in `:/qlementine/resources/themes`.
 
 You can get them like this:
 
 ```c++
 const auto lightTheme = oclero::qlementine::Theme::makeLight();
 const auto darkTheme = oclero::qlementine::Theme::makeDark();
+const auto legacyDarkTheme = oclero::qlementine::Theme::makeLegacyDark();
 ```
 
 You may want to use your own JSON theme.
 
 ```c++
 style->setThemeJsonPath(":/path/to/your/theme.json");
+```
+
+Or provide the JSON content directly as a string, without needing a resource file.
+
+```c++
+style->setThemeJsonString(R"({ "backgroundColorMain1": "#1f2127" })");
 ```
 
 Additionnally, you can also use `ThemeManager` to handle that for you.
@@ -138,4 +145,11 @@ themeManager->loadDirectory(":/themes");
 
 // Define theme on QStyle.
 themeManager->setCurrentTheme("Light");
+
+// Optionally, use the system accent color for the primary colors of the theme.
+themeManager->setUseSystemAccentColor(true);
 ```
+
+!!! info
+
+    The accent color is captured when the `ThemeManager` is created, so create it before applying the `QlementineStyle` with `QApplication::setStyle()`.
