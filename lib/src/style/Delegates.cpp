@@ -20,6 +20,11 @@ ComboBoxDelegate::ComboBoxDelegate(QWidget* widget, QlementineStyle& style)
   , _qlementineStyle(&style) {}
 
 void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const {
+  if (!_qlementineStyle) {
+    QItemDelegate::paint(p, opt, idx);
+    return;
+  }
+
   QPainterStateGuard stateGuard(p);
   p->setRenderHint(QPainter::Antialiasing, true);
   p->setRenderHint(QPainter::SmoothPixmapTransform, true);
@@ -155,6 +160,10 @@ void ComboBoxDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, const
 }
 
 QSize ComboBoxDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const {
+  if (!_qlementineStyle) {
+    return QItemDelegate::sizeHint(opt, idx);
+  }
+
   const auto& theme = _qlementineStyle ? _qlementineStyle->theme() : Theme{};
 
   const auto isSeparator = idx.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");

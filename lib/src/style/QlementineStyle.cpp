@@ -66,6 +66,7 @@
 
 #include <cmath>
 #include <mutex>
+#include <optional>
 
 namespace oclero::qlementine {
 
@@ -109,6 +110,7 @@ struct QlementineStyleImpl {
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
   std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
   PolishedWidgetRegistry polishedWidgets;
+  std::optional<QFont> previousAppFont;
   AutoIconColor autoIconColor{ AutoIconColor::None };
   std::function<QString(QString)> iconPathFunc;
 
@@ -5106,6 +5108,9 @@ void QlementineStyle::polish(QPalette& palette) {
 
 void QlementineStyle::polish(QApplication* app) {
   QCommonStyle::polish(app);
+  if (!_impl->previousAppFont) {
+    _impl->previousAppFont = app->font();
+  }
   app->setFont(_impl->theme.fontRegular);
 
   QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus, false);
@@ -5120,6 +5125,10 @@ void QlementineStyle::polish(QApplication* app) {
 
 void QlementineStyle::unpolish(QApplication* app) {
   QCommonStyle::unpolish(app);
+  if (_impl->previousAppFont) {
+    app->setFont(*_impl->previousAppFont);
+    _impl->previousAppFont.reset();
+  }
 }
 
 void QlementineStyle::polish(QWidget* w) {

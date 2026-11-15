@@ -277,14 +277,20 @@ void polishDestructionTracking(QWidget* widget, QObject* parent, PolishedWidgetR
 }
 
 void unpolishWidget(QlementineStyle&, QWidget* widget, PolishedWidgetRegistry& registry) {
-  registry.removeAndDeleteEventFilters(widget);
+  if (const auto* entry = registry.find(widget)) {
+    widget->setAttribute(Qt::WA_Hover, entry->hover);
+    widget->setAttribute(Qt::WA_OpaquePaintEvent, entry->opaquePaintEvent);
+    widget->setMouseTracking(entry->mouseTracking);
+    widget->setFocusPolicy(entry->focusPolicy);
+    widget->setMinimumSize(entry->minimumSize.expandedTo({ 0, 0 }));
 
-  if (shouldHaveHoverEvents(widget)) {
-    widget->setAttribute(Qt::WA_Hover, false);
-    widget->setAttribute(Qt::WA_OpaquePaintEvent, true);
+    if (shouldHaveBoldFont(widget)) {
+      auto font = QFont{ widget->font() };
+      font.setBold(false);
+      widget->setFont(font);
+    }
   }
-  if (shouldHaveMouseTracking(widget)) {
-    widget->setMouseTracking(false);
-  }
+
+  registry.removeAndDeleteEventFilters(widget);
 }
 } // namespace oclero::qlementine
