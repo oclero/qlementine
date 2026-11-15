@@ -41,6 +41,7 @@ public: // Ctor.
   static std::optional<Theme> fromJsonDoc(const QJsonDocument& jsonDoc);
   static Theme makeLight();
   static Theme makeDark();
+  static Theme makeLegacyDark();
 
   Theme(Theme const& other) = default;
   Theme(Theme&& other) noexcept = default;

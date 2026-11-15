@@ -219,6 +219,11 @@ Theme Theme::makeLight() {
   return themeOpt.value_or(Theme{});
 }
 
+Theme Theme::makeLegacyDark() {
+  const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/legacy-dark.json"));
+  return themeOpt.value_or(Theme{});
+}
+
 Theme Theme::makeDark() {
   const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/dark.json"));
   return themeOpt.value_or(Theme{});
