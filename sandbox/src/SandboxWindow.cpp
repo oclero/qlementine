@@ -21,6 +21,7 @@
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/LoadingSpinner.hpp>
 #include <oclero/qlementine/widgets/NavigationBar.hpp>
+#include <oclero/qlementine/widgets/NavigationView.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 #include <oclero/qlementine/widgets/Popover.hpp>
 #include <oclero/qlementine/widgets/PopoverButton.hpp>
@@ -1698,6 +1699,53 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(segmCtrl);
   }
 
+  void setupUI_navigationView() {
+    const auto dummyIcon = getTestQIcon();
+
+    auto* navView = new NavigationView(windowContent);
+    navView->setMinimumSize(640, 420);
+    navView->setAutoCompactWidth(560);
+    auto* sidebar = navView->sidebar();
+
+    auto* searchField = new LineEdit(sidebar);
+    searchField->setPlaceholderText(QStringLiteral("Search"));
+    sidebar->setHeaderWidget(searchField);
+
+    auto* footerLabel = new QLabel(QStringLiteral("Footer"), sidebar);
+    sidebar->setFooterWidget(footerLabel);
+
+    // The header and the footer are hidden in compact mode.
+    auto* compactCheckBox = new QCheckBox(QStringLiteral("Compact"), windowContent);
+    QObject::connect(compactCheckBox, &QCheckBox::toggled, sidebar, &NavigationSidebar::setCompact);
+    QObject::connect(sidebar, &NavigationSidebar::compactChanged, compactCheckBox, [sidebar, compactCheckBox]() {
+      compactCheckBox->setChecked(sidebar->compact());
+    });
+    windowContentLayout->addWidget(compactCheckBox);
+
+    const auto makePage = [navView](const QString& title) {
+      auto* label = new QLabel(title, navView);
+      label->setAlignment(Qt::AlignCenter);
+      return label;
+    };
+
+    sidebar->addSection(QStringLiteral("General"));
+    navView->addPage(makePage(QStringLiteral("Home")), QStringLiteral("Home"), dummyIcon);
+    const auto libraryIndex =
+      navView->addPage(makePage(QStringLiteral("Library")), QStringLiteral("Library"), dummyIcon, QStringLiteral("12"));
+    navView->addChildPage(libraryIndex, makePage(QStringLiteral("Albums")), QStringLiteral("Albums"), dummyIcon);
+    navView->addChildPage(
+      libraryIndex, makePage(QStringLiteral("Artists")), QStringLiteral("Artists"), dummyIcon, QStringLiteral("3"));
+    sidebar->addSeparator();
+    sidebar->addSection(QStringLiteral("Tools"));
+    for (auto i = 0; i < 12; ++i) {
+      const auto title = QString("Tool %1").arg(i);
+      navView->addPage(makePage(title), title, dummyIcon);
+    }
+    navView->addBottomPage(makePage(QStringLiteral("Settings")), QStringLiteral("Settings"), dummyIcon);
+
+    windowContentLayout->addWidget(navView);
+  }
+
   void setupUI_switch() {
     const auto dummyIcon = getTestQIcon();
     auto* switchWidget = new Switch(windowContent);
@@ -1971,6 +2019,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_expander();
     // _impl->setupUI_popover();
     // _impl->setupUI_navigationBar();
+    // _impl->setupUI_navigationView();
     // _impl->setupUI_badge();
     // _impl->setupUI_colorButton();
     // _impl->setupUI_messageBoxIcons();
