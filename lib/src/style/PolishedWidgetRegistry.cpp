@@ -8,7 +8,22 @@
 
 namespace oclero::qlementine {
 PolishedWidgetRegistry::Entry& PolishedWidgetRegistry::ensure(QWidget* widget) {
-  return _widgets[widget];
+  auto iter = _widgets.find(widget);
+  if (iter == _widgets.end()) {
+    Entry entry;
+    entry.focusPolicy = widget->focusPolicy();
+    entry.minimumSize = widget->minimumSize();
+    entry.hover = widget->testAttribute(Qt::WA_Hover);
+    entry.opaquePaintEvent = widget->testAttribute(Qt::WA_OpaquePaintEvent);
+    entry.mouseTracking = widget->hasMouseTracking();
+    iter = _widgets.insert(widget, entry);
+  }
+  return iter.value();
+}
+
+const PolishedWidgetRegistry::Entry* PolishedWidgetRegistry::find(QWidget* widget) const {
+  const auto iter = _widgets.constFind(widget);
+  return iter != _widgets.constEnd() ? &iter.value() : nullptr;
 }
 
 bool PolishedWidgetRegistry::hasEventFilters(QWidget* widget) const {

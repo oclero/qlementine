@@ -34,6 +34,10 @@ public:
 
 protected:
   bool eventFilter(QObject*, QEvent* evt) override {
+    if (!_style) {
+      return false;
+    }
+
     switch (evt->type()) {
       case QEvent::Resize:
         // Prevent resizing from qlineedit_p.cpp:540
