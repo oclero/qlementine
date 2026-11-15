@@ -49,6 +49,9 @@ int AbstractItemListWidget::currentIndex() const {
 
 void AbstractItemListWidget::setCurrentIndex(int index) {
   index = index < 0 || index > itemCount() - 1 ? -1 : index;
+  if (index != -1 && !canSelectItem(index)) {
+    return;
+  }
   if (index != _currentIndex) {
     const auto oldData = currentData();
     _currentIndex = index;
@@ -82,6 +85,15 @@ void AbstractItemListWidget::setCurrentData(const QVariant& currentData) {
 
 int AbstractItemListWidget::addItem(
   const QString& text, const QIcon& icon, const QString& badge, const QVariant& itemData) {
+  Item item;
+  item.text = text;
+  item.icon = icon;
+  item.badge = badge;
+  item.data = itemData;
+  return insertItem(std::move(item));
+}
+
+int AbstractItemListWidget::insertItem(Item newItem) {
   const auto* style = this->style();
   const auto animDuration = style->styleHint(QStyle::SH_Widget_Animation_Duration) * animationFactor;
 
@@ -105,23 +117,16 @@ int AbstractItemListWidget::addItem(
     update();
   });
 
-  const Item newItem{
-    true,
-    text,
-    icon,
-    badge,
-    QVariant(itemData),
-    QRect{},
-    QSize{ 0, 0 },
-    bgColorAnimation,
-    fgColorAnimation,
-    badgeBgColorAnimation,
-    badgeFgColorAnimation,
-  };
-  _items.emplace_back(newItem);
+  newItem.bgColorAnimation = bgColorAnimation;
+  newItem.fgColorAnimation = fgColorAnimation;
+  newItem.badgeBgAnimation = badgeBgColorAnimation;
+  newItem.badgeFgAnimation = badgeFgColorAnimation;
+  _items.emplace_back(std::move(newItem));
 
   if (_currentIndex == -1) {
-    _currentIndex = 0;
+    const auto newIndex = itemCount() - 1;
+    _currentIndex = canSelectItem(0) ? 0 : (canSelectItem(newIndex) ? newIndex : -1);
+    _focusedIndex = _currentIndex;
   }
 
   update();
@@ -627,6 +632,31 @@ void AbstractItemListWidget::updateItemsAnimations() {
     item.badgeBgAnimation->start();
     item.badgeFgAnimation->start();
   }
+}
+
+std::vector<AbstractItemListWidget::Item>& AbstractItemListWidget::items() {
+  return _items;
+}
+
+const std::vector<AbstractItemListWidget::Item>& AbstractItemListWidget::items() const {
+  return _items;
+}
+
+int AbstractItemListWidget::focusedIndex() const {
+  return _focusedIndex;
+}
+
+int AbstractItemListWidget::pressedIndex() const {
+  return _pressedIndex;
+}
+
+void AbstractItemListWidget::updateFocusFrame() {
+  _focusFrame->update();
+  _focusFrame->updateGeometry();
+}
+
+bool AbstractItemListWidget::canSelectItem(int /*index*/) const {
+  return true;
 }
 
 void AbstractItemListWidget::setFocusedIndex(int index) {
