@@ -51,6 +51,7 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/IconWidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Label.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LineEdit.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LoadingRing.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LoadingSpinner.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Menu.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NavigationBar.cpp
@@ -103,6 +104,7 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/IconWidget.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Label.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LineEdit.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LoadingRing.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LoadingSpinner.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Menu.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NavigationBar.hpp

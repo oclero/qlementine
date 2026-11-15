@@ -20,6 +20,19 @@
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
 #include <oclero/qlementine/widgets/AboutDialog.hpp>
+#include <oclero/qlementine/widgets/Action.hpp>
+#include <oclero/qlementine/widgets/ActionButton.hpp>
+#include <oclero/qlementine/widgets/ColorEditor.hpp>
+#include <oclero/qlementine/widgets/CommandLinkButton.hpp>
+#include <oclero/qlementine/widgets/Expander.hpp>
+#include <oclero/qlementine/widgets/Label.hpp>
+#include <oclero/qlementine/widgets/LoadingRing.hpp>
+#include <oclero/qlementine/widgets/LoadingSpinner.hpp>
+#include <oclero/qlementine/widgets/Menu.hpp>
+#include <oclero/qlementine/widgets/NotificationBadge.hpp>
+#include <oclero/qlementine/widgets/PlainTextEdit.hpp>
+#include <oclero/qlementine/widgets/Popover.hpp>
+#include <oclero/qlementine/widgets/PopoverButton.hpp>
 
 #include <oclero/qlementine/icons/Icons12.hpp>
 #include <oclero/qlementine/icons/Icons16.hpp>
@@ -488,7 +501,12 @@ struct ShowcaseWindow::Impl {
       return toolButton;
     };
 
-    addButton(Icons16::Action_Save, "Save");
+    auto* saveButton = addButton(Icons16::Action_Save, "Save");
+    {
+      auto* badge = new NotificationBadge(toolBar);
+      badge->setWidget(saveButton);
+      badge->setText("3");
+    }
     addButton(Icons16::Action_Print, "Print");
     toolBar->addSeparator();
     addButton(Icons16::Action_Undo, "Undo");
@@ -513,9 +531,20 @@ struct ShowcaseWindow::Impl {
     addButton(Icons16::Media_Play, "Play");
     addButton(Icons16::Media_SkipForward, "Skip Forward");
     toolBar->addSeparator();
+    {
+      auto* popoverButton = new PopoverButton("Popover", toolBar);
+      auto* popoverContent = new QWidget(popoverButton);
+      auto* popoverContentLayout = new QVBoxLayout(popoverContent);
+      popoverContentLayout->addWidget(new Label(getDummyText(), TextRole::H4, popoverContent));
+      popoverContentLayout->addWidget(new Label(getDummyText(6, 8), TextRole::Caption, popoverContent));
+      popoverButton->setPopoverContentWidget(popoverContent);
+      popoverButton->popover()->setPreferredPosition(Popover::Position::Bottom);
+      toolBar->addWidget(popoverButton);
+    }
+    toolBar->addSeparator();
     auto* exportButton = addButton(Icons16::Action_Export, "Export", "Export");
     {
-      auto* menu = new QMenu(exportButton);
+      auto* menu = new Menu(exportButton);
       menu->addAction(new QAction(makeThemedIcon(Icons16::File_Movie), "Movie", menu));
       menu->addAction(new QAction(makeThemedIcon(Icons16::File_Picture), "Picture", menu));
       menu->addSeparator();
@@ -849,7 +878,74 @@ struct ShowcaseWindow::Impl {
           contentLayout->addRow(groupBox);
         }
         {
-          auto* plainTextEdit = new QPlainTextEdit(content);
+          auto* groupBox = new QGroupBox(content);
+          groupBox->setAlignment(Qt::AlignRight);
+          groupBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+          groupBox->setTitle(getDummyText());
+          groupBox->setFlat(false);
+          auto* groupBoxLayout = new QVBoxLayout(groupBox);
+          groupBoxLayout->addWidget(new Label("Heading 1", TextRole::H1, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 2", TextRole::H2, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 3", TextRole::H3, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 4", TextRole::H4, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 5", TextRole::H5, groupBox));
+          groupBoxLayout->addWidget(new Label("Default text", TextRole::Default, groupBox));
+          groupBoxLayout->addWidget(new Label("Caption text", TextRole::Caption, groupBox));
+          contentLayout->addRow(groupBox);
+        }
+        {
+          auto* groupBox = new QGroupBox(content);
+          groupBox->setAlignment(Qt::AlignRight);
+          groupBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+          groupBox->setTitle(getDummyText());
+          groupBox->setFlat(false);
+          auto* groupBoxLayout = new QVBoxLayout(groupBox);
+          {
+            auto* colorEditor = new ColorEditor(QColor(0x3b82f6), groupBox);
+            groupBoxLayout->addWidget(colorEditor);
+          }
+          {
+            auto* action = new Action(makeThemedIcon(Icons16::Action_Save), "Action", groupBox);
+            auto* actionButton = new ActionButton(groupBox);
+            actionButton->setAction(action);
+            groupBoxLayout->addWidget(actionButton);
+          }
+          {
+            auto* commandLinkButton =
+              new CommandLinkButton(makeThemedIcon(Icons16::Action_Export), "Command link", getDummyText(4, 6), groupBox);
+            groupBoxLayout->addWidget(commandLinkButton);
+          }
+          {
+            auto* expander = new Expander(groupBox);
+            auto* expanderContent = new QWidget(expander);
+            auto* expanderContentLayout = new QVBoxLayout(expanderContent);
+            expanderContentLayout->addWidget(new Label(getDummyText(6, 8), TextRole::Default, expanderContent));
+            expander->setContent(expanderContent);
+            expander->setExpanded(true);
+            groupBoxLayout->addWidget(expander);
+          }
+          {
+            auto* ringsLayout = new QHBoxLayout();
+            ringsLayout->setSpacing(16);
+            auto* indeterminateRing = new LoadingRing(groupBox);
+            indeterminateRing->setFixedSize(32, 32);
+            ringsLayout->addWidget(indeterminateRing);
+            auto* determinateRing = new LoadingRing(groupBox);
+            determinateRing->setFixedSize(32, 32);
+            determinateRing->setIndeterminate(false);
+            determinateRing->setValue(65);
+            ringsLayout->addWidget(determinateRing);
+            auto* slider = new QSlider(Qt::Horizontal, groupBox);
+            slider->setRange(determinateRing->minimum(), determinateRing->maximum());
+            slider->setValue(determinateRing->value());
+            QObject::connect(slider, &QSlider::valueChanged, determinateRing, &LoadingRing::setValue);
+            ringsLayout->addWidget(slider, 1);
+            groupBoxLayout->addLayout(ringsLayout);
+          }
+          contentLayout->addRow(groupBox);
+        }
+        {
+          auto* plainTextEdit = new PlainTextEdit(content);
           plainTextEdit->setFrameShape(QFrame::StyledPanel);
           plainTextEdit->setFrameShadow(QFrame::Shadow::Raised);
           contentLayout->addRow(plainTextEdit);
@@ -883,6 +979,15 @@ struct ShowcaseWindow::Impl {
 
     const auto margins = getLayoutMargins(statusBar);
     statusBar->setContentsMargins(margins.left(), 0, margins.right(), 0);
+    {
+      auto* spinner = new LoadingSpinner(statusBar);
+      spinner->setSpinning(true);
+      statusBar->addPermanentWidget(spinner);
+    }
+    {
+      auto* ring = new LoadingRing(statusBar);
+      statusBar->addPermanentWidget(ring);
+    }
     {
       auto* progressBar = new QProgressBar(statusBar);
       progressBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
