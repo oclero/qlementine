@@ -21,7 +21,7 @@
 
 namespace oclero::qlementine {
 constexpr auto chevronPenWidth = 1.01;
-constexpr auto indicatorFillOpacity = 0.16;
+constexpr auto indicatorFillOpacity = 0.16f;
 constexpr auto wheelNotchDelta = 120;
 constexpr auto wheelNotchRows = 3;
 
