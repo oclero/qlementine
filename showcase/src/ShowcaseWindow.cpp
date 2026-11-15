@@ -24,6 +24,7 @@
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/Expander.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
+#include <oclero/qlementine/widgets/LoadingRing.hpp>
 #include <oclero/qlementine/widgets/LoadingSpinner.hpp>
 #include <oclero/qlementine/widgets/Menu.hpp>
 #include <oclero/qlementine/widgets/NotificationBadge.hpp>
@@ -787,6 +788,24 @@ struct ShowcaseWindow::Impl {
             expander->setExpanded(true);
             groupBoxLayout->addWidget(expander);
           }
+          {
+            auto* ringsLayout = new QHBoxLayout();
+            ringsLayout->setSpacing(16);
+            auto* indeterminateRing = new LoadingRing(groupBox);
+            indeterminateRing->setFixedSize(32, 32);
+            ringsLayout->addWidget(indeterminateRing);
+            auto* determinateRing = new LoadingRing(groupBox);
+            determinateRing->setFixedSize(32, 32);
+            determinateRing->setIndeterminate(false);
+            determinateRing->setValue(65);
+            ringsLayout->addWidget(determinateRing);
+            auto* slider = new QSlider(Qt::Horizontal, groupBox);
+            slider->setRange(determinateRing->minimum(), determinateRing->maximum());
+            slider->setValue(determinateRing->value());
+            QObject::connect(slider, &QSlider::valueChanged, determinateRing, &LoadingRing::setValue);
+            ringsLayout->addWidget(slider, 1);
+            groupBoxLayout->addLayout(ringsLayout);
+          }
           contentLayout->addRow(groupBox);
         }
         {
@@ -828,6 +847,10 @@ struct ShowcaseWindow::Impl {
       auto* spinner = new LoadingSpinner(statusBar);
       spinner->setSpinning(true);
       statusBar->addPermanentWidget(spinner);
+    }
+    {
+      auto* ring = new LoadingRing(statusBar);
+      statusBar->addPermanentWidget(ring);
     }
     {
       auto* progressBar = new QProgressBar(statusBar);

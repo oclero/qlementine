@@ -58,6 +58,12 @@ Improves `QLineEdit` by allowing statuses to display feedback for user (valid, e
 
 ![LineEdit](assets/images/widgets/lineedit.png)
 
+## LoadingRing
+
+A modern progress ring that you can use to show that an asynchronous operation is currently running (indeterminate), or to show a progress value (determinate).
+
+![LoadingRing](assets/images/widgets/loadingring.png)
+
 ## LoadingSpinner
 
 A small widget that you can use to show that an asynchronous operation is currently running.
