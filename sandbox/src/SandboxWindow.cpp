@@ -1203,6 +1203,49 @@ struct SandboxWindow::Impl {
       const auto icon = getTestQIcon();
       tabWidget->addTab(tabContent, icon, tabText);
     }
+
+    auto* positionLabel = new QLabel(QStringLiteral("Tab position:"), windowContent);
+    windowContentLayout->addWidget(positionLabel);
+
+    auto* comboBoxPosition = new QComboBox(windowContent);
+    comboBoxPosition->addItem(QStringLiteral("North"), static_cast<int>(QTabWidget::North));
+    comboBoxPosition->addItem(QStringLiteral("South"), static_cast<int>(QTabWidget::South));
+    comboBoxPosition->addItem(QStringLiteral("West"), static_cast<int>(QTabWidget::West));
+    comboBoxPosition->addItem(QStringLiteral("East"), static_cast<int>(QTabWidget::East));
+    comboBoxPosition->setCurrentIndex(comboBoxPosition->findData(static_cast<int>(tabWidget->tabPosition())));
+    windowContentLayout->addWidget(comboBoxPosition);
+
+    auto* shapeLabel = new QLabel(QStringLiteral("Tab shape:"), windowContent);
+    windowContentLayout->addWidget(shapeLabel);
+
+    auto* comboBoxShape = new QComboBox(windowContent);
+    comboBoxShape->addItem(QStringLiteral("Rounded"), static_cast<int>(QTabWidget::Rounded));
+    comboBoxShape->addItem(QStringLiteral("Triangular"), static_cast<int>(QTabWidget::Triangular));
+    comboBoxShape->setCurrentIndex(comboBoxShape->findData(static_cast<int>(tabWidget->tabShape())));
+    windowContentLayout->addWidget(comboBoxShape);
+
+    auto* movableCheckBox = new QCheckBox(QStringLiteral("Movable"), windowContent);
+    movableCheckBox->setChecked(tabWidget->isMovable());
+    windowContentLayout->addWidget(movableCheckBox);
+
+    auto* documentModeCheckBox = new QCheckBox(QStringLiteral("Document mode"), windowContent);
+    documentModeCheckBox->setChecked(tabWidget->documentMode());
+    windowContentLayout->addWidget(documentModeCheckBox);
+
+    QObject::connect(comboBoxPosition, qOverload<int>(&QComboBox::currentIndexChanged), tabWidget,
+      [comboBoxPosition, tabWidget](int index) {
+        tabWidget->setTabPosition(static_cast<QTabWidget::TabPosition>(comboBoxPosition->itemData(index).toInt()));
+      });
+    QObject::connect(
+      comboBoxShape, qOverload<int>(&QComboBox::currentIndexChanged), tabWidget, [comboBoxShape, tabWidget](int index) {
+        tabWidget->setTabShape(static_cast<QTabWidget::TabShape>(comboBoxShape->itemData(index).toInt()));
+      });
+    QObject::connect(movableCheckBox, &QCheckBox::toggled, tabWidget, [tabWidget](bool checked) {
+      tabWidget->setMovable(checked);
+    });
+    QObject::connect(documentModeCheckBox, &QCheckBox::toggled, tabWidget, [tabWidget](bool checked) {
+      tabWidget->setDocumentMode(checked);
+    });
   }
 
   void setupUI_groupBox() {

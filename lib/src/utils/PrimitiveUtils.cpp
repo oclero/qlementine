@@ -1176,13 +1176,49 @@ QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses) {
   return path;
 }
 
+QPainterPath getTrapezoidTabPath(QRect const& rect, qreal slant, qreal radius) {
+  QPainterPath path;
+  const auto w = static_cast<qreal>(rect.width());
+  const auto h = static_cast<qreal>(rect.height());
+  const auto x = static_cast<qreal>(rect.x());
+  const auto y = static_cast<qreal>(rect.y());
+
+  // Ensure geometry validity.
+  const auto effectiveSlant = std::min(std::max(0., slant), w / 2.);
+  const auto edgeLength = std::sqrt(effectiveSlant * effectiveSlant + h * h);
+  const auto effectiveRadius = std::min({ std::max(0., radius), (w / 2.) - effectiveSlant, edgeLength / 2. });
+  const auto edgeDirection = edgeLength > 0. ? QPointF(effectiveSlant / edgeLength, -h / edgeLength) : QPointF();
+
+  // Bottom-left, then up the left edge.
+  const auto topLeft = QPointF(x + effectiveSlant, y);
+  path.moveTo(x, y + h);
+  path.lineTo(topLeft - edgeDirection * effectiveRadius);
+
+  // Top-left.
+  path.quadTo(topLeft, topLeft + QPointF(effectiveRadius, 0.));
+
+  // Top-right.
+  const auto topRight = QPointF(x + w - effectiveSlant, y);
+  path.lineTo(topRight - QPointF(effectiveRadius, 0.));
+  path.quadTo(topRight, topRight + QPointF(-edgeDirection.x(), edgeDirection.y()) * -effectiveRadius);
+
+  // Bottom-right.
+  path.lineTo(x + w, y + h);
+  path.closeSubpath();
+
+  return path;
+}
+
 void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& bgColor, bool drawShadow,
   const QColor& shadowColor) {
+  drawTab(p, getTabPath(rect, radius), bgColor, drawShadow, shadowColor);
+}
+
+void drawTab(QPainter* p, const QPainterPath& path, const QColor& bgColor, bool drawShadow, const QColor& shadowColor) {
   QPainterStateGuard stateGuard(p);
   if (drawShadow) {
-    drawTabShadow(p, rect, radius, shadowColor);
+    drawTabShadow(p, path, shadowColor);
   }
-  const auto path = getTabPath(rect, radius);
   p->setRenderHint(QPainter::Antialiasing, true);
   p->setPen(Qt::NoPen);
   p->setBrush(bgColor);
@@ -1190,10 +1226,13 @@ void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radius, const QCol
 }
 
 void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color) {
+  drawTabShadow(p, getTabPath(rect, radius), color);
+}
+
+void drawTabShadow(QPainter* p, const QPainterPath& path, const QColor& color) {
   QPainterStateGuard stateGuard(p);
   p->setRenderHint(QPainter::SmoothPixmapTransform, true);
   // Draw the tab in a temporary buffer.
-  const auto path = getTabPath(rect, radius);
   const auto pathRect = path.boundingRect().toAlignedRect();
   QPixmap pathPixmap(pathRect.size());
   {

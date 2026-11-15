@@ -50,16 +50,16 @@ public:
       _leftButton = toolButtons.at(0);
       _leftButton->setFocusPolicy(Qt::NoFocus);
       _leftButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-      _leftButton->setFixedSize(_leftButton->sizeHint());
       QlementineStyle::setAutoIconColor(_leftButton, AutoIconColor::None);
       _leftButton->installEventFilter(buttonEvtFilter);
 
       _rightButton = toolButtons.at(1);
       _rightButton->setFocusPolicy(Qt::NoFocus);
       _rightButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-      _rightButton->setFixedSize(_rightButton->sizeHint());
       QlementineStyle::setAutoIconColor(_rightButton, AutoIconColor::None);
       _rightButton->installEventFilter(buttonEvtFilter);
+
+      updateScrollButtonsSize();
     }
   }
 
@@ -67,8 +67,12 @@ public:
 
   bool eventFilter(QObject*, QEvent* evt) override {
     const auto type = evt->type();
+    const auto vertical = isVertical();
 
-    if (type == QEvent::MouseButtonRelease) {
+    if (type == QEvent::Resize) {
+      // The shape of the QTabBar might have changed, and the scroll buttons must follow.
+      updateScrollButtonsSize();
+    } else if (type == QEvent::MouseButtonRelease) {
       const auto* mouseEvent = static_cast<QMouseEvent*>(evt);
       if (mouseEvent->button() == Qt::MouseButton::MiddleButton) {
         // Close tab.
@@ -90,19 +94,24 @@ public:
     } else if (type == QEvent::Wheel) {
       const auto* wheelEvent = static_cast<QWheelEvent*>(evt);
 
-      // Block non-horizontal scroll.
+      // Block scroll that is not along the QTabBar.
       const bool wheelVertical = qAbs(wheelEvent->angleDelta().y()) > qAbs(wheelEvent->angleDelta().x());
-      if (wheelVertical) {
+      if (wheelVertical != vertical) {
         evt->ignore();
         return true;
       }
 
-      auto delta = wheelEvent->pixelDelta().x();
+      auto delta = vertical ? wheelEvent->pixelDelta().y() : wheelEvent->pixelDelta().x();
 
       // If delta is null, it might be because we are on MacOS, using a trackpad.
       // So let's use angleDelta instead.
       if (delta == 0) {
-        delta = wheelEvent->angleDelta().x();
+        delta = vertical ? wheelEvent->angleDelta().y() : wheelEvent->angleDelta().x();
+      }
+
+      // Scrolling up (positive vertical delta) goes back to the previous tabs.
+      if (vertical) {
+        delta = -delta;
       }
 
       // Invert the value if necessary.
@@ -126,8 +135,8 @@ public:
       }
     } else if (type == QEvent::HoverMove) {
       const auto* mouseEvent = static_cast<QMouseEvent*>(evt);
-      const auto beginX = _leftButton->x();
-      if (mouseEvent->pos().x() > beginX) {
+      const auto begin = vertical ? _leftButton->y() : _leftButton->x();
+      if ((vertical ? mouseEvent->pos().y() : mouseEvent->pos().x()) > begin) {
         _tabBar->update();
       }
     }
@@ -136,6 +145,21 @@ public:
   }
 
 private:
+  bool isVertical() const {
+    const auto shape = _tabBar->shape();
+    return shape == QTabBar::RoundedWest || shape == QTabBar::RoundedEast || shape == QTabBar::TriangularWest
+           || shape == QTabBar::TriangularEast;
+  }
+
+  void updateScrollButtonsSize() {
+    if (_leftButton) {
+      _leftButton->setFixedSize(_leftButton->sizeHint());
+    }
+    if (_rightButton) {
+      _rightButton->setFixedSize(_rightButton->sizeHint());
+    }
+  }
+
   QTabBar* _tabBar{ nullptr };
   QPointer<QToolButton> _leftButton{ nullptr };
   QPointer<QToolButton> _rightButton{ nullptr };
