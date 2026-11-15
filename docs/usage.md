@@ -145,4 +145,11 @@ themeManager->loadDirectory(":/themes");
 
 // Define theme on QStyle.
 themeManager->setCurrentTheme("Light");
+
+// Optionally, use the system accent color for the primary colors of the theme.
+themeManager->setUseSystemAccentColor(true);
 ```
+
+!!! info
+
+    The accent color is captured when the `ThemeManager` is created, so create it before applying the `QlementineStyle` with `QApplication::setStyle()`.
