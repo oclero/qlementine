@@ -127,6 +127,12 @@ Example:
 | `semiTransparentColor3`             | color | Same as above but more contrast.                                                  |
 | `semiTransparentColor4`             | color | Same as above but more contrast.                                                  |
 
+### System accent color
+
+`ThemeManager::setUseSystemAccentColor(true)` overrides the `primaryColor*`, `primaryAlternativeColor*` and `focusColor` values of the current theme with colors derived from the system accent color (`QPalette::Accent`, Qt 6.6+). The accent color is captured when the `ThemeManager` is created, so create it before applying a Qlementine style. It does not follow later system changes.
+
+The same derivation is available without the manager through `Theme::withAccentColor(const QColor&)`.
+
 ### Boolean values
 
 Example:

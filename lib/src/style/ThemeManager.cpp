@@ -4,13 +4,16 @@
 #include <oclero/qlementine/style/ThemeManager.hpp>
 
 #include <QDir>
+#include <QGuiApplication>
+#include <QPalette>
 
 namespace oclero::qlementine {
 ThemeManager::ThemeManager(QObject* parent)
   : ThemeManager(nullptr, parent) {}
 
 ThemeManager::ThemeManager(QlementineStyle* style, QObject* parent)
-  : QObject(parent) {
+  : QObject(parent)
+  , _systemAccentColor(QGuiApplication::palette().color(QPalette::Accent)) {
   setStyle(style);
 }
 
@@ -84,6 +87,18 @@ void ThemeManager::setCurrentThemeIndex(int index) {
   }
 }
 
+bool ThemeManager::useSystemAccentColor() const {
+  return _useSystemAccentColor;
+}
+
+void ThemeManager::setUseSystemAccentColor(bool useSystemAccentColor) {
+  if (useSystemAccentColor != _useSystemAccentColor) {
+    _useSystemAccentColor = useSystemAccentColor;
+    synchronizeThemeOnStyle();
+    Q_EMIT useSystemAccentColorChanged();
+  }
+}
+
 int ThemeManager::themeCount() const {
   return static_cast<int>(_themes.size());
 }
@@ -123,7 +138,12 @@ void ThemeManager::synchronizeThemeOnStyle() {
     return;
 
   if (_currentIndex >= 0 && _currentIndex < themeCount()) {
-    _style->setTheme(_themes.at(_currentIndex));
+    const auto& theme = _themes.at(_currentIndex);
+    if (_useSystemAccentColor) {
+      _style->setTheme(theme.withAccentColor(_systemAccentColor));
+    } else {
+      _style->setTheme(theme);
+    }
   } else {
     addTheme(_style->theme());
     setCurrentThemeIndex(themeCount() - 1);

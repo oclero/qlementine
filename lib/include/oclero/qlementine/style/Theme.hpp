@@ -43,6 +43,9 @@ public: // Ctor.
   static Theme makeDark();
   static Theme makeLegacyDark();
 
+  /// Gets a copy of this theme where every primary color (and the focus color) is derived from the accent color.
+  Theme withAccentColor(const QColor& accentColor) const;
+
   Theme(Theme const& other) = default;
   Theme(Theme&& other) noexcept = default;
   virtual ~Theme() = default;

@@ -283,6 +283,11 @@ struct ShowcaseWindow::Impl {
           }
 
           themeMenu->addSeparator();
+          auto* accentAction = themeMenu->addAction("Use System Accent Color");
+          accentAction->setCheckable(true);
+          accentAction->setChecked(themeManager->useSystemAccentColor());
+          QObject::connect(
+            accentAction, &QAction::triggered, themeManager, &oclero::qlementine::ThemeManager::setUseSystemAccentColor);
           themeMenu->addAction(makeThemedIcon(Icons16::Misc_PaintPalette), "Custom JSON Theme", [this]() {
             qlementineStyle->setThemeJsonString(
               R"({ "primaryColor": "#e5484d", "primaryColorHovered": "#ec6a6e", "primaryColorPressed": "#f18a8d", "primaryAlternativeColor": "#c2373c" })");

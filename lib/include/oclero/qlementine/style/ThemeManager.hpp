@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QObject>
+#include <QColor>
 #include <QPointer>
 
 #include <vector>
@@ -18,6 +19,8 @@ class QLEMENTINE_EXPORT ThemeManager : public QObject {
 
   Q_PROPERTY(QString currentTheme READ currentTheme WRITE setCurrentTheme NOTIFY currentThemeChanged)
   Q_PROPERTY(int themeCount READ themeCount NOTIFY themeCountChanged)
+  Q_PROPERTY(bool useSystemAccentColor READ useSystemAccentColor WRITE setUseSystemAccentColor NOTIFY
+               useSystemAccentColorChanged)
 
 public:
   explicit ThemeManager(QObject* parent = nullptr);
@@ -37,6 +40,11 @@ public:
 
   int themeCount() const;
 
+  /// Whether the primary colors of the current theme are overridden by the system accent color.
+  /// The accent color is captured when the ThemeManager is created, before any Qlementine palette is applied.
+  bool useSystemAccentColor() const;
+  void setUseSystemAccentColor(bool useSystemAccentColor);
+
   Q_SLOT void setNextTheme();
   Q_SLOT void setPreviousTheme();
 
@@ -48,6 +56,7 @@ public:
 Q_SIGNALS:
   void currentThemeChanged();
   void themeCountChanged();
+  void useSystemAccentColorChanged();
 
 private:
   void synchronizeThemeOnStyle();
@@ -55,6 +64,8 @@ private:
 private:
   std::vector<Theme> _themes;
   QPointer<QlementineStyle> _style{ nullptr };
+  QColor _systemAccentColor;
+  bool _useSystemAccentColor{ false };
   int _currentIndex{ -1 };
 };
 } // namespace oclero::qlementine
