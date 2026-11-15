@@ -112,6 +112,7 @@ struct QlementineStyleImpl {
   PolishedWidgetRegistry polishedWidgets;
   std::optional<QFont> previousAppFont;
   AutoIconColor autoIconColor{ AutoIconColor::None };
+  bool toolTipMatchesTheme{ false };
   std::function<QString(QString)> iconPathFunc;
 
   explicit QlementineStyleImpl(QlementineStyle& o)
@@ -144,7 +145,8 @@ struct QlementineStyleImpl {
   /// Some widgets need to have a QPalette explicitely set.
   void updatePalette() const {
     auto palette = theme.palette;
-    palette.setColor(QPalette::ColorGroup::Inactive, QPalette::ColorRole::ToolTipText, owner.toolTipForegroundColor());
+    palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipBase, owner.toolTipBackgroundColor());
+    palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipText, owner.toolTipForegroundColor());
     QToolTip::setPalette(palette);
   }
 
@@ -486,6 +488,15 @@ void QlementineStyle::setAutoIconColor(AutoIconColor autoIconColor) {
 
 AutoIconColor QlementineStyle::autoIconColor() const {
   return _impl->autoIconColor;
+}
+
+void QlementineStyle::setToolTipMatchesTheme(bool enabled) {
+  _impl->toolTipMatchesTheme = enabled;
+  triggerCompleteRepaint();
+}
+
+bool QlementineStyle::toolTipMatchesTheme() const {
+  return _impl->toolTipMatchesTheme;
 }
 
 // Sets automatic icon colorization for a specific widget.
@@ -6131,15 +6142,15 @@ QColor const& QlementineStyle::toolBarSeparatorColor() const {
 }
 
 QColor const& QlementineStyle::toolTipBackgroundColor() const {
-  return _impl->theme.secondaryColor;
+  return _impl->toolTipMatchesTheme ? _impl->theme.backgroundColorMain1 : _impl->theme.secondaryColor;
 }
 
 QColor const& QlementineStyle::toolTipBorderColor() const {
-  return _impl->theme.secondaryColorPressed;
+  return _impl->toolTipMatchesTheme ? _impl->theme.borderColor : _impl->theme.secondaryColorPressed;
 }
 
 QColor const& QlementineStyle::toolTipForegroundColor() const {
-  return _impl->theme.secondaryColorForeground;
+  return _impl->toolTipMatchesTheme ? _impl->theme.secondaryColor : _impl->theme.secondaryColorForeground;
 }
 
 QColor const& QlementineStyle::scrollBarGrooveColor(MouseState const mouse) const {

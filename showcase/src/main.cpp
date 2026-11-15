@@ -31,6 +31,7 @@ int main(int argc, char* argv[]) {
   auto* style = new oclero::qlementine::QlementineStyle(&qApplication);
   style->setAnimationsEnabled(true);
   style->setAutoIconColor(oclero::qlementine::AutoIconColor::TextColor);
+  style->setToolTipMatchesTheme(true);
   style->setIconPathGetter(oclero::qlementine::icons::fromFreeDesktop);
 
   // Theme manager. Created before the style is applied, so it can capture the system accent color.
