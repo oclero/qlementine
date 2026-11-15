@@ -64,3 +64,6 @@ CMakeLists.txt.user
 
 # Clangd cache
 .cache/
+
+# JetBrains IDE files.
+.idea/

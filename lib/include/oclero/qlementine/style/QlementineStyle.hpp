@@ -67,6 +67,9 @@ public:
   void setAutoIconColor(AutoIconColor autoIconColor);
   AutoIconColor autoIconColor() const;
 
+  void setToolTipMatchesTheme(bool enabled);
+  bool toolTipMatchesTheme() const;
+
   static void setAutoIconColor(QWidget* widget, AutoIconColor autoIconColor);
   static AutoIconColor autoIconColor(const QWidget* widget);
 
