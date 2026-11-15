@@ -1493,7 +1493,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto radius = _impl->theme.borderRadius;
           const auto& bgColor = tabBackgroundColor(mouse, selection);
           const auto localRect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
-          QPainterStateGuard stateGuard(p);
+          QPainterStateGuard tabShapeStateGuard(p);
           p->setTransform(QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect), true);
           if (QlementineStyleImpl::isTabShapeTriangular(optTab->shape)) {
             drawTab(p, getTrapezoidTabPath(localRect, _impl->tabSlant(), radius), bgColor, drawShadow,
@@ -1510,7 +1510,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
         // Draw in the local frame of the tab, so the label is rotated on vertical tabs.
         const auto rect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
-        QPainterStateGuard stateGuard(p);
+        QPainterStateGuard tabLabelStateGuard(p);
         p->setTransform(QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect), true);
 
         const auto mouse = getMouseState(optTab->state);
