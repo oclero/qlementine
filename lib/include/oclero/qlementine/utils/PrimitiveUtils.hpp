@@ -166,12 +166,22 @@ QLEMENTINE_EXPORT void drawDial(QPainter* p, QRect const& rect, int min, int max
 /// Gets the path for a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
 QLEMENTINE_EXPORT QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses);
 
+/// Gets the path for a trapezoid tab, whose sides are slanted by `slant` pixels and whose top corners are rounded.
+QLEMENTINE_EXPORT QPainterPath getTrapezoidTabPath(QRect const& rect, qreal slant, qreal radius);
+
 /// Draws a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
 QLEMENTINE_EXPORT void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor,
   bool drawShadow = false, const QColor& shadowColor = Qt::black);
 
+/// Draws a tab from an arbitrary path.
+QLEMENTINE_EXPORT void drawTab(QPainter* p, const QPainterPath& path, const QColor& bgColor, bool drawShadow = false,
+  const QColor& shadowColor = Qt::black);
+
 /// Draws the shadow of a rounded tab.
 QLEMENTINE_EXPORT void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color);
+
+/// Draws the shadow of a tab from an arbitrary path.
+QLEMENTINE_EXPORT void drawTabShadow(QPainter* p, const QPainterPath& path, const QColor& color);
 
 /// Draws a RadioButton indicator according to its checked state.
 QLEMENTINE_EXPORT void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
