@@ -28,6 +28,7 @@
 #include <oclero/qlementine/widgets/Menu.hpp>
 #include <oclero/qlementine/widgets/NotificationBadge.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
+#include <oclero/qlementine/widgets/Popover.hpp>
 #include <oclero/qlementine/widgets/PopoverButton.hpp>
 
 #include <oclero/qlementine/icons/Icons12.hpp>
@@ -401,6 +402,17 @@ struct ShowcaseWindow::Impl {
     addButton(Icons16::Media_Play, "Play");
     addButton(Icons16::Media_SkipForward, "Skip Forward");
     toolBar->addSeparator();
+    {
+      auto* popoverButton = new PopoverButton("Popover", toolBar);
+      auto* popoverContent = new QWidget(popoverButton);
+      auto* popoverContentLayout = new QVBoxLayout(popoverContent);
+      popoverContentLayout->addWidget(new Label(getDummyText(), TextRole::H4, popoverContent));
+      popoverContentLayout->addWidget(new Label(getDummyText(6, 8), TextRole::Caption, popoverContent));
+      popoverButton->setPopoverContentWidget(popoverContent);
+      popoverButton->popover()->setPreferredPosition(Popover::Position::Bottom);
+      toolBar->addWidget(popoverButton);
+    }
+    toolBar->addSeparator();
     auto* exportButton = addButton(Icons16::Action_Export, "Export", "Export");
     {
       auto* menu = new Menu(exportButton);
@@ -765,15 +777,6 @@ struct ShowcaseWindow::Impl {
             auto* commandLinkButton =
               new CommandLinkButton(makeThemedIcon(Icons16::Action_Export), "Command link", getDummyText(4, 6), groupBox);
             groupBoxLayout->addWidget(commandLinkButton);
-          }
-          {
-            auto* popoverButton = new PopoverButton("Popover", groupBox);
-            auto* popoverContent = new QWidget(popoverButton);
-            auto* popoverContentLayout = new QVBoxLayout(popoverContent);
-            popoverContentLayout->addWidget(new Label(getDummyText(), TextRole::H4, popoverContent));
-            popoverContentLayout->addWidget(new Label(getDummyText(6, 8), TextRole::Caption, popoverContent));
-            popoverButton->setPopoverContentWidget(popoverContent);
-            groupBoxLayout->addWidget(popoverButton);
           }
           {
             auto* expander = new Expander(groupBox);
