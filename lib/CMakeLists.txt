@@ -54,6 +54,8 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LoadingSpinner.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Menu.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NavigationBar.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NavigationSidebar.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NavigationView.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NotificationBadge.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/PlainTextEdit.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Popover.cpp
@@ -104,6 +106,8 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LoadingSpinner.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Menu.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NavigationBar.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NavigationSidebar.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NavigationView.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NotificationBadge.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/PlainTextEdit.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Popover.hpp

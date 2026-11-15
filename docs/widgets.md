@@ -12,7 +12,7 @@ A standard "About" window that you can use to quickly display basic information 
 
 ## AbstractItemListWidget
 
-Base class for [`NavigationBar`](#navigationbar) and [`SegmentedControl`](#segmentedcontrol).
+Base class for [`NavigationBar`](#navigationbar), [`NavigationSidebar`](#navigationsidebar) and [`SegmentedControl`](#segmentedcontrol).
 
 ## Action
 
@@ -73,6 +73,29 @@ Improves `QMenu` by adding predicates (lambda functions) to update state.
 A widget that allows to switch between a range of elements, such as seen on Android.
 
 ![NavigationBar](assets/images/widgets/navigationbar.png)
+
+## NavigationSidebar
+
+A vertical sidebar that allows to switch between a range of elements, such as seen in settings windows. It extends [`NavigationBar`](#navigationbar).
+
+- Top items (`addItem`) and bottom items (`addBottomItem`) that stay pinned below the scrollable top items.
+- Nested items (`addChildItem`), expanded and collapsed with an animation by clicking the parent, with `setItemExpanded`, or with the Left and Right arrow keys.
+- Non-selectable sections (`addSection`) and separators (`addSeparator`, `addBottomSeparator`).
+- Icons and badges on every item.
+- A scroll bar, displayed when the top items don't fit.
+- A header widget and a footer widget (`setHeaderWidget`, `setFooterWidget`) that can contain anything, such as a search field.
+- A compact (icon-only) mode (`setCompact`, `toggleCompact`), animated, with tooltips. The header and footer widgets are hidden in compact mode: give the user another way to expand the sidebar again. Nested items are hidden too: clicking their parent opens a flyout menu that contains them, and the parent shows the selection when one of its children is selected.
+- `setExpandedWidth` to change the width when not compact.
+
+![NavigationSidebar](assets/images/widgets/navigationsidebar.png)
+
+## NavigationView
+
+A [`NavigationSidebar`](#navigationsidebar) combined with a `QStackedWidget`: selecting an item in the sidebar shows its page. The view takes ownership of the pages.
+
+Use `addPage`, `addBottomPage`, `addChildPage` and `removePage` to manage the pages. Use `sidebar()` to add sections and separators, set the header and footer, or toggle the compact mode. `setAutoCompactWidth` makes the sidebar compact when the view is narrower than the given width.
+
+A complete example is available in the Showcase application: click the "NavigationView" button in the toolbar.
 
 ## NotificationBadge
 

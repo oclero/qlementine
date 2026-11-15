@@ -10,8 +10,10 @@
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
 #include <oclero/qlementine/utils/LayoutUtils.hpp>
 
+#include <oclero/qlementine/widgets/Label.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/NavigationBar.hpp>
+#include <oclero/qlementine/widgets/NavigationView.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
@@ -138,6 +140,123 @@ static QIcon getDummyMonochromeIcon(const QSize& size = { 16, 16 }) {
   const auto randomIcon = static_cast<Icons16>(randomIndex);
   return makeThemedIcon(randomIcon, size);
 }
+
+class NavigationViewWindow : public QWidget {
+public:
+  explicit NavigationViewWindow(QWidget* parent = nullptr)
+    : QWidget(parent, Qt::Window) {
+    setAttribute(Qt::WA_DeleteOnClose);
+    setWindowTitle("NavigationView");
+    setWindowIcon(QIcon(":/showcase/qlementine_icon.ico"));
+    setMinimumSize(320, 320);
+    resize(900, 600);
+
+    auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    auto* navView = new NavigationView(this);
+    layout->addWidget(navView);
+    auto* sidebar = navView->sidebar();
+
+    // Creates a page with a title and a description.
+    const auto makePage = [navView](const QString& title, const QString& description) {
+      auto* page = new QWidget(navView);
+      auto* pageLayout = new QVBoxLayout(page);
+      pageLayout->setContentsMargins(24, 24, 24, 24);
+      pageLayout->setAlignment(Qt::AlignTop);
+      pageLayout->addWidget(new Label(title, TextRole::H2, page));
+      auto* descriptionLabel = new Label(description, TextRole::Default, page);
+      descriptionLabel->setWordWrap(true);
+      pageLayout->addWidget(descriptionLabel);
+      return page;
+    };
+
+    // Header: any widget can be used, here a search field that selects the first matching item.
+    auto* searchField = new LineEdit(sidebar);
+    searchField->setIcon(makeThemedIcon(Icons16::Navigation_Search));
+    searchField->setClearButtonEnabled(true);
+    searchField->setPlaceholderText("Jump to...");
+    QObject::connect(searchField, &QLineEdit::returnPressed, sidebar, [sidebar, searchField]() {
+      for (auto i = 0; i < sidebar->itemCount(); ++i) {
+        if (sidebar->getItemText(i).contains(searchField->text(), Qt::CaseInsensitive)) {
+          sidebar->setCurrentIndex(i);
+          if (sidebar->currentIndex() == i) {
+            break;
+          }
+        }
+      }
+    });
+    sidebar->setHeaderWidget(searchField);
+
+    // The footer is hidden in compact mode: use the switch of the "Settings" page to expand the sidebar again.
+    auto* compactButton = new QPushButton(makeThemedIcon(Icons16::Action_Fullscreen), "Collapse", sidebar);
+    QObject::connect(compactButton, &QPushButton::clicked, sidebar, &NavigationSidebar::toggleCompact);
+    sidebar->setFooterWidget(compactButton);
+
+    // Top items: sections and separators organize them, items can have badges and children.
+    sidebar->addSection("General");
+    navView->addPage(
+      makePage("Home", "NavigationView combines a NavigationSidebar with a stack of pages. Selecting an item in the "
+                       "sidebar shows its page. Try the search field above (press Enter), the keyboard arrows, and "
+                       "the collapse button below (use the Settings page to expand the sidebar again)."),
+      "Home", makeThemedIcon(Icons16::Navigation_Home));
+
+    const auto libraryIndex =
+      navView->addPage(makePage("Library", "Items can be nested. Click an item with children, or use the Left and "
+                                           "Right arrow keys, to expand and collapse it."),
+        "Library", makeThemedIcon(Icons16::File_Folder), "24");
+    navView->addChildPage(libraryIndex, makePage("Pictures", "A child item, shown indented under its parent."),
+      "Pictures", makeThemedIcon(Icons16::File_Picture));
+    navView->addChildPage(libraryIndex, makePage("Movies", "Child items can have badges too."), "Movies",
+      makeThemedIcon(Icons16::File_Movie), "3");
+    sidebar->setItemExpanded(libraryIndex, true);
+
+    navView->addPage(makePage("Notifications", "Badges display a short text, such as an unread count."),
+      "Notifications", makeThemedIcon(Icons16::Misc_Bell), "5");
+
+    sidebar->addSeparator();
+    sidebar->addSection("Account");
+    navView->addPage(makePage("Profile", "Sections and separators group items and cannot be selected."), "Profile",
+      makeThemedIcon(Icons16::Misc_User));
+    const auto syncIndex = navView->addPage(
+      makePage("Sync", "Disabled items cannot be selected."), "Sync", makeThemedIcon(Icons16::Action_Swap));
+    sidebar->setItemEnabled(syncIndex, false);
+
+    // Bottom items stay pinned below the top items.
+    auto* settingsPage = makePage("Settings", "These controls configure the sidebar itself.");
+    {
+      auto* form = new QFormLayout();
+      qobject_cast<QVBoxLayout*>(settingsPage->layout())->addLayout(form);
+
+      auto* compactSwitch = new Switch(settingsPage);
+      QObject::connect(compactSwitch, &Switch::clicked, sidebar, [sidebar](bool checked) {
+        sidebar->setCompact(checked);
+      });
+      QObject::connect(sidebar, &NavigationSidebar::compactChanged, compactSwitch, [sidebar, compactSwitch]() {
+        compactSwitch->setChecked(sidebar->compact());
+      });
+      form->addRow("Compact", compactSwitch);
+
+      auto* expandedWidthSpinBox = new QSpinBox(settingsPage);
+      expandedWidthSpinBox->setRange(160, 400);
+      expandedWidthSpinBox->setSingleStep(10);
+      expandedWidthSpinBox->setValue(sidebar->sizeHint().width());
+      QObject::connect(expandedWidthSpinBox, &QSpinBox::valueChanged, sidebar, &NavigationSidebar::setExpandedWidth);
+      form->addRow("Expanded width", expandedWidthSpinBox);
+
+      auto* autoCompactSpinBox = new QSpinBox(settingsPage);
+      autoCompactSpinBox->setRange(0, 1200);
+      autoCompactSpinBox->setSingleStep(50);
+      autoCompactSpinBox->setSpecialValueText("Disabled");
+      QObject::connect(autoCompactSpinBox, &QSpinBox::valueChanged, navView, &NavigationView::setAutoCompactWidth);
+      form->addRow("Auto-compact below", autoCompactSpinBox);
+    }
+    navView->addBottomPage(settingsPage, "Settings", makeThemedIcon(Icons16::Navigation_Settings));
+    navView->addBottomPage(makePage("About", "Bottom items stay pinned below the scrollable list of top items."),
+      "About", makeThemedIcon(Icons16::Misc_Info));
+
+    oclero::qlementine::centerWidget(this, parent);
+  }
+};
 
 struct ShowcaseWindow::Impl {
   ShowcaseWindow& owner;
@@ -396,6 +515,14 @@ struct ShowcaseWindow::Impl {
       exportButton->setMenu(menu);
       exportButton->setPopupMode(QToolButton::ToolButtonPopupMode::MenuButtonPopup);
     }
+
+    // Opens the NavigationView example in its own window.
+    toolBar->addSeparator();
+    auto* navigationViewButton = addButton(Icons16::Misc_ItemsList, "Open a NavigationView example", "NavigationView");
+    QObject::connect(navigationViewButton, &QToolButton::clicked, navigationViewButton, [this]() {
+      auto* window = new NavigationViewWindow(&owner);
+      window->show();
+    });
 
     // Spacer.
     auto* spacer_widget = new QWidget(toolBar);
