@@ -205,6 +205,15 @@ std::optional<Theme> Theme::fromJsonPath(const QString& jsonPath) {
   return fromJsonDoc(readJsonDoc(jsonPath));
 }
 
+std::optional<Theme> Theme::fromJsonString(const QString& jsonString) {
+  QJsonParseError jsonParseError{};
+  const auto jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8(), &jsonParseError);
+  if (jsonParseError.error != QJsonParseError::ParseError::NoError || jsonDoc.isEmpty()) {
+    return {};
+  }
+  return fromJsonDoc(jsonDoc);
+}
+
 Theme Theme::makeLight() {
   const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/light.json"));
   return themeOpt.value_or(Theme{});

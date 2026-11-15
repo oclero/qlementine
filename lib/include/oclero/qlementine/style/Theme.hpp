@@ -37,6 +37,7 @@ public: // Ctor.
   Theme();
 
   static std::optional<Theme> fromJsonPath(const QString& jsonPath);
+  static std::optional<Theme> fromJsonString(const QString& jsonString);
   static std::optional<Theme> fromJsonDoc(const QJsonDocument& jsonDoc);
   static Theme makeLight();
   static Theme makeDark();

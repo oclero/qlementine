@@ -54,6 +54,7 @@ public:
   Theme const& theme() const;
   void setTheme(Theme const& theme);
   void setThemeJsonPath(QString const& jsonPath);
+  void setThemeJsonString(QString const& jsonString);
   bool animationsEnabled() const;
   void setAnimationsEnabled(bool enabled);
 

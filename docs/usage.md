@@ -127,6 +127,12 @@ You may want to use your own JSON theme.
 style->setThemeJsonPath(":/path/to/your/theme.json");
 ```
 
+Or provide the JSON content directly as a string, without needing a resource file.
+
+```c++
+style->setThemeJsonString(R"({ "backgroundColorMain1": "#1f2127" })");
+```
+
 Additionnally, you can also use `ThemeManager` to handle that for you.
 
 ```c++

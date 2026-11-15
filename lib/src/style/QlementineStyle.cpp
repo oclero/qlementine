@@ -330,6 +330,13 @@ void QlementineStyle::setThemeJsonPath(QString const& jsonPath) {
   }
 }
 
+void QlementineStyle::setThemeJsonString(QString const& jsonString) {
+  const auto themeOpt = Theme::fromJsonString(jsonString);
+  if (themeOpt.has_value()) {
+    setTheme(themeOpt.value());
+  }
+}
+
 bool QlementineStyle::animationsEnabled() const {
   return _impl->animations.enabled();
 }
