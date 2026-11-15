@@ -249,7 +249,7 @@ void NotificationBadge::updatePosition() {
   }
 
   const auto widgetRect = _widget->geometry();
-  const auto badgeSize = size();
+  const auto badgeSize = sizeHint();
 
   const auto x = widgetRect.x() + widgetRect.width() - badgeSize.width() + _relativePos.x();
   const auto y = widgetRect.y() + _relativePos.y();
