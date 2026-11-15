@@ -265,7 +265,7 @@ struct ShowcaseWindow::Impl {
 
           for (const auto& theme : themes) {
             const auto name = theme.meta.name;
-            const auto icon = name == "Dark" ? makeThemedIcon(Icons16::Misc_Moon) : makeThemedIcon(Icons16::Misc_Sun);
+            const auto icon = name.contains("Dark") ? makeThemedIcon(Icons16::Misc_Moon) : makeThemedIcon(Icons16::Misc_Sun);
             auto* action = themeMenu->addAction(icon, name);
             action->setCheckable(true);
             themeActionGroup->addAction(action);
@@ -283,6 +283,10 @@ struct ShowcaseWindow::Impl {
           }
 
           themeMenu->addSeparator();
+          themeMenu->addAction(makeThemedIcon(Icons16::Misc_PaintPalette), "Custom JSON Theme", [this]() {
+            qlementineStyle->setThemeJsonString(
+              R"({ "primaryColor": "#e5484d", "primaryColorHovered": "#ec6a6e", "primaryColorPressed": "#f18a8d", "primaryAlternativeColor": "#c2373c" })");
+          });
           themeMenu->addAction(
             makeThemedIcon(Icons16::Action_Swap), "Switch Theme", { Qt::CTRL | Qt::Key_T }, [this]() {
               switchTheme();
