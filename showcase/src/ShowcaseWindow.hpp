@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <QMainWindow>
+#include <oclero/qlementine/widgets/UnifiedWindow.hpp>
 
 #include <memory>
 
@@ -13,7 +13,7 @@ class ThemeManager;
 } // namespace oclero::qlementine
 
 namespace oclero::qlementine::showcase {
-class ShowcaseWindow : public QWidget {
+class ShowcaseWindow : public UnifiedWindow {
 public:
   explicit ShowcaseWindow(ThemeManager* themeManager = nullptr, QWidget* parent = nullptr);
   ~ShowcaseWindow() override;

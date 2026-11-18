@@ -18,6 +18,7 @@
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
 #include <oclero/qlementine/widgets/AboutDialog.hpp>
+#include <oclero/qlementine/widgets/UnifiedWindow.hpp>
 
 #include <oclero/qlementine/icons/Icons12.hpp>
 #include <oclero/qlementine/icons/Icons16.hpp>
@@ -317,7 +318,9 @@ struct ShowcaseWindow::Impl {
     tabBar = new QTabBar(&owner);
     tabBar->setDocumentMode(true);
     tabBar->setFocusPolicy(Qt::NoFocus);
-    tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    tabBar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    tabBar->setDrawBase(false);
+    tabBar->setAutoFillBackground(false);
     tabBar->setTabsClosable(true);
     tabBar->setMovable(false);
     tabBar->setExpanding(false);
@@ -757,20 +760,24 @@ struct ShowcaseWindow::Impl {
   }
 
   void setupLayout() {
-    rootLayout = new QVBoxLayout(&owner);
+    auto* centralWidget = new QWidget(&owner);
+    rootLayout = new QVBoxLayout(centralWidget);
     rootLayout->setContentsMargins(0, 0, 0, 0);
     rootLayout->setSpacing(0);
     rootLayout->setMenuBar(menuBar);
-    rootLayout->addWidget(tabBar);
     rootLayout->addWidget(toolBar);
     rootLayout->addWidget(splitter);
     rootLayout->addWidget(statusBar);
     workspace->setFocus(Qt::NoFocusReason);
+
+    // The tabs live in the title bar.
+    owner.titleBar()->setContentWidget(tabBar);
+    owner.setCentralWidget(centralWidget);
   }
 };
 
 ShowcaseWindow::ShowcaseWindow(ThemeManager* themeManager, QWidget* parent)
-  : QWidget(parent)
+  : UnifiedWindow(parent)
   , _impl(new Impl(*this, themeManager)) {
   setWindowIcon(QIcon(":/showcase/qlementine_icon.ico"));
   _impl->setupUI();
