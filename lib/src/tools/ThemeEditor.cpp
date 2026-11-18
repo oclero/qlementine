@@ -46,9 +46,29 @@
     formLayout->addRow(pair.first, pair.second); \
   }
 
+#define ADD_INT_EDITOR(NAME, DESCRIPTION) \
+  { \
+    const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, [this](const QString& s) { \
+      auto ok = false; \
+      const auto value = s.toInt(&ok); \
+      if (ok && value > 0) { \
+        theme.NAME = value; \
+        Q_EMIT owner.themeChanged(theme); \
+      } \
+    }); \
+    pair.second->setText(QString::number(theme.NAME)); \
+    this->NAME##Editor = pair.second; \
+    formLayout->addRow(pair.first, pair.second); \
+  }
+
 #define UPDATE_COLOR_EDITOR(NAME) \
   this->NAME##Editor->blockSignals(true); \
   this->NAME##Editor->setColor(theme.NAME); \
+  this->NAME##Editor->blockSignals(false);
+
+#define UPDATE_INT_EDITOR(NAME) \
+  this->NAME##Editor->blockSignals(true); \
+  this->NAME##Editor->setText(QString::number(theme.NAME)); \
   this->NAME##Editor->blockSignals(false);
 
 #define UPDATE_METADATA_TEXT_EDITOR(NAME) \
@@ -164,6 +184,7 @@ struct ThemeEditor::Impl {
   ColorEditor* titleBarBackgroundColorInactiveEditor{};
   ColorEditor* titleBarForegroundColorEditor{};
   ColorEditor* titleBarBorderColorEditor{};
+  LineEdit* titleBarHeightEditor{};
 
   ColorEditor* shadowColor1Editor{};
   ColorEditor* shadowColor2Editor{};
@@ -361,6 +382,7 @@ struct ThemeEditor::Impl {
     ADD_COLOR_EDITOR(titleBarBackgroundColorInactive, "Background when the window is inactive.");
     ADD_COLOR_EDITOR(titleBarForegroundColor, "");
     ADD_COLOR_EDITOR(titleBarBorderColor, "");
+    ADD_INT_EDITOR(titleBarHeight, "Height of the title bar, in pixels.");
 
     // Focus Color.
     ADD_TITLE("Focus Color");
@@ -477,6 +499,7 @@ struct ThemeEditor::Impl {
     UPDATE_COLOR_EDITOR(titleBarBackgroundColorInactive);
     UPDATE_COLOR_EDITOR(titleBarForegroundColor);
     UPDATE_COLOR_EDITOR(titleBarBorderColor);
+    UPDATE_INT_EDITOR(titleBarHeight);
 
     UPDATE_COLOR_EDITOR(focusColor);
 

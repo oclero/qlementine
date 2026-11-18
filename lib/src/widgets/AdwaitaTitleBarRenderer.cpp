@@ -44,7 +44,7 @@ public:
     return barHeightDp;
   }
 
-  QSize captionButtonSize(CaptionButton) const override {
+  QSize captionButtonSize(CaptionButton, const Theme&) const override {
     return { buttonDiameter, buttonDiameter };
   }
 

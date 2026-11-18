@@ -18,7 +18,6 @@
 namespace oclero::qlementine {
 namespace {
 // Metrics similar to Windows 11 caption buttons.
-constexpr auto barHeightValue = 32;
 constexpr auto buttonWidth = 46;
 
 class QlementineTitleBarRenderer final : public TitleBarRenderer {
@@ -27,8 +26,8 @@ public:
     return theme.titleBarHeight;
   }
 
-  QSize captionButtonSize(CaptionButton) const override {
-    return QSize(buttonWidth, barHeightValue);
+  QSize captionButtonSize(CaptionButton, const Theme& theme) const override {
+    return QSize(buttonWidth, theme.titleBarHeight);
   }
 
   int captionButtonSpacing() const override {

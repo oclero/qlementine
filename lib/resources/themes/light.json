@@ -17,6 +17,7 @@
   "titleBarBackgroundColorInactive": "backgroundColorMain1",
   "titleBarForegroundColor": "secondaryColor",
   "titleBarBorderColor": "borderColor",
+  "titleBarHeight": 32,
 
   "borderColor": "#d3d3d3",
   "borderColorDisabled": "#e9e9e9",

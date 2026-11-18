@@ -54,7 +54,7 @@ struct TitleBar::Impl {
   int groupWidth(const QList<CaptionButton>& buttons) const {
     auto width = 0;
     for (const auto button : buttons) {
-      width += renderer->captionButtonSize(button).width();
+      width += renderer->captionButtonSize(button, theme()).width();
     }
     return buttons.isEmpty() ? 0 : width + renderer->captionButtonSpacing() * (static_cast<int>(buttons.size()) - 1);
   }
@@ -338,7 +338,7 @@ QRect TitleBar::captionButtonRect(CaptionButton button) const {
   const auto& renderer = *_impl->renderer;
   const auto margins = renderer.captionButtonMargins();
   const auto spacing = renderer.captionButtonSpacing();
-  const auto buttonSize = renderer.captionButtonSize(button);
+  const auto buttonSize = renderer.captionButtonSize(button, _impl->theme());
 
   for (const auto isLeft : { true, false }) {
     const auto& buttons = isLeft ? _impl->buttonLayout.left : _impl->buttonLayout.right;
@@ -350,7 +350,7 @@ QRect TitleBar::captionButtonRect(CaptionButton button) const {
     auto x = isLeft ? _impl->leftInset + margins.left()
                     : width() - _impl->rightInset - margins.right() - _impl->groupWidth(buttons);
     for (auto i = 0; i < index; ++i) {
-      x += renderer.captionButtonSize(buttons[i]).width() + spacing;
+      x += renderer.captionButtonSize(buttons[i], _impl->theme()).width() + spacing;
     }
     const auto y = margins.top() + (height() - margins.top() - margins.bottom() - buttonSize.height()) / 2;
     return QRect(QPoint(x, y), buttonSize);
