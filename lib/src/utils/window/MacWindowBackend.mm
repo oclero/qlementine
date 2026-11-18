@@ -30,8 +30,14 @@ public:
   }
 
   void prepareWindow() override {
-    // Qt::FramelessWindowHint would remove the traffic lights, and the Qt 6.9 expanded client area hints are not
-    // reliable with QMainWindow, so only the native NSWindow configuration is used. Nothing to do before creation.
+    // Qt::FramelessWindowHint would remove the traffic lights, so the native NSWindow configuration is used instead.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+    // Qt Widgets add the safe area margins (the native title bar height) to the contents margins of top-level widgets,
+    // which would keep the content below the title bar.
+    _window.setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea, false);
+    _window.setWindowFlag(Qt::ExpandedClientAreaHint, true);
+    _window.setWindowFlag(Qt::NoTitleBarBackgroundHint, true);
+#endif
   }
 
   void attachNativeWindow() override {
@@ -80,6 +86,13 @@ public:
 
     // Native fullscreen hides the traffic lights.
     if (window.styleMask & NSWindowStyleMaskFullScreen) {
+      _window.titleBar()->setSystemInsets(0, 0);
+      return;
+    }
+
+    // The title bar is below the native one when the content does not extend under it, so it doesn't overlap the
+    // traffic lights and must not reserve space for them.
+    if (window.contentLayoutRect.size.height >= NSHeight(window.contentView.frame) - 0.5) {
       _window.titleBar()->setSystemInsets(0, 0);
       return;
     }
