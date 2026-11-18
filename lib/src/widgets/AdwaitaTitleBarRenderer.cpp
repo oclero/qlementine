@@ -21,6 +21,8 @@ constexpr auto buttonSpacing = 12;
 constexpr auto barMargin = 10;
 constexpr auto topCornerRadius = 12.;
 constexpr auto titlePointSize = 11.;
+constexpr auto glyphScale = .75;
+constexpr auto glyphStrokeWidth = 1.5;
 
 QColor foregroundColor(const Theme& theme, bool windowActive) {
   auto color = theme.titleBarForegroundColor;
@@ -98,35 +100,37 @@ public:
     const auto diameter = qMin(rect.width(), rect.height());
     painter.drawEllipse(center, diameter / 2., diameter / 2.);
 
-    // Glyph.
-    painter.setPen(QPen(foreground, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    // Glyph, drawn around the center of the button and scaled down. The pen width compensates the scale.
+    painter.translate(center);
+    painter.scale(glyphScale, glyphScale);
+    painter.setPen(QPen(foreground, glyphStrokeWidth / glyphScale, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.setBrush(Qt::NoBrush);
     switch (button) {
       case CaptionButton::Close:
-        painter.drawLine(center + QPointF(-3.5, -3.5), center + QPointF(3.5, 3.5));
-        painter.drawLine(center + QPointF(-3.5, 3.5), center + QPointF(3.5, -3.5));
+        painter.drawLine(QPointF(-3.5, -3.5), QPointF(3.5, 3.5));
+        painter.drawLine(QPointF(-3.5, 3.5), QPointF(3.5, -3.5));
         break;
       case CaptionButton::Minimize:
-        painter.drawLine(center + QPointF(-4, 3), center + QPointF(4, 3));
+        painter.drawLine(QPointF(-4, 3), QPointF(4, 3));
         break;
       case CaptionButton::Maximize:
         if (state.maximized) {
-          painter.drawRoundedRect(QRectF(center.x() - 4, center.y() - 2, 6, 6), 1, 1);
+          painter.drawRoundedRect(QRectF(-4, -2, 6, 6), 1, 1);
           auto back = QPainterPath{};
-          back.moveTo(center + QPointF(-2, -2));
-          back.lineTo(center + QPointF(-2, -4));
-          back.lineTo(center + QPointF(4, -4));
-          back.lineTo(center + QPointF(4, 2));
-          back.lineTo(center + QPointF(2, 2));
+          back.moveTo(QPointF(-2, -2));
+          back.lineTo(QPointF(-2, -4));
+          back.lineTo(QPointF(4, -4));
+          back.lineTo(QPointF(4, 2));
+          back.lineTo(QPointF(2, 2));
           painter.drawPath(back);
         } else {
-          painter.drawRoundedRect(QRectF(center.x() - 4, center.y() - 4, 8, 8), 1, 1);
+          painter.drawRoundedRect(QRectF(-4, -4, 8, 8), 1, 1);
         }
         break;
       case CaptionButton::Menu:
-        painter.drawLine(center + QPointF(-4.5, -4), center + QPointF(4.5, -4));
-        painter.drawLine(center + QPointF(-4.5, 0), center + QPointF(4.5, 0));
-        painter.drawLine(center + QPointF(-4.5, 4), center + QPointF(4.5, 4));
+        painter.drawLine(QPointF(-4.5, -4), QPointF(4.5, -4));
+        painter.drawLine(QPointF(-4.5, 0), QPointF(4.5, 0));
+        painter.drawLine(QPointF(-4.5, 4), QPointF(4.5, 4));
         break;
     }
     painter.restore();
