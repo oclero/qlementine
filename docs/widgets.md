@@ -119,3 +119,11 @@ Widget to display a status icon: info, warning, error, success. Available in two
 The famous Switch to toggle between states.
 
 ![Switch](assets/images/widgets/switch-checked.png)
+
+## TitleBar
+
+A themed title bar that is part of the window content. It draws the caption buttons (minimize, maximize, close, menu) when the platform doesn't provide them, hosts an optional content widget (menu bar, search field...) and tells the window which parts of it can be used to drag the window. `QLabel` and the content container are draggable by default, any other widget placed in the title bar is interactive, unless overridden with `setHitTestVisible()`.
+
+## UnifiedWindow
+
+A top-level window whose content extends into the title bar area. It owns a `TitleBar` and a central widget. macOS keeps the traffic lights at the top left, Windows keeps the caption buttons at the top right and supports snap layouts, and Linux draws client-side decorations following the user's button layout.
