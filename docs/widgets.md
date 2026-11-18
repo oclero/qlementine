@@ -122,7 +122,7 @@ The famous Switch to toggle between states.
 
 ## TitleBar
 
-A themed title bar that is part of the window content. It draws the caption buttons (minimize, maximize, close, menu) when the platform doesn't provide them, hosts an optional content widget (menu bar, search field...) and tells the window which parts of it can be used to drag the window. `QLabel` and the content container are draggable by default, any other widget placed in the title bar is interactive, unless overridden with `setHitTestVisible()`. A `QTabBar` used as content widget is draggable only in its empty space, not over its tabs or its scroll and close buttons.
+A themed title bar that is part of the window content. It draws the caption buttons (minimize, maximize, close, menu) when the platform doesn't provide them, hosts an optional content widget (menu bar, search field...) and tells the window which parts of it can be used to drag the window. The content container, plain `QWidget`/`QFrame` containers and display-only widgets (`QLabel`, `QProgressBar`, `QLCDNumber`, `IconWidget`, `StatusBadgeWidget`, `NotificationBadge`) are draggable by default, any other widget placed in the title bar is interactive, unless overridden with `setHitTestVisible()`. `QTabBar`, `QMenuBar`, `QToolBar`, `NavigationBar` and `SegmentedControl` are draggable only in their empty space, not over their tabs, items or child buttons.
 
 ## UnifiedWindow
 

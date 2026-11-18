@@ -17,10 +17,14 @@
 
 namespace oclero::qlementine {
 class RoundedFocusFrame;
+class TitleBar;
 
 /// A class to factorize common behavior between widgets such as tab bars.
 class QLEMENTINE_EXPORT AbstractItemListWidget : public QWidget {
   Q_OBJECT
+
+  // Lets the title bar know if a point is over an item or in the empty space.
+  friend class TitleBar;
 
   Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
   Q_PROPERTY(QVariant currentData READ currentData WRITE setCurrentData NOTIFY currentDataChanged)

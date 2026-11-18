@@ -5,16 +5,25 @@
 
 #include <oclero/qlementine/style/QlementineStyle.hpp>
 #include <oclero/qlementine/style/Theme.hpp>
+#include <oclero/qlementine/widgets/AbstractItemListWidget.hpp>
+#include <oclero/qlementine/widgets/IconWidget.hpp>
+#include <oclero/qlementine/widgets/NotificationBadge.hpp>
+#include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 
 #include "TitleBarRenderer.hpp"
 
 #include <QEvent>
+#include <QFrame>
 #include <QHBoxLayout>
+#include <QLCDNumber>
 #include <QLabel>
+#include <QMenuBar>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPointer>
+#include <QProgressBar>
 #include <QTabBar>
+#include <QToolBar>
 
 #include <algorithm>
 #include <functional>
@@ -307,14 +316,32 @@ bool TitleBar::isDragArea(const QPoint& pos) const {
       }
     }
 
-    // Tab bars: only the empty space is draggable.
+    // Widgets with items: only the empty space is draggable.
     for (const auto* widget = child; widget && widget != container; widget = widget->parentWidget()) {
       if (const auto* tabBar = qobject_cast<const QTabBar*>(widget)) {
         return child == tabBar && tabBar->tabAt(tabBar->mapFrom(this, pos)) == -1;
       }
+      if (const auto* menuBar = qobject_cast<const QMenuBar*>(widget)) {
+        return child == menuBar && menuBar->actionAt(menuBar->mapFrom(this, pos)) == nullptr;
+      }
+      if (const auto* toolBar = qobject_cast<const QToolBar*>(widget)) {
+        return child == toolBar && toolBar->actionAt(toolBar->mapFrom(this, pos)) == nullptr;
+      }
+      if (const auto* itemList = qobject_cast<const AbstractItemListWidget*>(widget)) {
+        return child == itemList && itemList->itemAtPos(itemList->mapFrom(this, pos)) == -1;
+      }
     }
 
-    return child == nullptr || qobject_cast<const QLabel*>(child) != nullptr;
+    // Display-only widgets and plain containers don't handle the mouse, the interactive widgets inside a container
+    // are returned by childAt().
+    if (child == nullptr) {
+      return true;
+    }
+    const auto* metaObject = child->metaObject();
+    return metaObject == &QWidget::staticMetaObject || metaObject == &QFrame::staticMetaObject
+           || qobject_cast<const QLabel*>(child) || qobject_cast<const QProgressBar*>(child)
+           || qobject_cast<const QLCDNumber*>(child) || qobject_cast<const IconWidget*>(child)
+           || qobject_cast<const StatusBadgeWidget*>(child) || qobject_cast<const NotificationBadge*>(child);
   }
 
   return true;
