@@ -13,8 +13,8 @@ namespace oclero::qlementine {
 namespace {
 // Metrics follow libadwaita (24px circular window controls, bold title), with a header bar more compact than the 47px
 // of libadwaita.
-// Colors come from libadwaita's CSS variables documentation (headerbar-bg/fg/backdrop/shade-color).
-// The corner radius, the circle opacities and the backdrop title opacity are approximations.
+// Colors come from the Qlementine theme so the title bar matches the rest of the application.
+// The corner radius and the circle opacities are approximations.
 constexpr auto barHeightDp = 38;
 constexpr auto buttonDiameter = 24;
 constexpr auto buttonSpacing = 6;
@@ -22,14 +22,8 @@ constexpr auto barMargin = 6;
 constexpr auto topCornerRadius = 12.;
 constexpr auto titlePointSize = 11.;
 
-// Follows the Qlementine theme of the application, not the system color scheme, so that switching the theme in the
-// application updates the title bar.
-bool isDarkTheme(const Theme& theme) {
-  return theme.backgroundColorMain1.lightness() < 128;
-}
-
-QColor foregroundColor(bool dark, bool windowActive) {
-  auto color = dark ? QColor(255, 255, 255) : QColor(0, 0, 6, 204);
+QColor foregroundColor(const Theme& theme, bool windowActive) {
+  auto color = theme.titleBarForegroundColor;
   if (!windowActive) {
     color.setAlpha(color.alpha() / 2);
   }
@@ -57,10 +51,7 @@ public:
 
   void paintBackground(
     QPainter& painter, const QRect& rect, const Theme& theme, bool windowActive, bool maximized) const override {
-    const auto dark = isDarkTheme(theme);
-    const auto background = windowActive ? (dark ? QColor(0x2e, 0x2e, 0x32) : QColor(0xff, 0xff, 0xff))
-                                         : (dark ? QColor(0x22, 0x22, 0x26) : QColor(0xfa, 0xfa, 0xfb));
-    const auto shade = dark ? QColor(0, 0, 6, 92) : QColor(0, 0, 6, 31);
+    const auto& background = windowActive ? theme.titleBarBackgroundColor : theme.titleBarBackgroundColorInactive;
 
     painter.save();
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -74,7 +65,7 @@ public:
     painter.fillPath(shape.intersected(clip), background);
 
     // 1px bottom border.
-    painter.fillRect(QRect(rect.left(), rect.bottom(), rect.width(), 1), shade);
+    painter.fillRect(QRect(rect.left(), rect.bottom(), rect.width(), 1), theme.titleBarBorderColor);
     painter.restore();
   }
 
@@ -85,7 +76,7 @@ public:
     font.setWeight(QFont::Bold);
     font.setPointSizeF(titlePointSize);
     painter.setFont(font);
-    painter.setPen(foregroundColor(isDarkTheme(theme), windowActive));
+    painter.setPen(foregroundColor(theme, windowActive));
     painter.drawText(
       rect, Qt::AlignCenter, QFontMetrics(font).elidedText(title, Qt::ElideRight, rect.width()));
     painter.restore();
@@ -93,8 +84,7 @@ public:
 
   void paintCaptionButton(QPainter& painter, const QRect& rect, CaptionButton button, const CaptionButtonState& state,
     const Theme& theme) const override {
-    const auto dark = isDarkTheme(theme);
-    const auto foreground = foregroundColor(dark, state.windowActive);
+    const auto foreground = foregroundColor(theme, state.windowActive);
     const auto center = QRectF(rect).center();
 
     painter.save();
@@ -102,7 +92,7 @@ public:
 
     // Circle background.
     if (state.pressed || state.hovered) {
-      auto circle = dark ? QColor(255, 255, 255) : QColor(0, 0, 6);
+      auto circle = theme.titleBarForegroundColor;
       circle.setAlphaF(state.pressed ? .15 : .1);
       painter.setPen(Qt::NoPen);
       painter.setBrush(circle);
