@@ -6,6 +6,7 @@
 
 #include <oclero/qlementine/widgets/UnifiedWindow.hpp>
 
+#include <QCoreApplication>
 #include <QGuiApplication>
 #include <QMenu>
 #include <QMouseEvent>
@@ -31,6 +32,7 @@ constexpr auto defaultShadowMargin = 16;
 constexpr auto gnomeCornerRadius = 12;
 constexpr auto defaultCornerRadius = 8;
 constexpr auto resizeCornerSize = 16;
+constexpr auto translationContext = "oclero::qlementine::UnifiedWindow";
 
 class LinuxWindowBackend final
   : public QObject
@@ -38,10 +40,15 @@ class LinuxWindowBackend final
 public:
   explicit LinuxWindowBackend(UnifiedWindow& window)
     : QObject(nullptr)
-    , WindowBackend(window) {
-    connect(&_buttonLayout, &LinuxButtonLayout::changed, this, [this]() {
+    , WindowBackend(window)
+    , _buttonLayout(LinuxButtonLayout::instance()) {
+    _layoutConnection = connect(&_buttonLayout, &LinuxButtonLayout::changed, this, [this]() {
       _window.titleBar()->setCaptionButtonLayout(_buttonLayout.layout());
     });
+  }
+
+  ~LinuxWindowBackend() override {
+    disconnect(_layoutConnection);
   }
 
   void prepareWindow() override {
@@ -63,7 +70,7 @@ public:
   }
 
   void handleEvent(QEvent* evt) override {
-    if (evt->type() == QEvent::WindowStateChange) {
+    if (evt->type() == QEvent::WindowStateChange || evt->type() == QEvent::ScreenChangeInternal) {
       updateFrame();
     }
   }
@@ -117,13 +124,17 @@ public:
 
   void showSystemMenu(const QPoint& globalPos) override {
     QMenu menu(&_window);
-    menu.addAction(tr("Restore"), [this]() { _window.showNormal(); })
-      ->setEnabled(_window.isMaximized() || _window.isFullScreen());
-    menu.addAction(tr("Minimize"), [this]() { _window.showMinimized(); });
-    menu.addAction(tr("Maximize"), [this]() { _window.showMaximized(); })
-      ->setEnabled(!_window.isMaximized() && _window.minimumSize() != _window.maximumSize());
+    menu.addAction(QCoreApplication::translate(translationContext, "Restore"), [this]() {
+      _window.showNormal();
+    })->setEnabled(_window.isMaximized() || _window.isFullScreen());
+    menu.addAction(QCoreApplication::translate(translationContext, "Minimize"), [this]() {
+      _window.showMinimized();
+    });
+    menu.addAction(QCoreApplication::translate(translationContext, "Maximize"), [this]() {
+      _window.showMaximized();
+    })->setEnabled(!_window.isMaximized() && _window.minimumSize() != _window.maximumSize());
     menu.addSeparator();
-    menu.addAction(tr("Close"), [this]() { _window.close(); });
+    menu.addAction(QCoreApplication::translate(translationContext, "Close"), [this]() { _window.close(); });
     menu.exec(globalPos);
   }
 
@@ -210,6 +221,7 @@ private:
     _window.update();
 
     // X11: tells the window manager that the margin is a shadow, so that maximizing and snapping use the frame.
+    // Does nothing until the native window exists, and is refreshed when it is created and when the screen changes.
 #ifdef QLEMENTINE_LINUX_XCB
     auto* x11 = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
     auto* handle = _window.windowHandle();
@@ -230,7 +242,8 @@ private:
 #endif
   }
 
-  LinuxButtonLayout _buttonLayout;
+  LinuxButtonLayout& _buttonLayout;
+  QMetaObject::Connection _layoutConnection;
 };
 } // namespace
 

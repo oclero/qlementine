@@ -3,11 +3,15 @@
 
 #include "LinuxButtonLayout.hpp"
 
-#include <QDBusConnection>
-#include <QDBusMessage>
-#include <QDBusVariant>
+#ifdef QLEMENTINE_WITH_DBUS
+#  include <QDBusConnection>
+#  include <QDBusMessage>
+#  include <QDBusVariant>
+#endif
+#include <QCoreApplication>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
 
@@ -15,11 +19,13 @@
 
 namespace oclero::qlementine {
 namespace {
+#ifdef QLEMENTINE_WITH_DBUS
 const auto portalService = QStringLiteral("org.freedesktop.portal.Desktop");
 const auto portalPath = QStringLiteral("/org/freedesktop/portal/desktop");
 const auto portalInterface = QStringLiteral("org.freedesktop.portal.Settings");
 const auto gnomeNamespace = QStringLiteral("org.gnome.desktop.wm.preferences");
 const auto gnomeKey = QStringLiteral("button-layout");
+#endif
 
 // Tokens: close, minimize, maximize. "appmenu" is ignored because current GNOME versions don't display it in the
 // title bar, and unknown tokens are ignored too.
@@ -64,8 +70,6 @@ LinuxButtonLayout::LinuxButtonLayout(QObject* parent)
   _isGnome = desktops.contains(QLatin1String("GNOME"));
   _isKde = desktops.contains(QLatin1String("KDE"));
 
-  _layout = { {}, { CaptionButton::Close } };
-
   if (_isKde) {
     // KDE saves kwinrc with an atomic rename, so the file is added again after each change.
     _kwinrcPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QStringLiteral("/kwinrc");
@@ -81,12 +85,23 @@ LinuxButtonLayout::LinuxButtonLayout(QObject* parent)
     connect(&_watcher, &QFileSystemWatcher::fileChanged, &_debounceTimer, qOverload<>(&QTimer::start));
     _watcher.addPath(QFileInfo(_kwinrcPath).absolutePath());
     _watcher.addPath(_kwinrcPath);
-  } else {
+  }
+#ifdef QLEMENTINE_WITH_DBUS
+  else {
     QDBusConnection::sessionBus().connect(portalService, portalPath, portalInterface, QStringLiteral("SettingChanged"),
       this, SLOT(onSettingChanged(QString, QString, QDBusVariant)));
   }
+#endif
 
   refresh();
+}
+
+LinuxButtonLayout& LinuxButtonLayout::instance() {
+  static QPointer<LinuxButtonLayout> sharedInstance;
+  if (!sharedInstance) {
+    sharedInstance = new LinuxButtonLayout(QCoreApplication::instance());
+  }
+  return *sharedInstance;
 }
 
 CaptionButtonLayout LinuxButtonLayout::layout() const {
@@ -97,22 +112,31 @@ bool LinuxButtonLayout::isGnome() const {
   return _isGnome;
 }
 
+#ifdef QLEMENTINE_WITH_DBUS
 void LinuxButtonLayout::onSettingChanged(const QString& settingNamespace, const QString& key, const QDBusVariant&) {
   if (settingNamespace == gnomeNamespace && key == gnomeKey) {
     refresh();
   }
 }
+#endif
 
 void LinuxButtonLayout::refresh() {
-  // Default: close button only, on the right.
-  auto result = CaptionButtonLayout{ {}, { CaptionButton::Close } };
+  // Default: close button only on GNOME and KDE, minimize, maximize and close on other desktops. All on the right.
+  auto result = CaptionButtonLayout{};
+  if (_isGnome || _isKde) {
+    result.right = { CaptionButton::Close };
+  } else {
+    result.right = { CaptionButton::Minimize, CaptionButton::Maximize, CaptionButton::Close };
+  }
 
   if (_isKde) {
     QSettings settings(_kwinrcPath, QSettings::IniFormat);
     settings.beginGroup(QStringLiteral("org.kde.kdecoration2"));
     result.left = parseKdeButtons(settings.value(QStringLiteral("ButtonsOnLeft"), QStringLiteral("MS")).toString());
     result.right = parseKdeButtons(settings.value(QStringLiteral("ButtonsOnRight"), QStringLiteral("HIAX")).toString());
-  } else if (QDBusConnection::sessionBus().isConnected()) {
+  }
+#ifdef QLEMENTINE_WITH_DBUS
+  else if (QDBusConnection::sessionBus().isConnected()) {
     auto message = QDBusMessage::createMethodCall(portalService, portalPath, portalInterface, QStringLiteral("Read"));
     message << gnomeNamespace << gnomeKey;
     const auto reply = QDBusConnection::sessionBus().call(message, QDBus::Block, 250);
@@ -131,6 +155,7 @@ void LinuxButtonLayout::refresh() {
       }
     }
   }
+#endif
 
   if (QGuiApplication::isRightToLeft()) {
     std::swap(result.left, result.right);

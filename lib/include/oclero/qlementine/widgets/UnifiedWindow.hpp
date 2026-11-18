@@ -23,7 +23,7 @@ public:
 
   TitleBar* titleBar() const;
 
-  /// The window takes ownership of the widget.
+  /// The window takes ownership of the new widget and releases the previous one without deleting it.
   QWidget* centralWidget() const;
   void setCentralWidget(QWidget* widget);
 

@@ -97,7 +97,10 @@ UnifiedWindow::UnifiedWindow(QWidget* parent)
 }
 
 UnifiedWindow::~UnifiedWindow() {
+  // Order: the overlay first (it calls into the backend), then the backend (it filters events on the window and the
+  // title bar), then Qt deletes the remaining children.
   delete _impl->overlay;
+  _impl->overlay = nullptr;
   _impl->backend.reset();
 }
 
@@ -116,7 +119,8 @@ void UnifiedWindow::setCentralWidget(QWidget* widget) {
 
   if (_impl->centralWidget) {
     _impl->layout->removeWidget(_impl->centralWidget.data());
-    _impl->centralWidget->deleteLater();
+    _impl->centralWidget->hide();
+    _impl->centralWidget->setParent(nullptr);
   }
 
   _impl->centralWidget = widget;

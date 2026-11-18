@@ -305,8 +305,14 @@ public:
         return false;
       }
 
-      case WM_NCMOUSELEAVE: {
-        _trackingLeave = false;
+      case WM_NCMOUSELEAVE:
+      case WM_CAPTURECHANGED:
+      case WM_NCACTIVATE: {
+        if (msg->message == WM_NCMOUSELEAVE) {
+          _trackingLeave = false;
+        } else if (msg->message == WM_NCACTIVATE && msg->wParam) {
+          return false;
+        }
         _pressed.reset();
         _window.titleBar()->setPressedCaptionButton(std::nullopt);
         _window.titleBar()->setHoveredCaptionButton(std::nullopt);
@@ -319,6 +325,12 @@ public:
         const auto button = captionButtonFromHitTest(msg->wParam);
         if (!button) {
           return false;
+        }
+        // Double-clicking the system menu icon closes the window.
+        if (msg->message == WM_NCLBUTTONDBLCLK && *button == CaptionButton::Menu) {
+          _window.close();
+          *result = 0;
+          return true;
         }
         _pressed = button;
         _window.titleBar()->setHoveredCaptionButton(button);

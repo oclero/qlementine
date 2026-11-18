@@ -41,7 +41,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets Svg)
 if(APPLE)
   enable_language(OBJCXX)
 elseif(NOT WIN32)
-  find_package(Qt6 REQUIRED COMPONENTS DBus)
+  find_package(Qt6 OPTIONAL_COMPONENTS DBus)
 endif()
 qt_standard_project_setup(
   # REQUIRES 6.9.0

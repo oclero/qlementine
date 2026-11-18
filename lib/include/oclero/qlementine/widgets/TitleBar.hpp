@@ -52,6 +52,7 @@ public:
   Q_SLOT void setTitle(const QString& title);
 
   /// Widget displayed between the leading and trailing system areas, next to the title.
+  /// The title bar takes ownership of the new widget and releases the previous one without deleting it.
   QWidget* contentWidget() const;
   void setContentWidget(QWidget* widget);
 

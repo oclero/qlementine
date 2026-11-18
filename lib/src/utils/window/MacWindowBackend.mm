@@ -47,16 +47,19 @@ public:
       return;
     }
 
-    // Native window configuration. Qt may rewrite the style mask, so this is applied every time.
-    window.styleMask |= NSWindowStyleMaskFullSizeContentView;
-    window.titlebarAppearsTransparent = YES;
-    window.titleVisibility = NSWindowTitleHidden;
-    window.tabbingMode = NSWindowTabbingModeDisallowed;
-    if (@available(macOS 11.0, *)) {
-      window.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
+    // Native window configuration, done once per NSWindow and again if Qt rewrote the style mask.
+    if (_nsWindow != window || !(window.styleMask & NSWindowStyleMaskFullSizeContentView)) {
+      window.styleMask |= NSWindowStyleMaskFullSizeContentView;
+      window.titlebarAppearsTransparent = YES;
+      window.titleVisibility = NSWindowTitleHidden;
+      window.tabbingMode = NSWindowTabbingModeDisallowed;
+      if (@available(macOS 11.0, *)) {
+        window.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
+      }
+      _window.titleBar()->setCaptionButtonsVisible(false);
     }
 
-    // Notifications.
+    // Notifications and event filter, once per NSWindow.
     if (_nsWindow != window) {
       clearObservers();
       _nsWindow = window;
@@ -74,55 +77,13 @@ public:
                                                                                 object:window
                                                                                  queue:[NSOperationQueue mainQueue]
                                                                             usingBlock:^(NSNotification*) {
-                                                                              attachNativeWindow();
+                                                                              updateLayout();
                                                                             }]];
       }
+      _window.titleBar()->installEventFilter(this);
     }
 
-    // Used to re-center the traffic lights when the title bar height changes.
-    _window.titleBar()->installEventFilter(this);
-
-    _window.titleBar()->setCaptionButtonsVisible(false);
-
-    // Native fullscreen hides the traffic lights.
-    if (window.styleMask & NSWindowStyleMaskFullScreen) {
-      _window.titleBar()->setSystemInsets(0, 0);
-      return;
-    }
-
-    // The title bar is below the native one when the content does not extend under it, so it doesn't overlap the
-    // traffic lights and must not reserve space for them.
-    if (window.contentLayoutRect.size.height >= NSHeight(window.contentView.frame) - 0.5) {
-      _window.titleBar()->setSystemInsets(0, 0);
-      return;
-    }
-
-    // Vertically center the traffic lights in the title bar. They live in a private titlebar container view.
-    NSButton* closeButton = [window standardWindowButton:NSWindowCloseButton];
-    NSButton* minimizeButton = [window standardWindowButton:NSWindowMiniaturizeButton];
-    NSButton* zoomButton = [window standardWindowButton:NSWindowZoomButton];
-    const auto titleBarHeight = static_cast<CGFloat>(_window.titleBar()->height());
-    NSView* titlebarView = closeButton.superview;
-    NSView* container = titlebarView.superview;
-    if (titleBarHeight > 0 && container && container.superview) {
-      const NSRect parentBounds = container.superview.bounds;
-      const CGFloat containerY = container.superview.isFlipped ? 0 : parentBounds.size.height - titleBarHeight;
-      container.frame = NSMakeRect(0, containerY, parentBounds.size.width, titleBarHeight);
-      titlebarView.frame = container.bounds;
-      for (NSButton* button in @[ closeButton, minimizeButton, zoomButton ]) {
-        if (button && button.superview == titlebarView) {
-          [button setFrameOrigin:NSMakePoint(button.frame.origin.x, (titleBarHeight - button.frame.size.height) / 2)];
-        }
-      }
-    }
-
-    // Space reserved for the traffic lights, read from the actual button position.
-    int leftInset = 0;
-    if (zoomButton) {
-      const NSRect zoomFrame = [zoomButton convertRect:zoomButton.bounds toView:nil];
-      leftInset = static_cast<int>(std::ceil(NSMaxX(zoomFrame))) + 8;
-    }
-    _window.titleBar()->setSystemInsets(leftInset, 0);
+    updateLayout();
   }
 
   void handleEvent(QEvent* evt) override {
@@ -156,12 +117,63 @@ public:
 protected:
   bool eventFilter(QObject* watched, QEvent* evt) override {
     if (watched == _window.titleBar() && evt->type() == QEvent::Resize) {
-      attachNativeWindow();
+      updateLayout();
     }
     return false;
   }
 
 private:
+  void updateLayout() {
+    NSWindow* window = _nsWindow;
+    if (!window) {
+      return;
+    }
+
+    // Native fullscreen hides the traffic lights.
+    int leftInset = 0;
+    if (!(window.styleMask & NSWindowStyleMaskFullScreen) &&
+        window.contentLayoutRect.size.height < NSHeight(window.contentView.frame) - 0.5) {
+      // Vertically center the traffic lights in the title bar. They live in a private titlebar container view.
+      NSButton* closeButton = [window standardWindowButton:NSWindowCloseButton];
+      NSButton* zoomButton = [window standardWindowButton:NSWindowZoomButton];
+      const auto titleBarHeight = static_cast<CGFloat>(_window.titleBar()->height());
+      NSView* titlebarView = closeButton.superview;
+      NSView* container = titlebarView.superview;
+      if (titleBarHeight > 0 && container && container.superview) {
+        const NSRect parentBounds = container.superview.bounds;
+        const CGFloat containerY = container.superview.isFlipped ? 0 : parentBounds.size.height - titleBarHeight;
+        const NSRect containerFrame = NSMakeRect(0, containerY, parentBounds.size.width, titleBarHeight);
+        if (!NSEqualRects(container.frame, containerFrame)) {
+          container.frame = containerFrame;
+        }
+        if (!NSEqualRects(titlebarView.frame, container.bounds)) {
+          titlebarView.frame = container.bounds;
+        }
+        for (NSButton* button in @[
+               closeButton,
+               [window standardWindowButton:NSWindowMiniaturizeButton],
+               zoomButton,
+             ]) {
+          const CGFloat buttonY = (titleBarHeight - button.frame.size.height) / 2;
+          if (button && button.superview == titlebarView && std::abs(button.frame.origin.y - buttonY) > 0.01) {
+            [button setFrameOrigin:NSMakePoint(button.frame.origin.x, buttonY)];
+          }
+        }
+      }
+
+      // Space reserved for the traffic lights, read from the actual button position.
+      if (zoomButton) {
+        const NSRect zoomFrame = [zoomButton convertRect:zoomButton.bounds toView:nil];
+        leftInset = static_cast<int>(std::ceil(NSMaxX(zoomFrame))) + 8;
+      }
+    }
+
+    if (leftInset != _leftInset) {
+      _leftInset = leftInset;
+      _window.titleBar()->setSystemInsets(leftInset, 0);
+    }
+  }
+
   void clearObservers() {
     for (id observer in _observers) {
       [[NSNotificationCenter defaultCenter] removeObserver:observer];
@@ -171,6 +183,7 @@ private:
 
   NSMutableArray* _observers;
   NSWindow* __weak _nsWindow = nil;
+  int _leftInset = -1;
 };
 } // namespace
 

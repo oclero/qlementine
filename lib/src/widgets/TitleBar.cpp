@@ -12,6 +12,7 @@
 
 #include "TitleBarRenderer.hpp"
 
+#include <QApplication>
 #include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
@@ -158,6 +159,7 @@ struct TitleBar::Impl {
   int rightInset{ 0 };
   std::optional<CaptionButton> hoveredButton;
   std::optional<CaptionButton> pressedButton;
+  std::optional<QPoint> dragStartPos;
   bool maximized{ false };
   bool active{ true };
 };
@@ -217,7 +219,8 @@ void TitleBar::setContentWidget(QWidget* widget) {
 
   if (_impl->contentWidget) {
     _impl->container->layout()->removeWidget(_impl->contentWidget.data());
-    _impl->contentWidget->deleteLater();
+    _impl->contentWidget->hide();
+    _impl->contentWidget->setParent(nullptr);
   }
 
   _impl->contentWidget = widget;
@@ -473,8 +476,8 @@ void TitleBar::mousePressEvent(QMouseEvent* evt) {
       return;
     }
     if (isDragArea(pos)) {
+      _impl->dragStartPos = pos;
       evt->accept();
-      Q_EMIT moveRequested();
       return;
     }
   } else if (evt->button() == Qt::RightButton && isDragArea(pos)) {
@@ -486,11 +489,22 @@ void TitleBar::mousePressEvent(QMouseEvent* evt) {
 }
 
 void TitleBar::mouseMoveEvent(QMouseEvent* evt) {
-  setHoveredCaptionButton(captionButtonAt(evt->position().toPoint()));
+  const auto pos = evt->position().toPoint();
+  setHoveredCaptionButton(captionButtonAt(pos));
+
+  // The move starts once the cursor has left the press position, so that a double-click stays possible.
+  if (_impl->dragStartPos.has_value() && (evt->buttons() & Qt::LeftButton)
+      && (pos - _impl->dragStartPos.value()).manhattanLength() > QApplication::startDragDistance()) {
+    _impl->dragStartPos.reset();
+    evt->accept();
+    Q_EMIT moveRequested();
+    return;
+  }
   QWidget::mouseMoveEvent(evt);
 }
 
 void TitleBar::mouseReleaseEvent(QMouseEvent* evt) {
+  _impl->dragStartPos.reset();
   if (evt->button() == Qt::LeftButton && _impl->pressedButton.has_value()) {
     const auto pressedButton = _impl->pressedButton.value();
     setPressedCaptionButton(std::nullopt);
@@ -535,6 +549,7 @@ void TitleBar::mouseDoubleClickEvent(QMouseEvent* evt) {
 
 void TitleBar::leaveEvent(QEvent* evt) {
   QWidget::leaveEvent(evt);
+  _impl->dragStartPos.reset();
   setHoveredCaptionButton(std::nullopt);
 }
 } // namespace oclero::qlementine
