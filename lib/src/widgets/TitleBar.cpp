@@ -14,6 +14,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPointer>
+#include <QTabBar>
 
 #include <algorithm>
 #include <functional>
@@ -305,6 +306,14 @@ bool TitleBar::isDragArea(const QPoint& pos) const {
         }
       }
     }
+
+    // Tab bars: only the empty space is draggable.
+    for (const auto* widget = child; widget && widget != container; widget = widget->parentWidget()) {
+      if (const auto* tabBar = qobject_cast<const QTabBar*>(widget)) {
+        return child == tabBar && tabBar->tabAt(tabBar->mapFrom(this, pos)) == -1;
+      }
+    }
+
     return child == nullptr || qobject_cast<const QLabel*>(child) != nullptr;
   }
 
@@ -365,7 +374,7 @@ void TitleBar::setPressedCaptionButton(std::optional<CaptionButton> button) {
 }
 
 QSize TitleBar::minimumSizeHint() const {
-  return QSize(_impl->leftInset + _impl->rightInset + _impl->buttonsWidth(), _impl->renderer->barHeight());
+  return QSize(_impl->leftInset + _impl->rightInset + _impl->buttonsWidth(), _impl->renderer->barHeight(_impl->theme()));
 }
 
 QSize TitleBar::sizeHint() const {

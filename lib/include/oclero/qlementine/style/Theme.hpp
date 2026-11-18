@@ -194,6 +194,7 @@ public: // Values.
   int tabBarPaddingTop{ 4 };
   int tabBarTabMaxWidth{ 0 };
   int tabBarTabMinWidth{ 0 };
+  int titleBarHeight{ 32 };
 
   bool fontSizeWasOverriden{ false };
   bool fontSizeMonospaceWasOverriden{ false };

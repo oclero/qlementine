@@ -23,8 +23,8 @@ constexpr auto buttonWidth = 46;
 
 class QlementineTitleBarRenderer final : public TitleBarRenderer {
 public:
-  int barHeight() const override {
-    return barHeightValue;
+  int barHeight(const Theme& theme) const override {
+    return theme.titleBarHeight;
   }
 
   QSize captionButtonSize(CaptionButton) const override {

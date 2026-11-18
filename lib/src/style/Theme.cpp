@@ -505,6 +505,7 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarPaddingTop);
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMaxWidth);
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMinWidth);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, titleBarHeight);
 
     tabBarTabMaxWidth = std::max(0, tabBarTabMaxWidth);
     tabBarTabMinWidth = std::max(0, tabBarTabMinWidth);
@@ -654,6 +655,7 @@ QJsonDocument Theme::toJson() const {
   SET_INT(jsonObj, tabBarPaddingTop);
   SET_INT(jsonObj, tabBarTabMaxWidth);
   SET_INT(jsonObj, tabBarTabMinWidth);
+  SET_INT(jsonObj, titleBarHeight);
 
   QJsonDocument jsonDoc;
   jsonDoc.setObject(jsonObj);
@@ -777,6 +779,7 @@ bool Theme::operator==(const Theme& other) const {
     && scrollBarThicknessSmall == other.scrollBarThicknessSmall
     && scrollBarMargin == other.scrollBarMargin
     && tabBarPaddingTop == other.tabBarPaddingTop
+    && titleBarHeight == other.titleBarHeight
     ;
   // clang-format on
 }

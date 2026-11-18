@@ -300,6 +300,15 @@ foreach(_target IN LISTS _targets_to_build)
       target_link_libraries(${_target} PRIVATE dwmapi user32 shell32)
     else()
       target_link_libraries(${_target} PRIVATE Qt::DBus)
+
+      find_package(PkgConfig QUIET)
+      if(PkgConfig_FOUND)
+        pkg_check_modules(XCB QUIET IMPORTED_TARGET xcb)
+        if(XCB_FOUND)
+          target_link_libraries(${_target} PRIVATE PkgConfig::XCB)
+          target_compile_definitions(${_target} PRIVATE QLEMENTINE_WITH_XCB)
+        endif()
+      endif()
     endif()
 
     target_compile_options(${_target}

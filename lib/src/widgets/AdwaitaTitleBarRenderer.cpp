@@ -13,7 +13,8 @@
 namespace oclero::qlementine {
 namespace {
 // Metrics follow libadwaita: 47px header bar, 24px circular window controls, bold title.
-// The colors, the corner radius and the opacities are approximations of libadwaita's stylesheet.
+// Colors come from libadwaita's CSS variables documentation (headerbar-bg/fg/backdrop/shade-color).
+// The corner radius, the circle opacities and the backdrop title opacity are approximations.
 constexpr auto barHeightDp = 47;
 constexpr auto buttonDiameter = 24;
 constexpr auto buttonSpacing = 6;
@@ -39,7 +40,7 @@ QColor foregroundColor(bool dark, bool windowActive) {
 
 class AdwaitaTitleBarRenderer final : public TitleBarRenderer {
 public:
-  int barHeight() const override {
+  int barHeight(const Theme&) const override {
     return barHeightDp;
   }
 
@@ -59,9 +60,9 @@ public:
   void paintBackground(
     QPainter& painter, const QRect& rect, const Theme&, bool windowActive, bool maximized) const override {
     const auto dark = isDarkScheme();
-    const auto background = windowActive ? (dark ? QColor(0x30, 0x30, 0x30) : QColor(0xeb, 0xeb, 0xed))
-                                         : (dark ? QColor(0x24, 0x24, 0x24) : QColor(0xfa, 0xfa, 0xfb));
-    const auto shade = dark ? QColor(0, 0, 0, 92) : QColor(0, 0, 6, 18);
+    const auto background = windowActive ? (dark ? QColor(0x2e, 0x2e, 0x32) : QColor(0xff, 0xff, 0xff))
+                                         : (dark ? QColor(0x22, 0x22, 0x26) : QColor(0xfa, 0xfa, 0xfb));
+    const auto shade = dark ? QColor(0, 0, 6, 92) : QColor(0, 0, 6, 31);
 
     painter.save();
     painter.setRenderHint(QPainter::Antialiasing, true);

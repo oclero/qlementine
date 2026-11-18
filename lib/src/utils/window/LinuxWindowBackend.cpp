@@ -18,6 +18,7 @@
 #if defined(QLEMENTINE_WITH_XCB) && __has_include(<xcb/xcb.h>)
 #  include <QtGui/qguiapplication_platform.h>
 #  include <xcb/xcb.h>
+#  include <cstdint>
 #  include <cstdlib>
 #  include <cstring>
 #  define QLEMENTINE_LINUX_XCB
@@ -27,8 +28,8 @@ namespace oclero::qlementine {
 namespace {
 constexpr auto gnomeShadowMargin = 24;
 constexpr auto defaultShadowMargin = 16;
-constexpr auto gnomeCornerRadius = 12.;
-constexpr auto defaultCornerRadius = 8.;
+constexpr auto gnomeCornerRadius = 12;
+constexpr auto defaultCornerRadius = 8;
 constexpr auto resizeCornerSize = 16;
 
 class LinuxWindowBackend final
@@ -67,6 +68,13 @@ public:
     }
   }
 
+  int cornerRadius() const override {
+    if (_window.isMaximized() || _window.isFullScreen()) {
+      return 0;
+    }
+    return _buttonLayout.isGnome() ? gnomeCornerRadius : defaultCornerRadius;
+  }
+
   bool paintFrame(QPainter& painter) override {
     const auto margins = _window.contentsMargins();
     const auto background = _window.palette().color(QPalette::Window);
@@ -81,7 +89,7 @@ public:
       return true;
     }
 
-    const auto radius = _buttonLayout.isGnome() ? gnomeCornerRadius : defaultCornerRadius;
+    const auto radius = static_cast<double>(cornerRadius());
     const auto frame = QRectF(_window.rect().marginsRemoved(margins));
 
     // Soft shadow, slightly offset downwards.
@@ -210,7 +218,7 @@ private:
       const uint32_t extents[4] = { pixels, pixels, pixels, pixels };
       auto* connection = x11->connection();
       const char atomName[] = "_GTK_FRAME_EXTENTS";
-      const auto atomCookie = xcb_intern_atom(connection, 0, static_cast<uint16_t>(strlen(atomName)), atomName);
+      const auto atomCookie = xcb_intern_atom(connection, 0, static_cast<uint16_t>(std::strlen(atomName)), atomName);
       auto* atomReply = xcb_intern_atom_reply(connection, atomCookie, nullptr);
       if (atomReply) {
         xcb_change_property(connection, XCB_PROP_MODE_REPLACE, static_cast<xcb_window_t>(handle->winId()),

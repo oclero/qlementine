@@ -41,6 +41,12 @@ public:
     return false;
   }
 
+  /// Radius, in device-independent pixels, of the window corners drawn by paintFrame(). 0 means square corners.
+  /// The window uses it to clip its content (title bar and central widget) to the rounded shape.
+  virtual int cornerRadius() const {
+    return 0;
+  }
+
   /// Starts a system window move. The default implementation uses QWindow::startSystemMove().
   virtual void startMove();
 

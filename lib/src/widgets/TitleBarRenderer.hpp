@@ -24,8 +24,8 @@ class TitleBarRenderer {
 public:
   virtual ~TitleBarRenderer() = default;
 
-  virtual int barHeight() const = 0;
-  virtual QSize captionButtonSize(CaptionButton button) const = 0;
+  virtual int barHeight(const Theme& theme) const = 0;
+  virtual QSize captionButtonSize(CaptionButton button, const Theme& theme) const = 0;
   virtual int captionButtonSpacing() const = 0;
   /// Outer margin between the bar edges and the first/last caption button.
   virtual QMargins captionButtonMargins() const = 0;

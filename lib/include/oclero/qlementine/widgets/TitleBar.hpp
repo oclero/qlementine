@@ -73,6 +73,7 @@ public:
 
   /// Marks a widget placed in the title bar as interactive (true) or as a part of the draggable area (false).
   /// By default, QLabel and the content widget container are draggable and every other widget is interactive.
+  /// A QTabBar is draggable only where there is no tab and not over its child buttons. Overrides always win.
   void setHitTestVisible(QWidget* widget, bool visible);
 
   /// Whether the point (in title bar coordinates) can be used to move the window.

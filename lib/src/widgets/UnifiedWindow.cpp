@@ -7,14 +7,54 @@
 
 #include <QEvent>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPointer>
 #include <QVBoxLayout>
 
 namespace oclero::qlementine {
+namespace {
+// Transparent-for-mouse overlay that re-draws the frame ring (corners and 1px border) on top of the content.
+class FrameOverlay : public QWidget {
+public:
+  FrameOverlay(QWidget* parent, WindowBackend& backend)
+    : QWidget(parent)
+    , _backend(backend) {
+    setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    setAttribute(Qt::WA_NoSystemBackground, true);
+  }
+
+protected:
+  void paintEvent(QPaintEvent*) override {
+    const auto radius = _backend.cornerRadius();
+    const auto frame = QRectF(rect().marginsRemoved(parentWidget()->contentsMargins()));
+
+    // Ring between the frame rectangle and the rounded rectangle inset by 1px.
+    auto inner = QPainterPath{};
+    inner.addRoundedRect(frame.adjusted(1, 1, -1, -1), radius - 1, radius - 1);
+    auto ring = QPainterPath{};
+    ring.addRect(frame);
+    ring = ring.subtracted(inner);
+
+    // Erase the content in the ring, then let the backend draw the shadow, the border and the corners again.
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setClipPath(ring);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.fillRect(rect(), Qt::transparent);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    _backend.paintFrame(painter);
+  }
+
+private:
+  WindowBackend& _backend;
+};
+} // namespace
+
 struct UnifiedWindow::Impl {
   TitleBar* titleBar{ nullptr };
   QVBoxLayout* layout{ nullptr };
   QPointer<QWidget> centralWidget;
+  FrameOverlay* overlay{ nullptr };
   std::unique_ptr<WindowBackend> backend;
   bool shown{ false };
 };
@@ -32,6 +72,8 @@ UnifiedWindow::UnifiedWindow(QWidget* parent)
   // Native window configuration, before anything is shown.
   _impl->backend = createWindowBackend(*this);
   _impl->backend->prepareWindow();
+  _impl->overlay = new FrameOverlay(this, *_impl->backend);
+  _impl->overlay->hide();
 
   // Title bar requests.
   connect(_impl->titleBar, &TitleBar::closeRequested, this, &QWidget::close);
@@ -55,6 +97,7 @@ UnifiedWindow::UnifiedWindow(QWidget* parent)
 }
 
 UnifiedWindow::~UnifiedWindow() {
+  delete _impl->overlay;
   _impl->backend.reset();
 }
 
@@ -79,6 +122,7 @@ void UnifiedWindow::setCentralWidget(QWidget* widget) {
   _impl->centralWidget = widget;
   if (widget) {
     _impl->layout->addWidget(widget, 1);
+    _impl->overlay->raise();
   }
 }
 
@@ -104,6 +148,13 @@ bool UnifiedWindow::event(QEvent* evt) {
     }
 
     _impl->backend->handleEvent(evt);
+
+    // Rounded corners: the overlay clips the content to the rounded shape when the backend asks for it.
+    if (evt->type() == QEvent::Resize || evt->type() == QEvent::WindowStateChange || evt->type() == QEvent::Show) {
+      _impl->overlay->setGeometry(rect());
+      _impl->overlay->setVisible(_impl->backend->cornerRadius() > 0);
+      _impl->overlay->raise();
+    }
   }
 
   return result;
