@@ -13,6 +13,11 @@
   "backgroundColorWorkspace": "#17181c",
   "backgroundColorTabBar": "#1e2026",
 
+  "titleBarBackgroundColor": "backgroundColorMain2",
+  "titleBarBackgroundColorInactive": "backgroundColorMain1",
+  "titleBarForegroundColor": "secondaryColor",
+  "titleBarBorderColor": "borderColor",
+
   "borderColor": "#40485a",
   "borderColorHovered": "#4a5670",
   "borderColorPressed": "#5b6e98",

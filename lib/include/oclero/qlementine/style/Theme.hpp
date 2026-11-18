@@ -139,6 +139,11 @@ public: // Values.
   QColor borderColorDisabled{ 0xe9e9e9 };
   QColor borderColorTransparent{ QRgba64::fromArgb32(0x00d3d3d3) };
 
+  QColor titleBarBackgroundColor{ 0xf3f3f3 };
+  QColor titleBarBackgroundColorInactive{ 0xffffff };
+  QColor titleBarForegroundColor{ 0x404040 };
+  QColor titleBarBorderColor{ 0xd3d3d3 };
+
   QColor semiTransparentColor1{ QRgba64::fromArgb32(0x0000000) };
   QColor semiTransparentColor2{ QRgba64::fromArgb32(0x19000000) };
   QColor semiTransparentColor3{ QRgba64::fromArgb32(0x21000000) };
