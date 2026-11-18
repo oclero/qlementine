@@ -29,6 +29,7 @@
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
 #include <oclero/qlementine/widgets/NotificationBadge.hpp>
+#include <oclero/qlementine/widgets/UnifiedWindow.hpp>
 
 #include <QActionGroup>
 #include <QApplication>
@@ -1371,6 +1372,33 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     dialog->show();
   }
 
+  void setupUI_unifiedWindow() {
+    auto* button = new QPushButton("Open UnifiedWindow", windowContent);
+    windowContentLayout->addWidget(button);
+    QObject::connect(button, &QPushButton::clicked, button, []() {
+      auto* unifiedWindow = new UnifiedWindow();
+      unifiedWindow->setAttribute(Qt::WA_DeleteOnClose);
+      unifiedWindow->setWindowTitle("UnifiedWindow");
+
+      // Menu bar hosted in the title bar.
+      auto* menuBar = new QMenuBar();
+      menuBar->setNativeMenuBar(false);
+      auto* fileMenu = menuBar->addMenu("&File");
+      fileMenu->addAction("&Close", unifiedWindow, &QWidget::close);
+      menuBar->addMenu("&Edit")->addAction("&Undo");
+      unifiedWindow->titleBar()->setContentWidget(menuBar);
+
+      // Themed placeholder.
+      auto* content = new QWidget();
+      auto* contentLayout = new QVBoxLayout(content);
+      contentLayout->addWidget(new Label("Central widget", TextRole::H3, content), 0, Qt::AlignCenter);
+      unifiedWindow->setCentralWidget(content);
+
+      unifiedWindow->resize(640, 400);
+      unifiedWindow->show();
+    });
+  }
+
   void setupUI_notificationBadge() {
     {
       auto* button = new QPushButton("Button", windowContent);
@@ -2026,6 +2054,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_loadingSpinner();
     // _impl->setupUI_aboutDialog();
     // _impl->setupUI_notificationBadge();
+    // _impl->setupUI_unifiedWindow();
 
     // _impl->setupUI_fontMetricsTests();
     // _impl->setupUI_blur();
