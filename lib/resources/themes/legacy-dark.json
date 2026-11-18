@@ -11,6 +11,11 @@
   "backgroundColorMain4": "#414141",
   "backgroundColorTabBar": "#1e1e1e",
   "backgroundColorWorkspace": "#171717",
+
+  "titleBarForegroundColor": "secondaryColor",
+  "titleBarBorderColor": "borderColor",
+  "titleBarHeight": 32,
+
   "borderColor": "#4b4b4b",
   "borderColorDisabled": "#444444",
   "borderColorHovered": "#717171",
