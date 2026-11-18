@@ -410,8 +410,6 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundDisabled);
     secondaryColorForegroundTransparent = colorWithAlpha(secondaryColorForeground, 0);
 
-    TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarBackgroundColor);
-    TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarBackgroundColorInactive);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarForegroundColor);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarBorderColor);
 
@@ -602,8 +600,6 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, borderColorPressed);
   SET_COLOR(jsonObj, borderColorDisabled);
 
-  SET_COLOR(jsonObj, titleBarBackgroundColor);
-  SET_COLOR(jsonObj, titleBarBackgroundColorInactive);
   SET_COLOR(jsonObj, titleBarForegroundColor);
   SET_COLOR(jsonObj, titleBarBorderColor);
 
@@ -741,8 +737,6 @@ bool Theme::operator==(const Theme& other) const {
     && borderColorPressed == other.borderColorPressed
     && borderColorDisabled == other.borderColorDisabled
 
-    && titleBarBackgroundColor == other.titleBarBackgroundColor
-    && titleBarBackgroundColorInactive == other.titleBarBackgroundColorInactive
     && titleBarForegroundColor == other.titleBarForegroundColor
     && titleBarBorderColor == other.titleBarBorderColor
 

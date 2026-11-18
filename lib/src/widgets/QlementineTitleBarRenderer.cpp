@@ -39,8 +39,8 @@ public:
   }
 
   void paintBackground(
-    QPainter& painter, const QRect& rect, const Theme& theme, bool windowActive, bool /*maximized*/) const override {
-    painter.fillRect(rect, windowActive ? theme.titleBarBackgroundColor : theme.titleBarBackgroundColorInactive);
+    QPainter& painter, const QRect& rect, const Theme& theme, bool /*windowActive*/, bool /*maximized*/) const override {
+    painter.fillRect(rect, theme.backgroundColorMain1);
 
     // Bottom border.
     painter.fillRect(QRect(rect.left(), rect.bottom() + 1 - theme.borderWidth, rect.width(), theme.borderWidth),

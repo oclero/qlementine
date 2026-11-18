@@ -180,8 +180,6 @@ struct ThemeEditor::Impl {
 
   ColorEditor* focusColorEditor{};
 
-  ColorEditor* titleBarBackgroundColorEditor{};
-  ColorEditor* titleBarBackgroundColorInactiveEditor{};
   ColorEditor* titleBarForegroundColorEditor{};
   ColorEditor* titleBarBorderColorEditor{};
   LineEdit* titleBarHeightEditor{};
@@ -378,8 +376,6 @@ struct ThemeEditor::Impl {
     // Title Bar Color.
     ADD_TITLE("Title Bar Color");
     ADD_DESCRIPTION("Used to draw the title bar of a UnifiedWindow.");
-    ADD_COLOR_EDITOR(titleBarBackgroundColor, "");
-    ADD_COLOR_EDITOR(titleBarBackgroundColorInactive, "Background when the window is inactive.");
     ADD_COLOR_EDITOR(titleBarForegroundColor, "");
     ADD_COLOR_EDITOR(titleBarBorderColor, "");
     ADD_INT_EDITOR(titleBarHeight, "Height of the title bar, in pixels.");
@@ -495,8 +491,6 @@ struct ThemeEditor::Impl {
     UPDATE_COLOR_EDITOR(borderColorPressed);
     UPDATE_COLOR_EDITOR(borderColorDisabled);
 
-    UPDATE_COLOR_EDITOR(titleBarBackgroundColor);
-    UPDATE_COLOR_EDITOR(titleBarBackgroundColorInactive);
     UPDATE_COLOR_EDITOR(titleBarForegroundColor);
     UPDATE_COLOR_EDITOR(titleBarBorderColor);
     UPDATE_INT_EDITOR(titleBarHeight);

@@ -13,8 +13,6 @@
   "backgroundColorWorkspace": "#17181c",
   "backgroundColorTabBar": "#1e2026",
 
-  "titleBarBackgroundColor": "backgroundColorMain2",
-  "titleBarBackgroundColorInactive": "backgroundColorMain1",
   "titleBarForegroundColor": "secondaryColor",
   "titleBarBorderColor": "borderColor",
   "titleBarHeight": 32,

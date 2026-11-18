@@ -17,8 +17,8 @@ namespace {
 // The corner radius and the circle opacities are approximations.
 constexpr auto barHeightDp = 38;
 constexpr auto buttonDiameter = 24;
-constexpr auto buttonSpacing = 6;
-constexpr auto barMargin = 6;
+constexpr auto buttonSpacing = 12;
+constexpr auto barMargin = 10;
 constexpr auto topCornerRadius = 12.;
 constexpr auto titlePointSize = 11.;
 
@@ -50,8 +50,8 @@ public:
   }
 
   void paintBackground(
-    QPainter& painter, const QRect& rect, const Theme& theme, bool windowActive, bool maximized) const override {
-    const auto& background = windowActive ? theme.titleBarBackgroundColor : theme.titleBarBackgroundColorInactive;
+    QPainter& painter, const QRect& rect, const Theme& theme, bool /*windowActive*/, bool maximized) const override {
+    const auto& background = theme.backgroundColorMain1;
 
     painter.save();
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -90,15 +90,13 @@ public:
     painter.save();
     painter.setRenderHint(QPainter::Antialiasing, true);
 
-    // Circle background.
-    if (state.pressed || state.hovered) {
-      auto circle = theme.titleBarForegroundColor;
-      circle.setAlphaF(state.pressed ? .15 : .1);
-      painter.setPen(Qt::NoPen);
-      painter.setBrush(circle);
-      const auto diameter = qMin(rect.width(), rect.height());
-      painter.drawEllipse(center, diameter / 2., diameter / 2.);
-    }
+    // Circle background, always visible like libadwaita.
+    auto circle = theme.titleBarForegroundColor;
+    circle.setAlphaF(state.pressed ? .2 : (state.hovered ? .15 : .1));
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(circle);
+    const auto diameter = qMin(rect.width(), rect.height());
+    painter.drawEllipse(center, diameter / 2., diameter / 2.);
 
     // Glyph.
     painter.setPen(QPen(foreground, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
