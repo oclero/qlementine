@@ -3,31 +3,29 @@
 
 #include "TitleBarRenderer.hpp"
 
+#include <oclero/qlementine/style/Theme.hpp>
+
 #include <QFontMetrics>
-#include <QGuiApplication>
 #include <QPainter>
 #include <QPainterPath>
-#include <QPalette>
-#include <QStyleHints>
 
 namespace oclero::qlementine {
 namespace {
-// Metrics follow libadwaita: 47px header bar, 24px circular window controls, bold title.
+// Metrics follow libadwaita (24px circular window controls, bold title), with a header bar more compact than the 47px
+// of libadwaita.
 // Colors come from libadwaita's CSS variables documentation (headerbar-bg/fg/backdrop/shade-color).
 // The corner radius, the circle opacities and the backdrop title opacity are approximations.
-constexpr auto barHeightDp = 47;
+constexpr auto barHeightDp = 38;
 constexpr auto buttonDiameter = 24;
 constexpr auto buttonSpacing = 6;
 constexpr auto barMargin = 6;
 constexpr auto topCornerRadius = 12.;
 constexpr auto titlePointSize = 11.;
 
-bool isDarkScheme() {
-  const auto scheme = QGuiApplication::styleHints()->colorScheme();
-  if (scheme != Qt::ColorScheme::Unknown) {
-    return scheme == Qt::ColorScheme::Dark;
-  }
-  return QGuiApplication::palette().color(QPalette::Window).lightness() < 128;
+// Follows the Qlementine theme of the application, not the system color scheme, so that switching the theme in the
+// application updates the title bar.
+bool isDarkTheme(const Theme& theme) {
+  return theme.backgroundColorMain1.lightness() < 128;
 }
 
 QColor foregroundColor(bool dark, bool windowActive) {
@@ -58,8 +56,8 @@ public:
   }
 
   void paintBackground(
-    QPainter& painter, const QRect& rect, const Theme&, bool windowActive, bool maximized) const override {
-    const auto dark = isDarkScheme();
+    QPainter& painter, const QRect& rect, const Theme& theme, bool windowActive, bool maximized) const override {
+    const auto dark = isDarkTheme(theme);
     const auto background = windowActive ? (dark ? QColor(0x2e, 0x2e, 0x32) : QColor(0xff, 0xff, 0xff))
                                          : (dark ? QColor(0x22, 0x22, 0x26) : QColor(0xfa, 0xfa, 0xfb));
     const auto shade = dark ? QColor(0, 0, 6, 92) : QColor(0, 0, 6, 31);
@@ -81,21 +79,21 @@ public:
   }
 
   void paintTitle(
-    QPainter& painter, const QRect& rect, const QString& title, const Theme&, bool windowActive) const override {
+    QPainter& painter, const QRect& rect, const QString& title, const Theme& theme, bool windowActive) const override {
     painter.save();
     auto font = painter.font();
     font.setWeight(QFont::Bold);
     font.setPointSizeF(titlePointSize);
     painter.setFont(font);
-    painter.setPen(foregroundColor(isDarkScheme(), windowActive));
+    painter.setPen(foregroundColor(isDarkTheme(theme), windowActive));
     painter.drawText(
       rect, Qt::AlignCenter, QFontMetrics(font).elidedText(title, Qt::ElideRight, rect.width()));
     painter.restore();
   }
 
   void paintCaptionButton(QPainter& painter, const QRect& rect, CaptionButton button, const CaptionButtonState& state,
-    const Theme&) const override {
-    const auto dark = isDarkScheme();
+    const Theme& theme) const override {
+    const auto dark = isDarkTheme(theme);
     const auto foreground = foregroundColor(dark, state.windowActive);
     const auto center = QRectF(rect).center();
 
