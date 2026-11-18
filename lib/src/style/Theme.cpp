@@ -410,6 +410,9 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundDisabled);
     secondaryColorForegroundTransparent = colorWithAlpha(secondaryColorForeground, 0);
 
+    TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarForegroundColor);
+    TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarBorderColor);
+
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor1);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor2);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor3);
@@ -500,6 +503,7 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarPaddingTop);
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMaxWidth);
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMinWidth);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, titleBarHeight);
 
     tabBarTabMaxWidth = std::max(0, tabBarTabMaxWidth);
     tabBarTabMinWidth = std::max(0, tabBarTabMinWidth);
@@ -596,6 +600,9 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, borderColorPressed);
   SET_COLOR(jsonObj, borderColorDisabled);
 
+  SET_COLOR(jsonObj, titleBarForegroundColor);
+  SET_COLOR(jsonObj, titleBarBorderColor);
+
   SET_COLOR(jsonObj, semiTransparentColor1);
   SET_COLOR(jsonObj, semiTransparentColor2);
   SET_COLOR(jsonObj, semiTransparentColor3);
@@ -644,6 +651,7 @@ QJsonDocument Theme::toJson() const {
   SET_INT(jsonObj, tabBarPaddingTop);
   SET_INT(jsonObj, tabBarTabMaxWidth);
   SET_INT(jsonObj, tabBarTabMinWidth);
+  SET_INT(jsonObj, titleBarHeight);
 
   QJsonDocument jsonDoc;
   jsonDoc.setObject(jsonObj);
@@ -729,6 +737,9 @@ bool Theme::operator==(const Theme& other) const {
     && borderColorPressed == other.borderColorPressed
     && borderColorDisabled == other.borderColorDisabled
 
+    && titleBarForegroundColor == other.titleBarForegroundColor
+    && titleBarBorderColor == other.titleBarBorderColor
+
     && useSystemFonts == other.useSystemFonts
 
     && animationDuration == other.animationDuration
@@ -762,6 +773,7 @@ bool Theme::operator==(const Theme& other) const {
     && scrollBarThicknessSmall == other.scrollBarThicknessSmall
     && scrollBarMargin == other.scrollBarMargin
     && tabBarPaddingTop == other.tabBarPaddingTop
+    && titleBarHeight == other.titleBarHeight
     ;
   // clang-format on
 }
