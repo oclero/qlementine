@@ -20,6 +20,7 @@
 #include <oclero/qlementine/widgets/RoundedFocusFrame.hpp>
 #include <oclero/qlementine/widgets/AbstractItemListWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
+#include <oclero/qlementine/widgets/TitleBar.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
@@ -68,6 +69,15 @@
 #include <mutex>
 
 namespace oclero::qlementine {
+
+static bool isInTitleBar(const QWidget* widget) {
+  for (const auto* ancestor = widget; ancestor; ancestor = ancestor->parentWidget()) {
+    if (qobject_cast<const TitleBar*>(ancestor)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 static const QStyleOptionButton* buttonStyleOption(const QStyleOption* opt) {
   if (const auto* roundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
@@ -4459,7 +4469,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // ToolBar.
     case PM_ToolBarFrameWidth:
-      return _impl->theme.borderWidth;
+      return isInTitleBar(w) ? 0 : _impl->theme.borderWidth;
     case PM_ToolBarHandleExtent:
       return _impl->theme.spacing / 2;
     case PM_ToolBarItemSpacing:
