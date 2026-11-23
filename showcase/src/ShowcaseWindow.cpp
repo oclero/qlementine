@@ -443,8 +443,8 @@ struct ShowcaseWindow::Impl {
   void setupLeftPanel() {
     auto* widget = new QWidget(&owner);
     leftPanel = widget;
-    leftPanel->setMinimumWidth(200);
-    leftPanel->setMaximumWidth(400);
+    leftPanel->setFixedWidth(260);
+    leftPanel->setAutoFillBackground(true);
 
     auto* layout = new QVBoxLayout(widget);
     layout->setContentsMargins({ 0, 0, 0, 0 });
@@ -735,13 +735,11 @@ struct ShowcaseWindow::Impl {
     splitter = new QSplitter(&owner);
     splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     splitter->setOrientation(Qt::Horizontal);
-    splitter->addWidget(leftPanel);
     splitter->addWidget(workspace);
     splitter->addWidget(rightPanel);
 
-    splitter->setStretchFactor(0, 2);
-    splitter->setStretchFactor(1, 6);
-    splitter->setStretchFactor(2, 2);
+    splitter->setStretchFactor(0, 6);
+    splitter->setStretchFactor(1, 2);
   }
 
   void setupStatusBar() {
@@ -772,6 +770,7 @@ struct ShowcaseWindow::Impl {
 
     // The tabs live in the title bar.
     owner.titleBar()->setContentWidget(tabBar);
+    owner.setLeadingWidget(leftPanel);
     owner.setCentralWidget(centralWidget);
   }
 };

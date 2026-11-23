@@ -126,6 +126,6 @@ A themed title bar that is part of the window content. It draws the caption butt
 
 ## UnifiedWindow
 
-A top-level window whose content extends into the title bar area. It owns a `TitleBar` and a central widget. macOS keeps the traffic lights at the top left, Windows keeps the caption buttons at the top right and supports snap layouts, and Linux draws client-side decorations following the user's button layout.
+A top-level window whose content extends into the title bar area. It owns a `TitleBar` and a central widget. macOS keeps the traffic lights at the top left, Windows keeps the caption buttons at the top right and supports snap layouts, and Linux draws client-side decorations following the user's button layout. A leading widget, such as a sidebar, can extend up to the top of the window: the title bar then starts after it and the caption buttons on the left are drawn over it.
 
 ![UnifiedWindow](assets/images/widgets/unifiedwindow.png)

@@ -6,10 +6,14 @@
 #include "utils/window/WindowBackend.hpp"
 
 #include <QEvent>
+#include <QHBoxLayout>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPointer>
+#include <QSpacerItem>
 #include <QVBoxLayout>
+
+#include <algorithm>
 
 namespace oclero::qlementine {
 namespace {
@@ -53,21 +57,47 @@ private:
 struct UnifiedWindow::Impl {
   TitleBar* titleBar{ nullptr };
   QVBoxLayout* layout{ nullptr };
+  QHBoxLayout* body{ nullptr };
+  QSpacerItem* leadingSpacer{ nullptr };
   QPointer<QWidget> centralWidget;
+  QPointer<QWidget> leadingWidget;
+  int leadingWidth{ 0 };
   FrameOverlay* overlay{ nullptr };
   std::unique_ptr<WindowBackend> backend;
   bool shown{ false };
+
+  void updateLeading(const QWidget& window) {
+    auto width = 0;
+    if (leadingWidget) {
+      width = std::min(std::max(leadingWidget->sizeHint().width(), leadingWidget->minimumWidth()),
+        leadingWidget->maximumWidth());
+      leadingWidget->setContentsMargins(0, titleBar->sizeHint().height(), 0, 0);
+      leadingWidget->setGeometry(0, 0, width, window.height());
+    }
+    if (width != leadingWidth) {
+      leadingWidth = width;
+      leadingSpacer->changeSize(width, 0, QSizePolicy::Fixed, QSizePolicy::Minimum);
+      body->invalidate();
+      titleBar->setLeadingWidth(width);
+    }
+  }
 };
 
 UnifiedWindow::UnifiedWindow(QWidget* parent)
   : QWidget(parent, Qt::Window)
   , _impl(std::make_unique<Impl>()) {
-  // Layout: title bar on top, central widget below.
+  // Layout: title bar on top, central widget below, with room at its left for the leading widget.
   _impl->layout = new QVBoxLayout(this);
   _impl->layout->setContentsMargins(0, 0, 0, 0);
   _impl->layout->setSpacing(0);
   _impl->titleBar = new TitleBar(this);
   _impl->layout->addWidget(_impl->titleBar);
+  _impl->body = new QHBoxLayout();
+  _impl->body->setContentsMargins(0, 0, 0, 0);
+  _impl->body->setSpacing(0);
+  _impl->leadingSpacer = new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Minimum);
+  _impl->body->addSpacerItem(_impl->leadingSpacer);
+  _impl->layout->addLayout(_impl->body, 1);
 
   // Native window configuration, before anything is shown.
   _impl->backend = createWindowBackend(*this);
@@ -118,16 +148,40 @@ void UnifiedWindow::setCentralWidget(QWidget* widget) {
   }
 
   if (_impl->centralWidget) {
-    _impl->layout->removeWidget(_impl->centralWidget.data());
+    _impl->body->removeWidget(_impl->centralWidget.data());
     _impl->centralWidget->hide();
     _impl->centralWidget->setParent(nullptr);
   }
 
   _impl->centralWidget = widget;
   if (widget) {
-    _impl->layout->addWidget(widget, 1);
+    _impl->body->addWidget(widget, 1);
     _impl->overlay->raise();
   }
+}
+
+QWidget* UnifiedWindow::leadingWidget() const {
+  return _impl->leadingWidget.data();
+}
+
+void UnifiedWindow::setLeadingWidget(QWidget* widget) {
+  if (widget == _impl->leadingWidget.data()) {
+    return;
+  }
+
+  if (_impl->leadingWidget) {
+    _impl->leadingWidget->hide();
+    _impl->leadingWidget->setParent(nullptr);
+  }
+
+  _impl->leadingWidget = widget;
+  if (widget) {
+    widget->setParent(this);
+    widget->stackUnder(_impl->titleBar);
+    widget->show();
+    _impl->overlay->raise();
+  }
+  _impl->updateLeading(*this);
 }
 
 bool UnifiedWindow::event(QEvent* evt) {
@@ -135,6 +189,10 @@ bool UnifiedWindow::event(QEvent* evt) {
 
   if (_impl && _impl->backend) {
     switch (evt->type()) {
+      case QEvent::Resize:
+      case QEvent::LayoutRequest:
+        _impl->updateLeading(*this);
+        break;
       case QEvent::WindowTitleChange:
         _impl->titleBar->setTitle(windowTitle());
         break;

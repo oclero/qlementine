@@ -72,6 +72,12 @@ public:
   int rightInset() const;
   void setSystemInsets(int left, int right);
 
+  /// Width of the area on the left that is covered by a widget placed under the title bar, such as a sidebar that
+  /// extends up to the top of the window (see UnifiedWindow::setLeadingWidget()). The title bar doesn't paint its
+  /// background there and its content starts after it. Caption buttons and the drag area still apply over it.
+  int leadingWidth() const;
+  void setLeadingWidth(int width);
+
   /// Marks a widget placed in the title bar as interactive (true) or as a part of the draggable area (false).
   /// By default, the content widget container, plain QWidget/QFrame containers and display-only widgets (QLabel,
   /// QProgressBar, QLCDNumber, IconWidget, StatusBadgeWidget, NotificationBadge) are draggable and every other
