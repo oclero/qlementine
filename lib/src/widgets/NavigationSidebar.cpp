@@ -403,8 +403,8 @@ void NavigationSidebar::paintEvent(QPaintEvent*) {
 
 bool NavigationSidebar::event(QEvent* e) {
   const auto type = e->type();
-  if (type == QEvent::Type::LayoutRequest) {
-    // The size hint of the header or the footer may have changed.
+  if (type == QEvent::Type::LayoutRequest || type == QEvent::Type::ContentsRectChange) {
+    // The size hint of the header or the footer may have changed, or the top margin reserved for a title bar.
     updateGeometry();
     relayout();
   } else if (type == QEvent::Type::ToolTip && _compact) {
@@ -605,7 +605,7 @@ double NavigationSidebar::getItemRadius() const {
 QMargins NavigationSidebar::getPadding() const {
   const auto* style = this->style();
   const auto left = style->pixelMetric(QStyle::PM_LayoutLeftMargin) / 2;
-  const auto top = style->pixelMetric(QStyle::PM_LayoutTopMargin) / 2;
+  const auto top = style->pixelMetric(QStyle::PM_LayoutTopMargin) / 2 + contentsMargins().top();
   const auto right = style->pixelMetric(QStyle::PM_LayoutRightMargin) / 2;
   const auto bottom = style->pixelMetric(QStyle::PM_LayoutBottomMargin) / 2;
   return QMargins{ left, top, right, bottom };

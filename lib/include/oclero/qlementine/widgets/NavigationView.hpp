@@ -13,6 +13,8 @@ namespace oclero::qlementine {
 /// A NavigationSidebar and a QStackedWidget, where selecting an item shows its page.
 /// The view takes ownership of the pages.
 /// Use sidebar() to add sections and separators, set the header and footer, or toggle the compact mode.
+/// The sidebar can be moved out of the view, for instance with UnifiedWindow::setLeadingWidget(), to extend it up to
+/// the top of the window.
 class QLEMENTINE_EXPORT NavigationView : public QWidget {
   Q_OBJECT
 
@@ -51,6 +53,7 @@ protected:
 
 private:
   QVariant makePageData(QWidget* page);
+  int availableWidth() const;
 
 private:
   NavigationSidebar* _sidebar{ nullptr };

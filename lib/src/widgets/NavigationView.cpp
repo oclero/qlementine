@@ -86,7 +86,7 @@ void NavigationView::setAutoCompactWidth(int width) {
   if (width != _autoCompactWidth) {
     _autoCompactWidth = width;
     if (_autoCompactWidth > 0) {
-      _sidebar->setCompact(this->width() < _autoCompactWidth);
+      _sidebar->setCompact(availableWidth() < _autoCompactWidth);
     }
     Q_EMIT autoCompactWidthChanged();
   }
@@ -95,10 +95,15 @@ void NavigationView::setAutoCompactWidth(int width) {
 void NavigationView::resizeEvent(QResizeEvent* e) {
   QWidget::resizeEvent(e);
 
-  // Compare with the view width, not the sidebar width, to avoid flickering while the sidebar animates.
   if (_autoCompactWidth > 0) {
-    _sidebar->setCompact(width() < _autoCompactWidth);
+    _sidebar->setCompact(availableWidth() < _autoCompactWidth);
   }
+}
+
+int NavigationView::availableWidth() const {
+  // Compare with the width of the view, or of the window when the sidebar was moved out of the view, and not with the
+  // width of the sidebar, to avoid flickering while the sidebar animates.
+  return _sidebar->parentWidget() == this ? width() : window()->width();
 }
 
 QVariant NavigationView::makePageData(QWidget* page) {
