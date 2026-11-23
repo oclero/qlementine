@@ -103,6 +103,7 @@ private:
   int slotHeight(const QWidget* widget) const;
   void ensureItemVisible(int index);
   void relayout();
+  int naturalWidth() const;
 
 private:
   bool _compact{ false };

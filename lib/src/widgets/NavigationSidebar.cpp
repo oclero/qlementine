@@ -72,15 +72,8 @@ NavigationSidebar::NavigationSidebar(QWidget* parent)
 QSize NavigationSidebar::sizeHint() const {
   const_cast<NavigationSidebar*>(this)->updateItemsSizeHints();
 
-  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
   const auto padding = getPadding();
   const auto gap = style()->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
-
-  // Width interpolated between the expanded and compact states.
-  const auto defaultExpandedWidth = qlementineStyle ? qlementineStyle->theme().controlDefaultWidth * 5 / 2 : 240;
-  const auto expandedW = _expandedWidth > 0 ? _expandedWidth : defaultExpandedWidth;
-  const auto compactW = iconSize().width() + 2 * (padding.left() + getItemPadding().left());
-  const auto neededW = static_cast<int>(std::round(expandedW + (compactW - expandedW) * _compactProgress));
 
   auto neededH = padding.top() + padding.bottom() + slotHeight(_headerWidget) + slotHeight(_footerWidget);
   const auto bottomRows = visibleItems(true);
@@ -89,7 +82,18 @@ QSize NavigationSidebar::sizeHint() const {
   }
   neededH += rowsHeight(visibleItems(false));
 
-  return { neededW, neededH };
+  return { naturalWidth(), neededH };
+}
+
+int NavigationSidebar::naturalWidth() const {
+  const auto* qlementineStyle = qobject_cast<const QlementineStyle*>(style());
+  const auto padding = getPadding();
+
+  // Width interpolated between the expanded and compact states.
+  const auto defaultExpandedWidth = qlementineStyle ? qlementineStyle->theme().controlDefaultWidth * 5 / 2 : 240;
+  const auto expandedW = _expandedWidth > 0 ? _expandedWidth : defaultExpandedWidth;
+  const auto compactW = iconSize().width() + 2 * (padding.left() + getItemPadding().left());
+  return static_cast<int>(std::round(expandedW + (compactW - expandedW) * _compactProgress));
 }
 
 int NavigationSidebar::addBottomItem(
@@ -700,8 +704,10 @@ void NavigationSidebar::drawItemForeground(QPainter& p, const Item& item) const 
   }
   const auto indent = static_cast<int>(depth * style()->pixelMetric(QStyle::PM_LayoutLeftMargin) * expandedOpacity);
 
-  const auto contentX = rect.x() + itemPadding.left() + indent;
-  const auto contentRight = rect.x() + rect.width() - itemPadding.right();
+  // When the sidebar is forced wider than it needs (e.g. to contain the window controls), center the content.
+  const auto extraWidth = std::max(0, width() - naturalWidth()) / 2;
+  const auto contentX = rect.x() + itemPadding.left() + indent + extraWidth;
+  const auto contentRight = rect.x() + rect.width() - itemPadding.right() - extraWidth;
   auto textLeft = contentX;
   auto textRight = contentRight;
 
