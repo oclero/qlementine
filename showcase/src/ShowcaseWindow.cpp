@@ -902,11 +902,14 @@ struct ShowcaseWindow::Impl {
     rootLayout->setMenuBar(menuBar);
     rootLayout->addWidget(toolBar);
     rootLayout->addWidget(splitter);
-    rootLayout->addWidget(statusBar);
     workspace->setFocus(Qt::NoFocusReason);
 
     // The tabs live in the title bar.
     owner.titleBar()->setContentWidget(tabBar);
+
+    // The status bar spans the whole window, and the content is inset with rounded corners.
+    owner.setStatusBar(statusBar);
+    owner.setContentCornerRadius(12);
   }
 
   void setupNavigationView() {
