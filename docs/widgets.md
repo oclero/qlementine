@@ -96,6 +96,7 @@ A vertical sidebar that allows to switch between a range of elements, such as se
 - A header widget and a footer widget (`setHeaderWidget`, `setFooterWidget`) that can contain anything, such as a search field.
 - A compact (icon-only) mode (`setCompact`, `toggleCompact`), animated, with tooltips. The header and footer widgets are hidden in compact mode: give the user another way to expand the sidebar again. Nested items are hidden too: clicking their parent opens a flyout menu that contains them, and the parent shows the selection when one of its children is selected.
 - `setExpandedWidth` to change the width when not compact.
+- `setBorderVisible` to hide the border drawn on the side of the content.
 
 ![NavigationSidebar](assets/images/widgets/navigationsidebar.png)
 
@@ -165,6 +166,6 @@ A themed title bar that is part of the window content. It draws the caption butt
 
 ## UnifiedWindow
 
-A top-level window whose content extends into the title bar area. It owns a `TitleBar`, a central widget and an optional `QStatusBar` (`setStatusBar()`) displayed below the central widget. macOS keeps the traffic lights at the top left, Windows keeps the caption buttons at the top right and supports snap layouts, and Linux draws client-side decorations following the user's button layout. A leading widget, such as a sidebar, can extend up to the top of the window: the title bar then starts after it and the caption buttons on the left are drawn over it.
+A top-level window whose content extends into the title bar area. It owns a `TitleBar`, a central widget and an optional `QStatusBar` (`setStatusBar()`) displayed at the bottom of the window across its whole width, under both the central widget and the leading widget. macOS keeps the traffic lights at the top left, Windows keeps the caption buttons at the top right and supports snap layouts, and Linux draws client-side decorations following the user's button layout. A leading widget, such as a sidebar, can extend up to the top of the window: the title bar then starts after it and the caption buttons on the left are drawn over it.
 
 ![UnifiedWindow](assets/images/widgets/unifiedwindow.png)
