@@ -27,6 +27,14 @@ public:
   QWidget* centralWidget() const;
   void setCentralWidget(QWidget* widget);
 
+  /// A widget, such as a sidebar, displayed at the left of the window over the full height, including the title bar
+  /// area. Its width is its size hint, limited by its minimum and maximum widths. The title bar is displayed over it
+  /// without background, and the caption buttons on the left (traffic lights on macOS) are drawn over it. The window
+  /// keeps the top contents margin of the widget equal to the title bar height, so that its content starts below it.
+  /// The window takes ownership of the new widget and releases the previous one without deleting it.
+  QWidget* leadingWidget() const;
+  void setLeadingWidget(QWidget* widget);
+
 protected:
   bool event(QEvent* evt) override;
   void paintEvent(QPaintEvent* evt) override;

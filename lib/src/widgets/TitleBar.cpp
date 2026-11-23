@@ -78,7 +78,7 @@ struct TitleBar::Impl {
   }
 
   QRect contentArea() const {
-    auto left = leftInset;
+    auto left = std::max(leftInset, leadingWidth);
     auto right = owner.width() - rightInset;
     const auto gap = theme().spacing;
     for (const auto button : buttonLayout.left) {
@@ -157,6 +157,7 @@ struct TitleBar::Impl {
   CaptionButtonLayout buttonLayout{ {}, { CaptionButton::Minimize, CaptionButton::Maximize, CaptionButton::Close } };
   int leftInset{ 0 };
   int rightInset{ 0 };
+  int leadingWidth{ 0 };
   std::optional<CaptionButton> hoveredButton;
   std::optional<CaptionButton> pressedButton;
   std::optional<QPoint> dragStartPos;
@@ -285,6 +286,19 @@ void TitleBar::setSystemInsets(int left, int right) {
     _impl->leftInset = left;
     _impl->rightInset = right;
     updateGeometry();
+    _impl->updateLayout();
+    update();
+  }
+}
+
+int TitleBar::leadingWidth() const {
+  return _impl->leadingWidth;
+}
+
+void TitleBar::setLeadingWidth(int width) {
+  width = std::max(0, width);
+  if (width != _impl->leadingWidth) {
+    _impl->leadingWidth = width;
     _impl->updateLayout();
     update();
   }
@@ -438,7 +452,10 @@ void TitleBar::paintEvent(QPaintEvent*) {
   const auto& renderer = *_impl->renderer;
 
   // Background.
+  painter.save();
+  painter.setClipRect(QRect(_impl->leadingWidth, 0, std::max(0, width() - _impl->leadingWidth), height()));
   renderer.paintBackground(painter, rect(), theme, _impl->active, _impl->maximized);
+  painter.restore();
 
   // Title, in the space left by the content widget.
   const auto area = _impl->contentArea();

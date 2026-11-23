@@ -897,6 +897,7 @@ struct ShowcaseWindow::Impl {
     navView = new NavigationView(&owner);
     owner.setCentralWidget(navView);
     auto* sidebar = navView->sidebar();
+    owner.setLeadingWidget(sidebar);
 
     // Creates a page with a title and a description.
     const auto makePage = [this](const QString& title, const QString& description) {
@@ -911,23 +912,6 @@ struct ShowcaseWindow::Impl {
       return page;
     };
 
-    // Header: any widget can be used, here a search field that selects the first matching item.
-    auto* searchField = new LineEdit(sidebar);
-    searchField->setIcon(makeThemedIcon(Icons16::Navigation_Search));
-    searchField->setClearButtonEnabled(true);
-    searchField->setPlaceholderText("Jump to...");
-    QObject::connect(searchField, &QLineEdit::returnPressed, sidebar, [sidebar, searchField]() {
-      for (auto i = 0; i < sidebar->itemCount(); ++i) {
-        if (sidebar->getItemText(i).contains(searchField->text(), Qt::CaseInsensitive)) {
-          sidebar->setCurrentIndex(i);
-          if (sidebar->currentIndex() == i) {
-            break;
-          }
-        }
-      }
-    });
-    sidebar->setHeaderWidget(searchField);
-
     // The footer is hidden in compact mode: use the switch of the "Settings" page to expand the sidebar again.
     auto* compactButton = new QPushButton(makeThemedIcon(Icons16::Action_Fullscreen), "Collapse", sidebar);
     QObject::connect(compactButton, &QPushButton::clicked, sidebar, &NavigationSidebar::toggleCompact);
@@ -938,8 +922,9 @@ struct ShowcaseWindow::Impl {
     navView->addPage(workspacePage, "Workspace", makeThemedIcon(Icons16::Misc_ItemsList));
     navView->addPage(
       makePage("Home", "NavigationView combines a NavigationSidebar with a stack of pages. Selecting an item in the "
-                       "sidebar shows its page. Try the search field above (press Enter), the keyboard arrows, and "
-                       "the collapse button below (use the Settings page to expand the sidebar again)."),
+                       "sidebar shows its page. The sidebar extends up to the top of the window, under the window "
+                       "controls. Try the keyboard arrows, and the collapse button below (use the Settings page to "
+                       "expand the sidebar again)."),
       "Home", makeThemedIcon(Icons16::Navigation_Home));
 
     const auto libraryIndex =
