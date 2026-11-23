@@ -71,6 +71,16 @@ struct UnifiedWindow::Impl {
     if (leadingWidget) {
       width = std::min(std::max(leadingWidget->sizeHint().width(), leadingWidget->minimumWidth()),
         leadingWidget->maximumWidth());
+
+      // The window controls on the left must fit in the leading widget, even when it is narrow (compact sidebar).
+      auto controlsWidth = titleBar->leftInset();
+      for (const auto button : titleBar->captionButtonLayout().left) {
+        const auto rect = titleBar->captionButtonRect(button);
+        if (!rect.isEmpty()) {
+          controlsWidth = std::max(controlsWidth, rect.right() + 1 + rect.left());
+        }
+      }
+      width = std::max(width, controlsWidth);
       leadingWidget->setContentsMargins(0, titleBar->sizeHint().height(), 0, 0);
       leadingWidget->setGeometry(0, 0, width, window.height());
     }
