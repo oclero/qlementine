@@ -25,9 +25,11 @@
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/Expander.hpp>
+#include <oclero/qlementine/widgets/FlowLayout.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
 #include <oclero/qlementine/widgets/LoadingRing.hpp>
 #include <oclero/qlementine/widgets/LoadingSpinner.hpp>
+#include <oclero/qlementine/widgets/PageDots.hpp>
 #include <oclero/qlementine/widgets/Menu.hpp>
 #include <oclero/qlementine/widgets/NotificationBadge.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
@@ -804,6 +806,20 @@ struct ShowcaseWindow::Impl {
             expander->setContent(expanderContent);
             expander->setExpanded(true);
             groupBoxLayout->addWidget(expander);
+          }
+          {
+            auto* flowContainer = new QWidget(groupBox);
+            auto* flowLayout = new FlowLayout(flowContainer);
+            flowLayout->setContentsMargins(0, 0, 0, 0);
+            for (auto i = 0; i < 8; ++i) {
+              flowLayout->addWidget(new QPushButton(QString("Item %1").arg(i + 1), flowContainer));
+            }
+            groupBoxLayout->addWidget(flowContainer);
+          }
+          {
+            auto* pageDots = new PageDots(groupBox);
+            pageDots->setCount(5);
+            groupBoxLayout->addWidget(pageDots, 0, Qt::AlignLeft);
           }
           {
             auto* ringsLayout = new QHBoxLayout();

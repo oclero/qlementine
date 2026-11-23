@@ -42,6 +42,10 @@ Improves `QCommandLinkButton` by supporting the `icon` property of `QAbstractBut
 
 Container that allows to hide/show its content with a nice height animation.
 
+## FlowLayout
+
+A layout that arranges its items from left to right and wraps them to the next row when the available width is exceeded, such as a gallery of thumbnails. Its height depends on its width, so use it in a widget placed in a `QScrollArea` with `setWidgetResizable(true)`. The horizontal and vertical spacing use the style's spacing by default and can be overridden with `setHorizontalSpacing()` and `setVerticalSpacing()`.
+
 ## IconWidget
 
 Widget that just shows an icon.
@@ -116,6 +120,12 @@ badge->setWidget(theWidget);
 ```
 
 ![NotificationBadge](assets/images/widgets/notificationbadge.png)
+
+## PageDots
+
+A row of dots that shows the current page among a number of pages, such as in a carousel. Set the number of pages with `setCount()` and the current one with `setCurrentIndex()`. Clicking a dot selects its page and emits `currentIndexChanged()`, so it can be connected directly to a `QStackedWidget`.
+
+![PageDots](assets/images/widgets/pagedots.png)
 
 ## Popover
 

@@ -16,10 +16,12 @@
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/Expander.hpp>
+#include <oclero/qlementine/widgets/FlowLayout.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/LoadingSpinner.hpp>
+#include <oclero/qlementine/widgets/PageDots.hpp>
 #include <oclero/qlementine/widgets/NavigationBar.hpp>
 #include <oclero/qlementine/widgets/NavigationView.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
@@ -1359,6 +1361,27 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     });
   }
 
+  void setupUI_flowLayout() {
+    auto* container = new QWidget(windowContent);
+    auto* flowLayout = new FlowLayout(container);
+    for (auto i = 0; i < 12; ++i) {
+      flowLayout->addWidget(new QPushButton(QString("Item %1").arg(i + 1), container));
+    }
+    windowContentLayout->addWidget(container);
+  }
+
+  void setupUI_pageDots() {
+    auto* pageDots = new PageDots(windowContent);
+    pageDots->setCount(5);
+    windowContentLayout->addWidget(pageDots);
+
+    auto* button = new QPushButton("Next page", windowContent);
+    windowContentLayout->addWidget(button);
+    QObject::connect(button, &QPushButton::clicked, pageDots, [pageDots]() {
+      pageDots->setCurrentIndex((pageDots->currentIndex() + 1) % pageDots->count());
+    });
+  }
+
   void setupUI_aboutDialog() {
     auto* dialog = new AboutDialog(windowContent);
     dialog->setWindowTitle(QString("About %1").arg(QApplication::applicationDisplayName()));
@@ -2052,6 +2075,8 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_colorButton();
     // _impl->setupUI_messageBoxIcons();
     // _impl->setupUI_loadingSpinner();
+    // _impl->setupUI_flowLayout();
+    // _impl->setupUI_pageDots();
     // _impl->setupUI_aboutDialog();
     // _impl->setupUI_notificationBadge();
     // _impl->setupUI_unifiedWindow();
