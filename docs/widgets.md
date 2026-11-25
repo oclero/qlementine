@@ -105,6 +105,8 @@ A [`NavigationSidebar`](#navigationsidebar) combined with a `QStackedWidget`: se
 
 Use `addPage`, `addBottomPage`, `addChildPage` and `removePage` to manage the pages. Use `sidebar()` to add sections and separators, set the header and footer, or toggle the compact mode. `setAutoCompactWidth` makes the sidebar compact when the view is narrower than the given width.
 
+A separator line is drawn between the sidebar and the pages. It is hidden when the view is inside a [`UnifiedWindow`](#unifiedwindow), or when the sidebar was moved out of the view.
+
 A complete example is available in the Showcase application: click the "NavigationView" button in the toolbar.
 
 ## NotificationBadge
