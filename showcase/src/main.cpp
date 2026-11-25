@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
 
   // Define theme on QStyle.
   themeManager->setCurrentTheme("Light");
+  themeManager->setUseSystemAccentColor(true);
 #endif
 
   auto window = std::make_unique<oclero::qlementine::showcase::ShowcaseWindow>(themeManager);
