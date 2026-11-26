@@ -91,7 +91,7 @@ A vertical sidebar that allows to switch between a range of elements, such as se
 - Top items (`addItem`) and bottom items (`addBottomItem`) that stay pinned below the scrollable top items.
 - Nested items (`addChildItem`), expanded and collapsed with an animation by clicking the parent, with `setItemExpanded`, or with the Left and Right arrow keys.
 - Non-selectable sections (`addSection`) and separators (`addSeparator`, `addBottomSeparator`).
-- Icons and badges on every item. Icons use the theme's primary (accent) color, selected or not, and the selected item is highlighted with the theme's pressed background color (`backgroundColorMain4`) with regular text, so it stays readable with any accent color.
+- Icons and badges on every item. Icons use the theme's primary (accent) color, selected or not, and the selected item is highlighted with the theme's pressed background color (`backgroundColorMain4`) with semibold text, so it stays readable with any accent color.
 - A scroll bar, displayed when the top items don't fit.
 - A header widget and a footer widget (`setHeaderWidget`, `setFooterWidget`) that can contain anything, such as a search field.
 - A compact (icon-only) mode (`setCompact`, `toggleCompact`), animated, with tooltips. The header and footer widgets are hidden in compact mode: give the user another way to expand the sidebar again. Nested items are hidden too: clicking their parent opens a flyout menu that contains them, and the parent shows the selection when one of its children is selected.
