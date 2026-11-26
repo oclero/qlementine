@@ -10,6 +10,7 @@
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
 #include <oclero/qlementine/utils/LayoutUtils.hpp>
 
+#include <oclero/qlementine/widgets/GroupBox.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/NavigationBar.hpp>
@@ -712,10 +713,11 @@ struct ShowcaseWindow::Impl {
           contentLayout->addRow(groupBox);
         }
         {
-          auto* groupBox = new QGroupBox(content);
+          auto* groupBox = new qlementine::GroupBox(content);
           groupBox->setAlignment(Qt::AlignRight);
           groupBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
           groupBox->setTitle(getDummyText());
+          groupBox->setDescription(getDummyText(8, 16));
           groupBox->setCheckable(true);
           groupBox->setFlat(false);
           auto* groupBoxLayout = new QVBoxLayout(groupBox);

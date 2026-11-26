@@ -46,6 +46,12 @@ Container that allows to hide/show its content with a nice height animation.
 
 A layout that arranges its items from left to right and wraps them to the next row when the available width is exceeded, such as a gallery of thumbnails. Its height depends on its width, so use it in a widget placed in a `QScrollArea` with `setWidgetResizable(true)`. The horizontal and vertical spacing use the style's spacing by default and can be overridden with `setHorizontalSpacing()` and `setVerticalSpacing()`.
 
+## GroupBox
+
+A `QGroupBox` that can also show a description under its title, with `setDescription()`. The description is word-wrapped in the width of the group box, drawn with the caption text role, and the frame and the contents of the group box start below it. Without a description it behaves exactly like a `QGroupBox`.
+
+![GroupBox](assets/images/widgets/groupbox.png)
+
 ## IconWidget
 
 Widget that just shows an icon.
