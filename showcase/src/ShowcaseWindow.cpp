@@ -31,6 +31,7 @@
 #include <oclero/qlementine/widgets/LoadingRing.hpp>
 #include <oclero/qlementine/widgets/LoadingSpinner.hpp>
 #include <oclero/qlementine/widgets/PageDots.hpp>
+#include <oclero/qlementine/widgets/PillButton.hpp>
 #include <oclero/qlementine/widgets/Menu.hpp>
 #include <oclero/qlementine/widgets/NotificationBadge.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
@@ -432,6 +433,12 @@ struct ShowcaseWindow::Impl {
       popoverButton->setPopoverContentWidget(popoverContent);
       popoverButton->popover()->setPreferredPosition(Popover::Position::Bottom);
       toolBar->addWidget(popoverButton);
+    }
+    toolBar->addSeparator();
+    {
+      auto* pillButton = new PillButton(makeThemedIcon(Icons16::Misc_Stars), "What's New", toolBar);
+      pillButton->setBadgeVisible(true);
+      toolBar->addWidget(pillButton);
     }
     toolBar->addSeparator();
     auto* exportButton = addButton(Icons16::Action_Export, "Export", "Export");

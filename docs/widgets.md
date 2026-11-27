@@ -135,6 +135,17 @@ A row of dots that shows the current page among a number of pages, such as in a 
 
 ![PageDots](assets/images/widgets/pagedots.png)
 
+## PillButton
+
+A fully rounded button tinted with the theme's primary color, meant for small, secondary calls to action such as "What's New". It can show an icon, a text and a notification dot with `setBadgeVisible()`.
+
+```cpp
+auto* button = new PillButton(makeThemedIcon(Icons16::Misc_Stars), "What's New", someParent);
+button->setBadgeVisible(true);
+```
+
+![PillButton](assets/images/widgets/pillbutton.png)
+
 ## Popover
 
 A popup-like widget that opens in a separate system window, with a drop shadow and corner radiuses (hence transparency) and an opacity animation when toggling visibility.
