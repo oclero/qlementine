@@ -38,6 +38,7 @@ Bugfixes:
 - Fix a crash when switching from Qlementine to a non-Qlementine style while a combo box popup's delegate outlived the style.
 - Fix unpolishing a widget not restoring its original styles.
 - Fix `QFocusFrame` around a `QSlider` being clipped at the start and end.
+- Fix a crash when a widget with a `QFocusFrame` leaves its parent window and is shown fullscreen.
 
 ## v1.5.2
 
