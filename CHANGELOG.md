@@ -39,6 +39,7 @@ Bugfixes:
 - Fix unpolishing a widget not restoring its original styles.
 - Fix `QFocusFrame` around a `QSlider` being clipped at the start and end.
 - Fix a crash when a widget with a `QFocusFrame` leaves its parent window and is shown fullscreen.
+- Fix `QPushButton` text disappearing when the button is narrower than its ideal width: padding now shrinks first so the text stays visible.
 
 ## v1.5.2
 
