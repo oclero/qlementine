@@ -36,6 +36,7 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QButtonGroup>
+#include <QCalendarWidget>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QContextMenuEvent>
@@ -2006,6 +2007,11 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     dateTimeEdit->setCalendarPopup(true);
 
     windowContentLayout->addWidget(dateTimeEdit);
+
+    auto* calendarWidget = new QCalendarWidget(windowContent);
+    calendarWidget->setMinimumDate(QDate::currentDate().addDays(-365));
+    calendarWidget->setMaximumDate(QDate::currentDate().addDays(365));
+    windowContentLayout->addWidget(calendarWidget);
   }
 
   static int getRandomInt(int min, int max) {

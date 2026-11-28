@@ -49,6 +49,7 @@
 #include <QToolBar>
 #include <QDockWidget>
 #include <QTreeView>
+#include <QCalendarWidget>
 #include <QCheckBox>
 #include <QMenuBar>
 #include <QToolButton>
@@ -711,6 +712,10 @@ struct ShowcaseWindow::Impl {
             groupBoxLayout->addRow(getDummyText(1, 1) + ":", dateTimeEdit);
           }
           {
+            auto* calendarWidget = new QCalendarWidget(groupBox);
+            groupBoxLayout->addRow(calendarWidget);
+          }
+          {
             auto* lineEdit = new QLineEdit(groupBox);
             lineEdit->setPlaceholderText("Enter text...");
             lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -1055,7 +1060,7 @@ ShowcaseWindow::ShowcaseWindow(ThemeManager* themeManager, QWidget* parent)
   setWindowIcon(QIcon(":/showcase/qlementine_icon.ico"));
   _impl->setupUI();
   setMinimumSize(600, 400);
-  resize(800, 600);
+  resize(1200, 900);
   oclero::qlementine::centerWidget(this);
 
   this->ensurePolished();
