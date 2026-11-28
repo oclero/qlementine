@@ -803,8 +803,9 @@ struct ShowcaseWindow::Impl {
             groupBoxLayout->addWidget(actionButton);
           }
           {
-            auto* commandLinkButton =
-              new CommandLinkButton(makeThemedIcon(Icons16::Action_Export), "Command link", getDummyText(4, 6), groupBox);
+            auto* commandLinkButton = new CommandLinkButton(
+              makeThemedIcon(Icons16::Action_Export, appStyle()->theme().iconSizeMedium), "Command link",
+              getDummyText(4, 6), groupBox);
             groupBoxLayout->addWidget(commandLinkButton);
           }
           {
