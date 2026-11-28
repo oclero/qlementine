@@ -119,14 +119,6 @@ A complete example is available in the Showcase application: click the "Navigati
 
 A small badge to display a notification (with or without text) on another widget.
 
-```cpp
-// The parent set to the constructor is not important.
-auto* badge = new NotificationBadge(someParent);
-
-// The badge's parent will change to theWidget's parent.
-badge->setWidget(theWidget);
-```
-
 ![NotificationBadge](assets/images/widgets/notificationbadge.png)
 
 ## PageDots
@@ -139,11 +131,6 @@ A row of dots that shows the current page among a number of pages, such as in a 
 
 A fully rounded button tinted with the theme's primary color, meant for small, secondary calls to action such as "What's New". It can show an icon, a text and a notification dot with `setBadgeVisible()`.
 
-```cpp
-auto* button = new PillButton(makeThemedIcon(Icons16::Misc_Stars), "What's New", someParent);
-button->setBadgeVisible(true);
-```
-
 ![PillButton](assets/images/widgets/pillbutton.png)
 
 ## Popover
@@ -155,6 +142,16 @@ A popup-like widget that opens in a separate system window, with a drop shadow a
 ## PopoverButton
 
 A button that opens a `Popover` when clicked.
+
+## RankingControl
+
+A row of stars that lets the user rank something. Set the number of stars with `setMaximum()` (5 by default) and the current ranking with `setValue()`. Hovering a star previews the ranking and clicking it selects it, emitting `valueChanged()`. Clicking the current value again resets it to 0, unless `setClearEnabled(false)` is used. The arrow keys, `Home` and `End` change the value from the keyboard.
+
+- `setHalfStepsEnabled()` allows to select half stars.
+- `setPlaceholderValue()` shows a dimmed ranking, such as an average, while the user hasn't ranked yet.
+- `setReadOnly()` makes the control display-only.
+
+![RankingControl](assets/images/widgets/rankingcontrol.png)
 
 ## RoundedFocusFrame
 

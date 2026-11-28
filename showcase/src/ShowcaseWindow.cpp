@@ -37,6 +37,7 @@
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 #include <oclero/qlementine/widgets/Popover.hpp>
 #include <oclero/qlementine/widgets/PopoverButton.hpp>
+#include <oclero/qlementine/widgets/RankingControl.hpp>
 #include <oclero/qlementine/widgets/UnifiedWindow.hpp>
 
 #include <oclero/qlementine/icons/Icons12.hpp>
@@ -872,6 +873,12 @@ struct ShowcaseWindow::Impl {
             auto* pageDots = new PageDots(groupBox);
             pageDots->setCount(5);
             groupBoxLayout->addWidget(pageDots, 0, Qt::AlignLeft);
+          }
+          {
+            auto* rankingControl = new RankingControl(groupBox);
+            rankingControl->setHalfStepsEnabled(true);
+            rankingControl->setValue(3.5);
+            groupBoxLayout->addWidget(rankingControl, 0, Qt::AlignLeft);
           }
           {
             auto* ringsLayout = new QHBoxLayout();

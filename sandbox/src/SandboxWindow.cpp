@@ -27,6 +27,7 @@
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 #include <oclero/qlementine/widgets/Popover.hpp>
 #include <oclero/qlementine/widgets/PopoverButton.hpp>
+#include <oclero/qlementine/widgets/RankingControl.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
@@ -1425,6 +1426,23 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     });
   }
 
+  void setupUI_rankingControl() {
+    auto* rankingControl = new RankingControl(windowContent);
+    rankingControl->setHalfStepsEnabled(true);
+    rankingControl->setPlaceholderValue(3.);
+    windowContentLayout->addWidget(rankingControl);
+
+    auto* readOnlyRankingControl = new RankingControl(windowContent);
+    readOnlyRankingControl->setReadOnly(true);
+    readOnlyRankingControl->setValue(4.);
+    windowContentLayout->addWidget(readOnlyRankingControl);
+
+    auto* disabledRankingControl = new RankingControl(windowContent);
+    disabledRankingControl->setValue(2.);
+    disabledRankingControl->setEnabled(false);
+    windowContentLayout->addWidget(disabledRankingControl);
+  }
+
   void setupUI_aboutDialog() {
     auto* dialog = new AboutDialog(windowContent);
     dialog->setWindowTitle(QString("About %1").arg(QApplication::applicationDisplayName()));
@@ -2126,6 +2144,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_loadingSpinner();
     // _impl->setupUI_flowLayout();
     // _impl->setupUI_pageDots();
+    // _impl->setupUI_rankingControl();
     // _impl->setupUI_aboutDialog();
     // _impl->setupUI_notificationBadge();
     // _impl->setupUI_unifiedWindow();

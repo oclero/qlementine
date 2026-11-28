@@ -10,6 +10,7 @@ New features:
 - Add `NavigationView` control, a combination of `NavigationSidebar` and `QStackedWidget` for page management, providing easy navigation and view layout.
 - Add `PillButton` control for softer buttons.
 - Add `GroupBox` control with a `description` parameter.
+- Add `RankingControl` widget, a row of stars to rank something with optional half steps.
 - Add `PageDots` widget, a row of dots showing the current page among a number of pages.
 - Add `FlowLayout`, a layout that wraps its items to the next row when the width is exceeded.
 - Add `TitleBar` widget, a themed title bar that is part of the window content. It draws the minimize, maximize, close and menu caption buttons when the platform doesn't provide them, and hosts an optional content widget (menu bar, search field, etc.).
