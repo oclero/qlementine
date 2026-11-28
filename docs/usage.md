@@ -156,12 +156,12 @@ themeManager->setUseSystemAccentColor(true);
 
 ## Tooltips
 
-By default, tooltips use the inverted colors of the theme (dark in a light theme, light in a dark theme).
+By default, tooltips match the theme (light in a light theme, dark in a dark theme).
 
-If you want them to match the theme instead (light in a light theme, dark in a dark theme):
+If you want them to use the inverted colors of the theme instead (dark in a light theme, light in a dark theme):
 
 ```c++
-style->setToolTipMatchesTheme(true);
+style->setToolTipMatchesTheme(false);
 ```
 
 For full control, subclass `QlementineStyle` and override `toolTipBackgroundColor()`, `toolTipBorderColor()` and `toolTipForegroundColor()`.
