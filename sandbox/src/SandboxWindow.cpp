@@ -668,6 +668,48 @@ struct SandboxWindow::Impl {
     windowContentLayout->addWidget(slider);
   }
 
+  void setupUI_verticalSliderAndProgressBar() {
+    auto* horizontalInvertedSlider = new QSlider(windowContent);
+    horizontalInvertedSlider->setOrientation(Qt::Orientation::Horizontal);
+    horizontalInvertedSlider->setRange(0, 100);
+    horizontalInvertedSlider->setValue(30);
+    horizontalInvertedSlider->setInvertedAppearance(true);
+    windowContentLayout->addWidget(horizontalInvertedSlider);
+
+    auto* layout = new QHBoxLayout();
+    auto* progressBar = new QProgressBar(windowContent);
+    progressBar->setOrientation(Qt::Orientation::Vertical);
+    progressBar->setRange(0, 100);
+    progressBar->setValue(30);
+    layout->addWidget(progressBar);
+
+    auto* slider = new QSlider(windowContent);
+    slider->setOrientation(Qt::Orientation::Vertical);
+    slider->setRange(0, 100);
+    slider->setValue(30);
+    slider->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+    QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
+    layout->addWidget(slider);
+
+    auto* ticksSlider = new QSlider(windowContent);
+    ticksSlider->setOrientation(Qt::Orientation::Vertical);
+    ticksSlider->setRange(0, 10);
+    ticksSlider->setPageStep(1);
+    ticksSlider->setSingleStep(1);
+    ticksSlider->setValue(5);
+    ticksSlider->setTickPosition(QSlider::TickPosition::TicksAbove);
+    layout->addWidget(ticksSlider);
+
+    auto* invertedSlider = new QSlider(windowContent);
+    invertedSlider->setOrientation(Qt::Orientation::Vertical);
+    invertedSlider->setRange(0, 100);
+    invertedSlider->setValue(30);
+    invertedSlider->setInvertedAppearance(true);
+    layout->addWidget(invertedSlider);
+
+    windowContentLayout->addLayout(layout);
+  }
+
   void setupUI_lineEdit() {
     auto* lineEdit = new QLineEdit(windowContent);
     lineEdit->setText(QStringLiteral("Text"));
@@ -2041,6 +2083,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_commandLinkButton();
     // _impl->setupUI_sliderAndProgressBar();
     // _impl->setupUI_sliderWithTicks();
+    // _impl->setupUI_verticalSliderAndProgressBar();
     // _impl->setupUI_lineEdit();
     // _impl->setupUI_textEdit();
     // _impl->setupUI_plainTextEdit();

@@ -767,6 +767,43 @@ struct ShowcaseWindow::Impl {
 
             groupBoxLayout->addRow(getDummyText(1, 1) + ":", slider);
           }
+          {
+            auto* slider = new QSlider(Qt::Horizontal, groupBox);
+            slider->setRange(0, 100);
+            slider->setValue(30);
+            slider->setInvertedAppearance(true);
+            groupBoxLayout->addRow(getDummyText(1, 1) + ":", slider);
+          }
+          {
+            auto* verticalLayout = new QHBoxLayout();
+            auto* progressBar = new QProgressBar(groupBox);
+            progressBar->setOrientation(Qt::Vertical);
+            progressBar->setRange(0, 100);
+            progressBar->setValue(30);
+            auto* slider = new QSlider(Qt::Vertical, groupBox);
+            slider->setRange(0, 100);
+            slider->setValue(30);
+            slider->setMinimumHeight(96);
+            auto* ticksSlider = new QSlider(Qt::Vertical, groupBox);
+            ticksSlider->setRange(0, 10);
+            ticksSlider->setPageStep(1);
+            ticksSlider->setSingleStep(1);
+            ticksSlider->setValue(7);
+            ticksSlider->setTickPosition(QSlider::TickPosition::TicksAbove);
+            ticksSlider->setMinimumHeight(96);
+            auto* invertedSlider = new QSlider(Qt::Vertical, groupBox);
+            invertedSlider->setRange(0, 100);
+            invertedSlider->setValue(30);
+            invertedSlider->setInvertedAppearance(true);
+            invertedSlider->setMinimumHeight(96);
+            QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
+            verticalLayout->addWidget(progressBar);
+            verticalLayout->addWidget(slider);
+            verticalLayout->addWidget(ticksSlider);
+            verticalLayout->addWidget(invertedSlider);
+            verticalLayout->addStretch(1);
+            groupBoxLayout->addRow(getDummyText(1, 1) + ":", verticalLayout);
+          }
           contentLayout->addRow(groupBox);
         }
         {
