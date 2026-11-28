@@ -192,7 +192,7 @@ Example:
 | `fontSizeS1`              |  int   | Font size for level 1 captions.                                                                                                                           |
 | `spacing`                 |  int   | Spacing between elements. Multiples of this value will be used across the various widgets, including default `QLayout` spacings and margins.              |
 | `iconExtent`              |  int   | Size for icons. Multiple of this value will be used across the various widgets, according to their size for `QIcon`.                                      |
-| `iconBoldness`            | double | Thickening applied to the strokes of icons made with `QlementineStyle::makeThemedIcon`, in pixels for a 16px icon (scaled for other sizes). `0` disables it. |
+| `iconBoldness`            | double | Thickening applied to the strokes of icons made with `QlementineStyle::makeThemedIcon`, in pixels for a 16px icon (scaled for other sizes). Defaults to `0` (disabled). |
 | `animationDuration`       |  int   | Duration (in milliseconds) for a UI animation, such as a color change.                                                                                    |
 | `focusAnimationDuration`  |  int   | Duration (in milliseconds) for the focus border animation.</br>Note: can be longer to allow the user to see the focus .                                   |
 | `sliderAnimationDuration` |  int   | Duration (in milliseconds) for the slider animation when its value changes.</br>Note: must be quick to feel responsive.                                   |
@@ -337,7 +337,7 @@ Here is a full Qlementine theme in all its glory. Please note that every value i
 
   "spacing": 8,
   "iconExtent": 16,
-  "iconBoldness": 0.1,
+  "iconBoldness": 0.0,
 
   "animationDuration": 192,
   "focusAnimationDuration": 384,
