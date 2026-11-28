@@ -13,6 +13,7 @@
 
 #include <QAbstractButton>
 #include <QAbstractItemView>
+#include <QCalendarWidget>
 #include <QComboBox>
 #include <QLabel>
 #include <QLayout>
@@ -23,11 +24,19 @@
 #include <QScrollArea>
 #include <QSpinBox>
 #include <QTabBar>
+#include <QTableView>
 #include <QTextEdit>
 #include <QToolButton>
 
 namespace oclero::qlementine {
-void polishToolTip(QWidget* widget) {
+void polishToolTip(const QlementineStyle& style, QWidget* widget) {
+  if (widget->inherits("QTipLabel")) {
+    auto palette = widget->palette();
+    palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipBase, style.toolTipBackgroundColor());
+    palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipText, style.toolTipForegroundColor());
+    palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::WindowText, style.toolTipForegroundColor());
+    widget->setPalette(palette);
+  }
 #ifndef _WIN32
   // Currently we only support tooltips with rounded corners on MacOS.
   // More investigation is need to make it work on Windows.
@@ -197,6 +206,24 @@ void polishTabBar(
   }
 }
 
+void polishCalendarWidget(QWidget* widget) {
+  if (auto* calendar = qobject_cast<QCalendarWidget*>(widget)) {
+    calendar->setHorizontalHeaderFormat(QCalendarWidget::ShortDayNames);
+    calendar->setWeekdayTextFormat(Qt::Saturday, QTextCharFormat{});
+    calendar->setWeekdayTextFormat(Qt::Sunday, QTextCharFormat{});
+
+    if (auto* navigationBar = calendar->findChild<QWidget*>(QStringLiteral("qt_calendar_navigationbar"))) {
+      navigationBar->setAutoFillBackground(false);
+    }
+
+    if (auto* view = calendar->findChild<QTableView*>(QStringLiteral("qt_calendar_calendarview"))) {
+      view->setFrameShape(QFrame::NoFrame);
+      view->setShowGrid(false);
+      view->setAlternatingRowColors(false);
+    }
+  }
+}
+
 void polishMessageBox(QWidget* widget, const QlementineStyle& style) {
   if (auto* messageBox = qobject_cast<QMessageBox*>(widget)) {
     if (auto* textEdit = messageBox->findChild<QTextEdit*>()) {
@@ -209,13 +236,6 @@ void polishScrollArea(QWidget* widget) {
   // Prevent ScrollArea to be focusable with Tab key.
   if (auto* scrollarea = qobject_cast<QScrollArea*>(widget)) {
     scrollarea->setFocusPolicy(Qt::NoFocus);
-  }
-}
-
-void polishSlider(QWidget* widget) {
-  // Make the QSlider horizontal by default.
-  if (auto* slider = qobject_cast<QSlider*>(widget)) {
-    slider->setOrientation(Qt::Orientation::Horizontal);
   }
 }
 
@@ -277,14 +297,20 @@ void polishDestructionTracking(QWidget* widget, QObject* parent, PolishedWidgetR
 }
 
 void unpolishWidget(QlementineStyle&, QWidget* widget, PolishedWidgetRegistry& registry) {
-  registry.removeAndDeleteEventFilters(widget);
+  if (const auto* entry = registry.find(widget)) {
+    widget->setAttribute(Qt::WA_Hover, entry->hover);
+    widget->setAttribute(Qt::WA_OpaquePaintEvent, entry->opaquePaintEvent);
+    widget->setMouseTracking(entry->mouseTracking);
+    widget->setFocusPolicy(entry->focusPolicy);
+    widget->setMinimumSize(entry->minimumSize.expandedTo({ 0, 0 }));
 
-  if (shouldHaveHoverEvents(widget)) {
-    widget->setAttribute(Qt::WA_Hover, false);
-    widget->setAttribute(Qt::WA_OpaquePaintEvent, true);
+    if (shouldHaveBoldFont(widget)) {
+      auto font = QFont{ widget->font() };
+      font.setBold(false);
+      widget->setFont(font);
+    }
   }
-  if (shouldHaveMouseTracking(widget)) {
-    widget->setMouseTracking(false);
-  }
+
+  registry.removeAndDeleteEventFilters(widget);
 }
 } // namespace oclero::qlementine

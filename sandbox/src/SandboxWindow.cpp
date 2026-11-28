@@ -16,22 +16,28 @@
 #include <oclero/qlementine/widgets/ColorEditor.hpp>
 #include <oclero/qlementine/widgets/CommandLinkButton.hpp>
 #include <oclero/qlementine/widgets/Expander.hpp>
+#include <oclero/qlementine/widgets/FlowLayout.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
 #include <oclero/qlementine/widgets/Label.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/LoadingSpinner.hpp>
+#include <oclero/qlementine/widgets/PageDots.hpp>
 #include <oclero/qlementine/widgets/NavigationBar.hpp>
+#include <oclero/qlementine/widgets/NavigationView.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 #include <oclero/qlementine/widgets/Popover.hpp>
 #include <oclero/qlementine/widgets/PopoverButton.hpp>
+#include <oclero/qlementine/widgets/RankingControl.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
 #include <oclero/qlementine/widgets/NotificationBadge.hpp>
+#include <oclero/qlementine/widgets/UnifiedWindow.hpp>
 
 #include <QActionGroup>
 #include <QApplication>
 #include <QButtonGroup>
+#include <QCalendarWidget>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QContextMenuEvent>
@@ -664,6 +670,48 @@ struct SandboxWindow::Impl {
     windowContentLayout->addWidget(slider);
   }
 
+  void setupUI_verticalSliderAndProgressBar() {
+    auto* horizontalInvertedSlider = new QSlider(windowContent);
+    horizontalInvertedSlider->setOrientation(Qt::Orientation::Horizontal);
+    horizontalInvertedSlider->setRange(0, 100);
+    horizontalInvertedSlider->setValue(30);
+    horizontalInvertedSlider->setInvertedAppearance(true);
+    windowContentLayout->addWidget(horizontalInvertedSlider);
+
+    auto* layout = new QHBoxLayout();
+    auto* progressBar = new QProgressBar(windowContent);
+    progressBar->setOrientation(Qt::Orientation::Vertical);
+    progressBar->setRange(0, 100);
+    progressBar->setValue(30);
+    layout->addWidget(progressBar);
+
+    auto* slider = new QSlider(windowContent);
+    slider->setOrientation(Qt::Orientation::Vertical);
+    slider->setRange(0, 100);
+    slider->setValue(30);
+    slider->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+    QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
+    layout->addWidget(slider);
+
+    auto* ticksSlider = new QSlider(windowContent);
+    ticksSlider->setOrientation(Qt::Orientation::Vertical);
+    ticksSlider->setRange(0, 10);
+    ticksSlider->setPageStep(1);
+    ticksSlider->setSingleStep(1);
+    ticksSlider->setValue(5);
+    ticksSlider->setTickPosition(QSlider::TickPosition::TicksAbove);
+    layout->addWidget(ticksSlider);
+
+    auto* invertedSlider = new QSlider(windowContent);
+    invertedSlider->setOrientation(Qt::Orientation::Vertical);
+    invertedSlider->setRange(0, 100);
+    invertedSlider->setValue(30);
+    invertedSlider->setInvertedAppearance(true);
+    layout->addWidget(invertedSlider);
+
+    windowContentLayout->addLayout(layout);
+  }
+
   void setupUI_lineEdit() {
     auto* lineEdit = new QLineEdit(windowContent);
     lineEdit->setText(QStringLiteral("Text"));
@@ -1203,6 +1251,49 @@ struct SandboxWindow::Impl {
       const auto icon = getTestQIcon();
       tabWidget->addTab(tabContent, icon, tabText);
     }
+
+    auto* positionLabel = new QLabel(QStringLiteral("Tab position:"), windowContent);
+    windowContentLayout->addWidget(positionLabel);
+
+    auto* comboBoxPosition = new QComboBox(windowContent);
+    comboBoxPosition->addItem(QStringLiteral("North"), static_cast<int>(QTabWidget::North));
+    comboBoxPosition->addItem(QStringLiteral("South"), static_cast<int>(QTabWidget::South));
+    comboBoxPosition->addItem(QStringLiteral("West"), static_cast<int>(QTabWidget::West));
+    comboBoxPosition->addItem(QStringLiteral("East"), static_cast<int>(QTabWidget::East));
+    comboBoxPosition->setCurrentIndex(comboBoxPosition->findData(static_cast<int>(tabWidget->tabPosition())));
+    windowContentLayout->addWidget(comboBoxPosition);
+
+    auto* shapeLabel = new QLabel(QStringLiteral("Tab shape:"), windowContent);
+    windowContentLayout->addWidget(shapeLabel);
+
+    auto* comboBoxShape = new QComboBox(windowContent);
+    comboBoxShape->addItem(QStringLiteral("Rounded"), static_cast<int>(QTabWidget::Rounded));
+    comboBoxShape->addItem(QStringLiteral("Triangular"), static_cast<int>(QTabWidget::Triangular));
+    comboBoxShape->setCurrentIndex(comboBoxShape->findData(static_cast<int>(tabWidget->tabShape())));
+    windowContentLayout->addWidget(comboBoxShape);
+
+    auto* movableCheckBox = new QCheckBox(QStringLiteral("Movable"), windowContent);
+    movableCheckBox->setChecked(tabWidget->isMovable());
+    windowContentLayout->addWidget(movableCheckBox);
+
+    auto* documentModeCheckBox = new QCheckBox(QStringLiteral("Document mode"), windowContent);
+    documentModeCheckBox->setChecked(tabWidget->documentMode());
+    windowContentLayout->addWidget(documentModeCheckBox);
+
+    QObject::connect(comboBoxPosition, qOverload<int>(&QComboBox::currentIndexChanged), tabWidget,
+      [comboBoxPosition, tabWidget](int index) {
+        tabWidget->setTabPosition(static_cast<QTabWidget::TabPosition>(comboBoxPosition->itemData(index).toInt()));
+      });
+    QObject::connect(
+      comboBoxShape, qOverload<int>(&QComboBox::currentIndexChanged), tabWidget, [comboBoxShape, tabWidget](int index) {
+        tabWidget->setTabShape(static_cast<QTabWidget::TabShape>(comboBoxShape->itemData(index).toInt()));
+      });
+    QObject::connect(movableCheckBox, &QCheckBox::toggled, tabWidget, [tabWidget](bool checked) {
+      tabWidget->setMovable(checked);
+    });
+    QObject::connect(documentModeCheckBox, &QCheckBox::toggled, tabWidget, [tabWidget](bool checked) {
+      tabWidget->setDocumentMode(checked);
+    });
   }
 
   void setupUI_groupBox() {
@@ -1314,6 +1405,44 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     });
   }
 
+  void setupUI_flowLayout() {
+    auto* container = new QWidget(windowContent);
+    auto* flowLayout = new FlowLayout(container);
+    for (auto i = 0; i < 12; ++i) {
+      flowLayout->addWidget(new QPushButton(QString("Item %1").arg(i + 1), container));
+    }
+    windowContentLayout->addWidget(container);
+  }
+
+  void setupUI_pageDots() {
+    auto* pageDots = new PageDots(windowContent);
+    pageDots->setCount(5);
+    windowContentLayout->addWidget(pageDots);
+
+    auto* button = new QPushButton("Next page", windowContent);
+    windowContentLayout->addWidget(button);
+    QObject::connect(button, &QPushButton::clicked, pageDots, [pageDots]() {
+      pageDots->setCurrentIndex((pageDots->currentIndex() + 1) % pageDots->count());
+    });
+  }
+
+  void setupUI_rankingControl() {
+    auto* rankingControl = new RankingControl(windowContent);
+    rankingControl->setHalfStepsEnabled(true);
+    rankingControl->setPlaceholderValue(3.);
+    windowContentLayout->addWidget(rankingControl);
+
+    auto* readOnlyRankingControl = new RankingControl(windowContent);
+    readOnlyRankingControl->setReadOnly(true);
+    readOnlyRankingControl->setValue(4.);
+    windowContentLayout->addWidget(readOnlyRankingControl);
+
+    auto* disabledRankingControl = new RankingControl(windowContent);
+    disabledRankingControl->setValue(2.);
+    disabledRankingControl->setEnabled(false);
+    windowContentLayout->addWidget(disabledRankingControl);
+  }
+
   void setupUI_aboutDialog() {
     auto* dialog = new AboutDialog(windowContent);
     dialog->setWindowTitle(QString("About %1").arg(QApplication::applicationDisplayName()));
@@ -1325,6 +1454,33 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     dialog->addSocialMediaLink("Mastodon", "https://mastodon.online/@oclero", getTestQIcon());
     dialog->addSocialMediaLink("GitLab", "https://gitlab.com/oclero", getTestQIcon());
     dialog->show();
+  }
+
+  void setupUI_unifiedWindow() {
+    auto* button = new QPushButton("Open UnifiedWindow", windowContent);
+    windowContentLayout->addWidget(button);
+    QObject::connect(button, &QPushButton::clicked, button, []() {
+      auto* unifiedWindow = new UnifiedWindow();
+      unifiedWindow->setAttribute(Qt::WA_DeleteOnClose);
+      unifiedWindow->setWindowTitle("UnifiedWindow");
+
+      // Menu bar hosted in the title bar.
+      auto* menuBar = new QMenuBar();
+      menuBar->setNativeMenuBar(false);
+      auto* fileMenu = menuBar->addMenu("&File");
+      fileMenu->addAction("&Close", unifiedWindow, &QWidget::close);
+      menuBar->addMenu("&Edit")->addAction("&Undo");
+      unifiedWindow->titleBar()->setContentWidget(menuBar);
+
+      // Themed placeholder.
+      auto* content = new QWidget();
+      auto* contentLayout = new QVBoxLayout(content);
+      contentLayout->addWidget(new Label("Central widget", TextRole::H3, content), 0, Qt::AlignCenter);
+      unifiedWindow->setCentralWidget(content);
+
+      unifiedWindow->resize(640, 400);
+      unifiedWindow->show();
+    });
   }
 
   void setupUI_notificationBadge() {
@@ -1655,6 +1811,53 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     windowContentLayout->addWidget(segmCtrl);
   }
 
+  void setupUI_navigationView() {
+    const auto dummyIcon = getTestQIcon();
+
+    auto* navView = new NavigationView(windowContent);
+    navView->setMinimumSize(640, 420);
+    navView->setAutoCompactWidth(560);
+    auto* sidebar = navView->sidebar();
+
+    auto* searchField = new LineEdit(sidebar);
+    searchField->setPlaceholderText(QStringLiteral("Search"));
+    sidebar->setHeaderWidget(searchField);
+
+    auto* footerLabel = new QLabel(QStringLiteral("Footer"), sidebar);
+    sidebar->setFooterWidget(footerLabel);
+
+    // The header and the footer are hidden in compact mode.
+    auto* compactCheckBox = new QCheckBox(QStringLiteral("Compact"), windowContent);
+    QObject::connect(compactCheckBox, &QCheckBox::toggled, sidebar, &NavigationSidebar::setCompact);
+    QObject::connect(sidebar, &NavigationSidebar::compactChanged, compactCheckBox, [sidebar, compactCheckBox]() {
+      compactCheckBox->setChecked(sidebar->compact());
+    });
+    windowContentLayout->addWidget(compactCheckBox);
+
+    const auto makePage = [navView](const QString& title) {
+      auto* label = new QLabel(title, navView);
+      label->setAlignment(Qt::AlignCenter);
+      return label;
+    };
+
+    sidebar->addSection(QStringLiteral("General"));
+    navView->addPage(makePage(QStringLiteral("Home")), QStringLiteral("Home"), dummyIcon);
+    const auto libraryIndex =
+      navView->addPage(makePage(QStringLiteral("Library")), QStringLiteral("Library"), dummyIcon, QStringLiteral("12"));
+    navView->addChildPage(libraryIndex, makePage(QStringLiteral("Albums")), QStringLiteral("Albums"), dummyIcon);
+    navView->addChildPage(
+      libraryIndex, makePage(QStringLiteral("Artists")), QStringLiteral("Artists"), dummyIcon, QStringLiteral("3"));
+    sidebar->addSeparator();
+    sidebar->addSection(QStringLiteral("Tools"));
+    for (auto i = 0; i < 12; ++i) {
+      const auto title = QString("Tool %1").arg(i);
+      navView->addPage(makePage(title), title, dummyIcon);
+    }
+    navView->addBottomPage(makePage(QStringLiteral("Settings")), QStringLiteral("Settings"), dummyIcon);
+
+    windowContentLayout->addWidget(navView);
+  }
+
   void setupUI_switch() {
     const auto dummyIcon = getTestQIcon();
     auto* switchWidget = new Switch(windowContent);
@@ -1822,6 +2025,11 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
     dateTimeEdit->setCalendarPopup(true);
 
     windowContentLayout->addWidget(dateTimeEdit);
+
+    auto* calendarWidget = new QCalendarWidget(windowContent);
+    calendarWidget->setMinimumDate(QDate::currentDate().addDays(-365));
+    calendarWidget->setMaximumDate(QDate::currentDate().addDays(365));
+    windowContentLayout->addWidget(calendarWidget);
   }
 
   static int getRandomInt(int min, int max) {
@@ -1899,6 +2107,7 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_commandLinkButton();
     // _impl->setupUI_sliderAndProgressBar();
     // _impl->setupUI_sliderWithTicks();
+    // _impl->setupUI_verticalSliderAndProgressBar();
     // _impl->setupUI_lineEdit();
     // _impl->setupUI_textEdit();
     // _impl->setupUI_plainTextEdit();
@@ -1928,12 +2137,17 @@ SandboxWindow::SandboxWindow(ThemeManager* themeManager, QWidget* parent)
     // _impl->setupUI_expander();
     // _impl->setupUI_popover();
     // _impl->setupUI_navigationBar();
+    // _impl->setupUI_navigationView();
     // _impl->setupUI_badge();
     // _impl->setupUI_colorButton();
     // _impl->setupUI_messageBoxIcons();
     // _impl->setupUI_loadingSpinner();
+    // _impl->setupUI_flowLayout();
+    // _impl->setupUI_pageDots();
+    // _impl->setupUI_rankingControl();
     // _impl->setupUI_aboutDialog();
     // _impl->setupUI_notificationBadge();
+    // _impl->setupUI_unifiedWindow();
 
     // _impl->setupUI_fontMetricsTests();
     // _impl->setupUI_blur();

@@ -3,14 +3,25 @@
 
 #include <oclero/qlementine/style/ThemeManager.hpp>
 
+#include "../utils/SystemAccentColor.hpp"
+
 #include <QDir>
+#include <QEvent>
+#include <QGuiApplication>
+#include <QPalette>
+#include <QStyleHints>
 
 namespace oclero::qlementine {
 ThemeManager::ThemeManager(QObject* parent)
   : ThemeManager(nullptr, parent) {}
 
 ThemeManager::ThemeManager(QlementineStyle* style, QObject* parent)
-  : QObject(parent) {
+  : QObject(parent)
+  , _systemAccentColor(QGuiApplication::palette().color(QPalette::Accent))
+  , _systemColorScheme(querySystemColorScheme()) {
+  qApp->installEventFilter(this);
+  connect(&SystemAccentWatcher::instance(), &SystemAccentWatcher::changed, this, &ThemeManager::onSystemAppearanceChanged);
+  connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, &ThemeManager::onSystemAppearanceChanged);
   setStyle(style);
 }
 
@@ -84,6 +95,18 @@ void ThemeManager::setCurrentThemeIndex(int index) {
   }
 }
 
+bool ThemeManager::useSystemAccentColor() const {
+  return _useSystemAccentColor;
+}
+
+void ThemeManager::setUseSystemAccentColor(bool useSystemAccentColor) {
+  if (useSystemAccentColor != _useSystemAccentColor) {
+    _useSystemAccentColor = useSystemAccentColor;
+    synchronizeThemeOnStyle();
+    Q_EMIT useSystemAccentColorChanged();
+  }
+}
+
 int ThemeManager::themeCount() const {
   return static_cast<int>(_themes.size());
 }
@@ -115,6 +138,37 @@ int ThemeManager::themeIndex(const QString& key) const {
   return -1;
 }
 
+bool ThemeManager::eventFilter(QObject* watched, QEvent* event) {
+  if (watched == qApp && (event->type() == QEvent::ApplicationPaletteChange || event->type() == QEvent::ThemeChange)) {
+    onSystemAppearanceChanged();
+  }
+  return QObject::eventFilter(watched, event);
+}
+
+Qt::ColorScheme ThemeManager::systemColorScheme() {
+  return querySystemColorScheme();
+}
+
+void ThemeManager::onSystemAppearanceChanged() {
+  const auto colorScheme = querySystemColorScheme();
+  if (colorScheme != _systemColorScheme) {
+    _systemColorScheme = colorScheme;
+    Q_EMIT systemColorSchemeChanged(colorScheme);
+  }
+  if (!_useSystemAccentColor || _currentIndex < 0 || _currentIndex >= themeCount()) {
+    return;
+  }
+  if (resolveAccentColor(_themes.at(_currentIndex)) != _appliedAccentColor) {
+    synchronizeThemeOnStyle();
+  }
+}
+
+QColor ThemeManager::resolveAccentColor(const Theme& theme) const {
+  const auto isDarkTheme = theme.backgroundColorMain1.lightnessF() < 0.5;
+  const auto nativeAccentColor = systemAccentColor(isDarkTheme);
+  return nativeAccentColor.isValid() ? nativeAccentColor : _systemAccentColor;
+}
+
 void ThemeManager::synchronizeThemeOnStyle() {
   if (!_style)
     return;
@@ -123,7 +177,14 @@ void ThemeManager::synchronizeThemeOnStyle() {
     return;
 
   if (_currentIndex >= 0 && _currentIndex < themeCount()) {
-    _style->setTheme(_themes.at(_currentIndex));
+    const auto& theme = _themes.at(_currentIndex);
+    if (_useSystemAccentColor) {
+      _appliedAccentColor = resolveAccentColor(theme);
+      _style->setTheme(theme.withAccentColor(_appliedAccentColor));
+    } else {
+      _appliedAccentColor = QColor();
+      _style->setTheme(theme);
+    }
   } else {
     addTheme(_style->theme());
     setCurrentThemeIndex(themeCount() - 1);

@@ -37,9 +37,14 @@ public: // Ctor.
   Theme();
 
   static std::optional<Theme> fromJsonPath(const QString& jsonPath);
+  static std::optional<Theme> fromJsonString(const QString& jsonString);
   static std::optional<Theme> fromJsonDoc(const QJsonDocument& jsonDoc);
   static Theme makeLight();
   static Theme makeDark();
+  static Theme makeLegacyDark();
+
+  /// Gets a copy of this theme where every primary color (and the focus color) is derived from the accent color.
+  Theme withAccentColor(const QColor& accentColor) const;
 
   Theme(Theme const& other) = default;
   Theme(Theme&& other) noexcept = default;
@@ -139,6 +144,9 @@ public: // Values.
   QColor borderColorDisabled{ 0xe9e9e9 };
   QColor borderColorTransparent{ QRgba64::fromArgb32(0x00d3d3d3) };
 
+  QColor titleBarForegroundColor{ 0x404040 };
+  QColor titleBarBorderColor{ 0xd3d3d3 };
+
   QColor semiTransparentColor1{ QRgba64::fromArgb32(0x0000000) };
   QColor semiTransparentColor2{ QRgba64::fromArgb32(0x19000000) };
   QColor semiTransparentColor3{ QRgba64::fromArgb32(0x21000000) };
@@ -177,6 +185,7 @@ public: // Values.
   QSize iconSizeMedium{ 24, 24 };
   QSize iconSizeLarge{ 24, 24 };
   QSize iconSizeExtraSmall{ 12, 12 };
+  double iconBoldness{ 0. };
   int sliderTickSize{ 3 };
   int sliderTickSpacing{ 2 };
   int sliderTickThickness{ 1 };
@@ -189,6 +198,7 @@ public: // Values.
   int tabBarPaddingTop{ 4 };
   int tabBarTabMaxWidth{ 0 };
   int tabBarTabMinWidth{ 0 };
+  int titleBarHeight{ 32 };
 
   bool fontSizeWasOverriden{ false };
   bool fontSizeMonospaceWasOverriden{ false };

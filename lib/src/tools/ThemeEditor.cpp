@@ -46,9 +46,49 @@
     formLayout->addRow(pair.first, pair.second); \
   }
 
+#define ADD_INT_EDITOR(NAME, DESCRIPTION) \
+  { \
+    const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, [this](const QString& s) { \
+      auto ok = false; \
+      const auto value = s.toInt(&ok); \
+      if (ok && value > 0) { \
+        theme.NAME = value; \
+        Q_EMIT owner.themeChanged(theme); \
+      } \
+    }); \
+    pair.second->setText(QString::number(theme.NAME)); \
+    this->NAME##Editor = pair.second; \
+    formLayout->addRow(pair.first, pair.second); \
+  }
+
+#define ADD_DOUBLE_EDITOR(NAME, DESCRIPTION) \
+  { \
+    const auto pair = makeTextEditorAndLabel(#NAME, DESCRIPTION, &owner, [this](const QString& s) { \
+      auto ok = false; \
+      const auto value = s.toDouble(&ok); \
+      if (ok && value >= 0.) { \
+        theme.NAME = value; \
+        Q_EMIT owner.themeChanged(theme); \
+      } \
+    }); \
+    pair.second->setText(QString::number(theme.NAME)); \
+    this->NAME##Editor = pair.second; \
+    formLayout->addRow(pair.first, pair.second); \
+  }
+
 #define UPDATE_COLOR_EDITOR(NAME) \
   this->NAME##Editor->blockSignals(true); \
   this->NAME##Editor->setColor(theme.NAME); \
+  this->NAME##Editor->blockSignals(false);
+
+#define UPDATE_INT_EDITOR(NAME) \
+  this->NAME##Editor->blockSignals(true); \
+  this->NAME##Editor->setText(QString::number(theme.NAME)); \
+  this->NAME##Editor->blockSignals(false);
+
+#define UPDATE_DOUBLE_EDITOR(NAME) \
+  this->NAME##Editor->blockSignals(true); \
+  this->NAME##Editor->setText(QString::number(theme.NAME)); \
   this->NAME##Editor->blockSignals(false);
 
 #define UPDATE_METADATA_TEXT_EDITOR(NAME) \
@@ -159,6 +199,12 @@ struct ThemeEditor::Impl {
   ColorEditor* borderColorDisabledEditor{};
 
   ColorEditor* focusColorEditor{};
+
+  ColorEditor* titleBarForegroundColorEditor{};
+  ColorEditor* titleBarBorderColorEditor{};
+  LineEdit* titleBarHeightEditor{};
+
+  LineEdit* iconBoldnessEditor{};
 
   ColorEditor* shadowColor1Editor{};
   ColorEditor* shadowColor2Editor{};
@@ -349,6 +395,18 @@ struct ThemeEditor::Impl {
     ADD_COLOR_EDITOR(borderColorPressed, "");
     ADD_COLOR_EDITOR(borderColorDisabled, "");
 
+    // Title Bar Color.
+    ADD_TITLE("Title Bar Color");
+    ADD_DESCRIPTION("Used to draw the title bar of a UnifiedWindow.");
+    ADD_COLOR_EDITOR(titleBarForegroundColor, "");
+    ADD_COLOR_EDITOR(titleBarBorderColor, "");
+    ADD_INT_EDITOR(titleBarHeight, "Height of the title bar, in pixels.");
+
+    // Icons.
+    ADD_TITLE("Icons");
+    ADD_DESCRIPTION("Applies to icons made with QlementineStyle::makeThemedIcon.");
+    ADD_DOUBLE_EDITOR(iconBoldness, "Thickening of the icon strokes, in pixels for a 16px icon. 0 disables it.");
+
     // Focus Color.
     ADD_TITLE("Focus Color");
     ADD_COLOR_EDITOR(focusColor, "Color for the focus border.");
@@ -459,6 +517,12 @@ struct ThemeEditor::Impl {
     UPDATE_COLOR_EDITOR(borderColorHovered);
     UPDATE_COLOR_EDITOR(borderColorPressed);
     UPDATE_COLOR_EDITOR(borderColorDisabled);
+
+    UPDATE_COLOR_EDITOR(titleBarForegroundColor);
+    UPDATE_COLOR_EDITOR(titleBarBorderColor);
+    UPDATE_INT_EDITOR(titleBarHeight);
+
+    UPDATE_DOUBLE_EDITOR(iconBoldness);
 
     UPDATE_COLOR_EDITOR(focusColor);
 

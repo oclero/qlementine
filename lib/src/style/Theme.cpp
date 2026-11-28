@@ -14,6 +14,7 @@
 #include <QVector>
 #include <QGuiApplication>
 
+#include <algorithm>
 #include <optional>
 
 namespace oclero::qlementine {
@@ -186,6 +187,12 @@ bool jsonObjHasAllKeys(const QJsonObject& obj, const QVector<QString>& keys) {
   return true;
 }
 
+QColor adjustLightness(const QColor& color, qreal delta) {
+  auto hsl = color.toHsl();
+  hsl.setHslF(hsl.hslHueF(), hsl.hslSaturationF(), std::clamp(hsl.lightnessF() + delta, 0., 1.), color.alphaF());
+  return hsl.toRgb();
+}
+
 int resolveFontPixelSize(const QFont& font) {
   if (font.pixelSize() > 0) {
     return std::max(1, font.pixelSize());
@@ -205,14 +212,67 @@ std::optional<Theme> Theme::fromJsonPath(const QString& jsonPath) {
   return fromJsonDoc(readJsonDoc(jsonPath));
 }
 
+std::optional<Theme> Theme::fromJsonString(const QString& jsonString) {
+  QJsonParseError jsonParseError{};
+  const auto jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8(), &jsonParseError);
+  if (jsonParseError.error != QJsonParseError::ParseError::NoError || jsonDoc.isEmpty()) {
+    return {};
+  }
+  return fromJsonDoc(jsonDoc);
+}
+
 Theme Theme::makeLight() {
   const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/light.json"));
+  return themeOpt.value_or(Theme{});
+}
+
+Theme Theme::makeLegacyDark() {
+  const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/legacy-dark.json"));
   return themeOpt.value_or(Theme{});
 }
 
 Theme Theme::makeDark() {
   const auto themeOpt = fromJsonPath(QStringLiteral(":/qlementine/resources/themes/dark.json"));
   return themeOpt.value_or(Theme{});
+}
+
+Theme Theme::withAccentColor(const QColor& accentColor) const {
+  Theme theme(*this);
+  if (!accentColor.isValid())
+    return theme;
+
+  const QColor base(accentColor.rgb());
+  const auto foreground =
+    getContrastRatio(base, Qt::white) >= getContrastRatio(base, Qt::black) ? QColor(Qt::white) : QColor(Qt::black);
+  const auto alternative = adjustLightness(base, -0.06);
+
+  // Primary.
+  theme.primaryColor = base;
+  theme.primaryColorHovered = adjustLightness(base, 0.04);
+  theme.primaryColorPressed = adjustLightness(base, 0.08);
+  theme.primaryColorDisabled = getColorSourceOver(backgroundColorMain2, colorWithAlphaF(base, 0.18));
+  theme.primaryColorTransparent = colorWithAlpha(base, 0);
+
+  // Foreground.
+  theme.primaryColorForeground = foreground;
+  theme.primaryColorForegroundHovered = foreground;
+  theme.primaryColorForegroundPressed = foreground;
+  theme.primaryColorForegroundDisabled =
+    getColorSourceOver(theme.primaryColorDisabled, colorWithAlphaF(foreground, 0.35));
+  theme.primaryColorForegroundTransparent = colorWithAlpha(foreground, 0);
+
+  // Alternative.
+  theme.primaryAlternativeColor = alternative;
+  theme.primaryAlternativeColorHovered = adjustLightness(alternative, 0.04);
+  theme.primaryAlternativeColorPressed = adjustLightness(alternative, 0.08);
+  theme.primaryAlternativeColorDisabled = getColorSourceOver(backgroundColorMain2, colorWithAlphaF(alternative, 0.15));
+  theme.primaryAlternativeColorTransparent = colorWithAlpha(alternative, 0);
+
+  // Focus.
+  theme.focusColor = colorWithAlpha(base, 0x66);
+
+  theme.initializePalette();
+  return theme;
 }
 
 std::optional<Theme> Theme::fromJsonDoc(const QJsonDocument& jsonDoc) {
@@ -410,6 +470,9 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, secondaryColorForegroundDisabled);
     secondaryColorForegroundTransparent = colorWithAlpha(secondaryColorForeground, 0);
 
+    TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarForegroundColor);
+    TRY_GET_COLOR_ATTRIBUTE(jsonObj, titleBarBorderColor);
+
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor1);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor2);
     TRY_GET_COLOR_ATTRIBUTE(jsonObj, semiTransparentColor3);
@@ -487,6 +550,7 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     iconSizeMedium = iconSize * 1.5;
     iconSizeLarge = iconSize * 2;
     iconSizeExtraSmall = iconSize * 0.75;
+    TRY_GET_DOUBLE_ATTRIBUTE(jsonObj, iconBoldness);
 
     TRY_GET_INT_ATTRIBUTE(jsonObj, sliderTickSize);
     TRY_GET_INT_ATTRIBUTE(jsonObj, sliderTickSpacing);
@@ -500,6 +564,7 @@ bool Theme::initializeFromJson(QJsonDocument const& jsonDoc) {
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarPaddingTop);
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMaxWidth);
     TRY_GET_INT_ATTRIBUTE(jsonObj, tabBarTabMinWidth);
+    TRY_GET_INT_ATTRIBUTE(jsonObj, titleBarHeight);
 
     tabBarTabMaxWidth = std::max(0, tabBarTabMaxWidth);
     tabBarTabMinWidth = std::max(0, tabBarTabMinWidth);
@@ -596,6 +661,9 @@ QJsonDocument Theme::toJson() const {
   SET_COLOR(jsonObj, borderColorPressed);
   SET_COLOR(jsonObj, borderColorDisabled);
 
+  SET_COLOR(jsonObj, titleBarForegroundColor);
+  SET_COLOR(jsonObj, titleBarBorderColor);
+
   SET_COLOR(jsonObj, semiTransparentColor1);
   SET_COLOR(jsonObj, semiTransparentColor2);
   SET_COLOR(jsonObj, semiTransparentColor3);
@@ -632,6 +700,7 @@ QJsonDocument Theme::toJson() const {
   setInt(jsonObj, "iconSizeMedium", iconSizeMedium.width());
   setInt(jsonObj, "iconSizeLarge", iconSizeLarge.width());
   setInt(jsonObj, "iconSizeExtraSmall", iconSizeExtraSmall.width());
+  SET_DOUBLE(jsonObj, iconBoldness);
   SET_INT(jsonObj, sliderTickSize);
   SET_INT(jsonObj, sliderTickSpacing);
   SET_INT(jsonObj, sliderTickThickness);
@@ -644,6 +713,7 @@ QJsonDocument Theme::toJson() const {
   SET_INT(jsonObj, tabBarPaddingTop);
   SET_INT(jsonObj, tabBarTabMaxWidth);
   SET_INT(jsonObj, tabBarTabMinWidth);
+  SET_INT(jsonObj, titleBarHeight);
 
   QJsonDocument jsonDoc;
   jsonDoc.setObject(jsonObj);
@@ -729,6 +799,9 @@ bool Theme::operator==(const Theme& other) const {
     && borderColorPressed == other.borderColorPressed
     && borderColorDisabled == other.borderColorDisabled
 
+    && titleBarForegroundColor == other.titleBarForegroundColor
+    && titleBarBorderColor == other.titleBarBorderColor
+
     && useSystemFonts == other.useSystemFonts
 
     && animationDuration == other.animationDuration
@@ -753,6 +826,7 @@ bool Theme::operator==(const Theme& other) const {
     && iconSizeMedium == other.iconSizeMedium
     && iconSizeLarge == other.iconSizeLarge
     && iconSizeExtraSmall == other.iconSizeExtraSmall
+    && iconBoldness == other.iconBoldness
     && sliderTickSize == other.sliderTickSize
     && sliderTickThickness == other.sliderTickThickness
     && sliderGrooveHeight == other.sliderGrooveHeight
@@ -762,6 +836,7 @@ bool Theme::operator==(const Theme& other) const {
     && scrollBarThicknessSmall == other.scrollBarThicknessSmall
     && scrollBarMargin == other.scrollBarMargin
     && tabBarPaddingTop == other.tabBarPaddingTop
+    && titleBarHeight == other.titleBarHeight
     ;
   // clang-format on
 }

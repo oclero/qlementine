@@ -54,6 +54,7 @@ public:
   Theme const& theme() const;
   void setTheme(Theme const& theme);
   void setThemeJsonPath(QString const& jsonPath);
+  void setThemeJsonString(QString const& jsonString);
   bool animationsEnabled() const;
   void setAnimationsEnabled(bool enabled);
 
@@ -66,6 +67,9 @@ public:
 
   void setAutoIconColor(AutoIconColor autoIconColor);
   AutoIconColor autoIconColor() const;
+
+  void setToolTipMatchesTheme(bool enabled);
+  bool toolTipMatchesTheme() const;
 
   static void setAutoIconColor(QWidget* widget, AutoIconColor autoIconColor);
   static AutoIconColor autoIconColor(const QWidget* widget);

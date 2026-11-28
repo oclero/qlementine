@@ -20,7 +20,9 @@
 #include <oclero/qlementine/widgets/RoundedFocusFrame.hpp>
 #include <oclero/qlementine/widgets/AbstractItemListWidget.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
+#include <oclero/qlementine/widgets/TitleBar.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
+#include <oclero/qlementine/widgets/GroupBox.hpp>
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/PlainTextEdit.hpp>
 
@@ -28,6 +30,7 @@
 #include "PolishUtils.hpp"
 
 #include <QApplication>
+#include <QCalendarWidget>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDateTimeEdit>
@@ -66,8 +69,18 @@
 
 #include <cmath>
 #include <mutex>
+#include <optional>
 
 namespace oclero::qlementine {
+
+static bool isInTitleBar(const QWidget* widget) {
+  for (const auto* ancestor = widget; ancestor; ancestor = ancestor->parentWidget()) {
+    if (qobject_cast<const TitleBar*>(ancestor)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 static const QStyleOptionButton* buttonStyleOption(const QStyleOption* opt) {
   if (const auto* roundedButton = qstyleoption_cast<const QStyleOptionRoundedButton*>(opt)) {
@@ -109,7 +122,9 @@ struct QlementineStyleImpl {
   std::unordered_map<QStyle::StandardPixmap, QIcon> standardIconCache;
   std::unordered_map<QlementineStyle::StandardPixmapExt, QIcon> standardIconExtCache;
   PolishedWidgetRegistry polishedWidgets;
+  std::optional<QFont> previousAppFont;
   AutoIconColor autoIconColor{ AutoIconColor::None };
+  bool toolTipMatchesTheme{ true };
   std::function<QString(QString)> iconPathFunc;
 
   explicit QlementineStyleImpl(QlementineStyle& o)
@@ -142,7 +157,8 @@ struct QlementineStyleImpl {
   /// Some widgets need to have a QPalette explicitely set.
   void updatePalette() const {
     auto palette = theme.palette;
-    palette.setColor(QPalette::ColorGroup::Inactive, QPalette::ColorRole::ToolTipText, owner.toolTipForegroundColor());
+    palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipBase, owner.toolTipBackgroundColor());
+    palette.setColor(QPalette::ColorGroup::All, QPalette::ColorRole::ToolTipText, owner.toolTipForegroundColor());
     QToolTip::setPalette(palette);
   }
 
@@ -179,6 +195,9 @@ struct QlementineStyleImpl {
       switch (standardPixmap) {
         case QlementineStyle::SP_LineEditClearButton:
           updateUncheckableButtonIconPixmap(icon, size, owner, makeClearButtonPixmap);
+          break;
+        case QlementineStyle::SP_TitleBarCloseButton:
+          updateUncheckableButtonIconPixmap(icon, size, owner, makeCloseButtonPixmap);
           break;
         case QlementineStyle::SP_ToolBarVerticalExtensionButton:
         case QlementineStyle::SP_ToolBarHorizontalExtensionButton:
@@ -226,29 +245,134 @@ struct QlementineStyleImpl {
     return leftButtonVisible;
   }
 
-  // Returns the extra padding around the tab.
+  /// Parts of a QTabBar/QTabWidget that have rounded corners.
+  enum class TabBarPart { Bar, Pane, Start, End };
+
+  static bool isTabShapeVertical(QTabBar::Shape shape) {
+    return shape == QTabBar::RoundedEast || shape == QTabBar::RoundedWest || shape == QTabBar::TriangularEast
+           || shape == QTabBar::TriangularWest;
+  }
+
+  static bool isTabShapeTriangular(QTabBar::Shape shape) {
+    return shape == QTabBar::TriangularNorth || shape == QTabBar::TriangularSouth || shape == QTabBar::TriangularWest
+           || shape == QTabBar::TriangularEast;
+  }
+
+  static QTabBar::Shape tabBarShape(const QWidget* w) {
+    const auto* tabBar = qobject_cast<const QTabBar*>(w);
+    return tabBar ? tabBar->shape() : QTabBar::RoundedNorth;
+  }
+
+  // Returns the rect of the tab in its local frame: the frame in which the tab is horizontal, with its
+  // outer edge on top and its text running from left to right.
+  static QRect tabLocalRect(QTabBar::Shape shape, const QRect& rect) {
+    return isTabShapeVertical(shape) ? QRect(0, 0, rect.height(), rect.width())
+                                     : QRect(0, 0, rect.width(), rect.height());
+  }
+
+  // Returns the transform that maps the local frame of a tab to the widget's coordinates.
+  static QTransform tabLocalTransform(QTabBar::Shape shape, const QRect& rect) {
+    switch (shape) {
+      case QTabBar::RoundedSouth:
+      case QTabBar::TriangularSouth:
+        return QTransform(1., 0., 0., -1., rect.x(), rect.y() + rect.height());
+      case QTabBar::RoundedWest:
+      case QTabBar::TriangularWest:
+        return QTransform(0., -1., 1., 0., rect.x(), rect.y() + rect.height());
+      case QTabBar::RoundedEast:
+      case QTabBar::TriangularEast:
+        return QTransform(0., 1., -1., 0., rect.x() + rect.width(), rect.y());
+      default:
+        return QTransform::fromTranslate(rect.x(), rect.y());
+    }
+  }
+
+  // Returns the radiuses of a part of the tab bar, according to the side where the tab bar is.
+  static RadiusesF tabBarRadiuses(QTabBar::Shape shape, double radius, TabBarPart part) {
+    switch (shape) {
+      case QTabBar::RoundedSouth:
+      case QTabBar::TriangularSouth:
+        switch (part) {
+          case TabBarPart::Bar:
+            return RadiusesF(0., 0., radius, radius);
+          case TabBarPart::Pane:
+            return RadiusesF(radius, radius, 0., 0.);
+          case TabBarPart::Start:
+            return RadiusesF(0., 0., 0., radius);
+          case TabBarPart::End:
+            return RadiusesF(0., 0., radius, 0.);
+        }
+        break;
+      case QTabBar::RoundedWest:
+      case QTabBar::TriangularWest:
+        switch (part) {
+          case TabBarPart::Bar:
+            return RadiusesF(radius, 0., 0., radius);
+          case TabBarPart::Pane:
+            return RadiusesF(0., radius, radius, 0.);
+          case TabBarPart::Start:
+            return RadiusesF(radius, 0., 0., 0.);
+          case TabBarPart::End:
+            return RadiusesF(0., 0., 0., radius);
+        }
+        break;
+      case QTabBar::RoundedEast:
+      case QTabBar::TriangularEast:
+        switch (part) {
+          case TabBarPart::Bar:
+            return RadiusesF(0., radius, radius, 0.);
+          case TabBarPart::Pane:
+            return RadiusesF(radius, 0., 0., radius);
+          case TabBarPart::Start:
+            return RadiusesF(0., radius, 0., 0.);
+          case TabBarPart::End:
+            return RadiusesF(0., 0., radius, 0.);
+        }
+        break;
+      default:
+        switch (part) {
+          case TabBarPart::Bar:
+            return RadiusesF(radius, radius, 0., 0.);
+          case TabBarPart::Pane:
+            return RadiusesF(0., 0., radius, radius);
+          case TabBarPart::Start:
+            return RadiusesF(radius, 0., 0., 0.);
+          case TabBarPart::End:
+            return RadiusesF(0., radius, 0., 0.);
+        }
+        break;
+    }
+    return RadiusesF();
+  }
+
+  // Returns how much the sides of a triangular tab are slanted.
+  int tabSlant() const {
+    return theme.spacing * 2;
+  }
+
+  // Returns the space taken by the slanted sides of a triangular tab, on each end, that the content must avoid.
+  int tabContentInset(QTabBar::Shape shape) const {
+    return isTabShapeTriangular(shape) ? tabSlant() / 2 : 0;
+  }
+
+  // Returns the extra padding around the tab, in the local frame of the tab.
   // We add extra padding so we have some space to draw nice curve ends.
   QMargins tabExtraPadding(const QStyleOptionTab* optTab, const QWidget*) const {
     const auto spacing = theme.spacing;
     const auto paddingTop = spacing / 2;
 
-    const auto isFirst = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab
+    const auto isMoving = optTab->position == QStyleOptionTab::TabPosition::Moving;
+    const auto isFirst = isMoving || optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab
                          || optTab->position == QStyleOptionTab::TabPosition::Beginning;
-    const auto isLast = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab
+    const auto isLast = isMoving || optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab
                         || optTab->position == QStyleOptionTab::TabPosition::End;
 
-    //const auto isDragNDrop = w->property("qlem_dragging").toBool();
-
-    //qDebug() << isDragNDrop;
-
-    const auto notBesideSelected = optTab->selectedPosition == QStyleOptionTab::SelectedPosition::NotAdjacent;
-    const auto onlyOneTab = optTab->position == QStyleOptionTab::TabPosition::OnlyOneTab;
-    const auto isMovedTab = notBesideSelected && onlyOneTab;
-
-    //qDebug() << optTab->selectedPosition << optTab->documentMode;
-
-    const auto paddingLeft = isMovedTab || isFirst ? spacing : 0;
-    const auto paddingRight = isMovedTab || isLast ? spacing : 0;
+    // The text of a tab on the West side runs from the bottom to the top.
+    const auto isReversed = optTab->shape == QTabBar::RoundedWest || optTab->shape == QTabBar::TriangularWest;
+    const auto paddingStart = isFirst ? spacing : 0;
+    const auto paddingEnd = isLast ? spacing : 0;
+    const auto paddingLeft = isReversed ? paddingEnd : paddingStart;
+    const auto paddingRight = isReversed ? paddingStart : paddingEnd;
 
     const auto paddingBottom = 0;
     return QMargins(paddingLeft, paddingTop, paddingRight, paddingBottom);
@@ -279,10 +403,20 @@ struct QlementineStyleImpl {
     const QlementineStyle& style, const QStyleOptionSlider& opt, const qreal position, const QWidget* widget) {
     const auto handleW = style.pixelMetric(QStyle::PM_SliderLength, &opt, widget);
     const auto handleH = style.pixelMetric(QStyle::PM_SliderThickness, &opt, widget);
-    const auto handleY = opt.rect.y() + (opt.rect.height() - handleH) / 2;
     const auto range = opt.maximum - opt.minimum;
     const auto ratio = range == 0 ? 0. : (position - opt.minimum) / range;
-    const auto handleX = opt.rect.x() + static_cast<int>(ratio * (opt.rect.width() - handleW));
+    const auto orientedRatio = opt.upsideDown ? 1. - ratio : ratio;
+    if (opt.orientation == Qt::Horizontal) {
+      const auto inset = style.pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, widget) / 2;
+      const auto handleY = opt.rect.y() + (opt.rect.height() - handleH) / 2;
+      const auto handleX =
+        opt.rect.x() + inset + static_cast<int>(orientedRatio * (opt.rect.width() - handleW - 2 * inset));
+      return QRect{ handleX, handleY, handleW, handleH };
+    }
+    const auto inset = style.pixelMetric(QStyle::PM_FocusFrameVMargin, &opt, widget) / 2;
+    const auto handleX = opt.rect.x() + (opt.rect.width() - handleW) / 2;
+    const auto handleY =
+      opt.rect.y() + inset + static_cast<int>(orientedRatio * (opt.rect.height() - handleH - 2 * inset));
     return QRect{ handleX, handleY, handleW, handleH };
   }
 
@@ -330,6 +464,13 @@ void QlementineStyle::setThemeJsonPath(QString const& jsonPath) {
   }
 }
 
+void QlementineStyle::setThemeJsonString(QString const& jsonString) {
+  const auto themeOpt = Theme::fromJsonString(jsonString);
+  if (themeOpt.has_value()) {
+    setTheme(themeOpt.value());
+  }
+}
+
 bool QlementineStyle::animationsEnabled() const {
   return _impl->animations.enabled();
 }
@@ -372,6 +513,15 @@ void QlementineStyle::setAutoIconColor(AutoIconColor autoIconColor) {
 
 AutoIconColor QlementineStyle::autoIconColor() const {
   return _impl->autoIconColor;
+}
+
+void QlementineStyle::setToolTipMatchesTheme(bool enabled) {
+  _impl->toolTipMatchesTheme = enabled;
+  triggerCompleteRepaint();
+}
+
+bool QlementineStyle::toolTipMatchesTheme() const {
+  return _impl->toolTipMatchesTheme;
 }
 
 // Sets automatic icon colorization for a specific widget.
@@ -425,7 +575,7 @@ QPixmap QlementineStyle::getColorizedPixmap(
 
 QIcon QlementineStyle::makeThemedIcon(const QString& svgPath, const QSize& size, ColorRole role) const {
   const auto iconTheme = _impl->iconThemeFromTheme(role);
-  return makeIconFromSvg(svgPath, iconTheme, size);
+  return makeIconFromSvg(svgPath, iconTheme, size, _impl->theme.iconBoldness);
 }
 
 QIcon QlementineStyle::makeThemedIconFromName(const QString& name, const QSize& size, ColorRole role) const {
@@ -439,7 +589,7 @@ QIcon QlementineStyle::makeThemedIconFromName(const QString& name, const QSize& 
 
 QIcon QlementineStyle::makeThemedIconFromData(const QByteArray& svgData, const QSize& size, ColorRole role) const {
   const auto iconTheme = _impl->iconThemeFromTheme(role);
-  return makeIconFromSvgData(svgData, iconTheme, size);
+  return makeIconFromSvgData(svgData, iconTheme, size, _impl->theme.iconBoldness);
 }
 
 void QlementineStyle::setIconPathGetter(const std::function<QString(QString)>& func) {
@@ -524,19 +674,39 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto* tabBar = tabWidget ? tabWidget->tabBar() : nullptr;
       if (!documentMode && tabBar) {
         // Draw a border around the content.
+        const auto shape = tabBar->shape();
         const auto mouse = getMouseState(opt->state);
         const auto radius = _impl->theme.borderRadius * 1.5;
         const auto borderColor = tabBarBackgroundColor(mouse);
         const auto borderW = _impl->theme.borderWidth;
-        drawRoundedRectBorder(
-          p, opt->rect.adjusted(0, -borderW, 0, 0), borderColor, borderW, RadiusesF(0., 0., radius, radius));
+        auto frameRect = opt->rect;
+        switch (shape) {
+          case QTabBar::RoundedSouth:
+          case QTabBar::TriangularSouth:
+            frameRect.adjust(0, 0, 0, borderW);
+            break;
+          case QTabBar::RoundedWest:
+          case QTabBar::TriangularWest:
+            frameRect.adjust(-borderW, 0, 0, 0);
+            break;
+          case QTabBar::RoundedEast:
+          case QTabBar::TriangularEast:
+            frameRect.adjust(0, 0, borderW, 0);
+            break;
+          default:
+            frameRect.adjust(0, -borderW, 0, 0);
+            break;
+        }
+        drawRoundedRectBorder(p, frameRect, borderColor, borderW,
+          QlementineStyleImpl::tabBarRadiuses(shape, radius, QlementineStyleImpl::TabBarPart::Pane));
 
         // Draw the background of the tab bar.
-        const auto tabBarHeight = _impl->theme.controlHeightLarge + _impl->theme.spacing;
         QStyleOptionTabBarBase tabBarOpt;
         tabBarOpt.initFrom(tabBar);
-        tabBarOpt.rect = QRect(0, 0, opt->rect.width(), tabBarHeight);
-        tabBarOpt.shape = tabBar->shape();
+        tabBarOpt.rect = QlementineStyleImpl::isTabShapeVertical(shape)
+                           ? QRect(tabBar->x(), 0, tabBar->width(), tabWidget->height())
+                           : QRect(0, tabBar->y(), tabWidget->width(), tabBar->height());
+        tabBarOpt.shape = shape;
         tabBarOpt.documentMode = documentMode;
         drawPrimitive(PE_FrameTabBarBase, &tabBarOpt, p, tabBar);
       }
@@ -576,7 +746,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
           p->fillRect(opt->rect, bgColor);
         } else {
           const auto radius = _impl->theme.borderRadius * 1.5;
-          drawRoundedRect(p, opt->rect, bgColor, RadiusesF(radius, radius, 0., 0.));
+          drawRoundedRect(p, opt->rect, bgColor,
+            QlementineStyleImpl::tabBarRadiuses(optTabBar->shape, radius, QlementineStyleImpl::TabBarPart::Bar));
         }
       }
       return;
@@ -641,6 +812,11 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         const auto& bgColor = toolBarBackgroundColor();
         const auto& rect = optToolBar->rect;
         p->fillRect(rect, bgColor);
+
+        // Inside a title bar, the title bar is responsible for its own borders.
+        if (isInTitleBar(w)) {
+          return;
+        }
 
         const auto lineW = _impl->theme.borderWidth;
         const auto& lineColor = toolBarBorderColor();
@@ -830,8 +1006,14 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         }
       }
       return;
-    case PE_IndicatorDockWidgetResizeHandle:
-      break;
+    case PE_IndicatorDockWidgetResizeHandle: {
+      const auto& rect = opt->rect;
+      const auto isVertical = rect.width() < rect.height();
+      const auto lineRect = isVertical ? QRect(rect.left() + rect.width() / 2, rect.top(), 1, rect.height())
+                                       : QRect(rect.left(), rect.top() + rect.height() / 2, rect.width(), 1);
+      p->fillRect(lineRect, _impl->theme.borderColor);
+    }
+      return;
     case PE_IndicatorHeaderArrow:
       if (const auto* optHeader = qstyleoption_cast<const QStyleOptionHeader*>(opt)) {
         const auto indicatorType = optHeader->sortIndicator;
@@ -902,13 +1084,16 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     }
       return;
     case PE_IndicatorTabTear: {
-      // TODO Handle vertical TabBar.
       const auto* tabBar = qobject_cast<const QTabBar*>(w);
       const auto documentMode = tabBar && tabBar->documentMode();
+      const auto shape = QlementineStyleImpl::tabBarShape(w);
       const auto& rect = opt->rect;
       const auto startPos = QPointF(rect.topLeft());
       const auto shadowW = _impl->theme.spacing * 3;
-      const auto endPos = QPointF(rect.topLeft()) + QPointF{ static_cast<double>(shadowW), 0. };
+      const auto endPos =
+        QPointF(rect.topLeft())
+        + (QlementineStyleImpl::isTabShapeVertical(shape) ? QPointF{ 0., static_cast<double>(shadowW) }
+                                                          : QPointF{ static_cast<double>(shadowW), 0. });
       auto gradient = QLinearGradient(startPos, endPos);
       const auto& startColor = tabBarShadowColor();
       const auto& endColor = _impl->theme.shadowColorTransparent;
@@ -918,14 +1103,17 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto compModeBackup = p->compositionMode();
       p->setCompositionMode(QPainter::CompositionMode_Multiply);
 
-      drawRoundedRect(p, rect, gradient, documentMode ? RadiusesF(0.) : RadiusesF(radius, 0., 0., 0.));
+      drawRoundedRect(p, rect, gradient,
+        documentMode ? RadiusesF(0.)
+                     : QlementineStyleImpl::tabBarRadiuses(shape, radius, QlementineStyleImpl::TabBarPart::Start));
       p->setCompositionMode(compModeBackup);
     }
       return;
     case PE_IndicatorTabTearRight: {
-      // TODO Handle vertical TabBar.
       const auto* tabBar = qobject_cast<const QTabBar*>(w);
       const auto documentMode = tabBar && tabBar->documentMode();
+      const auto shape = QlementineStyleImpl::tabBarShape(w);
+      const auto vertical = QlementineStyleImpl::isTabShapeVertical(shape);
       const auto& rect = opt->rect;
 
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
@@ -933,7 +1121,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
 
       // Shadow gradient.
       const auto startPos = QPointF(rect.topLeft());
-      const auto endPos = QPointF(rect.topLeft()) + QPointF{ static_cast<double>(shadowW), 0. };
+      const auto endPos =
+        QPointF(rect.topLeft())
+        + (vertical ? QPointF{ 0., static_cast<double>(shadowW) } : QPointF{ static_cast<double>(shadowW), 0. });
       auto gradient = QLinearGradient(startPos, endPos);
       const auto& startColor = _impl->theme.shadowColorTransparent;
       const auto& endColor = tabBarShadowColor();
@@ -942,15 +1132,20 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       const auto compModeBackup = p->compositionMode();
       p->setCompositionMode(QPainter::CompositionMode_Multiply);
       const auto radius = _impl->theme.borderRadius * 1.5;
-      drawRoundedRect(p, rect, gradient, documentMode ? RadiusesF(0.) : RadiusesF(0., radius, 0., 0.));
+      const auto endRadiuses =
+        documentMode ? RadiusesF(0.)
+                     : QlementineStyleImpl::tabBarRadiuses(shape, radius, QlementineStyleImpl::TabBarPart::End);
+      drawRoundedRect(p, rect, gradient, endRadiuses);
       p->setCompositionMode(compModeBackup);
 
       // Filled rectangle below scroll buttons.
       // We need to fill the whole surface to ensure tabs are not visible below.
       const auto mouse = getMouseState(opt->state);
       const auto& tabBarBgColor = tabBarBackgroundColor(mouse);
-      const auto filledRect = QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
-      drawRoundedRect(p, filledRect, tabBarBgColor, documentMode ? RadiusesF(0.) : RadiusesF(0., radius, 0., 0.));
+      const auto filledRect =
+        vertical ? QRect(rect.x(), rect.y() + rect.height() - scrollButtonsW, rect.width(), scrollButtonsW)
+                 : QRect(rect.x() + rect.width() - scrollButtonsW, rect.y(), scrollButtonsW, rect.height());
+      drawRoundedRect(p, filledRect, tabBarBgColor, endRadiuses);
     }
       return;
     case PE_PanelScrollAreaCorner:
@@ -964,6 +1159,20 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
     case PE_PanelItemViewItem:
       if (const auto* optItem = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
         const auto& rect = optItem->rect;
+
+        if (w && w->objectName() == QLatin1String("qt_calendar_calendarview")) {
+          if (optItem->index.flags().testFlag(Qt::ItemIsSelectable)) {
+            const auto& calendarColor = listItemBackgroundColor(getMouseState(optItem->state),
+              getSelectionState(optItem->state), FocusState::Focused, ActiveState::Active, optItem->index, w);
+            const auto calendarInset = _impl->theme.spacing / 4;
+            p->setRenderHint(QPainter::Antialiasing, true);
+            p->setPen(Qt::NoPen);
+            p->setBrush(calendarColor);
+            p->drawRoundedRect(rect.marginsRemoved({ calendarInset, calendarInset, calendarInset, calendarInset }),
+              _impl->theme.borderRadius, _impl->theme.borderRadius);
+          }
+          return;
+        }
         const auto row = optItem->index.row();
         const auto column = optItem->index.column();
 
@@ -1042,6 +1251,9 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
       }
       return;
     case PE_PanelItemViewRow:
+      if (w && w->objectName() == QLatin1String("qt_calendar_calendarview")) {
+        return;
+      }
       if (const auto* optItem = qstyleoption_cast<const QStyleOptionViewItem*>(opt)) {
         // Draw alternate row color.
         const auto alternate = getAlternateState(optItem->features);
@@ -1058,15 +1270,8 @@ void QlementineStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption* opt
         }
       }
       return;
-    case PE_PanelStatusBar: {
-      const auto& bgColor = statusBarBackgroundColor();
-      const auto& borderColor = statusBarBorderColor();
-      const auto borderW = _impl->theme.borderWidth;
-      p->fillRect(opt->rect, bgColor);
-
-      const auto lineRect = QRect(opt->rect.x(), opt->rect.y(), opt->rect.width(), borderW);
-      p->fillRect(lineRect, borderColor);
-    }
+    case PE_PanelStatusBar:
+      p->fillRect(opt->rect, statusBarBackgroundColor());
       return;
     case PE_IndicatorTabClose:
       if (const auto* button = qobject_cast<const QAbstractButton*>(w)) {
@@ -1314,7 +1519,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
         // Background.
         auto tabBgOpt = QStyleOptionTab(*optTab);
-        tabBgOpt.rect = tabBgOpt.rect.marginsRemoved(padding);
+        const auto localRect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
+        tabBgOpt.rect = QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect)
+                          .mapRect(localRect.marginsRemoved(padding));
         drawControl(CE_TabBarTabShape, &tabBgOpt, p, w);
 
         // Foreground.
@@ -1327,7 +1534,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_TabBarTabShape:
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
         const auto mouse = getMouseState(optTab->state);
-        const auto selection = getSelectionState(optTab->state);
+        const auto isMoving = optTab->position == QStyleOptionTab::TabPosition::Moving;
+        const auto selection = isMoving ? SelectionState::Selected : getSelectionState(optTab->state);
         const auto mouseOverTab = mouse == MouseState::Hovered || mouse == MouseState::Pressed;
         const auto mousePressed = mouse == MouseState::Pressed;
         const auto tabIsSelected = selection == SelectionState::Selected;
@@ -1338,35 +1546,42 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         const auto spacing = _impl->theme.spacing;
         const auto buttonsVisible = QlementineStyleImpl::areTabBarScrollButtonsVisible(tabBar);
         const auto buttonsW = buttonsVisible ? _impl->theme.controlHeightMedium * 2 + spacing * 3 : 0;
-        const auto mouseOverButtons = cursorPos.x() > tabBar->width() - buttonsW;
+        const auto isVertical = QlementineStyleImpl::isTabShapeVertical(optTab->shape);
+        const auto mouseOverButtons =
+          isVertical ? cursorPos.y() > tabBar->height() - buttonsW : cursorPos.x() > tabBar->width() - buttonsW;
 
         // The tab shape must be drawn in these cases:
         // - Always when the tab is selected.
         // - When the tab is actually hovered (i.e. the mouse isn't over the left/right buttons).
         const auto drawShape = tabIsSelected || (!mouseOverButtons && mouseOverTab);
-        const auto drawShadow = tabIsSelected && !mousePressed;
+        const auto drawShadow = isMoving || (tabIsSelected && !mousePressed);
         if (drawShape) {
           const auto radius = _impl->theme.borderRadius;
           const auto& bgColor = tabBackgroundColor(mouse, selection);
-          const auto& radiuses =
-            tabIsSelected ? RadiusesF(radius, radius, radius, radius) : RadiusesF(radius, radius, 0., 0.);
-          drawTab(p, optTab->rect, radiuses, bgColor, drawShadow, _impl->theme.shadowColor2);
+          const auto localRect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
+          QPainterStateGuard tabShapeStateGuard(p);
+          p->setTransform(QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect), true);
+          if (QlementineStyleImpl::isTabShapeTriangular(optTab->shape)) {
+            drawTab(p, getTrapezoidTabPath(localRect, _impl->tabSlant(), radius), bgColor, drawShadow,
+              _impl->theme.shadowColor2);
+          } else {
+            const auto& radiuses =
+              tabIsSelected ? RadiusesF(radius, radius, radius, radius) : RadiusesF(radius, radius, 0., 0.);
+            drawTab(p, localRect, radiuses, bgColor, drawShadow, _impl->theme.shadowColor2);
+          }
         }
       }
       return;
     case CE_TabBarTabLabel:
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
-        // TODO Handle vertical tabs.
-        const auto isVertical = optTab->shape == QTabBar::RoundedEast || optTab->shape == QTabBar::RoundedWest
-                                || optTab->shape == QTabBar::TriangularEast || optTab->shape == QTabBar::TriangularWest;
-        if (isVertical) {
-          return;
-        }
-
-        const auto& rect = optTab->rect;
+        // Draw in the local frame of the tab, so the label is rotated on vertical tabs.
+        const auto rect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
+        QPainterStateGuard tabLabelStateGuard(p);
+        p->setTransform(QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect), true);
 
         const auto mouse = getMouseState(optTab->state);
-        const auto selection = getSelectionState(optTab->state);
+        const auto isMoving = optTab->position == QStyleOptionTab::TabPosition::Moving;
+        const auto selection = isMoving ? SelectionState::Selected : getSelectionState(optTab->state);
         const auto& fgColor = tabForegroundColor(mouse, selection);
 
         const auto spacing = _impl->theme.spacing;
@@ -1433,7 +1648,7 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         optContent.rect = subElementRect(SE_ProgressBarContents, optProgressBar, w);
         drawControl(CE_ProgressBarContents, &optContent, p, w);
 
-        if (optProgressBar->textVisible) {
+        if (optProgressBar->textVisible && optProgressBar->state.testFlag(State_Horizontal)) {
           auto optText = QStyleOptionProgressBar(*optProgressBar);
           optText.rect = subElementRect(SE_ProgressBarLabel, optProgressBar, w);
           drawControl(CE_ProgressBarLabel, &optText, p, w);
@@ -1443,7 +1658,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ProgressBarGroove:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         // Background.
-        const auto radius = optProgressBar->rect.height() / 2.;
+        const auto radius = (optProgressBar->state.testFlag(State_Horizontal) ? optProgressBar->rect.height()
+                                                                               : optProgressBar->rect.width()) /
+                            2.;
         const auto mouse = getMouseState(optProgressBar->state);
         const auto& color = progressBarGrooveColor(mouse);
         drawRoundedRect(p, optProgressBar->rect, color, radius);
@@ -1452,7 +1669,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_ProgressBarContents:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         // Draw foreground rect.
-        const auto radius = optProgressBar->rect.height() / 2.;
+        const auto horizontal = optProgressBar->state.testFlag(State_Horizontal);
+        const auto radius = (horizontal ? optProgressBar->rect.height() : optProgressBar->rect.width()) / 2.;
         const auto mouse = getMouseState(optProgressBar->state);
         const auto& color = progressBarValueColor(mouse);
         const auto indeterminate = optProgressBar->maximum == 0 && optProgressBar->minimum == 0;
@@ -1466,8 +1684,11 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
 
           const auto valueRectW = static_cast<int>(optProgressBar->rect.width() * 0.25);
           const auto valueRectX = optProgressBar->rect.x() + (optProgressBar->rect.width() - valueRectW) * currentRatio;
+          const auto valueRectH = static_cast<int>(optProgressBar->rect.height() * 0.25);
+          const auto valueRectY = optProgressBar->rect.y() + (optProgressBar->rect.height() - valueRectH) * currentRatio;
           const auto valueRect =
-            QRectF(valueRectX, optProgressBar->rect.y(), valueRectW, optProgressBar->rect.height());
+            horizontal ? QRectF(valueRectX, optProgressBar->rect.y(), valueRectW, optProgressBar->rect.height())
+                       : QRectF(optProgressBar->rect.x(), valueRectY, optProgressBar->rect.width(), valueRectH);
 
           p->setPen(Qt::NoPen);
           p->setBrush(color);
@@ -1477,7 +1698,8 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
           const auto progress = optProgressBar->progress;
           const auto currentProgress = _impl->animations.animateProgress(w, progress, _impl->theme.animationDuration);
           drawProgressBarValueRect(p, optProgressBar->rect, color, optProgressBar->minimum, optProgressBar->maximum,
-            currentProgress, radius, optProgressBar->invertedAppearance);
+            currentProgress, radius, horizontal ? optProgressBar->invertedAppearance : !optProgressBar->invertedAppearance,
+            horizontal ? Qt::Horizontal : Qt::Vertical);
         }
       }
       return;
@@ -2039,8 +2261,23 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
       return;
     // case CE_RubberBand:
     //   break;
-    // case CE_DockWidgetTitle:
-    //   break;
+    case CE_DockWidgetTitle:
+      if (const auto* optDock = qstyleoption_cast<const QStyleOptionDockWidget*>(opt)) {
+        if (!optDock->verticalTitleBar) {
+          const auto& theme = _impl->theme;
+          const auto& rect = opt->rect;
+          p->fillRect(rect, theme.backgroundColorMain2);
+          p->fillRect(QRect(rect.left(), rect.bottom(), rect.width(), 1), theme.borderColor);
+
+          const auto textRect = subElementRect(SE_DockWidgetTitleBarText, opt, w);
+          p->setFont(theme.fontBold);
+          p->setPen(opt->palette.color(QPalette::WindowText));
+          const auto title = QFontMetrics(theme.fontBold).elidedText(optDock->title, Qt::ElideRight, textRect.width());
+          p->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, title);
+          return;
+        }
+      }
+      break;
     // case CE_ScrollBarAddLine:
     //   // TODO
     //   break;
@@ -2065,7 +2302,9 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
     case CE_FocusFrame:
       if (const auto* focusFrame = qobject_cast<const QFocusFrame*>(w)) {
         const auto* monitoredWidget = focusFrame->widget();
-        const auto hasFocus = monitoredWidget ? monitoredWidget->hasFocus() : false;
+        const auto* itemListWidget = qobject_cast<const AbstractItemListWidget*>(monitoredWidget);
+        const auto hasFocus =
+          monitoredWidget ? monitoredWidget->hasFocus() && (!itemListWidget || itemListWidget->hasKeyboardFocus()) : false;
         const auto borderW = _impl->theme.focusBorderWidth;
 
         QStyleOptionFocusRoundedRect optFocus;
@@ -2328,6 +2567,27 @@ void QlementineStyle::drawControl(ControlElement ce, const QStyleOption* opt, QP
         // Background.
         drawPrimitive(PE_PanelItemViewItem, optItem, p, w);
 
+        if (w && w->objectName() == QLatin1String("qt_calendar_calendarview")) {
+          const auto calendarSelectable = optItem->index.flags().testFlag(Qt::ItemIsSelectable);
+          const auto calendarSelected =
+            getSelectionState(optItem->state) == SelectionState::Selected && calendarSelectable;
+          const auto* calendarWidget = qobject_cast<const QCalendarWidget*>(w->parentWidget());
+          const auto calendarHeaderRows =
+            calendarWidget && calendarWidget->horizontalHeaderFormat() == QCalendarWidget::NoHorizontalHeader ? 0 : 1;
+          const auto calendarDateRow = optItem->index.row() - calendarHeaderRows;
+          const auto calendarDay = optItem->text.toInt();
+          const auto calendarOutOfMonth =
+            calendarSelectable && ((calendarDateRow == 0 && calendarDay > 7) || (calendarDateRow >= 3 && calendarDay < 15));
+          p->setFont(optItem->font);
+          p->setBrush(Qt::NoBrush);
+          p->setPen(calendarSelected                              ? _impl->theme.primaryColorForeground
+                    : !calendarSelectable                         ? _impl->theme.secondaryAlternativeColor
+                    : !optItem->state.testFlag(State_Enabled) || calendarOutOfMonth ? _impl->theme.secondaryColorDisabled
+                                                                                    : _impl->theme.secondaryColor);
+          p->drawText(optItem->rect, Qt::AlignCenter | Qt::TextSingleLine, optItem->text);
+          return;
+        }
+
         // Foreground.
         const auto& features = optItem->features;
         const auto hasIcon = features.testFlag(QStyleOptionViewItem::HasDecoration) && !optItem->icon.isNull();
@@ -2483,8 +2743,18 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
           paddingRight = padding * 2;
         }
 
-        if (paddingLeft + paddingRight >= opt->rect.width()) {
+        const auto totalPadding = paddingLeft + paddingRight;
+        if (totalPadding >= opt->rect.width()) {
           return opt->rect;
+        }
+
+        if (hasText && totalPadding > 0) {
+          const auto idealWidth = qlementine::textWidth(optButton->fontMetrics, optButton->text) + totalPadding;
+          if (opt->rect.width() < idealWidth) {
+            const auto reduction = std::min(idealWidth - opt->rect.width(), totalPadding);
+            paddingLeft -= paddingLeft * reduction / totalPadding;
+            paddingRight -= paddingRight * reduction / totalPadding;
+          }
         }
         return opt->rect.marginsRemoved({ paddingLeft, 0, paddingRight, 0 });
       }
@@ -2537,7 +2807,8 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_ProgressBarContents:
     case SE_ProgressBarGroove:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
-        const auto showText = optProgressBar->textVisible;
+        const auto horizontal = optProgressBar->state.testFlag(State_Horizontal);
+        const auto showText = optProgressBar->textVisible && horizontal;
         const auto labelW = showText ? optProgressBar->fontMetrics
                                          .boundingRect(optProgressBar->rect, Qt::AlignRight, QStringLiteral("100%"))
                                          .width()
@@ -2545,6 +2816,9 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
         const auto spacing = showText ? _impl->theme.spacing : 0;
         const auto barW = opt->rect.width() - labelW - spacing;
         const auto barH = _impl->theme.progressBarGrooveHeight;
+        if (!horizontal) {
+          return QRect{ opt->rect.x() + (opt->rect.width() - barH) / 2, opt->rect.y(), barH, opt->rect.height() };
+        }
         const auto barY = opt->rect.y() + (opt->rect.height() - barH) / 2;
         return QRect{ opt->rect.x(), barY, barW, barH };
       }
@@ -2673,10 +2947,42 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_FrameContents:
       break;
     case SE_DockWidgetCloseButton:
-      break;
     case SE_DockWidgetFloatButton:
-      break;
     case SE_DockWidgetTitleBarText:
+      if (const auto* optDock = qstyleoption_cast<const QStyleOptionDockWidget*>(opt)) {
+        if (!optDock->verticalTitleBar) {
+          const auto& rect = opt->rect;
+          const auto margin = _impl->theme.spacing / 2;
+          const auto buttonExtent =
+            pixelMetric(PM_SmallIconSize, opt, w) + pixelMetric(PM_DockWidgetTitleBarButtonMargin, opt, w) * 2;
+          const auto buttonY = rect.top() + (rect.height() - buttonExtent) / 2;
+          auto right = rect.right() + 1 - margin;
+
+          auto closeRect = QRect();
+          if (optDock->closable) {
+            right -= buttonExtent;
+            closeRect = QRect(right, buttonY, buttonExtent, buttonExtent);
+          }
+
+          auto floatRect = QRect();
+          if (optDock->floatable) {
+            right -= buttonExtent;
+            floatRect = QRect(right, buttonY, buttonExtent, buttonExtent);
+          }
+
+          const auto titleMargin = _impl->theme.spacing;
+          const auto textRect = QRect(rect.left() + titleMargin, rect.top(),
+            std::max(0, right - rect.left() - titleMargin - margin), rect.height());
+          switch (se) {
+            case SE_DockWidgetCloseButton:
+              return visualRect(opt->direction, rect, closeRect);
+            case SE_DockWidgetFloatButton:
+              return visualRect(opt->direction, rect, floatRect);
+            default:
+              return visualRect(opt->direction, rect, textRect);
+          }
+        }
+      }
       break;
     case SE_DockWidgetIcon:
       break;
@@ -2712,62 +3018,70 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
     case SE_TabBarTearIndicatorLeft: {
       const auto& rect = opt->rect;
       const auto shadowW = _impl->theme.spacing * 3;
-      const auto x = rect.x();
-      const auto y = rect.y();
-      const auto width = shadowW;
-      const auto height = rect.height();
-      return { x, y, width, height };
+      if (QlementineStyleImpl::isTabShapeVertical(QlementineStyleImpl::tabBarShape(w))) {
+        return { rect.x(), rect.y(), rect.width(), shadowW };
+      }
+      return { rect.x(), rect.y(), shadowW, rect.height() };
     }
     case SE_TabBarTearIndicatorRight: {
       const auto& rect = opt->rect;
       const auto scrollButtonsW = _impl->theme.controlHeightMedium * 2 + _impl->theme.spacing * 3;
       const auto shadowW = _impl->theme.spacing * 3;
-      const auto x = rect.x() + rect.width() - shadowW - scrollButtonsW;
-      const auto y = rect.y();
-      const auto width = shadowW + scrollButtonsW;
-      const auto height = rect.height();
-      return { x, y, width, height };
+      if (QlementineStyleImpl::isTabShapeVertical(QlementineStyleImpl::tabBarShape(w))) {
+        return { rect.x(), rect.y() + rect.height() - shadowW - scrollButtonsW, rect.width(),
+          shadowW + scrollButtonsW };
+      }
+      return { rect.x() + rect.width() - shadowW - scrollButtonsW, rect.y(), shadowW + scrollButtonsW, rect.height() };
     }
     case SE_TabBarTabLeftButton:
       // Button on the left of a tab.
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
-        const auto& rect = optTab->rect;
-        const auto buttonSize = optTab->leftButtonSize;
+        const auto localRect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
+        const auto isVertical = QlementineStyleImpl::isTabShapeVertical(optTab->shape);
+        const auto buttonSize = isVertical ? optTab->leftButtonSize.transposed() : optTab->leftButtonSize;
         const auto paddingTop = _impl->theme.tabBarPaddingTop;
         const auto spacing = _impl->theme.spacing;
         const auto padding = _impl->tabExtraPadding(optTab, w);
-        const auto x = rect.x() + spacing + padding.left();
-        const auto y = rect.y() + paddingTop + (rect.height() - paddingTop - buttonSize.height()) / 2;
-        return { x, y, buttonSize.width(), buttonSize.height() };
+        const auto x = localRect.x() + spacing + padding.left() + _impl->tabContentInset(optTab->shape);
+        const auto y = localRect.y() + paddingTop + (localRect.height() - paddingTop - buttonSize.height()) / 2;
+        return QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect)
+          .mapRect(QRect{ x, y, buttonSize.width(), buttonSize.height() });
       }
       return {};
     case SE_TabBarTabRightButton:
       // Button on the right of a tab (close button).
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
-        const auto& rect = optTab->rect;
-        const auto buttonSize = optTab->rightButtonSize;
+        const auto localRect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
+        const auto isVertical = QlementineStyleImpl::isTabShapeVertical(optTab->shape);
+        const auto buttonSize = isVertical ? optTab->rightButtonSize.transposed() : optTab->rightButtonSize;
         const auto spacing = _impl->theme.spacing;
         const auto paddingTop = _impl->theme.tabBarPaddingTop;
         const auto padding = _impl->tabExtraPadding(optTab, w);
-        const auto x = rect.x() + rect.width() - spacing - buttonSize.width() - padding.right();
-        const auto y = rect.y() + paddingTop + (rect.height() - paddingTop - buttonSize.height()) / 2;
-        return { x, y, buttonSize.width(), buttonSize.height() };
+        const auto x = localRect.x() + localRect.width() - spacing - buttonSize.width() - padding.right()
+                       - _impl->tabContentInset(optTab->shape);
+        const auto y = localRect.y() + paddingTop + (localRect.height() - paddingTop - buttonSize.height()) / 2;
+        return QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect)
+          .mapRect(QRect{ x, y, buttonSize.width(), buttonSize.height() });
       }
       return {};
     case SE_TabBarTabText:
       if (const auto* optTab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
-        const auto& rect = optTab->rect;
+        const auto localRect = QlementineStyleImpl::tabLocalRect(optTab->shape, optTab->rect);
+        const auto isVertical = QlementineStyleImpl::isTabShapeVertical(optTab->shape);
         const auto spacing = _impl->theme.spacing;
-        const auto leftButtonWidth = optTab->leftButtonSize.width();
-        const auto rightButtonWidth = optTab->rightButtonSize.width();
+        const auto leftButtonWidth = isVertical ? optTab->leftButtonSize.height() : optTab->leftButtonSize.width();
+        const auto rightButtonWidth = isVertical ? optTab->rightButtonSize.height() : optTab->rightButtonSize.width();
         const auto leftButtonW = leftButtonWidth > 0 ? leftButtonWidth + spacing : 0;
         const auto rightButtonW = rightButtonWidth > 0 ? rightButtonWidth + spacing : 0;
         const auto padding = _impl->tabExtraPadding(optTab, w);
-        const auto x = rect.x() + padding.left() + spacing + leftButtonW;
-        const auto y = rect.y() + _impl->theme.tabBarPaddingTop;
-        const auto width = rect.width() - leftButtonW - padding.left() - rightButtonW - padding.right() - spacing * 2;
-        const auto height = rect.height() - _impl->theme.tabBarPaddingTop;
-        return { x, y, width, height };
+        const auto inset = _impl->tabContentInset(optTab->shape);
+        const auto x = localRect.x() + padding.left() + spacing + leftButtonW + inset;
+        const auto y = localRect.y() + _impl->theme.tabBarPaddingTop;
+        const auto width =
+          localRect.width() - leftButtonW - padding.left() - rightButtonW - padding.right() - spacing * 2 - inset * 2;
+        const auto height = localRect.height() - _impl->theme.tabBarPaddingTop;
+        return QlementineStyleImpl::tabLocalTransform(optTab->shape, optTab->rect)
+          .mapRect(QRect{ x, y, width, height });
       }
       return {};
     case SE_TabBarScrollLeftButton: {
@@ -2775,6 +3089,9 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       const auto spacing = _impl->theme.spacing;
       const auto width = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
       const auto height = _impl->theme.controlHeightLarge + spacing;
+      if (QlementineStyleImpl::isTabShapeVertical(QlementineStyleImpl::tabBarShape(w))) {
+        return { rect.x(), rect.y() + rect.height() - 2 * width, height, width };
+      }
       const auto x = rect.x() + rect.width() - 2 * width;
       const auto y = rect.y();
       return { x, y, width, height };
@@ -2784,6 +3101,9 @@ QRect QlementineStyle::subElementRect(SubElement se, const QStyleOption* opt, co
       const auto spacing = _impl->theme.spacing;
       const auto width = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
       const auto height = _impl->theme.controlHeightLarge + spacing;
+      if (QlementineStyleImpl::isTabShapeVertical(QlementineStyleImpl::tabBarShape(w))) {
+        return { rect.x(), rect.y() + rect.height() - width + spacing / 2, height, width };
+      }
       const auto x = rect.x() + rect.width() - width + spacing / 2;
       const auto y = rect.y();
       return { x, y, width, height };
@@ -2999,6 +3319,9 @@ void QlementineStyle::drawComplexControl(
         const auto mouse = widgetMouse == MouseState::Disabled ? MouseState::Disabled : MouseState::Normal;
         const auto handleRect = QlementineStyleImpl::sliderHandleRect(*this, *sliderOpt, currentProgress, w);
         const auto disabled = mouse == MouseState::Disabled;
+        const auto horizontal = sliderOpt->orientation == Qt::Horizontal;
+        const auto handleClipRect =
+          horizontal ? handleRect.adjusted(1, 0, -1, 0) : handleRect.adjusted(0, 1, 0, -1);
 
         // Draw tickmarks.
         if (sliderOpt->subControls.testFlag(SC_SliderTickmarks) && sliderOpt->tickPosition != QSlider::NoTicks) {
@@ -3010,13 +3333,13 @@ void QlementineStyle::drawComplexControl(
           if (disabled) {
             p->save();
             auto clipRegion = QRegion{ tickmarksRect };
-            clipRegion = clipRegion.subtracted(handleRect.adjusted(1, 0, -1, 0));
+            clipRegion = clipRegion.subtracted(handleClipRect);
             p->setClipRegion(clipRegion);
           }
 
           // TODO other tick positions.
           drawSliderTickMarks(p, tickmarksRect, tickColor, min, max, sliderOpt->tickInterval, tickThickness,
-            sliderOpt->singleStep, sliderOpt->pageStep);
+            sliderOpt->singleStep, sliderOpt->pageStep, sliderOpt->orientation, sliderOpt->upsideDown);
           if (disabled) {
             p->restore();
           }
@@ -3028,21 +3351,26 @@ void QlementineStyle::drawComplexControl(
         if (sliderOpt->subControls.testFlag(SC_SliderGroove) && grooveRect.isValid()) {
           const auto& grooveColor = sliderGrooveColor(mouse);
           const auto& valueColor = sliderValueColor(mouse);
-          const auto radius = grooveRect.height() / 2.;
+          const auto radius = (horizontal ? grooveRect.height() : grooveRect.width()) / 2.;
 
           // Little trick to avoid having two colors with alpha<255 above one another.
           if (disabled) {
             p->save();
             auto clipRegion = QRegion{ grooveRect };
-            clipRegion = clipRegion.subtracted(handleRect.adjusted(1, 0, -1, 0));
+            clipRegion = clipRegion.subtracted(handleClipRect);
             p->setClipRegion(clipRegion);
           }
           drawRoundedRect(p, grooveRect, grooveColor, radius);
           if (disabled) {
             p->restore();
           }
-          const auto valueRect = grooveRect.adjusted(0, 0, -handleRect.width() + 1, 0);
-          drawProgressBarValueRect(p, valueRect, valueColor, min, max, currentProgress, radius);
+          const auto valueRect =
+            horizontal ? (sliderOpt->upsideDown ? grooveRect.adjusted(handleRect.width() - 1, 0, 0, 0)
+                                                : grooveRect.adjusted(0, 0, -handleRect.width() + 1, 0))
+                       : (sliderOpt->upsideDown ? grooveRect.adjusted(0, handleRect.height() - 1, 0, 0)
+                                                : grooveRect.adjusted(0, 0, 0, -handleRect.height() + 1));
+          drawProgressBarValueRect(
+            p, valueRect, valueColor, min, max, currentProgress, radius, sliderOpt->upsideDown, sliderOpt->orientation);
         }
 
         // Draw handle.
@@ -3126,23 +3454,39 @@ void QlementineStyle::drawComplexControl(
             buttonOpt.state.setFlag(State_Raised, true);
 
             // Draw an opaque background to hide tabs below.
-            const auto isLeftButton = toolbuttonOpt->arrowType == Qt::ArrowType::LeftArrow;
+            const auto isLeftButton = toolbuttonOpt->arrowType == Qt::ArrowType::LeftArrow
+                                      || toolbuttonOpt->arrowType == Qt::ArrowType::UpArrow;
+            const auto tabBarShape = parentTabBar->shape();
+            const auto isVertical = QlementineStyleImpl::isTabShapeVertical(tabBarShape);
             const auto tabBarState = parentTabBar->isEnabled() ? MouseState::Normal : MouseState::Disabled;
             if (parentTabBar->documentMode() || isLeftButton) {
               p->fillRect(toolbuttonOpt->rect, tabBarBackgroundColor(tabBarState));
             } else {
               const auto bgRadius = _impl->theme.borderRadius * 1.5;
-              drawRoundedRect(
-                p, toolbuttonOpt->rect, tabBarBackgroundColor(tabBarState), RadiusesF(0., bgRadius, 0., 0.));
+              drawRoundedRect(p, toolbuttonOpt->rect, tabBarBackgroundColor(tabBarState),
+                QlementineStyleImpl::tabBarRadiuses(tabBarShape, bgRadius, QlementineStyleImpl::TabBarPart::End));
             }
 
             // Rect.
             const auto spacing = _impl->theme.spacing;
             const auto buttonSize = QSize{ _impl->theme.controlHeightMedium, _impl->theme.controlHeightMedium };
-            const auto buttonX = isLeftButton ? buttonRect.x() + buttonRect.width() - buttonSize.width() - spacing / 2
-                                              : buttonRect.x() + spacing / 2;
-            const auto buttonY = buttonRect.y() + (buttonRect.height() - buttonSize.height()) / 2;
+            const auto buttonX = isVertical     ? buttonRect.x() + (buttonRect.width() - buttonSize.width()) / 2
+                                 : isLeftButton ? buttonRect.x() + buttonRect.width() - buttonSize.width() - spacing / 2
+                                                : buttonRect.x() + spacing / 2;
+            const auto buttonY = !isVertical ? buttonRect.y() + (buttonRect.height() - buttonSize.height()) / 2
+                                 : isLeftButton
+                                   ? buttonRect.y() + buttonRect.height() - buttonSize.height() - spacing / 2
+                                   : buttonRect.y() + spacing / 2;
             buttonOpt.rect = QRect{ QPoint{ buttonX, buttonY }, buttonSize };
+
+            // The arrows are drawn pointing left/right, so rotate them to point up/down on vertical tab bars.
+            QPainterStateGuard rotationGuard(p);
+            if (isVertical) {
+              const auto center = QPointF(buttonOpt.rect.center()) + QPointF(0.5, 0.5);
+              p->translate(center);
+              p->rotate(90.);
+              p->translate(-center);
+            }
 
             // Icon.
             const auto stdIcon = isLeftButton ? SP_ArrowLeft : SP_ArrowRight;
@@ -3417,9 +3761,10 @@ QStyle::SubControl QlementineStyle::hitTestComplexControl(
         }
 
         const auto grooveRect = subControlRect(cc, optSlider, SC_SliderGroove, w);
-        const auto& clickRect = !handleRect.isValid()
-                                  ? grooveRect
-                                  : QRect{ grooveRect.x(), handleRect.y(), grooveRect.width(), handleRect.height() };
+        const auto& clickRect = !handleRect.isValid() ? grooveRect
+                                : optSlider->orientation == Qt::Horizontal
+                                  ? QRect{ grooveRect.x(), handleRect.y(), grooveRect.width(), handleRect.height() }
+                                  : QRect{ handleRect.x(), grooveRect.y(), handleRect.width(), grooveRect.height() };
         if (clickRect.isValid() && clickRect.contains(pos)) {
           return SC_SliderGroove;
         }
@@ -3652,11 +3997,15 @@ QRect QlementineStyle::subControlRect(
       if (const auto* sliderOpt = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
         switch (sc) {
           case SC_SliderGroove: {
-            const auto grooveW = opt->rect.width();
-            const auto grooveH = _impl->theme.sliderGrooveHeight;
-            const auto grooveX = opt->rect.x();
-            const auto grooveY = opt->rect.y() + (opt->rect.height() - grooveH) / 2;
-            return QRect{ grooveX, grooveY, grooveW, grooveH };
+            const auto grooveThickness = _impl->theme.sliderGrooveHeight;
+            if (sliderOpt->orientation == Qt::Horizontal) {
+              const auto inset = pixelMetric(PM_FocusFrameHMargin, opt, w) / 2;
+              const auto grooveY = opt->rect.y() + (opt->rect.height() - grooveThickness) / 2;
+              return QRect{ opt->rect.x() + inset, grooveY, opt->rect.width() - 2 * inset, grooveThickness };
+            }
+            const auto inset = pixelMetric(PM_FocusFrameVMargin, opt, w) / 2;
+            const auto grooveX = opt->rect.x() + (opt->rect.width() - grooveThickness) / 2;
+            return QRect{ grooveX, opt->rect.y() + inset, grooveThickness, opt->rect.height() - 2 * inset };
           } break;
           case SC_SliderHandle: {
             return QlementineStyleImpl::sliderHandleRect(
@@ -3668,11 +4017,17 @@ QRect QlementineStyle::subControlRect(
                 const auto grooveRect = subControlRect(cc, opt, SubControl::SC_SliderGroove, w);
                 const auto handleThickness = pixelMetric(PM_SliderLength);
                 const auto tickOffset = pixelMetric(PM_SliderTickmarkOffset);
-                const auto tickMarksX = opt->rect.x() + handleThickness / 2;
-                const auto tickMarksH = _impl->theme.sliderTickSize;
-                const auto tickMarksY = grooveRect.top() - tickOffset - tickMarksH;
-                const auto tickMarksW = grooveRect.width() - handleThickness;
-                return QRect{ tickMarksX, tickMarksY, tickMarksW, tickMarksH };
+                const auto tickMarksSize = _impl->theme.sliderTickSize;
+                if (sliderOpt->orientation == Qt::Horizontal) {
+                  const auto tickMarksX = grooveRect.x() + handleThickness / 2;
+                  const auto tickMarksY = grooveRect.top() - tickOffset - tickMarksSize;
+                  const auto tickMarksW = grooveRect.width() - handleThickness;
+                  return QRect{ tickMarksX, tickMarksY, tickMarksW, tickMarksSize };
+                }
+                const auto tickMarksX = grooveRect.left() - tickOffset - tickMarksSize;
+                const auto tickMarksY = grooveRect.y() + handleThickness / 2;
+                const auto tickMarksH = grooveRect.height() - handleThickness;
+                return QRect{ tickMarksX, tickMarksY, tickMarksSize, tickMarksH };
               } break;
               // TODO other tick positions.
               default:
@@ -3773,6 +4128,9 @@ QRect QlementineStyle::subControlRect(
         const auto& checkBoxSize = hasCheckbox ? _impl->theme.iconSize : QSize{ 0, 0 };
         const auto titleH = hasTitle || hasCheckbox ? std::max(labelH, checkBoxSize.height()) : 0;
         const auto leftPadding = hasTitle || hasCheckbox ? _impl->theme.spacing : 0;
+        const auto* qlementineGroupBox = qobject_cast<const GroupBox*>(w);
+        const auto descriptionH = qlementineGroupBox ? qlementineGroupBox->descriptionHeight(rect.width()) : 0;
+        const auto descriptionExtra = descriptionH > 0 ? descriptionH + _impl->theme.spacing / 2 : 0;
 
         switch (sc) {
             // TODO handle other kinds of Qt::Alignment like right-aligned or centered.
@@ -3796,18 +4154,18 @@ QRect QlementineStyle::subControlRect(
           case SC_GroupBoxContents:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxContents))*/ {
               const auto x = rect.x() + leftPadding;
-              const auto y = rect.y() + titleH + titleBottomSpacing;
+              const auto y = rect.y() + titleH + descriptionExtra + titleBottomSpacing;
               const auto width = rect.width() - leftPadding;
-              const auto height = rect.height() - titleH - titleBottomSpacing;
+              const auto height = rect.height() - titleH - descriptionExtra - titleBottomSpacing;
               return QRect{ x, y, width, height };
             }
             //return {};
           case SC_GroupBoxFrame:
             /*if (groupBoxOpt->subControls.testFlag(SC_GroupBoxFrame))*/ {
               const auto x = rect.x() + leftPadding;
-              const auto y = rect.y() + titleH + titleBottomSpacing;
+              const auto y = rect.y() + titleH + descriptionExtra + titleBottomSpacing;
               const auto width = rect.width() - leftPadding;
-              const auto height = rect.height() - titleH - titleBottomSpacing;
+              const auto height = rect.height() - titleH - descriptionExtra - titleBottomSpacing;
               return QRect{ x, y, width, height };
             }
             //return {};
@@ -3923,10 +4281,10 @@ QSize QlementineStyle::sizeFromContents(
         } else if (widget->inherits("QMenuBarExtension")) {
           const auto extent = pixelMetric(PM_ToolBarExtensionExtent);
           return QSize{ extent, extent };
-        } else if (qobject_cast<QTabBar*>(widget->parentWidget())) {
+        } else if (const auto* parentTabBar = qobject_cast<QTabBar*>(widget->parentWidget())) {
           const auto w = _impl->theme.controlHeightMedium + static_cast<int>(spacing * 1.5);
           const auto h = _impl->theme.controlHeightLarge + spacing;
-          return QSize{ w, h };
+          return QlementineStyleImpl::isTabShapeVertical(parentTabBar->shape()) ? QSize{ h, w } : QSize{ w, h };
         }
 
         const auto buttonStyle = optToolButton->toolButtonStyle;
@@ -4030,7 +4388,8 @@ QSize QlementineStyle::sizeFromContents(
     case CT_ProgressBar:
       if (const auto* optProgressBar = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
         const auto indeterminate = optProgressBar->maximum == 0 && optProgressBar->minimum == 0;
-        const auto showText = !indeterminate && optProgressBar->textVisible;
+        const auto horizontal = optProgressBar->state.testFlag(State_Horizontal);
+        const auto showText = !indeterminate && optProgressBar->textVisible && horizontal;
         const auto& maximumText = indeterminate ? QString{} : QString("%1%").arg(optProgressBar->maximum);
         const auto labelW =
           showText ? optProgressBar->fontMetrics.boundingRect(optProgressBar->rect, Qt::AlignRight, maximumText).width()
@@ -4041,7 +4400,7 @@ QSize QlementineStyle::sizeFromContents(
         const auto defaultH = _impl->theme.controlHeightMedium;
         const auto h = std::min(defaultH, std::max(labelH, barH));
         const auto w = _impl->theme.controlDefaultWidth + (showText ? spacing + labelW : 0);
-        return QSize{ w, h };
+        return horizontal ? QSize{ w, h } : QSize{ h, w };
       }
       break;
     case CT_MenuItem:
@@ -4105,19 +4464,21 @@ QSize QlementineStyle::sizeFromContents(
         // TODO Handle expanding tab bar.
         // TODO Choose min/max values according to available space and total tab count.
         // Don't make tabs too long or too short.
+        // The size is computed in the local frame of the tab, then transposed if the tab is vertical.
         const auto spacing = _impl->theme.spacing;
+        const auto isVertical = QlementineStyleImpl::isTabShapeVertical(optTab->shape);
         const auto h = _impl->theme.controlHeightLarge + spacing;
 
         auto w = spacing * 2;
 
         // Button on the left.
         if (!optTab->leftButtonSize.isEmpty()) {
-          w += optTab->leftButtonSize.width() + spacing;
+          w += (isVertical ? optTab->leftButtonSize.height() : optTab->leftButtonSize.width()) + spacing;
         }
 
         // Button on the right.
         if (!optTab->rightButtonSize.isEmpty()) {
-          w += optTab->rightButtonSize.width() + spacing;
+          w += (isVertical ? optTab->rightButtonSize.height() : optTab->rightButtonSize.width()) + spacing;
         }
 
         // Icon.
@@ -4144,9 +4505,9 @@ QSize QlementineStyle::sizeFromContents(
         }
 
         const auto padding = _impl->tabExtraPadding(optTab, widget);
-        w += padding.left() + padding.right();
+        w += padding.left() + padding.right() + _impl->tabContentInset(optTab->shape) * 2;
 
-        return { w, h };
+        return isVertical ? QSize{ h, w } : QSize{ w, h };
       }
       break;
     case CT_Slider:
@@ -4353,7 +4714,12 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
       return _impl->theme.sliderTickSpacing;
     case PM_SliderSpaceAvailable:
       if (const auto* optSlider = qstyleoption_cast<const QStyleOptionSlider*>(opt)) {
-        return optSlider->rect.width() - pixelMetric(PM_SliderLength, optSlider, w);
+        if (optSlider->orientation == Qt::Horizontal) {
+          return optSlider->rect.width() - pixelMetric(PM_SliderLength, optSlider, w) -
+                 pixelMetric(PM_FocusFrameHMargin, optSlider, w);
+        }
+        return optSlider->rect.height() - pixelMetric(PM_SliderLength, optSlider, w) -
+               pixelMetric(PM_FocusFrameVMargin, optSlider, w);
       }
       break;
     case PM_MaximumDragDistance:
@@ -4361,7 +4727,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // DockWidgets.
     case PM_DockWidgetSeparatorExtent:
-      break;
+      return 1;
     case PM_DockWidgetHandleExtent:
       break;
     case PM_DockWidgetFrameWidth:
@@ -4459,7 +4825,7 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // ToolBar.
     case PM_ToolBarFrameWidth:
-      return _impl->theme.borderWidth;
+      return isInTitleBar(w) ? 0 : _impl->theme.borderWidth;
     case PM_ToolBarHandleExtent:
       return _impl->theme.spacing / 2;
     case PM_ToolBarItemSpacing:
@@ -4509,9 +4875,9 @@ int QlementineStyle::pixelMetric(PixelMetric m, const QStyleOption* opt, const Q
 
     // Dock.
     case PM_DockWidgetTitleMargin:
-      break;
+      return _impl->theme.spacing * 2;
     case PM_DockWidgetTitleBarButtonMargin:
-      break;
+      return _impl->theme.spacing / 2;
 
     // Layout.
     case PM_LayoutLeftMargin:;
@@ -4887,6 +5253,7 @@ QIcon QlementineStyle::standardIcon(StandardPixmap sp, const QStyleOption* opt, 
     case SP_ArrowLeft:
     case SP_ArrowRight:
     case SP_LineEditClearButton:
+    case SP_TitleBarCloseButton:
       return _impl->getStandardIcon(sp, _impl->theme.iconSize);
     default:
       break;
@@ -4918,6 +5285,9 @@ void QlementineStyle::polish(QPalette& palette) {
 
 void QlementineStyle::polish(QApplication* app) {
   QCommonStyle::polish(app);
+  if (!_impl->previousAppFont) {
+    _impl->previousAppFont = app->font();
+  }
   app->setFont(_impl->theme.fontRegular);
 
   QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus, false);
@@ -4932,6 +5302,10 @@ void QlementineStyle::polish(QApplication* app) {
 
 void QlementineStyle::unpolish(QApplication* app) {
   QCommonStyle::unpolish(app);
+  if (_impl->previousAppFont) {
+    app->setFont(*_impl->previousAppFont);
+    _impl->previousAppFont.reset();
+  }
 }
 
 void QlementineStyle::polish(QWidget* w) {
@@ -4946,7 +5320,7 @@ void QlementineStyle::polish(QWidget* w) {
   const auto eventFiltersInstalled = !polishedWidgetInfo.eventFilters.empty();
 
   // Not yet ideal, but still better than a huge fonction.
-  polishToolTip(w);
+  polishToolTip(*this, w);
   polishLineEditIconButton(*this, _impl->animations, w, polishedWidgetInfo, eventFiltersInstalled);
   polishCommonWidget(w);
   polishExternalFocusFrame(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
@@ -4956,6 +5330,7 @@ void QlementineStyle::polish(QWidget* w) {
   polishMouseWheelBlocker(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
   polishComboBox(*this, w);
   polishTabBar(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
+  polishCalendarWidget(w);
 
   if (auto* label = qobject_cast<QLabel*>(w)) {
     const auto labelObjName = label->objectName();
@@ -4967,7 +5342,6 @@ void QlementineStyle::polish(QWidget* w) {
 
   polishMessageBox(w, *this);
   polishScrollArea(w);
-  polishSlider(w);
   polishTextEditors(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
   polishLineEditMenus(w, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
   polishDestructionTracking(w, this, _impl->polishedWidgets, polishedWidgetInfo, eventFiltersInstalled);
@@ -5934,15 +6308,15 @@ QColor const& QlementineStyle::toolBarSeparatorColor() const {
 }
 
 QColor const& QlementineStyle::toolTipBackgroundColor() const {
-  return _impl->theme.secondaryColor;
+  return _impl->toolTipMatchesTheme ? _impl->theme.backgroundColorMain1 : _impl->theme.secondaryColor;
 }
 
 QColor const& QlementineStyle::toolTipBorderColor() const {
-  return _impl->theme.secondaryColorPressed;
+  return _impl->toolTipMatchesTheme ? _impl->theme.borderColor : _impl->theme.secondaryColorPressed;
 }
 
 QColor const& QlementineStyle::toolTipForegroundColor() const {
-  return _impl->theme.secondaryColorForeground;
+  return _impl->toolTipMatchesTheme ? _impl->theme.secondaryColor : _impl->theme.secondaryColorForeground;
 }
 
 QColor const& QlementineStyle::scrollBarGrooveColor(MouseState const mouse) const {
@@ -5988,8 +6362,8 @@ QColor QlementineStyle::groupBoxBackgroundColor(MouseState const mouse) const {
   if (mouse == MouseState::Disabled) {
     return _impl->theme.backgroundColorMainTransparent;
   } else {
-    return getColorSourceOver(_impl->theme.backgroundColorMain2,
-      colorWithAlphaF(_impl->theme.backgroundColorMain3, _impl->theme.backgroundColorMain3.alphaF() * .75));
+    const auto darkBackground = _impl->theme.backgroundColorMain2.lightnessF() < 0.5;
+    return colorWithAlphaF(_impl->theme.secondaryColor, darkBackground ? 0.06 : 0.04);
   }
 }
 

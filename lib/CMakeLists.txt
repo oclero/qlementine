@@ -40,29 +40,65 @@ set(SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StateUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StyleUtils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/WidgetUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/window/WindowBackend.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/window/WindowBackend.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/AboutDialog.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/AbstractItemListWidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Action.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ActionButton.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/AdwaitaTitleBarRenderer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ColorButton.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ColorEditor.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/CommandLinkButton.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Expander.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/FlowLayout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/GroupBox.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/IconWidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Label.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LineEdit.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LoadingRing.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/LoadingSpinner.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Menu.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NavigationBar.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NavigationSidebar.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NavigationView.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/NotificationBadge.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/PageDots.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/PillButton.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/PlainTextEdit.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Popover.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/PopoverButton.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/QlementineTitleBarRenderer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/RankingControl.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/RoundedFocusFrame.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/SegmentedControl.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/StatusBadgeWidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/Switch.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/TitleBar.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/TitleBarRenderer.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/UnifiedWindow.cpp
 )
+
+list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/SystemAccentColor.hpp)
+
+# Platform-specific window backend used by UnifiedWindow.
+if(APPLE)
+  list(APPEND SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/window/MacWindowBackend.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/SystemAccentColor.mm
+  )
+elseif(WIN32)
+  list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/window/WinWindowBackend.cpp)
+else()
+  list(APPEND SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/window/LinuxButtonLayout.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/window/LinuxButtonLayout.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/window/LinuxWindowBackend.cpp
+  )
+endif()
+if(NOT APPLE)
+  list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/SystemAccentColor.cpp)
+endif()
 
 set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/animation/WidgetAnimation.hpp
@@ -98,20 +134,30 @@ set(HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/ColorEditor.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/CommandLinkButton.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Expander.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/FlowLayout.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/GroupBox.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/IconWidget.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Label.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LineEdit.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LoadingRing.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/LoadingSpinner.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Menu.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NavigationBar.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NavigationSidebar.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NavigationView.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/NotificationBadge.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/PageDots.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/PillButton.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/PlainTextEdit.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Popover.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/PopoverButton.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/RankingControl.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/RoundedFocusFrame.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/SegmentedControl.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/StatusBadgeWidget.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/Switch.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/TitleBar.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/oclero/qlementine/widgets/UnifiedWindow.hpp
 )
 
 set(RESOURCES
@@ -270,6 +316,27 @@ foreach(_target IN LISTS _targets_to_build)
         Qt::Widgets
         Qt::Svg
     )
+
+    if(APPLE)
+      target_link_libraries(${_target} PRIVATE "-framework AppKit")
+      target_compile_options(${_target} PRIVATE $<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>)
+    elseif(WIN32)
+      target_link_libraries(${_target} PRIVATE dwmapi user32 shell32 advapi32)
+    else()
+      if(TARGET Qt6::DBus)
+        target_link_libraries(${_target} PRIVATE Qt::DBus)
+        target_compile_definitions(${_target} PRIVATE QLEMENTINE_WITH_DBUS)
+      endif()
+
+      find_package(PkgConfig QUIET)
+      if(PkgConfig_FOUND)
+        pkg_check_modules(XCB QUIET IMPORTED_TARGET xcb)
+        if(XCB_FOUND)
+          target_link_libraries(${_target} PRIVATE PkgConfig::XCB)
+          target_compile_definitions(${_target} PRIVATE QLEMENTINE_WITH_XCB)
+        endif()
+      endif()
+    endif()
 
     target_compile_options(${_target}
       PRIVATE

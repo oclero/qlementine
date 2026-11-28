@@ -13,6 +13,10 @@
   "backgroundColorWorkspace": "#17181c",
   "backgroundColorTabBar": "#1e2026",
 
+  "titleBarForegroundColor": "secondaryColor",
+  "titleBarBorderColor": "borderColor",
+  "titleBarHeight": 32,
+
   "borderColor": "#40485a",
   "borderColorHovered": "#4a5670",
   "borderColorPressed": "#5b6e98",
@@ -20,9 +24,9 @@
 
   "focusColor": "#3097ff6a",
 
-  "neutralColor": "#4c5368",
-  "neutralColorHovered": "#535c78",
-  "neutralColorPressed": "#5b6688",
+  "neutralColor": "#3a3f50",
+  "neutralColorHovered": "#414760",
+  "neutralColorPressed": "#484f70",
   "neutralColorDisabled": "#2d313b",
 
   "primaryColor": "#5086ff",

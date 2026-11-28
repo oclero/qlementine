@@ -10,14 +10,35 @@
 #include <oclero/qlementine/utils/WidgetUtils.hpp>
 #include <oclero/qlementine/utils/LayoutUtils.hpp>
 
+#include <oclero/qlementine/widgets/GroupBox.hpp>
+#include <oclero/qlementine/widgets/Label.hpp>
 #include <oclero/qlementine/widgets/LineEdit.hpp>
 #include <oclero/qlementine/widgets/NavigationBar.hpp>
+#include <oclero/qlementine/widgets/NavigationView.hpp>
 #include <oclero/qlementine/widgets/SegmentedControl.hpp>
 #include <oclero/qlementine/widgets/Switch.hpp>
 #include <oclero/qlementine/widgets/StatusBadgeWidget.hpp>
 #include <oclero/qlementine/widgets/ColorButton.hpp>
 #include <oclero/qlementine/widgets/IconWidget.hpp>
 #include <oclero/qlementine/widgets/AboutDialog.hpp>
+#include <oclero/qlementine/widgets/Action.hpp>
+#include <oclero/qlementine/widgets/ActionButton.hpp>
+#include <oclero/qlementine/widgets/ColorEditor.hpp>
+#include <oclero/qlementine/widgets/CommandLinkButton.hpp>
+#include <oclero/qlementine/widgets/Expander.hpp>
+#include <oclero/qlementine/widgets/FlowLayout.hpp>
+#include <oclero/qlementine/widgets/Label.hpp>
+#include <oclero/qlementine/widgets/LoadingRing.hpp>
+#include <oclero/qlementine/widgets/LoadingSpinner.hpp>
+#include <oclero/qlementine/widgets/PageDots.hpp>
+#include <oclero/qlementine/widgets/PillButton.hpp>
+#include <oclero/qlementine/widgets/Menu.hpp>
+#include <oclero/qlementine/widgets/NotificationBadge.hpp>
+#include <oclero/qlementine/widgets/PlainTextEdit.hpp>
+#include <oclero/qlementine/widgets/Popover.hpp>
+#include <oclero/qlementine/widgets/PopoverButton.hpp>
+#include <oclero/qlementine/widgets/RankingControl.hpp>
+#include <oclero/qlementine/widgets/UnifiedWindow.hpp>
 
 #include <oclero/qlementine/icons/Icons12.hpp>
 #include <oclero/qlementine/icons/Icons16.hpp>
@@ -29,6 +50,7 @@
 #include <QToolBar>
 #include <QDockWidget>
 #include <QTreeView>
+#include <QCalendarWidget>
 #include <QCheckBox>
 #include <QMenuBar>
 #include <QToolButton>
@@ -147,6 +169,8 @@ struct ShowcaseWindow::Impl {
   QMenuBar* menuBar{ nullptr };
   QTabBar* tabBar{ nullptr };
   QToolBar* toolBar{ nullptr };
+  NavigationView* navView{ nullptr };
+  QWidget* workspacePage{ nullptr };
   QSplitter* splitter{ nullptr };
   QWidget* leftPanel{ nullptr };
   QWidget* rightPanel{ nullptr };
@@ -168,6 +192,7 @@ struct ShowcaseWindow::Impl {
     setupSplitter();
     setupStatusBar();
     setupLayout();
+    setupNavigationView();
   }
 
   void setTheme(const QString& theme) {
@@ -265,7 +290,7 @@ struct ShowcaseWindow::Impl {
 
           for (const auto& theme : themes) {
             const auto name = theme.meta.name;
-            const auto icon = name == "Dark" ? makeThemedIcon(Icons16::Misc_Moon) : makeThemedIcon(Icons16::Misc_Sun);
+            const auto icon = name.contains("Dark") ? makeThemedIcon(Icons16::Misc_Moon) : makeThemedIcon(Icons16::Misc_Sun);
             auto* action = themeMenu->addAction(icon, name);
             action->setCheckable(true);
             themeActionGroup->addAction(action);
@@ -283,6 +308,15 @@ struct ShowcaseWindow::Impl {
           }
 
           themeMenu->addSeparator();
+          auto* accentAction = themeMenu->addAction("Use System Accent Color");
+          accentAction->setCheckable(true);
+          accentAction->setChecked(themeManager->useSystemAccentColor());
+          QObject::connect(
+            accentAction, &QAction::triggered, themeManager, &oclero::qlementine::ThemeManager::setUseSystemAccentColor);
+          themeMenu->addAction(makeThemedIcon(Icons16::Misc_PaintPalette), "Custom JSON Theme", [this]() {
+            qlementineStyle->setThemeJsonString(
+              R"({ "primaryColor": "#e5484d", "primaryColorHovered": "#ec6a6e", "primaryColorPressed": "#f18a8d", "primaryAlternativeColor": "#c2373c" })");
+          });
           themeMenu->addAction(
             makeThemedIcon(Icons16::Action_Swap), "Switch Theme", { Qt::CTRL | Qt::Key_T }, [this]() {
               switchTheme();
@@ -317,7 +351,9 @@ struct ShowcaseWindow::Impl {
     tabBar = new QTabBar(&owner);
     tabBar->setDocumentMode(true);
     tabBar->setFocusPolicy(Qt::NoFocus);
-    tabBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    tabBar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    tabBar->setDrawBase(false);
+    tabBar->setAutoFillBackground(false);
     tabBar->setTabsClosable(true);
     tabBar->setMovable(false);
     tabBar->setExpanding(false);
@@ -360,7 +396,12 @@ struct ShowcaseWindow::Impl {
       return toolButton;
     };
 
-    addButton(Icons16::Action_Save, "Save");
+    auto* saveButton = addButton(Icons16::Action_Save, "Save");
+    {
+      auto* badge = new NotificationBadge(toolBar);
+      badge->setWidget(saveButton);
+      badge->setText("3");
+    }
     addButton(Icons16::Action_Print, "Print");
     toolBar->addSeparator();
     addButton(Icons16::Action_Undo, "Undo");
@@ -385,9 +426,26 @@ struct ShowcaseWindow::Impl {
     addButton(Icons16::Media_Play, "Play");
     addButton(Icons16::Media_SkipForward, "Skip Forward");
     toolBar->addSeparator();
+    {
+      auto* popoverButton = new PopoverButton("Popover", toolBar);
+      auto* popoverContent = new QWidget(popoverButton);
+      auto* popoverContentLayout = new QVBoxLayout(popoverContent);
+      popoverContentLayout->addWidget(new Label(getDummyText(), TextRole::H4, popoverContent));
+      popoverContentLayout->addWidget(new Label(getDummyText(6, 8), TextRole::Caption, popoverContent));
+      popoverButton->setPopoverContentWidget(popoverContent);
+      popoverButton->popover()->setPreferredPosition(Popover::Position::Bottom);
+      toolBar->addWidget(popoverButton);
+    }
+    toolBar->addSeparator();
+    {
+      auto* pillButton = new PillButton(makeThemedIcon(Icons16::Misc_Stars), "What's New", toolBar);
+      pillButton->setBadgeVisible(true);
+      toolBar->addWidget(pillButton);
+    }
+    toolBar->addSeparator();
     auto* exportButton = addButton(Icons16::Action_Export, "Export", "Export");
     {
-      auto* menu = new QMenu(exportButton);
+      auto* menu = new Menu(exportButton);
       menu->addAction(new QAction(makeThemedIcon(Icons16::File_Movie), "Movie", menu));
       menu->addAction(new QAction(makeThemedIcon(Icons16::File_Picture), "Picture", menu));
       menu->addSeparator();
@@ -655,6 +713,10 @@ struct ShowcaseWindow::Impl {
             groupBoxLayout->addRow(getDummyText(1, 1) + ":", dateTimeEdit);
           }
           {
+            auto* calendarWidget = new QCalendarWidget(groupBox);
+            groupBoxLayout->addRow(calendarWidget);
+          }
+          {
             auto* lineEdit = new QLineEdit(groupBox);
             lineEdit->setPlaceholderText("Enter text...");
             lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -664,10 +726,11 @@ struct ShowcaseWindow::Impl {
           contentLayout->addRow(groupBox);
         }
         {
-          auto* groupBox = new QGroupBox(content);
+          auto* groupBox = new qlementine::GroupBox(content);
           groupBox->setAlignment(Qt::AlignRight);
           groupBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
           groupBox->setTitle(getDummyText());
+          groupBox->setDescription(getDummyText(8, 16));
           groupBox->setCheckable(true);
           groupBox->setFlat(false);
           auto* groupBoxLayout = new QVBoxLayout(groupBox);
@@ -710,10 +773,135 @@ struct ShowcaseWindow::Impl {
 
             groupBoxLayout->addRow(getDummyText(1, 1) + ":", slider);
           }
+          {
+            auto* slider = new QSlider(Qt::Horizontal, groupBox);
+            slider->setRange(0, 100);
+            slider->setValue(30);
+            slider->setInvertedAppearance(true);
+            groupBoxLayout->addRow(getDummyText(1, 1) + ":", slider);
+          }
+          {
+            auto* verticalLayout = new QHBoxLayout();
+            auto* progressBar = new QProgressBar(groupBox);
+            progressBar->setOrientation(Qt::Vertical);
+            progressBar->setRange(0, 100);
+            progressBar->setValue(30);
+            auto* slider = new QSlider(Qt::Vertical, groupBox);
+            slider->setRange(0, 100);
+            slider->setValue(30);
+            slider->setMinimumHeight(96);
+            auto* ticksSlider = new QSlider(Qt::Vertical, groupBox);
+            ticksSlider->setRange(0, 10);
+            ticksSlider->setPageStep(1);
+            ticksSlider->setSingleStep(1);
+            ticksSlider->setValue(7);
+            ticksSlider->setTickPosition(QSlider::TickPosition::TicksAbove);
+            ticksSlider->setMinimumHeight(96);
+            auto* invertedSlider = new QSlider(Qt::Vertical, groupBox);
+            invertedSlider->setRange(0, 100);
+            invertedSlider->setValue(30);
+            invertedSlider->setInvertedAppearance(true);
+            invertedSlider->setMinimumHeight(96);
+            QObject::connect(slider, &QSlider::valueChanged, progressBar, &QProgressBar::setValue);
+            verticalLayout->addWidget(progressBar);
+            verticalLayout->addWidget(slider);
+            verticalLayout->addWidget(ticksSlider);
+            verticalLayout->addWidget(invertedSlider);
+            verticalLayout->addStretch(1);
+            groupBoxLayout->addRow(getDummyText(1, 1) + ":", verticalLayout);
+          }
           contentLayout->addRow(groupBox);
         }
         {
-          auto* plainTextEdit = new QPlainTextEdit(content);
+          auto* groupBox = new QGroupBox(content);
+          groupBox->setAlignment(Qt::AlignRight);
+          groupBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+          groupBox->setTitle(getDummyText());
+          groupBox->setFlat(false);
+          auto* groupBoxLayout = new QVBoxLayout(groupBox);
+          groupBoxLayout->addWidget(new Label("Heading 1", TextRole::H1, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 2", TextRole::H2, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 3", TextRole::H3, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 4", TextRole::H4, groupBox));
+          groupBoxLayout->addWidget(new Label("Heading 5", TextRole::H5, groupBox));
+          groupBoxLayout->addWidget(new Label("Default text", TextRole::Default, groupBox));
+          groupBoxLayout->addWidget(new Label("Caption text", TextRole::Caption, groupBox));
+          contentLayout->addRow(groupBox);
+        }
+        {
+          auto* groupBox = new QGroupBox(content);
+          groupBox->setAlignment(Qt::AlignRight);
+          groupBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+          groupBox->setTitle(getDummyText());
+          groupBox->setFlat(false);
+          auto* groupBoxLayout = new QVBoxLayout(groupBox);
+          {
+            auto* colorEditor = new ColorEditor(QColor(0x3b82f6), groupBox);
+            groupBoxLayout->addWidget(colorEditor);
+          }
+          {
+            auto* action = new Action(makeThemedIcon(Icons16::Action_Save), "Action", groupBox);
+            auto* actionButton = new ActionButton(groupBox);
+            actionButton->setAction(action);
+            groupBoxLayout->addWidget(actionButton);
+          }
+          {
+            auto* commandLinkButton = new CommandLinkButton(
+              makeThemedIcon(Icons16::Action_Export, appStyle()->theme().iconSizeMedium), "Command link",
+              getDummyText(4, 6), groupBox);
+            groupBoxLayout->addWidget(commandLinkButton);
+          }
+          {
+            auto* expander = new Expander(groupBox);
+            auto* expanderContent = new QWidget(expander);
+            auto* expanderContentLayout = new QVBoxLayout(expanderContent);
+            expanderContentLayout->addWidget(new Label(getDummyText(6, 8), TextRole::Default, expanderContent));
+            expander->setContent(expanderContent);
+            expander->setExpanded(true);
+            groupBoxLayout->addWidget(expander);
+          }
+          {
+            auto* flowContainer = new QWidget(groupBox);
+            auto* flowLayout = new FlowLayout(flowContainer);
+            flowLayout->setContentsMargins(0, 0, 0, 0);
+            for (auto i = 0; i < 8; ++i) {
+              flowLayout->addWidget(new QPushButton(QString("Item %1").arg(i + 1), flowContainer));
+            }
+            groupBoxLayout->addWidget(flowContainer);
+          }
+          {
+            auto* pageDots = new PageDots(groupBox);
+            pageDots->setCount(5);
+            groupBoxLayout->addWidget(pageDots, 0, Qt::AlignLeft);
+          }
+          {
+            auto* rankingControl = new RankingControl(groupBox);
+            rankingControl->setHalfStepsEnabled(true);
+            rankingControl->setValue(3.5);
+            groupBoxLayout->addWidget(rankingControl, 0, Qt::AlignLeft);
+          }
+          {
+            auto* ringsLayout = new QHBoxLayout();
+            ringsLayout->setSpacing(16);
+            auto* indeterminateRing = new LoadingRing(groupBox);
+            indeterminateRing->setFixedSize(32, 32);
+            ringsLayout->addWidget(indeterminateRing);
+            auto* determinateRing = new LoadingRing(groupBox);
+            determinateRing->setFixedSize(32, 32);
+            determinateRing->setIndeterminate(false);
+            determinateRing->setValue(65);
+            ringsLayout->addWidget(determinateRing);
+            auto* slider = new QSlider(Qt::Horizontal, groupBox);
+            slider->setRange(determinateRing->minimum(), determinateRing->maximum());
+            slider->setValue(determinateRing->value());
+            QObject::connect(slider, &QSlider::valueChanged, determinateRing, &LoadingRing::setValue);
+            ringsLayout->addWidget(slider, 1);
+            groupBoxLayout->addLayout(ringsLayout);
+          }
+          contentLayout->addRow(groupBox);
+        }
+        {
+          auto* plainTextEdit = new PlainTextEdit(content);
           plainTextEdit->setFrameShape(QFrame::StyledPanel);
           plainTextEdit->setFrameShadow(QFrame::Shadow::Raised);
           contentLayout->addRow(plainTextEdit);
@@ -748,6 +936,15 @@ struct ShowcaseWindow::Impl {
     const auto margins = getLayoutMargins(statusBar);
     statusBar->setContentsMargins(margins.left(), 0, margins.right(), 0);
     {
+      auto* spinner = new LoadingSpinner(statusBar);
+      spinner->setSpinning(true);
+      statusBar->addPermanentWidget(spinner);
+    }
+    {
+      auto* ring = new LoadingRing(statusBar);
+      statusBar->addPermanentWidget(ring);
+    }
+    {
       auto* progressBar = new QProgressBar(statusBar);
       progressBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
       progressBar->setTextVisible(false);
@@ -757,25 +954,120 @@ struct ShowcaseWindow::Impl {
   }
 
   void setupLayout() {
-    rootLayout = new QVBoxLayout(&owner);
+    workspacePage = new QWidget(&owner);
+    rootLayout = new QVBoxLayout(workspacePage);
     rootLayout->setContentsMargins(0, 0, 0, 0);
     rootLayout->setSpacing(0);
     rootLayout->setMenuBar(menuBar);
-    rootLayout->addWidget(tabBar);
     rootLayout->addWidget(toolBar);
     rootLayout->addWidget(splitter);
-    rootLayout->addWidget(statusBar);
     workspace->setFocus(Qt::NoFocusReason);
+
+    // The tabs live in the title bar.
+    owner.titleBar()->setContentWidget(tabBar);
+
+    // The status bar spans the whole window, and the content is inset with rounded corners.
+    owner.setStatusBar(statusBar);
+    owner.setContentCornerRadius(12);
+  }
+
+  void setupNavigationView() {
+    navView = new NavigationView(&owner);
+    owner.setCentralWidget(navView);
+    auto* sidebar = navView->sidebar();
+    owner.setLeadingWidget(sidebar);
+
+    // Creates a page with a title and a description.
+    const auto makePage = [this](const QString& title, const QString& description) {
+      auto* page = new QWidget(navView);
+      auto* pageLayout = new QVBoxLayout(page);
+      pageLayout->setContentsMargins(24, 24, 24, 24);
+      pageLayout->setAlignment(Qt::AlignTop);
+      pageLayout->addWidget(new Label(title, TextRole::H2, page));
+      auto* descriptionLabel = new Label(description, TextRole::Default, page);
+      descriptionLabel->setWordWrap(true);
+      pageLayout->addWidget(descriptionLabel);
+      return page;
+    };
+
+    // The footer is hidden in compact mode: use the switch of the "Settings" page to expand the sidebar again.
+    auto* compactButton = new QPushButton(makeThemedIcon(Icons16::Action_Fullscreen), "Collapse", sidebar);
+    QObject::connect(compactButton, &QPushButton::clicked, sidebar, &NavigationSidebar::toggleCompact);
+    sidebar->setFooterWidget(compactButton);
+
+    // Top items: sections and separators organize them, items can have badges and children.
+    sidebar->addSection("General");
+    navView->addPage(workspacePage, "Workspace", makeThemedIcon(Icons16::Misc_ItemsList));
+    navView->addPage(
+      makePage("Home", "NavigationView combines a NavigationSidebar with a stack of pages. Selecting an item in the "
+                       "sidebar shows its page. The sidebar extends up to the top of the window, under the window "
+                       "controls. Try the keyboard arrows, and the collapse button below (use the Settings page to "
+                       "expand the sidebar again)."),
+      "Home", makeThemedIcon(Icons16::Navigation_Home));
+
+    const auto libraryIndex =
+      navView->addPage(makePage("Library", "Items can be nested. Click an item with children, or use the Left and "
+                                           "Right arrow keys, to expand and collapse it."),
+        "Library", makeThemedIcon(Icons16::File_Folder), "24");
+    navView->addChildPage(libraryIndex, makePage("Pictures", "A child item, shown indented under its parent."),
+      "Pictures", makeThemedIcon(Icons16::File_Picture));
+    navView->addChildPage(libraryIndex, makePage("Movies", "Child items can have badges too."), "Movies",
+      makeThemedIcon(Icons16::File_Movie), "3");
+    sidebar->setItemExpanded(libraryIndex, true);
+
+    navView->addPage(makePage("Notifications", "Badges display a short text, such as an unread count."),
+      "Notifications", makeThemedIcon(Icons16::Misc_Bell), "5");
+
+    sidebar->addSeparator();
+    sidebar->addSection("Account");
+    navView->addPage(makePage("Profile", "Sections and separators group items and cannot be selected."), "Profile",
+      makeThemedIcon(Icons16::Misc_User));
+    const auto syncIndex = navView->addPage(
+      makePage("Sync", "Disabled items cannot be selected."), "Sync", makeThemedIcon(Icons16::Action_Swap));
+    sidebar->setItemEnabled(syncIndex, false);
+
+    // Bottom items stay pinned below the top items.
+    auto* settingsPage = makePage("Settings", "These controls configure the sidebar itself.");
+    {
+      auto* form = new QFormLayout();
+      qobject_cast<QVBoxLayout*>(settingsPage->layout())->addLayout(form);
+
+      auto* compactSwitch = new Switch(settingsPage);
+      QObject::connect(compactSwitch, &Switch::clicked, sidebar, [sidebar](bool checked) {
+        sidebar->setCompact(checked);
+      });
+      QObject::connect(sidebar, &NavigationSidebar::compactChanged, compactSwitch, [sidebar, compactSwitch]() {
+        compactSwitch->setChecked(sidebar->compact());
+      });
+      form->addRow("Compact", compactSwitch);
+
+      auto* expandedWidthSpinBox = new QSpinBox(settingsPage);
+      expandedWidthSpinBox->setRange(160, 400);
+      expandedWidthSpinBox->setSingleStep(10);
+      expandedWidthSpinBox->setValue(sidebar->sizeHint().width());
+      QObject::connect(expandedWidthSpinBox, &QSpinBox::valueChanged, sidebar, &NavigationSidebar::setExpandedWidth);
+      form->addRow("Expanded width", expandedWidthSpinBox);
+
+      auto* autoCompactSpinBox = new QSpinBox(settingsPage);
+      autoCompactSpinBox->setRange(0, 1200);
+      autoCompactSpinBox->setSingleStep(50);
+      autoCompactSpinBox->setSpecialValueText("Disabled");
+      QObject::connect(autoCompactSpinBox, &QSpinBox::valueChanged, navView, &NavigationView::setAutoCompactWidth);
+      form->addRow("Auto-compact below", autoCompactSpinBox);
+    }
+    navView->addBottomPage(settingsPage, "Settings", makeThemedIcon(Icons16::Navigation_Settings));
+    navView->addBottomPage(makePage("About", "Bottom items stay pinned below the scrollable list of top items."),
+      "About", makeThemedIcon(Icons16::Misc_Info));
   }
 };
 
 ShowcaseWindow::ShowcaseWindow(ThemeManager* themeManager, QWidget* parent)
-  : QWidget(parent)
+  : UnifiedWindow(parent)
   , _impl(new Impl(*this, themeManager)) {
   setWindowIcon(QIcon(":/showcase/qlementine_icon.ico"));
   _impl->setupUI();
   setMinimumSize(600, 400);
-  resize(800, 600);
+  resize(1200, 900);
   oclero::qlementine::centerWidget(this);
 
   this->ensurePolished();

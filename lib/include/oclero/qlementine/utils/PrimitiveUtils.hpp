@@ -73,7 +73,7 @@ QLEMENTINE_EXPORT void drawCheckerboard(
 /// Draws the value of a progress bar. A clipping mask is used to ensure the rectangle radiuses are respected
 /// even for values close to min or max.
 QLEMENTINE_EXPORT void drawProgressBarValueRect(QPainter* p, QRect const& rect, QColor const& color, qreal min,
-  qreal max, qreal value, qreal const radius = 0., bool inverted = false);
+  qreal max, qreal value, qreal const radius = 0., bool inverted = false, Qt::Orientation orientation = Qt::Horizontal);
 
 /// Draws a color mark. Will draw a border if the contrast between color and background is not high enough.
 QLEMENTINE_EXPORT void drawColorMark(
@@ -151,7 +151,8 @@ QLEMENTINE_EXPORT int getTickInterval(
 
 /// Draws the Slider tick marks.
 QLEMENTINE_EXPORT void drawSliderTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor,
-  const int min, const int max, const int interval, const int tickThickness, const int singleStep, const int pageStep);
+  const int min, const int max, const int interval, const int tickThickness, const int singleStep, const int pageStep,
+  Qt::Orientation orientation = Qt::Horizontal, bool upsideDown = false);
 
 /// Draws the Dial tick marks.
 QLEMENTINE_EXPORT void drawDialTickMarks(QPainter* p, QRect const& tickmarksRect, QColor const& tickColor,
@@ -166,12 +167,22 @@ QLEMENTINE_EXPORT void drawDial(QPainter* p, QRect const& rect, int min, int max
 /// Gets the path for a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
 QLEMENTINE_EXPORT QPainterPath getTabPath(QRect const& rect, const RadiusesF& radiuses);
 
+/// Gets the path for a trapezoid tab, whose sides are slanted by `slant` pixels and whose top corners are rounded.
+QLEMENTINE_EXPORT QPainterPath getTrapezoidTabPath(QRect const& rect, qreal slant, qreal radius);
+
 /// Draws a rounded tab. Specify negative radiuses if you want the tab to overlap its bounds.
 QLEMENTINE_EXPORT void drawTab(QPainter* p, QRect const& rect, const RadiusesF& radiuses, const QColor& bgColor,
   bool drawShadow = false, const QColor& shadowColor = Qt::black);
 
+/// Draws a tab from an arbitrary path.
+QLEMENTINE_EXPORT void drawTab(QPainter* p, const QPainterPath& path, const QColor& bgColor, bool drawShadow = false,
+  const QColor& shadowColor = Qt::black);
+
 /// Draws the shadow of a rounded tab.
 QLEMENTINE_EXPORT void drawTabShadow(QPainter* p, QRect const& rect, const RadiusesF& radius, const QColor& color);
+
+/// Draws the shadow of a tab from an arbitrary path.
+QLEMENTINE_EXPORT void drawTabShadow(QPainter* p, const QPainterPath& path, const QColor& color);
 
 /// Draws a RadioButton indicator according to its checked state.
 QLEMENTINE_EXPORT void drawRadioButton(QPainter* p, const QRect& rect, QColor const& bgColor, const QColor& borderColor,
@@ -221,6 +232,9 @@ QLEMENTINE_EXPORT void updateCheckIcon(QIcon& icon, QSize const& size, Qlementin
 
 /// Generates a pixmap for a specific state of QLineEdit's clear button.
 QLEMENTINE_EXPORT QPixmap makeClearButtonPixmap(QSize const& size, QColor const& color);
+
+/// Generates a pixmap that contains a close cross.
+QLEMENTINE_EXPORT QPixmap makeCloseButtonPixmap(QSize const& size, QColor const& color);
 
 /// Generates a pixmap that contains a check mark.
 QLEMENTINE_EXPORT QPixmap makeCheckPixmap(QSize const& size, QColor const& color);

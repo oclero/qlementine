@@ -17,10 +17,14 @@
 
 namespace oclero::qlementine {
 class RoundedFocusFrame;
+class TitleBar;
 
 /// A class to factorize common behavior between widgets such as tab bars.
 class QLEMENTINE_EXPORT AbstractItemListWidget : public QWidget {
   Q_OBJECT
+
+  // Lets the title bar know if a point is over an item or in the empty space.
+  friend class TitleBar;
 
   Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
   Q_PROPERTY(QVariant currentData READ currentData WRITE setCurrentData NOTIFY currentDataChanged)
@@ -49,7 +53,7 @@ public:
   void setItemsShouldExpand(bool expand);
 
   int addItem(const QString& text, const QIcon& icon = {}, const QString& badge = {}, const QVariant& itemData = {});
-  void removeItem(int index);
+  virtual void removeItem(int index);
   int findItemIndex(const QVariant& itemData) const;
 
   void setItemData(int index, const QVariant& text);
@@ -72,6 +76,8 @@ public:
 
   virtual void initStyleOptionFocus(QStyleOptionFocusRoundedRect& opt) const;
 
+  bool hasKeyboardFocus() const;
+
 Q_SIGNALS:
   void itemCountChanged();
   void currentIndexChanged();
@@ -90,11 +96,18 @@ protected: // QWidget override.
   void paintEvent(QPaintEvent* e) override;
   void resizeEvent(QResizeEvent* e) override;
   void focusInEvent(QFocusEvent* e) override;
+  void focusOutEvent(QFocusEvent* e) override;
   void showEvent(QShowEvent* e) override;
   bool event(QEvent* e) override;
   void changeEvent(QEvent* e) override;
 
 protected: // Available to child classes.
+  enum class ItemKind {
+    Entry,
+    Section,
+    Separator,
+  };
+
   struct Item {
     bool enabled{ true };
     QString text;
@@ -107,7 +120,20 @@ protected: // Available to child classes.
     QVariantAnimation* fgColorAnimation{ nullptr };
     QVariantAnimation* badgeBgAnimation{ nullptr };
     QVariantAnimation* badgeFgAnimation{ nullptr };
+    ItemKind kind{ ItemKind::Entry };
+    int parent{ -1 };
+    bool expanded{ false };
+    double expansion{ 0. };
+    bool bottom{ false };
   };
+
+  int insertItem(Item item);
+  std::vector<Item>& items();
+  const std::vector<Item>& items() const;
+  int focusedIndex() const;
+  int pressedIndex() const;
+  void updateFocusFrame();
+  virtual bool canSelectItem(int index) const;
 
   virtual QMargins getItemPadding() const;
   virtual int getItemMinimumHeight() const;
@@ -139,15 +165,15 @@ protected: // Available to child classes.
   virtual QFont labelFont() const;
 
 protected:
-  int itemAtPos(const QPoint& pos) const;
+  virtual int itemAtPos(const QPoint& pos) const;
   bool hitTestItemRect(const QPoint& pos, const QRect& itemRect, int leftPadding, int rightPadding) const;
-  void updateItemsSizeHints();
-  void updateItemRects();
+  virtual void updateItemsSizeHints();
+  virtual void updateItemRects();
   MouseState getItemMouseState(int index, const Item& item) const;
   std::tuple<QColor, QColor, QColor, QColor> getItemBgAndFgColor(int index, MouseState mouse) const;
   const QColor& getCurrentItemIndicatorColor() const;
   virtual const QColor& getBgColor() const;
-  QRect getCurrentItemRect() const;
+  virtual QRect getCurrentItemRect() const;
   QRect getFocusedItemRect() const;
   QRect getAnimatedCurrentItemRect() const;
   void updateCurrentIndexAnimation(bool immediate = false);
@@ -163,6 +189,7 @@ private:
   bool _itemsShouldExpand{ false };
   int _currentIndex{ -1 };
   int _focusedIndex{ -1 };
+  bool _keyboardFocus{ false };
   int _hoveredIndex{ -1 };
   int _pressedIndex{ -1 };
   QSize _iconSize;

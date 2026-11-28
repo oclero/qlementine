@@ -12,7 +12,7 @@ namespace oclero::qlementine {
 class QlementineStyle;
 class WidgetAnimationManager;
 
-void polishToolTip(QWidget* widget);
+void polishToolTip(const QlementineStyle& style, QWidget* widget);
 
 void polishLineEditIconButton(QlementineStyle& style, WidgetAnimationManager& animations, QWidget* widget,
   PolishedWidgetRegistry::Entry& entry, bool eventFiltersInstalled);
@@ -37,11 +37,12 @@ void polishComboBox(QlementineStyle& style, QWidget* widget);
 void polishTabBar(
   QWidget* widget, PolishedWidgetRegistry& registry, PolishedWidgetRegistry::Entry& entry, bool eventFiltersInstalled);
 
+void polishCalendarWidget(QWidget* widget);
+
 void polishMessageBox(QWidget* widget, const QlementineStyle& style);
 
 void polishScrollArea(QWidget* widget);
 
-void polishSlider(QWidget* widget);
 
 void polishTextEditors(
   QWidget* widget, PolishedWidgetRegistry& registry, PolishedWidgetRegistry::Entry& entry, bool eventFiltersInstalled);

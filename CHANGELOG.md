@@ -1,5 +1,46 @@
 # Changelog
 
+## Next
+
+New features:
+
+- Add `toolTipMatchesTheme` property (default `true`): tooltips now follow the Qlementine theme. Apps can go back to the previous behavior by setting it to `false`.
+- Add `LoadingRing` widget, a modern alternative to `LoadingSpinner` that supports both indeterminate and determinate progress.
+- Add `NavigationSidebar` control, a vertical version of `NavigationBar`.
+- Add `NavigationView` control, a combination of `NavigationSidebar` and `QStackedWidget` for page management, providing easy navigation and view layout.
+- Add `PillButton` control for softer buttons.
+- Add `GroupBox` control with a `description` parameter.
+- Add `RankingControl` widget, a row of stars to rank something with optional half steps.
+- Add `PageDots` widget, a row of dots showing the current page among a number of pages.
+- Add `FlowLayout`, a layout that wraps its items to the next row when the width is exceeded.
+- Add `TitleBar` widget, a themed title bar that is part of the window content. It draws the minimize, maximize, close and menu caption buttons when the platform doesn't provide them, and hosts an optional content widget (menu bar, search field, etc.).
+- Add `TitleBar::setHitTestVisible()` to choose which child widgets are interactive and which can drag the window. Display-only widgets and plain containers are draggable by default. `QTabBar`, `QMenuBar`, `QToolBar`, `NavigationBar` and `SegmentedControl` are draggable only in their empty space.
+- Add `UnifiedWindow` widget, a top-level window whose content extends into the title bar area. It owns a `TitleBar` and a central widget, set with `setCentralWidget()`.
+- Add optional Qt DBus support on Linux, used to read the window button layout. It degrades gracefully when absent.
+- Add `LegacyDark` theme, the less-blue focus theme from previous versions.
+- Add `QlementineStyle::setThemeJsonString()` and `Theme::fromJsonString()` to apply a theme from a JSON string.
+- Add `Theme::withAccentColor()`, which derives the primary, alternative, foreground and focus colors from a single accent color.
+- Add `ThemeManager::useSystemAccentColor`, an opt-in that overrides the current theme's primary colors with the system accent color (`QPalette::Accent`).
+- Add `ThemeManager::systemColorSchemeChanged` signal and `ThemeManager::systemColorScheme()` to let applications watch for system theme changes.
+- Add `titleBarForegroundColor`, `titleBarBorderColor`, `titleBarHeight` and `iconBoldness` to `Theme`, with values in the light and dark themes and entries in the theme editor.
+- Add a `boldness` parameter to the icon loading functions in `IconUtils`.
+- Add support for West, East and South tabs.
+- Add support for triangular tab styles.
+- Add support for Qt6's `QStyleOptionTab::Moving`.
+- Add support for vertical `QSlider` and `QProgressBar`.
+- Add support for `QSlider`'s inverted appearance.
+- Add `QCalendarWidget` styling, including the calendar popup of `QDateEdit` and `QDateTimeEdit`.
+
+Bugfixes:
+
+- Fix `NotificationBadge` not rendering correctly in a toolbar.
+- Fix a crash in `LineEditButtonEventFilter` when switching from Qlementine to a non-Qlementine style.
+- Fix a crash when switching from Qlementine to a non-Qlementine style while a combo box popup's delegate outlived the style.
+- Fix unpolishing a widget not restoring its original styles.
+- Fix `QFocusFrame` around a `QSlider` being clipped at the start and end.
+- Fix a crash when a widget with a `QFocusFrame` leaves its parent window and is shown fullscreen.
+- Fix `QPushButton` text disappearing when the button is narrower than its ideal width: padding now shrinks first so the text stays visible.
+
 ## v1.5.2
 
 Bugfixes:

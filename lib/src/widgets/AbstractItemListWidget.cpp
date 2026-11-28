@@ -49,6 +49,9 @@ int AbstractItemListWidget::currentIndex() const {
 
 void AbstractItemListWidget::setCurrentIndex(int index) {
   index = index < 0 || index > itemCount() - 1 ? -1 : index;
+  if (index != -1 && !canSelectItem(index)) {
+    return;
+  }
   if (index != _currentIndex) {
     const auto oldData = currentData();
     _currentIndex = index;
@@ -82,6 +85,15 @@ void AbstractItemListWidget::setCurrentData(const QVariant& currentData) {
 
 int AbstractItemListWidget::addItem(
   const QString& text, const QIcon& icon, const QString& badge, const QVariant& itemData) {
+  Item item;
+  item.text = text;
+  item.icon = icon;
+  item.badge = badge;
+  item.data = itemData;
+  return insertItem(std::move(item));
+}
+
+int AbstractItemListWidget::insertItem(Item newItem) {
   const auto* style = this->style();
   const auto animDuration = style->styleHint(QStyle::SH_Widget_Animation_Duration) * animationFactor;
 
@@ -105,23 +117,16 @@ int AbstractItemListWidget::addItem(
     update();
   });
 
-  const Item newItem{
-    true,
-    text,
-    icon,
-    badge,
-    QVariant(itemData),
-    QRect{},
-    QSize{ 0, 0 },
-    bgColorAnimation,
-    fgColorAnimation,
-    badgeBgColorAnimation,
-    badgeFgColorAnimation,
-  };
-  _items.emplace_back(newItem);
+  newItem.bgColorAnimation = bgColorAnimation;
+  newItem.fgColorAnimation = fgColorAnimation;
+  newItem.badgeBgAnimation = badgeBgColorAnimation;
+  newItem.badgeFgAnimation = badgeFgColorAnimation;
+  _items.emplace_back(std::move(newItem));
 
   if (_currentIndex == -1) {
-    _currentIndex = 0;
+    const auto newIndex = itemCount() - 1;
+    _currentIndex = canSelectItem(0) ? 0 : (canSelectItem(newIndex) ? newIndex : -1);
+    _focusedIndex = _currentIndex;
   }
 
   update();
@@ -132,7 +137,7 @@ int AbstractItemListWidget::addItem(
   Q_EMIT itemCountChanged();
   Q_EMIT currentIndexChanged();
 
-  const auto [bgColor, fgColor, badgeBgColor, badgeFgColor] = getItemBgAndFgColor(itemCount(), MouseState::Normal);
+  const auto [bgColor, fgColor, badgeBgColor, badgeFgColor] = getItemBgAndFgColor(itemCount() - 1, MouseState::Normal);
   bgColorAnimation->setDuration(animDuration);
   bgColorAnimation->setStartValue(QVariant::fromValue<QColor>(bgColor));
   bgColorAnimation->setEndValue(QVariant::fromValue<QColor>(bgColor));
@@ -322,6 +327,10 @@ bool AbstractItemListWidget::hitTestItemRect(
 
 void AbstractItemListWidget::keyPressEvent(QKeyEvent* e) {
   QWidget::keyPressEvent(e);
+  if (!_keyboardFocus) {
+    _keyboardFocus = true;
+    _focusFrame->update();
+  }
   const auto key = e->key();
   if (key == Qt::Key_Right) {
     const auto next = std::min(itemCount() - 1, _focusedIndex + 1);
@@ -629,6 +638,31 @@ void AbstractItemListWidget::updateItemsAnimations() {
   }
 }
 
+std::vector<AbstractItemListWidget::Item>& AbstractItemListWidget::items() {
+  return _items;
+}
+
+const std::vector<AbstractItemListWidget::Item>& AbstractItemListWidget::items() const {
+  return _items;
+}
+
+int AbstractItemListWidget::focusedIndex() const {
+  return _focusedIndex;
+}
+
+int AbstractItemListWidget::pressedIndex() const {
+  return _pressedIndex;
+}
+
+void AbstractItemListWidget::updateFocusFrame() {
+  _focusFrame->update();
+  _focusFrame->updateGeometry();
+}
+
+bool AbstractItemListWidget::canSelectItem(int /*index*/) const {
+  return true;
+}
+
 void AbstractItemListWidget::setFocusedIndex(int index) {
   index = index < 0 || index > itemCount() - 1 ? -1 : index;
   if (index != _focusedIndex) {
@@ -704,9 +738,22 @@ void AbstractItemListWidget::resizeEvent(QResizeEvent* e) {
 
 void AbstractItemListWidget::focusInEvent(QFocusEvent* e) {
   QWidget::focusInEvent(e);
+  _keyboardFocus = e->reason() == Qt::TabFocusReason || e->reason() == Qt::BacktabFocusReason
+                   || e->reason() == Qt::ShortcutFocusReason;
   if (_focusedIndex == -1) {
     setFocusedIndex(0);
   }
+  _focusFrame->update();
+}
+
+void AbstractItemListWidget::focusOutEvent(QFocusEvent* e) {
+  QWidget::focusOutEvent(e);
+  _keyboardFocus = false;
+  _focusFrame->update();
+}
+
+bool AbstractItemListWidget::hasKeyboardFocus() const {
+  return _keyboardFocus;
 }
 
 void AbstractItemListWidget::showEvent(QShowEvent* e) {
