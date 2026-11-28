@@ -122,6 +122,8 @@ Example:
 | `borderColorHovered`                | color | Same as above, in hovered state.                                                  |
 | `borderColorPressed`                | color | Same as above, in pressed state.                                                  |
 | `borderColorDisabled`               | color | Same as above, in disabled state.                                                 |
+| **`titleBarForegroundColor`**       | color | Title and caption buttons of the title bar of a `UnifiedWindow`.                  |
+| `titleBarBorderColor`               | color | Bottom border of the title bar of a `UnifiedWindow`.                              |
 | **`semiTransparentColor1`**         | color | To be used over another color to lighten/darken it.                               |
 | `semiTransparentColor2`             | color | Same as above but more contrast.                                                  |
 | `semiTransparentColor3`             | color | Same as above but more contrast.                                                  |
@@ -129,7 +131,28 @@ Example:
 
 ### System accent color
 
-`ThemeManager::setUseSystemAccentColor(true)` overrides the `primaryColor*`, `primaryAlternativeColor*` and `focusColor` values of the current theme with colors derived from the system accent color (`QPalette::Accent`, Qt 6.6+). The accent color is captured when the `ThemeManager` is created, so create it before applying a Qlementine style. It does not follow later system changes.
+`ThemeManager::setUseSystemAccentColor(true)` overrides the `primaryColor*`, `primaryAlternativeColor*` and `focusColor` values of the current theme with colors derived from the system accent color.
+
+The accent color is looked up each time a theme is applied, using the shade that suits the theme (dark or light, according to the background of the theme):
+
+- macOS: `NSColor.controlAccentColor` resolved in the dark or light appearance.
+- Windows: the accent palette stored in the registry (the *Light 2* shade for dark themes and the *Dark 1* shade for light themes, as WinUI does).
+- Linux: the `accent-color` setting of the `org.freedesktop.appearance` XDG desktop portal (needs Qt DBus).
+- Other cases, or when the lookup fails: `QPalette::Accent`, captured when the `ThemeManager` is created.
+
+The `ThemeManager` also listens to system changes (accent color and light/dark appearance) and applies the theme again when the accent color changes.
+
+### System color scheme
+
+`ThemeManager::systemColorScheme()` returns the light/dark color scheme of the system. On Linux it is read from the `color-scheme` setting of the XDG desktop portal, because Qt does not report it on every desktop environment.
+
+The `ThemeManager::systemColorSchemeChanged(Qt::ColorScheme)` signal is emitted when the system color scheme changes, so that an application can switch to a matching theme:
+
+```cpp
+QObject::connect(themeManager, &ThemeManager::systemColorSchemeChanged, [themeManager](Qt::ColorScheme scheme) {
+  themeManager->setCurrentTheme(scheme == Qt::ColorScheme::Dark ? "Dark" : "Light");
+});
+```
 
 The same derivation is available without the manager through `Theme::withAccentColor(const QColor&)`.
 
@@ -169,6 +192,7 @@ Example:
 | `fontSizeS1`              |  int   | Font size for level 1 captions.                                                                                                                           |
 | `spacing`                 |  int   | Spacing between elements. Multiples of this value will be used across the various widgets, including default `QLayout` spacings and margins.              |
 | `iconExtent`              |  int   | Size for icons. Multiple of this value will be used across the various widgets, according to their size for `QIcon`.                                      |
+| `iconBoldness`            | double | Thickening applied to the strokes of icons made with `QlementineStyle::makeThemedIcon`, in pixels for a 16px icon (scaled for other sizes). `0` disables it. |
 | `animationDuration`       |  int   | Duration (in milliseconds) for a UI animation, such as a color change.                                                                                    |
 | `focusAnimationDuration`  |  int   | Duration (in milliseconds) for the focus border animation.</br>Note: can be longer to allow the user to see the focus .                                   |
 | `sliderAnimationDuration` |  int   | Duration (in milliseconds) for the slider animation when its value changes.</br>Note: must be quick to feel responsive.                                   |
@@ -198,6 +222,7 @@ Example:
 | `tabBarPaddingTop`        |  int   | For a `QTabBar`, the space between the top of the bar and the top of the tabs.                                                                            |
 | `tabBarTabMaxWidth`       |  int   | For a `QTabBar`, the maximum width a tab can have.</br>Note: any value below or equal to `0` will be ignored and treated as if there is no maximum width. |
 | `tabBarTabMinWidth`       |  int   | For a `QTabBar`, the minimum width a tab can have.</br>Note: any value below or equal to `0` will be ignored and treated as if there is no minimum width. |
+| `titleBarHeight`          |  int   | Height of the title bar of a `UnifiedWindow`.                                                                                                             |
 
 ## Full example
 
@@ -221,8 +246,12 @@ Here is a full Qlementine theme in all its glory. Please note that every value i
 
   "borderColor": "#d3d3d3",
   "borderColorDisabled": "#e9e9e9",
+
   "borderColorHovered": "#b3b3b3",
   "borderColorPressed": "#a3a3a3",
+
+  "titleBarForegroundColor": "#404040",
+  "titleBarBorderColor": "#d3d3d3",
 
   "focusColor": "#40a9ff66",
 
@@ -308,6 +337,7 @@ Here is a full Qlementine theme in all its glory. Please note that every value i
 
   "spacing": 8,
   "iconExtent": 16,
+  "iconBoldness": 0.1,
 
   "animationDuration": 192,
   "focusAnimationDuration": 384,
@@ -345,6 +375,8 @@ Here is a full Qlementine theme in all its glory. Please note that every value i
 
   "tabBarPaddingTop": 4,
   "tabBarTabMaxWidth": 0,
-  "tabBarTabMinWidth": 0
+  "tabBarTabMinWidth": 0,
+
+  "titleBarHeight": 32
 }
 ```

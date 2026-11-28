@@ -152,7 +152,7 @@ themeManager->setUseSystemAccentColor(true);
 
 !!! info
 
-    The accent color is captured when the `ThemeManager` is created, so create it before applying the `QlementineStyle` with `QApplication::setStyle()`.
+    The system accent color follows the system: it is looked up when a theme is applied and when the system changes. Use the `ThemeManager::systemColorSchemeChanged` signal to switch between a light and a dark theme.
 
 ## Tooltips
 
